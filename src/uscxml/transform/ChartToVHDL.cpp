@@ -105,7 +105,6 @@ namespace uscxml {
                                                                                XML_PREFIX(_scxml).str() + "raise",
                                                                                XML_PREFIX(_scxml).str() + "send",
                                                                                XML_PREFIX(_scxml).str() + "transition",
-
                                                                        }, _scxml);
 
         for (auto withEvent : withEvents) {
@@ -130,8 +129,9 @@ namespace uscxml {
 
         stream << "-- generated from " << std::string(_baseURL) << std::endl;
         stream << "-- run as " << std::endl;
-        stream << "--   ghdl --clean && ghdl -a foo.vhdl && ghdl -e tb && ./tb --stop-time=10ms --vcd=foo.vcd" <<
+        stream << "--   ghdl --clean && ghdl -a foo.vhdl && ghdl -e tb && ./tb --stop-time=10ms --vcd=tb.vcd" <<
         std::endl;
+        stream << "--   gtkwave tb.vcd" << std::endl;
         stream << std::endl;
 
         writeTypes(stream);
@@ -699,7 +699,7 @@ namespace uscxml {
         writeExitSet(stream);
         writeCompleteEntrySet(stream);
         writeEntrySet(stream);
-        writeDefaultCompletions(stream);
+        //writeDefaultCompletions(stream);
         writeActiveStateNplusOne(stream);
 
         // connect output signals
@@ -822,15 +822,20 @@ namespace uscxml {
         std::list<std::string> signalDecls;
 
         for (auto state : _states) {
+            std::string parent = ATTR(state, "parent");
 
             signalDecls.push_back("signal state_active_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal state_next_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal in_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal in_exit_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-            signalDecls.push_back(
-                    "signal in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-            signalDecls.push_back("signal default_completion_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            //signalDecls.push_back("signal default_completion_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+
+            // not needed for <scxml> state
+            if (parent.size() != 0) {
+                signalDecls.push_back(
+                        "signal in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+            }
         }
 
         signalDecls.sort();
@@ -1041,16 +1046,25 @@ namespace uscxml {
     void ChartToVHDL::writeActiveStateNplusOne(std::ostream &stream) {
         stream << "-- active configuration" << std::endl;
 
-        size_t i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-//        DOMElement* state = *stateIter;
-            // TÖDO: is there a case where complete entry set reflects not the next state ?
+        for (auto state : _states) {
+            std::string parent = ATTR(state, "parent");
+
+            // special case for <scxml> to start the state machine
+            if (parent.size() == 0) {
+                stream << "        state_next_" << ATTR(state, "documentOrder") << "_sig <= " <<
+                "not completed_sig;" << std::endl;
+                continue;
+            }
+
+
+            // TODO got the error VBranch * and VPointer are not compatible -- > Check the Makros
+            // and I think the Macros are too complicated
             VBranch *tree = (VASSIGN,
-                    VLINE("state_next_" + toStr(i) + "_sig"),
+                    VLINE("state_next_" + ATTR(state, "documentOrder") + "_sig"),
                     (VOR,
-                            VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
-                            (VAND, (VNOT, VLINE("in_exit_set_" + toStr(i) + "_sig")),
-                                    VLINE("state_active_" + toStr(i) + "_sig"))
+                            VLINE("in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
+                            (VAND, (VNOT, VLINE("in_exit_set_" + ATTR(state, "documentOrder") + "_sig")),
+                                    VLINE("state_active_" + ATTR(state, "documentOrder") + "_sig"))
                     ));
 
             tree->print(stream);
@@ -1063,10 +1077,10 @@ namespace uscxml {
         stream << "-- optimal transition set selection" << std::endl;
         VContainer optimalTransitions = VOR;
         VContainer spontaneoursActive = VOR;
-        size_t i = 0;
-        for (auto transIter = _transitions.begin(); transIter != _transitions.end(); transIter++, i++) {
+
+        for (auto transIter = _transitions.begin(); transIter != _transitions.end(); transIter++) {
             DOMElement *transition = *transIter;
-            std::string conflicts = ATTR(transition, "conflictBools");
+            std::string conflicts = ATTR(transition, "conflictBools"); //TODO are the conflict bools in postfix order ??
 
 
             VContainer nameMatchers = VOR;
@@ -1086,7 +1100,7 @@ namespace uscxml {
             }
 
             VContainer conflicters = VOR;
-            for (size_t j = 0; j < i; j++) {
+            for (size_t j = 0; j < strTo<size_t>(ATTR(transition, "postFixOrder")); j++) {
                 if (conflicts[j] == '1') {
                     *conflicters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig");
                 }
@@ -1129,9 +1143,7 @@ namespace uscxml {
     void ChartToVHDL::writeExitSet(std::ostream &stream) {
         stream << "-- exit set selection" << std::endl;
 
-        size_t i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-            DOMElement *state = *stateIter;
+        for (auto state : _states) {
 
             std::string completion = ATTR(state, "completionBools");
             std::string ancestors = ATTR(state, "ancBools");
@@ -1139,19 +1151,17 @@ namespace uscxml {
             std::string parent = ATTR(state, "parent");
 
             VContainer exitsetters = VOR;
-            size_t j = 0;
-            for (auto transIter = _transitions.begin(); transIter != _transitions.end(); transIter++, j++) {
-                DOMElement *transition = *transIter;
+            for (auto transition : _transitions) {
                 std::string exitSet = ATTR(transition, "exitSetBools");
-                if (exitSet[i] == '1') {
-                    *exitsetters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig ");
+                if (exitSet.at(strTo<size_t>(ATTR(state, "documentOrder"))) == '1') {
+                    *exitsetters += VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig ");
                 }
             }
 
             VBranch *tree = (VASSIGN,
-                    VLINE("in_exit_set_" + toStr(i) + "_sig"),
+                    VLINE("in_exit_set_" + ATTR(state, "documentOrder") + "_sig"),
                     (VAND,
-                            VLINE("state_active_" + toStr(i) + "_sig"),
+                            VLINE("state_active_" + ATTR(state, "documentOrder") + "_sig"),
                             exitsetters));
 
             tree->print(stream);
@@ -1162,215 +1172,182 @@ namespace uscxml {
     void ChartToVHDL::writeEntrySet(std::ostream &stream) {
         stream << "-- entry set selection" << std::endl;
 
-        size_t i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-            DOMElement *state = *stateIter;
+        for (auto state : _states) {
 
             VBranch *tree = (VASSIGN,
-                    VLINE("in_entry_set_" + toStr(i) + "_sig"),
+                    VLINE("in_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
                     (VAND,
-                            VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
-                            (VOR, VLINE("in_exit_set_" + toStr(i) + "_sig"),
-                                    (VNOT, VLINE("state_active_" + toStr(i) + "_sig")))));
+                            VLINE("in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
+                            (VOR, VLINE("in_exit_set_" + ATTR(state, "documentOrder") + "_sig"),
+                                    (VNOT, VLINE("state_active_" + ATTR(state, "documentOrder") + "_sig")))));
 
             tree->print(stream);
             stream << ";" << std::endl;
         }
     }
 
-    void ChartToVHDL::writeDefaultCompletions(std::ostream &stream) {
-        // TODO direct connect the line in complete entry set (no extra line needed ...)
-        stream << "-- default completion assignments" << std::endl;
-        stream << "-- indikates if the state for which I am the def-completion is active" << std::endl;
-        std::map<DOMElement *, std::list<DOMNode *> > completions;
-
-        size_t i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-            DOMElement *state = *stateIter;
-
-            completions[state]; // initialize other completions to 0
-
-            // we just need this if parent is a compound state
-            std::string parent = ATTR(state, "parent");
-
-            if (getParentState(state) != NULL
-                && isCompound(getParentState(state))) {
-
-                // Am I default completen ?
-                std::string completion = ATTR_CAST(_states[strTo<size_t>(parent)], "completionBools");
-                if (completion[i] == '1') {
-                    // Yes? then give me the parent line
-                    completions[state].push_back(getParentState(state));
-
-                }
-            }
-        }
-
-        auto complIter = completions.begin();
-        while (complIter != completions.end()) {
-            const DOMElement *state(complIter->first);
-            const std::list<DOMNode *> refs(complIter->second);
-
-            std::string index = ATTR(state, "documentOrder");
-            VContainer defaultCompleters = VOR;
-
-            for (auto ref : refs) {
-                //                *defaultCompleters += VLINE("in_complete_entry_set_" +
-                // TODO: default completion just when state is entered the first time ?
-                // if yes then we use the following code. If not we have to revert
-                *defaultCompleters += VLINE("in_entry_set_" +
-                                            ATTR_CAST(ref, "documentOrder") + "_sig ");
-            }
-
-            VBranch *tree = (VASSIGN,
-                    VLINE("default_completion_" + index + "_sig"), defaultCompleters);
-
-            tree->print(stream);
-            stream << ";" << std::endl;
-
-            complIter++;
-        }
-
-
-    }
+//    void ChartToVHDL::writeDefaultCompletions(std::ostream &stream) {
+//        // TODO direct connect the line in complete entry set (no extra line needed ...)
+//        stream << "-- default completion assignments" << std::endl;
+//        stream << "-- indicates if the state for which I am the def-completion is active" << std::endl;
+//        std::map<DOMElement *, std::list<DOMNode *> > completions;
+//
+//        for (auto state : _states) {
+//            completions[state]; // initialize other completions to 0
+//
+//            // we just need this if parent is a compound state
+//            std::string parent = ATTR(state, "parent");
+//
+//            if (getParentState(state) != NULL
+//                && isCompound(getParentState(state))) {
+//
+//                // Am I default completion ?
+//                std::string completion = ATTR_CAST(_states[strTo<size_t>(parent)], "completionBools");
+//                if (completion[strTo<size_t>(ATTR(state, "documentOrder"))] == '1') {
+//                    // Yes? then give me the parent line
+//                    completions[state].push_back(getParentState(state));
+//                }
+//            }
+//        }
+//
+//        auto complIter = completions.begin();
+//        while (complIter != completions.end()) {
+//            const DOMElement *state(complIter->first);
+//            const std::list<DOMNode *> refs(complIter->second);
+//
+//            std::string index = ATTR(state, "documentOrder");
+//            VContainer defaultCompleters = VOR;
+//
+//            for (auto ref : refs) {
+//                //                *defaultCompleters += VLINE("in_complete_entry_set_" +
+//                // TODO: default completion just when state is entered the first time ?
+//                // if yes then we use the following code. If not we have to revert
+//                *defaultCompleters += VLINE("in_entry_set_" +
+//                                            ATTR_CAST(ref, "documentOrder") + "_sig ");
+//            }
+//
+//            VBranch *tree = (VASSIGN,
+//                    VLINE("default_completion_" + index + "_sig"), defaultCompleters);
+//
+//            tree->print(stream);
+//            stream << ";" << std::endl;
+//
+//            complIter++;
+//        }
+//
+//
+//    }
 
     void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
         stream << "-- complete entry set selection" << std::endl;
 
-        size_t i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-            DOMElement *state = *stateIter;
-
+        for (auto state : _states) {
             std::string completion = ATTR(state, "completionBools");
             std::string ancestors = ATTR(state, "ancBools");
             std::string children = ATTR(state, "childBools");
             std::string parent = ATTR(state, "parent");
 
-            VContainer optimalEntrysetters = VOR;
-            size_t j = 0;
-            for (auto transIter = _transitions.begin(); transIter != _transitions.end(); transIter++, j++) {
-                DOMElement *transition = *transIter;
+            if (parent.size() == 0) {
+                continue; // skips <scxml> node
+            }
 
+
+            // EntrySet for every state types
+            VContainer optimalEntrysetters = VOR;
+            for (auto transition : _transitions) {
+                // Is this state in TargetSet of the transition?
                 std::string targetSet = ATTR(transition, "targetBools");
-                if (targetSet[i] == '1') {// <- ? TODO Was ist hier der vergleich?
-                    *optimalEntrysetters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig");
+                if (targetSet[strTo<size_t>(ATTR(state, "documentOrder"))] == '1') {
+                    //yes? then add the transition to optimal entry set of the state
+                    *optimalEntrysetters +=
+                            VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig");
                 }
             }
 
+            // if composite state (or root) we have to add ancestor completion
             VContainer completeEntrysetters = VOR;
-            stream << "--" << state->getNodeName() << std::endl; // for debugging
-            if (isCompound(state) || isParallel(state)) { // <- true for scxml node? TODO
-                for (size_t j = 0; j < _states.size(); j++) {
-                    if (children[j] != '1') // if is child of state j
-                        continue;
-                    *completeEntrysetters += VLINE("in_complete_entry_set_up_" + toStr(j) + "_sig");
+            if (isCompound(state) || isParallel(state)) {
+                for (auto tmp_state : _states) {
+                    // is tmp_state is child of state continue?
+                    if (children[strTo<size_t>(ATTR(state, "documentOrder"))] == '1') {
+                        // yes? then add its complete_entry_set_up as ancestor completion
+                        *completeEntrysetters +=
+                                VLINE("in_complete_entry_set_up_" + ATTR(tmp_state, "documentOrder") + "_sig");
+                    }
                 }
             }
 
             VBranch *tree = (VASSIGN,
-                    VLINE("in_complete_entry_set_up_" + toStr(i) + "_sig"),
+                    VLINE("in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig"),
                     (VOR, optimalEntrysetters, completeEntrysetters)
             );
             tree->print(stream);
             stream << ";" << std::endl;
-
-
-#if 0
-            stream << "in_complete_entry_set_up_" << toStr(i) << "_sig <= ('0'" << std::endl;
-
-            for (size_t j = 0; j < _transitions.size(); j++) {
-                Element<std::string> transition(_transitions[j]);
-                //            std::cout << transition;
-                std::string targetSet = ATTR(transition, "targetBools");
-                if (targetSet[i] == '1') {
-                    stream << "  or in_optimal_transition_set_" << toStr(j) << std::endl;
-                }
-            }
-            if (isCompound(state)) {
-                for (size_t j = 0; j < _states.size(); j++) {
-                    if (children[j] != '1')
-                        continue;
-
-                    stream << "  or in_complete_entry_set_up_" << toStr(j) << "_sig" << std::endl;
-                }
-
-            }
-            stream << ");" << std::endl;
-#endif
         }
 
-        i = 0;
+
+        // descendant completion
         for (auto state : _states) {
             std::string completion = ATTR(state, "completionBools");
             std::string ancestors = ATTR(state, "ancBools");
-            std::string parent = ATTR(state, "parent");
+            std::string parent = ATTR(state, "parent"); //is it a int ?
 
             if (parent.size() == 0) {
-                i = 0; // reset i to allow stephan to use his fancy iteratior -.-
                 continue; // skips <scxml> node
             }
 
-            VContainer tmp1 = VAND;
+            VContainer descendantCompletion = VAND; //TODO one AND less would produce fancier code 
             // if parent is compound
             if (getParentState(state) != NULL &&
                 isCompound(getParentState(state))) {
                 std::string children = ATTR_CAST(_states[strTo<size_t>(parent)],
                                                  "childBools");
-                // TODO: do not add default_completion line if not needed
-                // --> just if this state is the default completion of parent
-                // --> init attr. or if not present first in document order <-- = completion bool ?
-                *tmp1 += VLINE("default_completion_" + ATTR(state, "documentOrder") + "_sig");
 
-                //TODO check this
-                for (size_t j = 0; j < _states.size(); j++) {
-                    if (children[j] != '1')
-                        continue;
-                    *tmp1 += (VAND,
-                            (VNOT,
-                                    (VAND,
-                                            VLINE("state_active_" + toStr(j) + "_sig"),
-                                            (VNOT,
-                                                    VLINE("in_exit_set_" + toStr(j) + "_sig")))));
+                std::string parentInit = ATTR(getParentState(state), "initial");
+                if (// if parent has init field an this state is inside --> add it as default completion
+                        (!parentInit.empty()
+                         && ATTR(state, "id").compare(parentInit) == 0) ||
+                        // or add this state as default completion when parent has no init field and it is the first in document order
+                        (parentInit.empty() &&
+                         (strTo<size_t>(ATTR(getParentState(state), "documentOrder")) + 1) ==
+                         strTo<size_t>(ATTR(state, "documentOrder")))) {
+                    *descendantCompletion += VLINE("in_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
 
+                    // but only if compound parent is not already completed
+                    for (auto tmp_state : _states) {
+                        if (tmp_state == state) {
+                            // skip state itselve
+                            continue;
+                        }
+                        if (children[strTo<size_t>(ATTR(tmp_state, "documentOrder"))] == '1') {
+                            *descendantCompletion += (VAND,
+                                    (VNOT,
+                                            (VAND,
+                                                    VLINE("state_active_" + ATTR(tmp_state, "documentOrder") + "_sig"),
+                                                    (VNOT,
+                                                            VLINE("in_exit_set_" + ATTR(tmp_state, "documentOrder") +
+                                                                  "_sig")))));
+                        }
+                    }
+                } else {
+                    // disable this branche
+                    *descendantCompletion += VLINE("'0'");
                 }
-
-            }
-
-            // if parent is parallel
+            } else
+                // if parent is parallel
             if (getParentState(state) != NULL &&
                 isParallel(getParentState(state))) {
-                *tmp1 += VLINE("in_complete_entry_set_" + toStr(parent) + "_sig");
+                *descendantCompletion += VLINE("in_complete_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
             }
 
             VBranch *tree = (VASSIGN,
-                    VLINE("in_complete_entry_set_" + toStr(i) + "_sig"),
+                    VLINE("in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
                     (VOR,
                             VLINE("in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig"),
-                            tmp1));
+                            descendantCompletion));
 
             tree->print(stream);
             stream << ";" << std::endl;
-
-#if 0
-            stream << "in_complete_entry_set_" << toStr(i) << "_sig <= (in_complete_entry_set_up_" << toStr(i) << "_sig or (" << std::endl;
-
-            if (isParallel(Element<std::string>(_states[strTo<size_t>(parent)]))) {
-                stream << "  in_complete_entry_set_" << toStr(parent) << "_sig" << std::endl;
-            } else if (isCompound(Element<std::string>(_states[strTo<size_t>(parent)]))) {
-                stream << "  default_completion_" << toStr(parent) << "_sig" << std::endl;
-
-                for (size_t j = 0; j < _states.size(); j++) {
-                    if (children[j] != '1')
-                        continue;
-                    stream << "  and not (is_active" << toStr(j) << "_sig and not in_exit_set_" << toStr(j) << "_sig)" << std::endl;
-
-                }
-            }
-
-            stream << ");" << std::endl;
-#endif
-
-            i++; // count int to allow stephan to use his fanxcy iterator -.-
         }
     }
 
@@ -1382,21 +1359,17 @@ namespace uscxml {
         stream << "begin" << std::endl;
         stream << "    if rst = '1' then" << std::endl;
 
-        size_t i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-//                DOMElement* state = *stateIter;
-            stream << "        state_active_" << toStr(i) << "_sig <= " << "'0';" << std::endl;
+        for (auto state : _states) {
+            stream << "        state_active_" << ATTR(state, "documentOrder") << "_sig <= " << "'0';" << std::endl;
         }
 
         stream << "        in_complete_entry_set_0_sig <= '1';" << std::endl;
         stream << "    elsif (rising_edge(clk) and stall = '0') then" << std::endl;
         stream << "        in_complete_entry_set_0_sig <= '0';" << std::endl;
 
-        i = 0;
-        for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++, i++) {
-            //        DOMElement* state = *stateIter;
-            stream << "        state_active_" << toStr(i) << "_sig <= " << "state_next_" << toStr(i) << "_sig;" <<
-            std::endl;
+        for (auto state : _states) {
+            stream << "        state_active_" << ATTR(state, "documentOrder") << "_sig <= " << "state_next_" <<
+            ATTR(state, "documentOrder") << "_sig;" << std::endl;
         }
 
         stream << "    end if;" << std::endl;
