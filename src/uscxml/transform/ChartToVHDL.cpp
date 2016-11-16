@@ -1296,7 +1296,7 @@ namespace uscxml {
                 continue; // skips <scxml> node
             }
 
-            VContainer descendantCompletion = VAND; //TODO one AND less would produce fancier code 
+            VContainer descendantCompletion = VAND; //TODO one AND less would produce fancier code
             // if parent is compound
             if (getParentState(state) != NULL &&
                 isCompound(getParentState(state))) {
