@@ -1,4 +1,4 @@
-set(TEST_TIMEOUT 15)
+set(TEST_TIMEOUT 30)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
 find_program(SPIN spin)

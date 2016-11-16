@@ -41,20 +41,7 @@ void printUsageAndExit(const char* progName) {
 	printf("\t-t pml         : convert to spin/promela program\n");
 	printf("\t-t vhdl        : convert to VHDL hardware description\n");
 	printf("\t-t flat        : flatten to SCXML state-machine\n");
-	printf("\t-t min         : minimize SCXML state-chart\n");
-	printf("\t-a {OPTIONS}   : annotate SCXML elements with comma seperated options\n");
-	printf("\t    priority     - transitions with their priority for transition selection\n");
-	printf("\t    exitset      - annotate all transitions with their exit sets\n");
-	printf("\t    entryset     - annotate all transitions with their entry sets\n");
-	printf("\t    conflicts    - annotate all transitions with their conflicts\n");
-	printf("\t    domain       - annotate all transitions with their domain\n");
-	printf("\t    step         - global states with their step identifier (-tflat only)\n");
-	printf("\t    members      - global transitions with their member transitions per index (-tflat only)\n");
-	printf("\t    sends        - transititve number of sends to external queue for global transitions (-tflat only)\n");
-	printf("\t    raises       - transititve number of raises to internal queue for global transitions (-tflat only)\n");
-	printf("\t    verbose      - comments detailling state changes and transitions for content selection (-tflat only)\n");
-	printf("\t    progress     - insert comments documenting progress in dociment (-tmin only)\n");
-	printf("\t    nocomment    - surpress the generation of comments in output\n");
+	printf("\t-a FILE        : write annotated SCXML document for transformation\n");
 	printf("\t-X {PARAMETER} : pass additional parameters to the transformation\n");
 	printf("\t    prefix=ID    - prefix all symbols and identifiers with ID (-tc)\n");
 	printf("\t-v             : be verbose\n");
@@ -71,7 +58,8 @@ int main(int argc, char** argv) {
 	bool verbose = false;
 	std::string outType;
 	std::string pluginPath;
-	std::string inputFile;
+    std::string inputFile;
+    std::string annotatedFile;
 	std::string outputFile;
 	std::list<std::string> options;
 	std::multimap<std::string, std::string> extensions;
@@ -122,7 +110,7 @@ int main(int argc, char** argv) {
 			inputFile = optarg;
 			break;
 		case 'a':
-			options = tokenize(optarg, ',');
+            annotatedFile = optarg;
 			break;
 		case 'X': {
 			std::list<std::string> extension = tokenize(optarg, '=');
@@ -275,10 +263,12 @@ int main(int argc, char** argv) {
 			}
 		}
 
+        Transformer transformer;
 		if (outType == "c") {
-			Transformer transformer = ChartToC::transform(interpreter);
+			transformer = ChartToC::transform(interpreter);
 			transformer.setExtensions(extensions);
 			transformer.setOptions(options);
+            
 			if (outputFile.size() == 0 || outputFile == "-") {
 				transformer.writeTo(std::cout);
 			} else {
@@ -287,31 +277,36 @@ int main(int argc, char** argv) {
 				transformer.writeTo(outStream);
 				outStream.close();
 			}
-			exit(EXIT_SUCCESS);
 		}
 
 		if (outType == "vhdl") {
+            transformer = ChartToVHDL::transform(interpreter);
+            transformer.setExtensions(extensions);
+            transformer.setOptions(options);
+
 			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToVHDL::transform(interpreter).writeTo(std::cout);
+				transformer.writeTo(std::cout);
 			} else {
 				std::ofstream outStream;
 				outStream.open(outputFile.c_str());
-				ChartToVHDL::transform(interpreter).writeTo(outStream);
+				transformer.writeTo(outStream);
 				outStream.close();
 			}
-			exit(EXIT_SUCCESS);
 		}
 
 		if (outType == "pml") {
-			if (outputFile.size() == 0 || outputFile == "-") {
-				ChartToPromela::transform(interpreter).writeTo(std::cout);
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				ChartToPromela::transform(interpreter).writeTo(outStream);
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
+            transformer = ChartToPromela::transform(interpreter);
+            transformer.setExtensions(extensions);
+            transformer.setOptions(options);
+            
+            if (outputFile.size() == 0 || outputFile == "-") {
+                transformer.writeTo(std::cout);
+            } else {
+                std::ofstream outStream;
+                outStream.open(outputFile.c_str());
+                transformer.writeTo(outStream);
+                outStream.close();
+            }
 		}
 
 //		if (outType == "tex") {
@@ -350,7 +345,13 @@ int main(int argc, char** argv) {
 //			exit(EXIT_SUCCESS);
 //		}
 
+        if (annotatedFile.size() > 0) {
+            std::ofstream outStream;
+            outStream.open(annotatedFile.c_str());
+            outStream << (*transformer.getImpl()->getDocument());
+            outStream.close();
 
+        }
 #if 0
 		if (options.size() > 0) {
 			ChartToFSM annotater(interpreter);

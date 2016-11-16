@@ -1,5 +1,11 @@
 #!/usr/bin/perl -w
 
+#./analyze_tests.pl \
+# w3c pml.topml pml.toc pml.tobin pml.verify \
+#|awk '{printf("%f\n", ($2 + $3 + $4)); }' \
+#|sort -rn \
+#|gnuplot -e "set term png;p '-' u 0:1" > test.png
+
 use strict;
 use File::Spec;
 use File::Basename;
@@ -147,6 +153,101 @@ while ($block = <FILE>) {
 			$test->{$currTest}->{'flat'}->{'after'} = $1;
 		}
 	}
+	
+	# New Promela Tests ========
+	if ($block =~ 
+	/ 
+		uscxml-transform[^\n]+tpml
+	/x ) {
+
+		if ($block =~ 
+		/
+			\nreal\s+(\d+.?\d+)
+			\nuser\s+(\d+.?\d+)
+			\nsys\s+(\d+.?\d+)
+			\n--\stime\sfor\stransforming\sto\spromela
+		/x ) {
+			$test->{$currTest}->{'pml'}->{'toPML'} = $1;
+		}
+
+		if ($block =~ 
+		/
+			\nreal\s+(\d+.?\d+)
+			\nuser\s+(\d+.?\d+)
+			\nsys\s+(\d+.?\d+)
+			\n--\stime\sfor\stransforming\sto\sc
+		/x ) {
+			$test->{$currTest}->{'pml'}->{'toC'} = $1;
+		}
+
+		if ($block =~ 
+		/
+			\nreal\s+(\d+.?\d+)
+			\nuser\s+(\d+.?\d+)
+			\nsys\s+(\d+.?\d+)
+			\n--\stime\sfor\stransforming\sto\sbin
+		/x ) {
+			$test->{$currTest}->{'pml'}->{'toBIN'} = $1;
+		}
+
+		if ($block =~ 
+		/
+			\nreal\s+(\d+.?\d+)
+			\nuser\s+(\d+.?\d+)
+			\nsys\s+(\d+.?\d+)
+			\n--\stime\sfor\sverification
+		/x ) {
+			$test->{$currTest}->{'pml'}->{'verify'} = $1;
+		}
+
+		if ($block =~ /State-vector (\d+) byte, depth reached (\d+), errors: (\d+)/) {
+			$test->{$currTest}->{'pml'}->{'states'}->{'stateSize'} = $1;
+			$test->{$currTest}->{'pml'}->{'states'}->{'depth'} = $2;
+			$test->{$currTest}->{'pml'}->{'states'}->{'errors'} = $3;
+		}
+		if ($block =~ 
+			/
+				\s+(\d+)\sstates,\sstored\s\((\d+)\svisited\)\n
+				\s+(\d+)\sstates,\smatched\n
+				\s+(\d+)\stransitions\s\(=\svisited\+matched\)\n
+				\s+(\d+)\satomic\ssteps\n
+				hash\sconflicts:\s+(\d+)\s\(resolved\)
+			/x ) {
+			$test->{$currTest}->{'pml'}->{'states'}->{'stateStored'} = $1;
+			$test->{$currTest}->{'pml'}->{'states'}->{'stateVisited'} = $2;
+			$test->{$currTest}->{'pml'}->{'states'}->{'stateMatched'} = $3;
+			$test->{$currTest}->{'pml'}->{'states'}->{'transitions'} = $4;
+			$test->{$currTest}->{'pml'}->{'states'}->{'atomicSteps'} = $5;
+			$test->{$currTest}->{'pml'}->{'hashConflicts'} = $6;
+		}
+		
+		if ($block =~ 
+			/
+				\s+([\d\.]+)\sequivalent\smemory\susage\sfor\sstates.*
+				\s+([\d\.]+)\sactual\smemory\susage\sfor\sstates\n
+				\s+([\d\.]+)\smemory\sused\sfor\shash\stable\s\(-w(\d+)\)\n
+				\s+([\d\.]+)\smemory\sused\sfor\sDFS\sstack\s\(-m(\d+)\)
+				\s+([\d\.]+)\stotal\sactual\smemory\susage
+			/x ) {
+			$test->{$currTest}->{'pml'}->{'memory'}->{'states'} = $1;
+			$test->{$currTest}->{'pml'}->{'memory'}->{'actual'} = $2;
+			$test->{$currTest}->{'pml'}->{'memory'}->{'hashTable'} = $3;
+			$test->{$currTest}->{'pml'}->{'memory'}->{'hashLimit'} = $4;
+			$test->{$currTest}->{'pml'}->{'memory'}->{'dfsStack'} = $5;
+			$test->{$currTest}->{'pml'}->{'memory'}->{'dfsLimit'} = $6;
+			$test->{$currTest}->{'pml'}->{'memory'}->{'total'} = $7;
+		}
+
+		if ($block =~ 
+			/
+				pan:\selapsed\stime\s(.*)\sseconds\n
+			/x ) {
+			$test->{$currTest}->{'pml'}->{'duration'} = $1;
+		}
+
+	}
+		
+	
 	
 	# Promela Test ========
 	if ($block =~ 
