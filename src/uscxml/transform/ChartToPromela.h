@@ -45,72 +45,58 @@ protected:
 
 	void writeTransitions(std::ostream& stream);
 	void writeStates(std::ostream& stream);
+    
+    void writeCommonTypeDefs(std::ostream& stream);
+    void writeCommonVariables(std::ostream& stream);
     void writeTypeDefs(std::ostream& stream);
-	void writeTypes(std::ostream& stream);
+    void writeVariables(std::ostream& stream);
+
+//  void writeTypeDefs(std::ostream& stream);
+//	void writeTypes(std::ostream& stream);
 	void writeMacros(std::ostream& stream);
-	void writeHelpers(std::ostream& stream);
 	void writeFSM(std::ostream& stream);
 	void writeExecContent(std::ostream& stream, const XERCESC_NS::DOMNode* node, size_t indent = 0);
+    void writeRaiseDoneDate(std::ostream& stream, const XERCESC_NS::DOMElement* donedata, size_t indent = 0);
+
     void writeStrings(std::ostream& stream);
 
     void writeCancelEvents(std::ostream& stream, int indent = 0);
+    void writeScheduleMachines(std::ostream& stream, int indent = 0);
+    void writeDetermineShortestDelay(std::ostream& stream, int indent = 0);
+    void writeRescheduleProcess(std::ostream& stream, int indent = 0);
+    void writeInsertWithDelay(std::ostream& stream, int indent = 0);
+    void writeAdvanceTime(std::ostream& stream, int indent = 0);
+    void writeRemovePendingEventsFromInvoker(std::ostream& stream, int indent = 0);
 
     void prepare();
     
-	void bit_clear_all(std::ostream& stream,
-	                   const std::string& identifier,
-	                   size_t length,
-	                   size_t indent = 0);
-
-	void bit_copy(std::ostream& stream,
-	              const std::string& from,
-	              const std::string& to,
-	              size_t length,
-	              size_t indent = 0);
-
-	void bit_or(std::ostream& stream,
-	            const std::string& to,
-	            const std::string& mask,
-	            size_t length,
-	            size_t indent = 0);
-
-	void bit_and(std::ostream& stream,
-	             const std::string& to,
-	             const std::string& mask,
-	             size_t length,
-	             size_t indent = 0);
-
-	void bit_and_not(std::ostream& stream,
-	                 const std::string& to,
-	                 const std::string& mask,
-	                 size_t length,
-	                 size_t indent = 0);
-
-	void bit_has_and(std::ostream& stream,
-	                 const std::string& a,
-	                 const std::string& b,
-	                 size_t length,
-	                 size_t indent = 0);
+    void writeBitClearMacro(std::ostream& stream);
+    void writeBitHasAndMacro(std::ostream& stream);
+    void writeBitHasAnyMacro(std::ostream& stream);
+    void writeBitOrMacro(std::ostream& stream);
+    void writeBitCopyMacro(std::ostream& stream);
+    void writeBitAndMacro(std::ostream& stream);
+    void writeBitAndNotMacro(std::ostream& stream);
 
 	void printBitArray(std::ostream& stream,
 	                   const std::string& array,
 	                   size_t length,
 	                   size_t indent = 0);
 
-	PromelaCodeAnalyzer _analyzer;
+	PromelaCodeAnalyzer* _analyzer = NULL;
 
-	ChartToPromela* _parentTopMost;
-	ChartToPromela* _parent;
+	ChartToPromela* _parentTopMost = NULL;
+	ChartToPromela* _parent = NULL;
 	std::string _invokerid;
 
     size_t _internalQueueLength = 7;
     size_t _externalQueueLength = 7;
     bool _allowEventInterleaving = false;
     
-	std::map<std::string, XERCESC_NS::DOMNode* > _machinesPerId;
-	std::map<std::string, XERCESC_NS::DOMNode* >* _machinesAllPerId = NULL;
-	std::map<XERCESC_NS::DOMNode*, ChartToPromela*> _machines;
-	std::map<XERCESC_NS::DOMNode*, ChartToPromela*>* _machinesAll = NULL;
+	std::map<std::string, XERCESC_NS::DOMElement* > _machinesPerId;
+	std::map<std::string, XERCESC_NS::DOMElement* >* _machinesAllPerId = NULL;
+	std::map<XERCESC_NS::DOMElement*, ChartToPromela*> _machinesNested;
+	std::map<XERCESC_NS::DOMElement*, ChartToPromela*>* _machinesAll = NULL;
 
 	std::set<std::string> _dataModelVars;
     std::list<std::string> _varInitializers; // pending initializations for arrays

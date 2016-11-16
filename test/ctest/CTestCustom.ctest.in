@@ -134,67 +134,67 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   ### Ignore for SPIN model checking
 
   # manual tests
-  # "w3c/spin/promela/test178.scxml" # two identical params in _event.raw - FAILED
-  # "w3c/spin/promela/test230.scxml" # autoforwarded events are identical - PASSED
-  # "w3c/spin/promela/test250.scxml" # no onexit in cancelled invoker - PASSED
-  # "w3c/spin/promela/test307.scxml" # declare variable via script - FAILED
-  # "w3c/spin/promela/test313.scxml" # assignment of 'return'
-  # "w3c/spin/promela/test314.scxml" # assignment of 'return'
-  # "w3c/spin/promela/test415.scxml" # terminate on toplevel final - PASSED
+  "w3c/spin/promela/test178.scxml" # two identical params in _event.raw - FAILED
+  "w3c/spin/promela/test230.scxml" # autoforwarded events are identical - PASSED
+  "w3c/spin/promela/test250.scxml" # no onexit in cancelled invoker - PASSED
+  "w3c/spin/promela/test307.scxml" # declare variable via script - FAILED
+  "w3c/spin/promela/test313.scxml" # assignment of 'return'
+  "w3c/spin/promela/test314.scxml" # assignment of 'return'
+  "w3c/spin/promela/test415.scxml" # terminate on toplevel final - PASSED
   # "w3c/spin/promela/test513.txt" # manual test - FAILED
 
-  # "w3c/spin/promela/test301.scxml" # reject invalid script - PASSED
-  # "w3c/spin/promela/test436.scxml" # In(s) -> _x.states[s] prevents completion as NULL dm is hardcoded
+  "w3c/spin/promela/test301.scxml" # reject invalid script - PASSED
+  "w3c/spin/promela/test436.scxml" # In(s) -> _x.states[s] prevents completion as NULL dm is hardcoded
 
   # fail for syntax
-  # "w3c/spin/promela/test152.scxml" # test that an illegal array or item value causes error.execution
-  # "w3c/spin/promela/test156.scxml" # test that an error causes the foreach to stop execution
-  # "w3c/spin/promela/test224.scxml" # string operation startWith
-  # "w3c/spin/promela/test277.scxml" # platform creates unbound variable if we assign an illegal value to it
-  # "w3c/spin/promela/test280.scxml" # late data binding / undeclared variable
-  # "w3c/spin/promela/test286.scxml" # assignment to a non-declared var causes an error
-  # "w3c/spin/promela/test294.scxml" # mixed types for event.data via donedata
-  # "w3c/spin/promela/test309.scxml" # 'return' as an invalid boolean expression ought to eval to false
-  # "w3c/spin/promela/test311.scxml" # assignment to a non-declared var
-  # "w3c/spin/promela/test312.scxml" # assignment of 'return'
-  # "w3c/spin/promela/test322.scxml" # assignment to _sessionid
-  # "w3c/spin/promela/test324.scxml" # assignment to _name
-  # "w3c/spin/promela/test325.scxml" # assignment from _ioprocessor
-  # "w3c/spin/promela/test326.scxml" # assignment from _ioprocessor
-  # "w3c/spin/promela/test329.scxml" # test that none of the system variables can be modified
-  # "w3c/spin/promela/test344.scxml" # 'return' as a cond
-  # "w3c/spin/promela/test346.scxml" # assignment to system variables
-  # "w3c/spin/promela/test350.scxml" # string concatenation
-  # "w3c/spin/promela/test354.scxml" # mixed types for event.data
-  # "w3c/spin/promela/test401.scxml" # variable not declared
-  # "w3c/spin/promela/test402.scxml" # variable not declared
-  # "w3c/spin/promela/test487.scxml" # assignment of 'return'
-  # "w3c/spin/promela/test509.scxml" # string operation contains
-  # "w3c/spin/promela/test518.scxml" # string operation contains
-  # "w3c/spin/promela/test519.scxml" # string operation contains
-  # "w3c/spin/promela/test520.scxml" # string operation contains
-  # "w3c/spin/promela/test525.scxml" # assumes unbound arrays
-  # "w3c/spin/promela/test530.scxml" # assigns DOM node to variable
-  # "w3c/spin/promela/test534.scxml" # string operation contains
+  "w3c/spin/promela/test152.scxml" # test that an illegal array or item value causes error.execution
+  "w3c/spin/promela/test156.scxml" # test that an error causes the foreach to stop execution
+  "w3c/spin/promela/test224.scxml" # string operation startWith
+  "w3c/spin/promela/test277.scxml" # platform creates unbound variable if we assign an illegal value to it
+  "w3c/spin/promela/test280.scxml" # late data binding / undeclared variable
+  "w3c/spin/promela/test286.scxml" # assignment to a non-declared var causes an error
+  "w3c/spin/promela/test294.scxml" # mixed types for event.data via donedata
+  "w3c/spin/promela/test309.scxml" # 'return' as an invalid boolean expression ought to eval to false
+  "w3c/spin/promela/test311.scxml" # assignment to a non-declared var
+  "w3c/spin/promela/test312.scxml" # assignment of 'return'
+  "w3c/spin/promela/test322.scxml" # assignment to _sessionid
+  "w3c/spin/promela/test324.scxml" # assignment to _name
+  "w3c/spin/promela/test325.scxml" # assignment from _ioprocessor
+  "w3c/spin/promela/test326.scxml" # assignment from _ioprocessor
+  "w3c/spin/promela/test329.scxml" # test that none of the system variables can be modified
+  "w3c/spin/promela/test344.scxml" # 'return' as a cond
+  "w3c/spin/promela/test346.scxml" # assignment to system variables
+  "w3c/spin/promela/test350.scxml" # string concatenation
+  "w3c/spin/promela/test354.scxml" # mixed types for event.data
+  "w3c/spin/promela/test401.scxml" # variable not declared
+  "w3c/spin/promela/test402.scxml" # variable not declared
+  "w3c/spin/promela/test487.scxml" # assignment of 'return'
+  "w3c/spin/promela/test509.scxml" # string operation contains
+  "w3c/spin/promela/test518.scxml" # string operation contains
+  "w3c/spin/promela/test519.scxml" # string operation contains
+  "w3c/spin/promela/test520.scxml" # string operation contains
+  "w3c/spin/promela/test525.scxml" # assumes unbound arrays
+  "w3c/spin/promela/test530.scxml" # assigns DOM node to variable
+  "w3c/spin/promela/test534.scxml" # string operation contains
 
   # fail for semantics
-  # "w3c/spin/promela/test159.scxml" # error raised causes all subsequent elements to be skipped
-  # "w3c/spin/promela/test194.scxml" # illegal target for send
-  # "w3c/spin/promela/test199.scxml" # invalid send type
-  # "w3c/spin/promela/test216.scxml" # nested SCXML document with srcexpr at invoke
-  # "w3c/spin/promela/test298.scxml" # non-existent data model location
-  # "w3c/spin/promela/test331.scxml" # tests _error.type via 'error.execution'
-  # "w3c/spin/promela/test332.scxml" # tests _error.sendid via 'error.execution'
-  # "w3c/spin/promela/test343.scxml" # test that illegal <param> produces error.execution
-  # "w3c/spin/promela/test488.scxml" # illegal expr in <param> produces error.execution
-  # "w3c/spin/promela/test496.scxml" # tests error.communication with illegal target
-  # "w3c/spin/promela/test521.scxml" # tests error.communication with illegal target
-  # "w3c/spin/promela/test528.scxml" # illegal 'expr' produces error.execution
-  # "w3c/spin/promela/test531.scxml" # uses _ioprocessors.basichttp.location
-  # "w3c/spin/promela/test532.scxml" # uses _ioprocessors.basichttp.location
-  # "w3c/spin/promela/test553.scxml" # error in namelist
-  # "w3c/spin/promela/test554.scxml" # evaluation of <invoke>'s args causes an error
-  # "w3c/spin/promela/test577.scxml" # send without target for basichttp
+  "w3c/spin/promela/test159.scxml" # error raised causes all subsequent elements to be skipped
+  "w3c/spin/promela/test194.scxml" # illegal target for send
+  "w3c/spin/promela/test199.scxml" # invalid send type
+  "w3c/spin/promela/test216.scxml" # nested SCXML document with srcexpr at invoke
+  "w3c/spin/promela/test298.scxml" # non-existent data model location
+  "w3c/spin/promela/test331.scxml" # tests _error.type via 'error.execution'
+  "w3c/spin/promela/test332.scxml" # tests _error.sendid via 'error.execution'
+  "w3c/spin/promela/test343.scxml" # test that illegal <param> produces error.execution
+  "w3c/spin/promela/test488.scxml" # illegal expr in <param> produces error.execution
+  "w3c/spin/promela/test496.scxml" # tests error.communication with illegal target
+  "w3c/spin/promela/test521.scxml" # tests error.communication with illegal target
+  "w3c/spin/promela/test528.scxml" # illegal 'expr' produces error.execution
+  "w3c/spin/promela/test531.scxml" # uses _ioprocessors.basichttp.location
+  "w3c/spin/promela/test532.scxml" # uses _ioprocessors.basichttp.location
+  "w3c/spin/promela/test553.scxml" # error in namelist
+  "w3c/spin/promela/test554.scxml" # evaluation of <invoke>'s args causes an error
+  "w3c/spin/promela/test577.scxml" # send without target for basichttp
   
   
   ### Ignore for generated C sources

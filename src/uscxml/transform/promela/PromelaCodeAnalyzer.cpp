@@ -67,16 +67,25 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 					if (boost::ends_with(eventName, "."))
 						eventName = eventName.substr(0, eventName.size() - 1);
 					if (eventName.size() > 0)
-						_eventTrie.addWord(eventName);
+						addEvent(eventName);
 				}
 			}
 		}
 
 		for (auto state : interpreter->_states) {
 			if (HAS_ATTR(state, "id") && (isCompound(state) || isParallel(state))) {
-				_eventTrie.addWord("done.state." + ATTR(state, "id"));
+				addEvent("done.state." + ATTR(state, "id"));
 			}
 		}
+        
+        std::list<XERCESC_NS::DOMElement*> invokers = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml, false);
+        for (auto invoker : invokers) {
+            addCode("_event.invokeid", interpreter);
+
+            if (HAS_ATTR(invoker, "id")) {
+                addEvent("done.state." + ATTR(invoker, "id"));
+            }
+        }
 	}
 
     // add event names from trie to string literals
@@ -94,7 +103,9 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto content : contents) {
-			std::string contentStr = spaceNormalize(X(((DOMElement*)content)->getFirstChild()->getNodeValue()));
+            if (!content->hasChildNodes())
+                continue;
+			std::string contentStr = spaceNormalize(X(content->getFirstChild()->getNodeValue()));
 			if (!isNumeric(contentStr.c_str(), 10)) {
 				addLiteral(contentStr);
 			}
@@ -192,7 +203,7 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
             std::list<DOMElement*> cancels = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "cancel"}, interpreter->_scxml);
             
             if (cancels.size() > 0) {
-                addCode("_event.invokeid", interpreter);
+                addCode("_event.origin", interpreter);
                 _usesCancel = true;
             }
             
@@ -207,6 +218,9 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
             
                 // do we need delays?
                 if (HAS_ATTR(send, "delay") || HAS_ATTR(send, "delayexpr")) {
+                    size_t delay = strTo<size_t>(ATTR(send, "delay"));
+                    if (delay > largestDelay)
+                        largestDelay = delay;
                     addCode("_event.delay", interpreter);
 #if NEW_DELAY_RESHUFFLE
 #else
@@ -234,6 +248,11 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 
 	}
 
+}
+
+void PromelaCodeAnalyzer::addEvent(const std::string& eventName) {
+    addLiteral(eventName);
+    _eventTrie.addWord(eventName);
 }
 
 std::string PromelaCodeAnalyzer::sanitizeCode(const std::string& code) {
@@ -504,6 +523,8 @@ std::string PromelaCodeAnalyzer::adaptCode(const std::string& code, const std::s
             if (std::all_of(token.begin(), token.end(), ::isupper) && false) {
                 // assume it is a state-name macro
                 processedStr << code.substr(lastPos, posIter->first - lastPos) << token;
+            } else if (boost::starts_with(prefix, token)) {
+                processedStr << code.substr(lastPos, posIter->first - lastPos) << token;
             } else {
                 processedStr << code.substr(lastPos, posIter->first - lastPos) << prefix << token;
             }
@@ -572,8 +593,11 @@ std::list<std::pair<size_t, size_t> > PromelaCodeAnalyzer::getTokenPositions(con
 	return posList;
 }
 
-std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding) {
+std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const PromelaTypedef& type, size_t indent) {
 	std::stringstream assignment;
+    std::string padding;
+    for (size_t i = 0; i < indent; i++)
+        padding += "  ";
 
 	std::map<std::string, PromelaTypedef>::const_iterator typeIter = type.types.begin();
 	while(typeIter != type.types.end()) {
@@ -583,7 +607,7 @@ std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const Prom
 				assignment << padding << var << "." << typeIter->first << "[" << i << "] = 0;" << std::endl;
 			}
 		} else if (innerType.types.size() > 0) {
-			assignment << getTypeReset(var + "." + typeIter->first, typeIter->second, padding);
+			assignment << getTypeReset(var + "." + typeIter->first, typeIter->second, indent);
 		} else {
 			assignment << padding << var << "." << typeIter->first << " = 0;" << std::endl;
 		}
@@ -591,6 +615,29 @@ std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const Prom
 	}
 	return assignment.str();
 
+}
+
+std::string PromelaCodeAnalyzer::getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, size_t indent) {
+    std::stringstream assignment;
+    std::string padding;
+    for (size_t i = 0; i < indent; i++)
+        padding += "  ";
+
+    std::map<std::string, PromelaTypedef>::const_iterator typeIter = type.types.begin();
+    while(typeIter != type.types.end()) {
+        const PromelaTypedef& innerType = typeIter->second;
+        if (innerType.arraySize > 0) {
+            for (size_t i = 0; i < innerType.arraySize; i++) {
+                assignment << padding << varTo << "." << typeIter->first << "[" << i << "] = " << varFrom << "." << typeIter->first << "[" << i << "];" << std::endl;
+            }
+        } else if (innerType.types.size() > 0) {
+            assignment << getTypeAssignment(varTo + "." + typeIter->first, varFrom + "." + typeIter->first, typeIter->second, indent);
+        } else {
+            assignment << padding << varTo << "." << typeIter->first << " = " << varFrom << "." << typeIter->first << ";" << std::endl;
+        }
+        typeIter++;
+    }
+    return assignment.str();
 }
 
 }

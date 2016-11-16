@@ -76,8 +76,10 @@ public:
 		return false;
 	}
 
-	std::string getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, const std::string padding = "");
-	std::string getTypeReset(const std::string& var, const PromelaTypedef& type, const std::string padding = "");
+    size_t largestDelay = 0;
+    
+	std::string getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, size_t indent = 0);
+	std::string getTypeReset(const std::string& var, const PromelaTypedef& type, size_t indent = 0);
 
 	bool usesInPredicate() {
 		return _usesInPredicate;
@@ -119,12 +121,12 @@ public:
 	}
 
 	std::string sanitizeCode(const std::string& code);
+    void addEvent(const std::string& eventName);
+    std::string createMacroName(const std::string& literal);
 
 protected:
-    void addEvent(const std::string& eventName);
     void addState(const std::string& stateName, size_t index);
 
-    std::string createMacroName(const std::string& literal);
 	int enumerateLiteral(const std::string& literal, int forceIndex = -1);
 
 	std::map<std::string, std::string> _strMacros;  // macronames for string literals
