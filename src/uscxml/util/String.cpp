@@ -33,20 +33,20 @@ std::string macro_escaped(std::string const& s) {
             returnValue += c;
         }
         else {
-            returnValue += '__';
+            returnValue += "__";
             switch(c) {
-                case '"':  returnValue += 'COLON';  break;
-                case '\\': returnValue += 'BACHSLASH'; break;
-                case '\t': returnValue += 'TAB';  break;
-                case '\r': returnValue += 'RETURN';  break;
-                case '\n': returnValue += 'NEWLINE';  break;
+                case '"':  returnValue += "COLON";  break;
+                case '\\': returnValue += "BACHSLASH"; break;
+                case '\t': returnValue += "TAB";  break;
+                case '\r': returnValue += "RETURN";  break;
+                case '\n': returnValue += "NEWLINE";  break;
                 default:
                     char const* const hexdig = "0123456789ABCDEF";
                     returnValue += 'x';
                     returnValue += hexdig[c >> 4];
                     returnValue += hexdig[c & 0xF];
             }
-            returnValue += '__';
+            returnValue += "__";
         }
     }
     return returnValue;
