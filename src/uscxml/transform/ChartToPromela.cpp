@@ -1500,10 +1500,10 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "  fi" << std::endl;
 	stream << std::endl;
 
-    stream << "  d_step { skip;" << std::endl;
-
     stream << "/* ---------------------------- */" << std::endl;
 	stream << _prefix << "SELECT_TRANSITIONS:" << std::endl;
+    stream << "d_step {" << std::endl;
+    
     stream << _prefix << "STATES_CLEAR(" << _prefix << "ctx.target_set)" << std::endl;
     stream << _prefix << "STATES_CLEAR(" << _prefix << "ctx.exit_set)" << std::endl;
 
@@ -1670,7 +1670,9 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "  }" << std::endl;
 	stream << "  fi" << std::endl;
 	stream << std::endl;
+    stream << "} /* d_step */" << std::endl;
 
+    
     stream << "  if" << std::endl;
     stream << "  :: " << _prefix << "flags[USCXML_CTX_TRANSITION_FOUND] -> {" << std::endl;
     stream << "    /* only process anything if we found transitions or are on initial entry */" << std::endl;
@@ -1678,6 +1680,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     
     stream << "/* ---------------------------- */" << std::endl;
 	stream << "/* REMEMBER_HISTORY: */" << std::endl;
+    stream << "d_step {" << std::endl;
     TRACE_EXECUTION("Save history configurations");
 
     stream << "  if" << std::endl;
@@ -1759,11 +1762,13 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "  }" << std::endl;
     stream << "  :: else -> skip;" << std::endl;
     stream << "  fi;" << std::endl;
+    stream << "} /* d_step */" << std::endl;
 
     stream << std::endl;
 
     stream << "/* ---------------------------- */" << std::endl;
 	stream << _prefix << "ESTABLISH_ENTRY_SET:" << std::endl;
+    stream << "d_step {" << std::endl;
 	stream << "  /* calculate new entry set */" << std::endl;
     stream << "  " << _prefix << "STATES_COPY(" << _prefix << "ctx.entry_set, " << _prefix << "ctx.target_set)" << std::endl;
 	stream << std::endl;
@@ -2024,9 +2029,11 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "printf(\"\\n\");" << std::endl;
 	stream << "#endif" << std::endl;
     stream << std::endl;
+    stream << "} /* d_step */" << std::endl;
 
     stream << "/* ---------------------------- */" << std::endl;
 	stream << "/* EXIT_STATES: */" << std::endl;
+    stream << "d_step {" << std::endl;
 	stream << "  i = " << _prefix << "USCXML_NUMBER_STATES;" << std::endl;
 	stream << "  do" << std::endl;
 	stream << "  :: i > 0 -> {" << std::endl;
@@ -2060,6 +2067,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "  }" << std::endl;
 	stream << "  :: else -> break;" << std::endl;
 	stream << "  od;" << std::endl;
+//    stream << "} /* d_step */" << std::endl;
 	stream << std::endl;
 
 //    TRACE_EXECUTION("Exited States")
@@ -2067,6 +2075,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
     stream << "/* TAKE_TRANSITIONS: */" << std::endl;
     if (_transitions.size() > 0) {
+//        stream << "d_step {" << std::endl;
         stream << "  i = 0;" << std::endl;
         stream << "  do" << std::endl;
         stream << "  :: i < " << _prefix << "USCXML_NUMBER_TRANS -> {" << std::endl;
@@ -2096,11 +2105,13 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "  }" << std::endl;
         stream << "  :: else -> break;" << std::endl;
         stream << "  od;" << std::endl;
+//        stream << "} /* d_step */" << std::endl;
     }
     stream << std::endl;
 
     stream << "/* ---------------------------- */" << std::endl;
 	stream << "/* ENTER_STATES: */" << std::endl;
+//    stream << "d_step {" << std::endl;
 	stream << "  i = 0;" << std::endl;
 	stream << "  do" << std::endl;
 	stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
@@ -2327,15 +2338,18 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 	stream << "  }" << std::endl;
 	stream << "  :: else -> break;" << std::endl;
     stream << "  od;" << std::endl;
+    stream << "} /* d_step */" << std::endl;
+
     stream << "  }" << std::endl;
     stream << "  :: else -> skip;" << std::endl;
     stream << "  fi" << std::endl;
-    stream << "} }" << std::endl;
+    stream << "}" << std::endl;
 	stream << ":: else -> break;" << std::endl;
 	stream << "od" << std::endl;
     stream << std::endl;
     stream << "/* ---------------------------- */" << std::endl;
     stream << _prefix << "TERMINATE_MACHINE:" << std::endl;
+    stream << "skip; d_step {" << std::endl;
 
     TRACE_EXECUTION("Machine finished");
     
@@ -2390,6 +2404,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "}" << std::endl;
     stream << ":: else -> break;" << std::endl;
     stream << "od;" << std::endl;
+
     stream << std::endl;
 
     if (_machinesAll->size() > 1 && _analyzer->usesEventField("delay")) {
@@ -2430,7 +2445,8 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << std::endl;
 
     }
-    
+    stream << "} /* d_step */" << std::endl;
+
     stream << std::endl;
     
     TRACE_EXECUTION("Done");
