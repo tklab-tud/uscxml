@@ -143,7 +143,7 @@ public:
 		}
 	};
 
-
+//TODO can we create the macros without IDE errors ?!
 #define VLINE   VPointer()/new VLine
 #define VASSIGN VContainer()/new VAssign
 #define VOR     VContainer()/new VOr

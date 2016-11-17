@@ -59,4 +59,4 @@ else
 fi
 
 # start simulator
-./tb --stop-time=10ms --vcd=foo.vcd
+ghdl -r tb --stop-time=10ms --vcd=tb.vcd
