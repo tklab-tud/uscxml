@@ -93,12 +93,6 @@ namespace uscxml {
 
     }
 
-    std::string ChartToVHDL::eventNameEscape(const std::string &eventName) {
-        std::string escaped = escape(eventName);
-        boost::replace_all(escaped, ".", "_");
-        return escaped;
-    }
-
     void ChartToVHDL::findEvents() {
         // elements with an event attribute
         std::list<DOMElement *> withEvents = DOMUtils::inDocumentOrder({
@@ -108,11 +102,33 @@ namespace uscxml {
                                                                        }, _scxml);
 
         for (auto withEvent : withEvents) {
+//            if (HAS_ATTR_CAST(withEvent, "event")) {
+//                if (ATTR_CAST(withEvent, "event") != "*")
+//                    _eventTrie.addWord(ATTR_CAST(withEvent, "event"));
+//            }
+            // Tokenized version below
+
             if (HAS_ATTR_CAST(withEvent, "event")) {
-                // TODO: tokenize!
-                if (ATTR_CAST(withEvent, "event") != "*")
-                    _eventTrie.addWord(ATTR_CAST(withEvent, "event"));
+                std::string eventNames = ATTR_CAST(withEvent, "event");
+                std::list<std::string> events = tokenize(eventNames);
+                for (std::list<std::string>::iterator eventIter = events.begin();
+                     eventIter != events.end(); eventIter++) {
+                    std::string eventName = *eventIter;
+                    if (boost::ends_with(eventName, "*"))
+                        eventName = eventName.substr(0, eventName.size() - 1);
+                    if (boost::ends_with(eventName, "."))
+                        eventName = eventName.substr(0, eventName.size() - 1);
+                    if (eventName.size() > 0)
+                        _eventTrie.addWord(eventName);
+                }
+
+                //TODO implement "done" event
+                // --> enter a final from a compound state not <scxml> (also prevent setting completed_o)
+                // --> all final children from a parallel are entered
+                //TODO implement error events --> set by output logic to a signal line
             }
+
+
         }
 
         _execContent = DOMUtils::inDocumentOrder({
@@ -160,7 +176,7 @@ namespace uscxml {
 
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << seperator << "hwe_" << eventNameEscape((*eventIter)->value);
+            stream << seperator << "hwe_" << macro_escaped((*eventIter)->value);
             seperator = ", ";
         }
         stream << " );" << std::endl;
@@ -474,12 +490,6 @@ namespace uscxml {
 
         // stall management
         stream << "-- stalling microstepper" << std::endl;
-        //        stream << "ms_enable_manager : process (clk, rst) " << std::endl;
-        //        stream << "begin" << std::endl;
-        //        stream << "  if rst = '1' then" << std::endl;
-        //        stream << "    micro_stepper_en <= '1';" << std::endl;
-        //        stream << "  elsif rising_edge(clk) then" << std::endl;
-        //         stream << "    " << std::endl;
         stream << "micro_stepper_en <= completed_sig or not ( '0' ";
         for (auto state : _states) {
 
@@ -500,18 +510,7 @@ namespace uscxml {
             }
         }
         stream << ");" << std::endl;
-        //        stream << "  end if;" << std::endl;
-        //        stream << "end process;" << std::endl;
         stream << std::endl;
-
-        // write enable management
-        //        stream << "-- write enable for FIFO buffer" << std::endl;
-        //        stream << "event_we <= not rst and ('0'";
-        //        for (int i = 0; i < _execContent.size(); i++) {
-        //            stream << std::endl << "   or start_" << toStr(i) << "_sig";
-        //        }
-        //        stream << ");" << std::endl;
-        //        stream << std::endl;
 
         // sequential code operation
         stream << "-- seq code block " << std::endl;
@@ -540,14 +539,12 @@ namespace uscxml {
         for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
             DOMElement *exContentElem = *ecIter;
 
-            //TODO if raise
             if (TAGNAME(exContentElem) == XML_PREFIX(_scxml).str() + "raise" ||
                 TAGNAME(exContentElem) == XML_PREFIX(_scxml).str() + "send") {
 
                 stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
                 << std::endl;
-                //TODO use escape
-                stream << "      event_bus <= hwe_" << ATTR(exContentElem, "event")
+                stream << "      event_bus <= hwe_" << macro_escaped(ATTR(exContentElem, "event"))
                 << ";" << std::endl;
                 stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
                 stream << "      event_we <= '1';" << std::endl;
@@ -559,7 +556,7 @@ namespace uscxml {
         //for (auto exContentElem : _execContent) {
         for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
             DOMElement *exContentElem = *ecIter;
-            //TODO if raise
+            //TODO y not send here --> general filter function ?
             if (TAGNAME(exContentElem) == XML_PREFIX(_scxml).str() + "raise") {
                 stream << "      done_" << toStr(i) << "_sig <= '0';" << std::endl;
             }
@@ -596,6 +593,7 @@ namespace uscxml {
                     continue;
                 }
                 // seq lines (input if process i is in seqence now)
+
                 stream << "seq_" << toStr(i) << "_sig <= "
                 << "done_" << toStr(i - 1) << "_sig or "
                 << "( not "
@@ -812,8 +810,6 @@ namespace uscxml {
         stream << "-- system signals" << std::endl;
         stream << "signal stall : std_logic;" << std::endl;
         stream << "signal completed_sig : std_logic;" << std::endl;
-        //        stream << "signal rst_2 : std_logic;" << std::endl;
-        //        stream << "signal rst_1 : std_logic;" << std::endl;
         stream << "signal rst : std_logic;" << std::endl;
         stream << std::endl;
 
@@ -829,7 +825,6 @@ namespace uscxml {
             signalDecls.push_back("signal in_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal in_exit_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
             signalDecls.push_back("signal in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-            //signalDecls.push_back("signal default_completion_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
 
             // not needed for <scxml> state
             if (parent.size() != 0) {
@@ -871,7 +866,7 @@ namespace uscxml {
         std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix("");
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "signal event_" << eventNameEscape((*eventIter)->value) << "_sig : std_logic;" << std::endl;
+            stream << "signal event_" << macro_escaped((*eventIter)->value) << "_sig : std_logic;" << std::endl;
         }
         stream << std::endl;
 
@@ -931,18 +926,6 @@ namespace uscxml {
     void ChartToVHDL::writeResetHandler(std::ostream &stream) {
         stream << "-- reset handler" << std::endl;
         stream << "rst <= rst_i;" << std::endl;
-        //        stream << "rst_proc: process(clk, rst_i)" << std::endl;
-        //        stream << "begin" << std::endl;
-        //        stream << "    if rst_i = '1' then" << std::endl;
-        //        stream << "        rst_2 <= '1';" << std::endl;
-        //        stream << "        rst_1 <= '1';" << std::endl;
-        //        stream << "        rst <= '1';" << std::endl;
-        //        stream << "    elsif (rising_edge(clk)) then" << std::endl;
-        //        stream << "        rst_2 <= rst_i;" << std::endl;
-        //        stream << "        rst_1 <= rst_i;" << std::endl;
-        //        stream << "        rst <= rst_1;" << std::endl;
-        //        stream << "    end if;" << std::endl;
-        //        stream << "end process;" << std::endl;
         stream << std::endl;
     }
 
@@ -976,7 +959,7 @@ namespace uscxml {
         std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix("");
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
+            stream << "        event_" << macro_escaped((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
 
         stream << "        next_event_dequeued <= '0';" << std::endl;
@@ -1004,11 +987,11 @@ namespace uscxml {
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
             stream << "      when hwe_"
-            << eventNameEscape((*eventIter)->value) << " =>" << std::endl;
+            << macro_escaped((*eventIter)->value) << " =>" << std::endl;
             for (std::list<TrieNode *>::iterator eventIter2 = eventNames.begin();
                  eventIter2 != eventNames.end(); eventIter2++) {
-                stream << "        event_" << eventNameEscape((*eventIter2)->value);
-                if (eventNameEscape((*eventIter)->value) == eventNameEscape((*eventIter2)->value)) {
+                stream << "        event_" << macro_escaped((*eventIter2)->value);
+                if (macro_escaped((*eventIter)->value) == macro_escaped((*eventIter2)->value)) {
                     stream << "_sig <= '1';" << std::endl;
                 } else {
                     stream << "_sig <= '0';" << std::endl;
@@ -1019,7 +1002,7 @@ namespace uscxml {
         stream << "      when others =>" << std::endl;
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
+            stream << "        event_" << macro_escaped((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
         stream << "        next_event_dequeued <= '0';" << std::endl;
         stream << "      end case;" << std::endl;
@@ -1027,7 +1010,7 @@ namespace uscxml {
 
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "        event_" << eventNameEscape((*eventIter)->value) << "_sig <= '0';" << std::endl;
+            stream << "        event_" << macro_escaped((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
         stream << "        next_event_dequeued <= '0';" << std::endl;
         stream << "    end if;" << std::endl;
@@ -1056,9 +1039,6 @@ namespace uscxml {
                 continue;
             }
 
-
-            // TODO got the error VBranch * and VPointer are not compatible -- > Check the Makros
-            // and I think the Macros are too complicated
             VBranch *tree = (VASSIGN,
                     VLINE("state_next_" + ATTR(state, "documentOrder") + "_sig"),
                     (VOR,
@@ -1080,7 +1060,7 @@ namespace uscxml {
 
         for (auto transIter = _transitions.begin(); transIter != _transitions.end(); transIter++) {
             DOMElement *transition = *transIter;
-            std::string conflicts = ATTR(transition, "conflictBools"); //TODO are the conflict bools in postfix order ??
+            std::string conflicts = ATTR(transition, "conflictBools");
 
 
             VContainer nameMatchers = VOR;
@@ -1092,7 +1072,7 @@ namespace uscxml {
                             (*descIter) == "*" ? "" : *descIter);
                     for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
                          eventIter != eventNames.end(); eventIter++) {
-                        *nameMatchers += VLINE("event_" + eventNameEscape((*eventIter)->value) + "_sig");
+                        *nameMatchers += VLINE("event_" + macro_escaped((*eventIter)->value) + "_sig");
                     }
                 }
             } else {
@@ -1186,58 +1166,6 @@ namespace uscxml {
         }
     }
 
-//    void ChartToVHDL::writeDefaultCompletions(std::ostream &stream) {
-//        // TODO direct connect the line in complete entry set (no extra line needed ...)
-//        stream << "-- default completion assignments" << std::endl;
-//        stream << "-- indicates if the state for which I am the def-completion is active" << std::endl;
-//        std::map<DOMElement *, std::list<DOMNode *> > completions;
-//
-//        for (auto state : _states) {
-//            completions[state]; // initialize other completions to 0
-//
-//            // we just need this if parent is a compound state
-//            std::string parent = ATTR(state, "parent");
-//
-//            if (getParentState(state) != NULL
-//                && isCompound(getParentState(state))) {
-//
-//                // Am I default completion ?
-//                std::string completion = ATTR_CAST(_states[strTo<size_t>(parent)], "completionBools");
-//                if (completion[strTo<size_t>(ATTR(state, "documentOrder"))] == '1') {
-//                    // Yes? then give me the parent line
-//                    completions[state].push_back(getParentState(state));
-//                }
-//            }
-//        }
-//
-//        auto complIter = completions.begin();
-//        while (complIter != completions.end()) {
-//            const DOMElement *state(complIter->first);
-//            const std::list<DOMNode *> refs(complIter->second);
-//
-//            std::string index = ATTR(state, "documentOrder");
-//            VContainer defaultCompleters = VOR;
-//
-//            for (auto ref : refs) {
-//                //                *defaultCompleters += VLINE("in_complete_entry_set_" +
-//                // TODO: default completion just when state is entered the first time ?
-//                // if yes then we use the following code. If not we have to revert
-//                *defaultCompleters += VLINE("in_entry_set_" +
-//                                            ATTR_CAST(ref, "documentOrder") + "_sig ");
-//            }
-//
-//            VBranch *tree = (VASSIGN,
-//                    VLINE("default_completion_" + index + "_sig"), defaultCompleters);
-//
-//            tree->print(stream);
-//            stream << ";" << std::endl;
-//
-//            complIter++;
-//        }
-//
-//
-//    }
-
     void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
         stream << "-- complete entry set selection" << std::endl;
 
@@ -1296,7 +1224,7 @@ namespace uscxml {
                 continue; // skips <scxml> node
             }
 
-            VContainer descendantCompletion = VAND; //TODO one AND less would produce fancier code
+            VContainer descendantCompletion = VAND;
             // if parent is compound
             if (getParentState(state) != NULL &&
                 isCompound(getParentState(state))) {
@@ -1311,7 +1239,8 @@ namespace uscxml {
                         (parentInit.empty() &&
                          (strTo<size_t>(ATTR(getParentState(state), "documentOrder")) + 1) ==
                          strTo<size_t>(ATTR(state, "documentOrder")))) {
-                    *descendantCompletion += VLINE("in_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
+                    *descendantCompletion +=
+                            VLINE("in_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
 
                     // but only if compound parent is not already completed
                     for (auto tmp_state : _states) {
@@ -1320,13 +1249,12 @@ namespace uscxml {
                             continue;
                         }
                         if (children[strTo<size_t>(ATTR(tmp_state, "documentOrder"))] == '1') {
-                            *descendantCompletion += (VAND,
-                                    (VNOT,
-                                            (VAND,
-                                                    VLINE("state_active_" + ATTR(tmp_state, "documentOrder") + "_sig"),
-                                                    (VNOT,
-                                                            VLINE("in_exit_set_" + ATTR(tmp_state, "documentOrder") +
-                                                                  "_sig")))));
+                            *descendantCompletion += (VNOT,
+                                    (VAND,
+                                            VLINE("state_active_" + ATTR(tmp_state, "documentOrder") + "_sig"),
+                                            (VNOT,
+                                                    VLINE("in_exit_set_" + ATTR(tmp_state, "documentOrder") +
+                                                          "_sig"))));
                         }
                     }
                 } else {
@@ -1337,7 +1265,8 @@ namespace uscxml {
                 // if parent is parallel
             if (getParentState(state) != NULL &&
                 isParallel(getParentState(state))) {
-                *descendantCompletion += VLINE("in_complete_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
+                *descendantCompletion +=
+                        VLINE("in_complete_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
             }
 
             VBranch *tree = (VASSIGN,
@@ -1430,5 +1359,6 @@ namespace uscxml {
         stream << "error_o <= reg_error_out; " << std::endl;
         stream << std::endl;
     }
+
 
 }
