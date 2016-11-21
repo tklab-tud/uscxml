@@ -25,11 +25,12 @@ namespace uscxml {
 
 #define ISWHITESPACE(char) (isspace(char))
 
-std::string macro_escaped(std::string const& s) {
+std::string escapedMacro(std::string const& s) {
+    // inspired by http://stackoverflow.com/questions/2417588/escaping-a-c-string
     std::string returnValue="";
     for (std::string::const_iterator iter = s.begin(), end = s.end(); iter != end; ++iter) {
         char c = *iter;
-        if (' ' <= c and c <= '~' and c != '\\' and c != '"') {
+        if (' ' <= c && c <= '~' && c != '\\' && c != '"') {
             returnValue += c;
         }
         else {

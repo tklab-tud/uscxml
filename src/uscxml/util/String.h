@@ -25,7 +25,7 @@
 
 namespace uscxml {
 
-std::string macro_escaped(std::string const& s);
+std::string escapedMacro(std::string const& s);
 std::list<std::string> tokenize(const std::string& line, const char seperator = ' ', bool trimWhiteSpace = true);
 std::string spaceNormalize(const std::string& text);
 bool nameMatch(const std::string& eventDescs, const std::string& event);
