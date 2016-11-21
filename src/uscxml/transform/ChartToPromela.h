@@ -55,6 +55,18 @@ protected:
 //	void writeTypes(std::ostream& stream);
 	void writeMacros(std::ostream& stream);
 	void writeFSM(std::ostream& stream);
+    void writeFSMDequeueEvent(std::ostream& stream);
+//    void writeFSMRescheduleMachines(std::ostream& stream);
+//    void writeFSMMacrostep(std::ostream& stream);
+//    void writeFSMDequeueInternalOrSpontaneousEvent(std::ostream& stream);
+    void writeFSMSelectTransitions(std::ostream& stream);
+    void writeFSMRememberHistory(std::ostream& stream);
+    void writeFSMEstablishEntrySet(std::ostream& stream);
+    void writeFSMExitStates(std::ostream& stream);
+    void writeFSMTakeTransitions(std::ostream& stream);
+    void writeFSMEnterStates(std::ostream& stream);
+    void writeFSMTerminateMachine(std::ostream& stream);
+
 	void writeExecContent(std::ostream& stream, const XERCESC_NS::DOMNode* node, size_t indent = 0);
     void writeRaiseDoneDate(std::ostream& stream, const XERCESC_NS::DOMElement* donedata, size_t indent = 0);
 

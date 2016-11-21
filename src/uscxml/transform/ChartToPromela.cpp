@@ -34,9 +34,9 @@
 #define TMP_EVENT_NAME (_analyzer->usesComplexEventStruct() ? "_tmpE.name" : "_tmpE")
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-#undef TRACE_EXECUTION
+#define TRACE
 
-#ifdef TRACE_EXECUTION
+#ifdef TRACE
 #define TRACE_EXECUTION_V(fmt, ...) \
 stream << std::endl; \
 stream << "#if TRACE_EXECUTION" << std::endl; \
@@ -1262,11 +1262,14 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     std::list<DOMElement*> globalScripts = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "script", _scxml, false);
     if (globalScripts.size() > 0) {
         stream << "/* run global scripts */" << std::endl;
+        stream << "d_step { " << std::endl;
+
         for (auto globalScript : globalScripts) {
             TRACE_EXECUTION("Processing executable content for global script");
             
             writeExecContent(stream, globalScript, 2);
         }
+        stream << "} /* d_step */" << std::endl;
         stream << std::endl;
     }
     
@@ -1281,47 +1284,101 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
 
     TRACE_EXECUTION("Taking a step");
 
-    stream << "  /* Dequeue an event */" << std::endl;
-    stream << "  " << _prefix << "flags[USCXML_CTX_DEQUEUE_EXTERNAL] = false;" << std::endl;
-	stream << "  if" << std::endl;
-	stream << "  ::" << _prefix << "flags[USCXML_CTX_SPONTANEOUS] -> {" << std::endl;
-	stream << "    " << _prefix << EVENT_NAME << " = USCXML_EVENT_SPONTANEOUS;" << std::endl;
 
-    TRACE_EXECUTION("Trying with a spontaneous event");
-
-	stream << "  }" << std::endl;
-    stream << "  :: else -> {" << std::endl;
-    stream << "    if" << std::endl;
-    stream << "    :: len(" << _prefix << "iQ) != 0 -> {" << std::endl;
-    stream << "      " << _prefix << "iQ ? " << _prefix << "_event;" << std::endl;
-    
-    TRACE_EXECUTION("Deqeued an internal event");
-    
-    stream << "    }" << std::endl;
-    stream << "    :: else -> {" << std::endl;
-    stream << "      " << _prefix << "flags[USCXML_CTX_DEQUEUE_EXTERNAL] = true;" << std::endl;
-    stream << "    }" << std::endl;
-    stream << "    fi;" << std::endl;
-    stream << "  }" << std::endl;
-	stream << "  fi;" << std::endl;
-	stream << std::endl;
+#if 0
+    writeFSMRescheduleMachines(stream);
+    stream << std::endl;
+    writeFSMMacrostep(stream);
+    stream << std::endl;
+    writeFSMDequeueInternalOrSpontaneousEvent(stream);
+#else
+    writeFSMDequeueEvent(stream);
+#endif
+    stream << std::endl;
+    stream << "d_step { skip;" << std::endl;
 
     stream << std::endl;
+    writeFSMSelectTransitions(stream);
+    stream << std::endl;
+
+    
+    stream << "  if" << std::endl;
+    stream << "  :: " << _prefix << "flags[USCXML_CTX_TRANSITION_FOUND] -> {" << std::endl;
+    stream << "    /* only process anything if we found transitions or are on initial entry */" << std::endl;
+
+    writeFSMRememberHistory(stream);
+    stream << std::endl;
+    writeFSMEstablishEntrySet(stream);
+    stream << std::endl;
+    writeFSMExitStates(stream);
+    stream << std::endl;
+    writeFSMTakeTransitions(stream);
+    stream << std::endl;
+    writeFSMEnterStates(stream);
+    stream << std::endl;
+
+//    TRACE_EXECUTION("Exited States")
+
+
+    stream << "  }" << std::endl;
+    stream << "  :: else -> skip;" << std::endl;
+    stream << "  fi /* USCXML_CTX_TRANSITION_FOUND */" << std::endl;
+    stream << "  } skip; /* d_step */" << std::endl;
+
+    stream << "} /* !USCXML_CTX_FINISHED */" << std::endl;
+	stream << ":: else -> break;" << std::endl;
+	stream << "od" << std::endl;
+    stream << std::endl;
+    
+    writeFSMTerminateMachine(stream);
+    stream << std::endl;
+    
+    TRACE_EXECUTION("Done");
+
+
+	stream << "} } /* atomic, step() */" << std::endl;
+	stream << std::endl;
+
+}
+
+#if 0
+void ChartToPromela::writeFSMRescheduleMachines(std::ostream& stream) {
+    if (_analyzer->usesEventField("delay") && _machinesAll->size() > 1) {
+        stream << "  /* Determine machines with smallest delay and set their process priority */" << std::endl;
+        stream << "  scheduleMachines();" << std::endl << std::endl;
+        stream << std::endl;
+
+        stream << "  /* we may return to find ourselves terminated */" << std::endl;
+        stream << "  if" << std::endl;
+        stream << "  :: " << _prefix << "flags[USCXML_CTX_FINISHED] -> {" << std::endl;
+        stream << "    goto " << _prefix << "TERMINATE_MACHINE;" << std::endl;
+        stream << "  }" << std::endl;
+        stream << "  :: else -> skip;" << std::endl;
+        stream << "  fi" << std::endl;
+        stream << std::endl;
+    }
+}
+    
+void ChartToPromela::writeFSMMacrostep(std::ostream& stream) {
+    
+    stream << "  /* Dequeue an external event */" << std::endl;
+    stream << "  " << _prefix << "flags[USCXML_CTX_DEQUEUED_EXTERNAL] = false;" << std::endl;
 
     stream << "  if" << std::endl;
-    stream << "  :: " << _prefix << "flags[USCXML_CTX_DEQUEUE_EXTERNAL] -> {" << std::endl;
-	stream << "    /* manage invocations */" << std::endl;
-	stream << "    i = 0;" << std::endl;
-	stream << "    do" << std::endl;
-	stream << "    :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
-	stream << "      /* uninvoke */" << std::endl;
-	stream << "      if" << std::endl;
-	stream << "      :: !" << _prefix << "config[i] && " << _prefix << "invocations[i] -> {" << std::endl;
+    stream << "  :: !" << _prefix << "flags[USCXML_CTX_SPONTANEOUS] && len(" << _prefix << "iQ) == 0 -> {" << std::endl;
 
+    stream << "    /* manage invocations */" << std::endl;
+    stream << "    i = 0;" << std::endl;
+    stream << "    do" << std::endl;
+    stream << "    :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+    stream << "      /* uninvoke */" << std::endl;
+    stream << "      if" << std::endl;
+    stream << "      :: !" << _prefix << "config[i] && " << _prefix << "invocations[i] -> {" << std::endl;
+    
     TRACE_EXECUTION_V("Uninvoking in state %d", "i");
-
+    
     stream << "        if" << std::endl;
-
+    
     for (size_t i = 0; i < _states.size(); i++) {
         std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "invoke" , _states[i]);
         if (invokers.size() > 0) {
@@ -1337,20 +1394,18 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     }
     stream << "        :: else -> skip;" << std::endl;
     stream << "        fi" << std::endl;
-
+    
     stream << "        " << _prefix << "invocations[i] = false;" << std::endl;
     
     stream << "        skip;" << std::endl;
-	stream << "      }" << std::endl;
-	stream << "      :: else -> skip;" << std::endl;
-	stream << "      fi;" << std::endl;
-	stream << std::endl;
-
+    stream << "      }" << std::endl;
+    stream << "      :: else -> skip;" << std::endl;
+    stream << "      fi;" << std::endl;
+    stream << std::endl;
     
-    
-	stream << "      /* invoke */" << std::endl;
-	stream << "      if" << std::endl;
-	stream << "      :: " << _prefix << "config[i] && !" << _prefix << "invocations[i] -> {" << std::endl;
+    stream << "      /* invoke */" << std::endl;
+    stream << "      if" << std::endl;
+    stream << "      :: " << _prefix << "config[i] && !" << _prefix << "invocations[i] -> {" << std::endl;
     stream << "        if" << std::endl;
     
     for (size_t i = 0; i < _states.size(); i++) {
@@ -1383,7 +1438,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
                 }
                 
                 TRACE_EXECUTION_V("Invoking in state %d", "i");
-
+                
                 stream << "          run " << invoker->_prefix << "step() priority 20;" << std::endl;
                 if (HAS_ATTR(invokeElem, "idlocation")) {
                     stream << "          " << ADAPT_SRC(ATTR(invokeElem, "idlocation")) << " = ";
@@ -1399,34 +1454,20 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     
     stream << "        :: else -> skip;" << std::endl;
     stream << "        fi" << std::endl;
-	stream << "      }" << std::endl;
-	stream << "      :: else -> skip;" << std::endl;
-	stream << "      fi;" << std::endl;
-	stream << "      i = i + 1;" << std::endl;
-	stream << "    }" << std::endl;
-	stream << "    :: else -> break;" << std::endl;
-    stream << "    od;" << std::endl;
-	stream << std::endl;
-
-    if (_analyzer->usesEventField("delay") && _machinesAll->size() > 1) {
-        stream << "    /* Determine machines with smallest delay and set their process priority */" << std::endl;
-        stream << "    scheduleMachines();" << std::endl << std::endl;
-    }
-    
-    stream << "    /* we may return to find ourselves terminated */" << std::endl;
-    stream << "    if" << std::endl;
-    stream << "    :: " << _prefix << "flags[USCXML_CTX_FINISHED] -> {" << std::endl;
-    stream << "      goto " << _prefix << "TERMINATE_MACHINE;" << std::endl;
+    stream << "      }" << std::endl;
+    stream << "      :: else -> skip;" << std::endl;
+    stream << "      fi;" << std::endl;
+    stream << "      i = i + 1;" << std::endl;
     stream << "    }" << std::endl;
-    stream << "    :: else -> skip;" << std::endl;
-    stream << "    fi" << std::endl;
-
+    stream << "    :: else -> break;" << std::endl;
+    stream << "    od;" << std::endl;
+    stream << std::endl;
     
     stream << "    /* Not sure if this should be before the invocation due to auto-forwarding */" << std::endl;
-	stream << "    if" << std::endl;
-	stream << "    :: len(" << _prefix << "eQ) != 0 -> {" << std::endl;
-	stream << "      " << _prefix << "eQ ? " << _prefix << "_event;" << std::endl;
-
+    stream << "    do" << std::endl;
+    stream << "    :: len(" << _prefix << "eQ) != 0 -> {" << std::endl;
+    stream << "      " << _prefix << "eQ ? " << _prefix << "_event;" << std::endl;
+    
     if (_machinesNested.size() > 0) {
         stream << std::endl;
         stream << "      /* auto-forward event */" << std::endl;
@@ -1437,9 +1478,9 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         
         std::string insertOp = "!";
         if (_analyzer->usesEventField("delay")) {
-//            insertOp += "!";
+            //            insertOp += "!";
         }
-
+        
         
         for (auto state : _states) {
             std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "invoke", state, false);
@@ -1466,7 +1507,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "      }" << std::endl;
         stream << "      :: else -> break;" << std::endl;
         stream << "      od" << std::endl;
-
+        
         stream << std::endl;
         stream << "      /* finalize event */" << std::endl;
         stream << "      if" << std::endl;
@@ -1475,7 +1516,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
             
             stream << "      :: " << _prefix << "_event.invokeid == " << _analyzer->macroForLiteral(machine.second->_invokerid) << " -> {" << std::endl;
             std::list<DOMElement*> finalizers = DOMUtils::filterChildElements(XML_PREFIX(machine.first).str() + "finalize", machine.first, false);
-
+            
             TRACE_EXECUTION("Finalizing event")
             
             for (auto finalize : finalizers) {
@@ -1487,30 +1528,284 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "      :: else -> skip;" << std::endl;
         
         stream << "      fi" << std::endl;
+        
+    }
+    
+    TRACE_EXECUTION("Deqeued an external event");
+    stream << "  " << _prefix << "flags[USCXML_CTX_DEQUEUED_EXTERNAL] = true;" << std::endl;
+    stream << "      break;" << std::endl;
+    stream << "    }" << std::endl;
+    //  stream << "  :: else -> quit;" << std::endl;
+    stream << "    od;" << std::endl;
+
+    stream << "  }" << std::endl;
+    stream << "  :: else -> skip;" << std::endl;
+    stream << "  fi" << std::endl;
+    stream << std::endl;
+}
+    
+void ChartToPromela::writeFSMDequeueInternalOrSpontaneousEvent(std::ostream& stream) {
+    stream << "  if" << std::endl;
+    stream << "  :: !" << _prefix << "flags[USCXML_CTX_DEQUEUED_EXTERNAL] -> {" << std::endl;
+    stream << "    /* Try with a spontaneous event or dequeue an internal event */" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: " << _prefix << "flags[USCXML_CTX_SPONTANEOUS] -> {" << std::endl;
+    stream << "      /* We try with a spontaneous event */" << std::endl;
+    stream << "      " << _prefix << EVENT_NAME << " = USCXML_EVENT_SPONTANEOUS;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    :: else -> {" << std::endl;
+    stream << "      /* We try with an internal event */" << std::endl;
+    stream << "      assert(len(" << _prefix << "iQ) > 0);" << std::endl;
+    stream << "      " << _prefix << "iQ ? " << _prefix << "_event;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    fi" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  :: else -> skip;" << std::endl;
+    stream << "  fi" << std::endl;
+
+}
+#endif
+    
+#if 1
+void ChartToPromela::writeFSMDequeueEvent(std::ostream& stream) {
+    stream << "  /* Dequeue an event */" << std::endl;
+    stream << "  " << _prefix << "flags[USCXML_CTX_DEQUEUE_EXTERNAL] = false;" << std::endl;
+    stream << "  if" << std::endl;
+    stream << "  ::" << _prefix << "flags[USCXML_CTX_SPONTANEOUS] -> {" << std::endl;
+    stream << "    " << _prefix << EVENT_NAME << " = USCXML_EVENT_SPONTANEOUS;" << std::endl;
+    
+    TRACE_EXECUTION("Trying with a spontaneous event");
+    
+    stream << "  }" << std::endl;
+    stream << "  :: else -> {" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: len(" << _prefix << "iQ) != 0 -> {" << std::endl;
+    stream << "      " << _prefix << "iQ ? " << _prefix << "_event;" << std::endl;
+    
+    TRACE_EXECUTION("Deqeued an internal event");
+    
+    stream << "    }" << std::endl;
+    stream << "    :: else -> {" << std::endl;
+    stream << "      " << _prefix << "flags[USCXML_CTX_DEQUEUE_EXTERNAL] = true;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    fi;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  fi;" << std::endl;
+    stream << std::endl;
+    
+    stream << std::endl;
+    
+    stream << "  if" << std::endl;
+    stream << "  :: " << _prefix << "flags[USCXML_CTX_DEQUEUE_EXTERNAL] -> {" << std::endl;
+    stream << "    /* manage invocations */" << std::endl;
+    stream << "    i = 0;" << std::endl;
+    stream << "    do" << std::endl;
+    stream << "    :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+    stream << "      d_step { " << std::endl;
+    stream << "      /* uninvoke */" << std::endl;
+    stream << "      if" << std::endl;
+    stream << "      :: !" << _prefix << "config[i] && " << _prefix << "invocations[i] -> {" << std::endl;
+    
+    TRACE_EXECUTION_V("Uninvoking in state %d", "i");
+    
+    stream << "        if" << std::endl;
+    
+    for (size_t i = 0; i < _states.size(); i++) {
+        std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "invoke" , _states[i]);
+        if (invokers.size() > 0) {
+            stream << "        :: i == " << toStr(i) << " -> {" << std::endl;
+            for (auto invokeElem : invokers) {
+                if (_machinesNested.find(invokeElem) == _machinesNested.end())
+                    continue;
+                ChartToPromela* invoker = _machinesNested[invokeElem];
+                stream << "          " << invoker->_prefix << "flags[USCXML_CTX_FINISHED] = true;" << std::endl;
+            }
+            stream << "        }" << std::endl;
+        }
+    }
+    stream << "        :: else -> skip;" << std::endl;
+    stream << "        fi" << std::endl;
+    
+    stream << "        " << _prefix << "invocations[i] = false;" << std::endl;
+    
+    stream << "        skip;" << std::endl;
+    stream << "      }" << std::endl;
+    stream << "      :: else -> skip;" << std::endl;
+    stream << "      fi;" << std::endl;
+    stream << "      } /* d_step */" << std::endl;
+
+    stream << std::endl;
+    
+    
+    
+    stream << "      /* invoke */" << std::endl;
+    stream << "      if" << std::endl;
+    stream << "      :: " << _prefix << "config[i] && !" << _prefix << "invocations[i] -> {" << std::endl;
+    stream << "        if" << std::endl;
+    
+    for (size_t i = 0; i < _states.size(); i++) {
+        std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "invoke" , _states[i]);
+        if (invokers.size() > 0) {
+            stream << "      :: i == " << toStr(i) << " -> {" << std::endl;
+            for (auto invokeElem : invokers) {
+                if (_machinesNested.find(invokeElem) == _machinesNested.end())
+                    continue;
+                ChartToPromela* invoker = _machinesNested[invokeElem];
+                
+                // pass variables via namelist
+                if (HAS_ATTR(invokeElem, "namelist")) {
+                    std::list<std::string> namelist = tokenize(ATTR_CAST(invokeElem, "namelist"));
+                    for (auto name : namelist) {
+                        if (invoker->_dataModelVars.find(name) != invoker->_dataModelVars.end()) {
+                            stream << "          " << invoker->_prefix << name << " = " << _prefix << name << ";" << std::endl;
+                        }
+                    }
+                }
+                
+                // pass variables via params
+                std::list<DOMElement*> invokeParams = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + + "param", invokeElem);
+                for (auto param : invokeParams) {
+                    std::string name = ATTR(param, "name");
+                    std::string expression = ATTR(param, "expr");
+                    if (invoker->_dataModelVars.find(name) != invoker->_dataModelVars.end()) {
+                        stream << "          " << invoker->_prefix << name << " = " << ADAPT_SRC(expression) << ";" << std::endl;
+                    }
+                }
+                
+                TRACE_EXECUTION_V("Invoking in state %d", "i");
+                
+                stream << "          run " << invoker->_prefix << "step() priority 20;" << std::endl;
+                if (HAS_ATTR(invokeElem, "idlocation")) {
+                    stream << "          " << ADAPT_SRC(ATTR(invokeElem, "idlocation")) << " = ";
+                    stream << _analyzer->macroForLiteral(invoker->_invokerid) << ";" << std::endl;
+                }
+                
+            }
+            stream << "          " << _prefix << "invocations[i] = true;" << std::endl;
+            stream << "          skip;" << std::endl;
+            stream << "        }" << std::endl;
+        }
+    }
+    
+    stream << "        :: else -> skip;" << std::endl;
+    stream << "        fi" << std::endl;
+    stream << "      }" << std::endl;
+    stream << "      :: else -> skip;" << std::endl;
+    stream << "      fi;" << std::endl;
+    stream << "      i = i + 1;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    :: else -> break;" << std::endl;
+    stream << "    od;" << std::endl;
+
+    stream << std::endl;
+    
+    if (_analyzer->usesEventField("delay") && _machinesAll->size() > 1) {
+        stream << "    /* Determine machines with smallest delay and set their process priority */" << std::endl;
+        stream << "    scheduleMachines();" << std::endl << std::endl;
+    }
+    
+    stream << "    /* we may return to find ourselves terminated */" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: " << _prefix << "flags[USCXML_CTX_FINISHED] -> {" << std::endl;
+    stream << "      goto " << _prefix << "TERMINATE_MACHINE;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    :: else -> skip;" << std::endl;
+    stream << "    fi" << std::endl;
+    
+    
+    stream << "    /* Not sure if this should be before the invocation due to auto-forwarding */" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: len(" << _prefix << "eQ) != 0 -> {" << std::endl;
+    stream << "      " << _prefix << "eQ ? " << _prefix << "_event;" << std::endl;
+    
+    if (_machinesNested.size() > 0) {
+        stream << std::endl;
+        stream << "      d_step {" << std::endl;
+        stream << "      /* auto-forward event */" << std::endl;
+        stream << "      i = 0;" << std::endl;
+        stream << "      do" << std::endl;
+        stream << "      :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+        stream << "        if" << std::endl;
+        
+        std::string insertOp = "!";
+        if (_analyzer->usesEventField("delay")) {
+            //            insertOp += "!";
+        }
+        
+        
+        for (auto state : _states) {
+            std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "invoke", state, false);
+            if (invokers.size() > 0) {
+                stream << "        :: i == " << ATTR(state, "documentOrder") << " && " << _prefix << "invocations[i] -> { " << std::endl;
+                for (auto invoker : invokers) {
+                    assert(_machinesNested.find(invoker) != _machinesNested.end());
+                    if (HAS_ATTR(invoker, "autoforward") && stringIsTrue(ATTR(invoker, "autoforward"))) {
+                        stream << "          " << _machinesNested[invoker]->_prefix << "eQ " << insertOp << " " << _prefix << "_event;" << std::endl;
+                        if (_analyzer->usesEventField("delay")) {
+                            stream << "          insertWithDelay(" << _machinesNested[invoker]->_prefix << "eQ);" << std::endl;
+                        }
+                        TRACE_EXECUTION("Auto forwarded event");
+                    }
+                }
+                stream << "        skip;" << std::endl;
+                stream << "      }" << std::endl;
+            }
+        }
+        
+        stream << "        :: else -> skip;" << std::endl;
+        stream << "        fi" << std::endl;
+        stream << "        i = i + 1;" << std::endl;
+        stream << "      }" << std::endl;
+        stream << "      :: else -> break;" << std::endl;
+        stream << "      od" << std::endl;
+        
+        stream << std::endl;
+        stream << "      /* finalize event */" << std::endl;
+        stream << "      if" << std::endl;
+        
+        for (auto machine : _machinesNested) {
+            
+            stream << "      :: " << _prefix << "_event.invokeid == " << _analyzer->macroForLiteral(machine.second->_invokerid) << " -> {" << std::endl;
+            std::list<DOMElement*> finalizers = DOMUtils::filterChildElements(XML_PREFIX(machine.first).str() + "finalize", machine.first, false);
+            
+            TRACE_EXECUTION("Finalizing event")
+            
+            for (auto finalize : finalizers) {
+                writeExecContent(stream, finalize, 4);
+            }
+            stream << "        skip" << std::endl;
+            stream << "      }" << std::endl;
+        }
+        stream << "      :: else -> skip;" << std::endl;
+        
+        stream << "      fi" << std::endl;
+        stream << "      } /* d_step */" << std::endl;
 
     }
     
     TRACE_EXECUTION("Deqeued an external event");
-
-	stream << "    }" << std::endl;
-//  stream << "  :: else -> quit;" << std::endl;
-	stream << "    fi;" << std::endl;
+    
+    stream << "    }" << std::endl;
+    //  stream << "  :: else -> quit;" << std::endl;
+    stream << "    fi;" << std::endl;
     stream << "  }" << std::endl;
     stream << "  :: else -> skip;" << std::endl;
     stream << "  fi" << std::endl;
-	stream << std::endl;
+    stream << std::endl;
+}
+#endif
 
+void ChartToPromela::writeFSMSelectTransitions(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
-	stream << _prefix << "SELECT_TRANSITIONS:" << std::endl;
-    stream << "d_step {" << std::endl;
+    stream << _prefix << "SELECT_TRANSITIONS:" << std::endl;
     
     stream << _prefix << "STATES_CLEAR(" << _prefix << "ctx.target_set)" << std::endl;
     stream << _prefix << "STATES_CLEAR(" << _prefix << "ctx.exit_set)" << std::endl;
-
+    
     if (_transitions.size() > 0) {
         stream << _prefix << "TRANS_CLEAR(" << _prefix << "ctx.conflicts)" << std::endl;
         stream << _prefix << "TRANS_CLEAR(" << _prefix << "ctx.trans_set)" << std::endl;
-
+        
         stream << "#if TRACE_EXECUTION" << std::endl;
         if (_machinesAll->size() > 1) {
             stream << "printf(\"%d: Establishing optimal transition set for event %d\\n\", _pid, " << _prefix << EVENT_NAME << " );" << std::endl;
@@ -1519,7 +1814,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         }
         stream << "#endif" << std::endl;
         stream << std::endl;
-
+        
         stream << "#if TRACE_EXECUTION" << std::endl;
         stream << "printf(\"Configuration: \");" << std::endl;
         printBitArray(stream, _prefix + "config", _states.size());
@@ -1530,12 +1825,12 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "  i = 0;" << std::endl;
         stream << "  do" << std::endl;
         stream << "  :: i < " << _prefix << "USCXML_NUMBER_TRANS -> {" << std::endl;
-
+        
         stream << "    /* only select non-history, non-initial transitions */" << std::endl;
         stream << "    if" << std::endl;
         stream << "    :: !" << _prefix << "transitions[i].type[USCXML_TRANS_HISTORY] &&" << std::endl;
         stream << "       !" << _prefix << "transitions[i].type[USCXML_TRANS_INITIAL] -> {" << std::endl;
-
+        
         stream << "      if" << std::endl;
         stream << "      :: /* is the transition active? */" << std::endl;
         stream << "         " << _prefix << "config[" << _prefix << "transitions[i].source] && " << std::endl;
@@ -1551,8 +1846,8 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << std::endl;
         stream << "         /* is it matching and enabled? */" << std::endl;
         stream << "         (false " << std::endl;
-
-
+        
+        
         for (auto i = 0; i < _transitions.size(); i++) {
             stream << "          || (i == " << toStr(i);
             if (HAS_ATTR(_transitions[i], "event") && ATTR(_transitions[i], "event") != "*") {
@@ -1577,28 +1872,28 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
             }
             stream << ")" << std::endl;
         }
-
+        
         stream << "         ) -> {" << std::endl;
-
+        
         stream << "        /* remember that we found a transition */" << std::endl;
         stream << "        " << _prefix << "flags[USCXML_CTX_TRANSITION_FOUND] = true;" << std::endl;
         stream << std::endl;
-
+        
         stream << "        /* transitions that are pre-empted */" << std::endl;
         stream << "        " << _prefix << "TRANS_OR(" << _prefix << "ctx.conflicts, " << _prefix << "transitions[i].conflicts)" << std::endl;
         stream << std::endl;
-
+        
         stream << "        /* states that are directly targeted (resolve as entry-set later) */" << std::endl;
         stream << "        " << _prefix << "STATES_OR(" << _prefix << "ctx.target_set, " << _prefix << "transitions[i].target)" << std::endl;
         stream << std::endl;
-
+        
         stream << "        /* states that will be left */" << std::endl;
         stream << "        " << _prefix << "STATES_OR(" << _prefix << "ctx.exit_set, " << _prefix << "transitions[i].exit_set)" << std::endl;
         stream << std::endl;
-
+        
         stream << "        " << _prefix << "ctx.trans_set[i] = true;" << std::endl;
-
-
+        
+        
         stream << "      }" << std::endl;
         stream << "      :: else {" << std::endl;
         stream << "        skip;" << std::endl;
@@ -1609,12 +1904,12 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "      skip;" << std::endl;
         stream << "    }" << std::endl;
         stream << "    fi" << std::endl;
-
+        
         stream << "    i = i + 1;" << std::endl;
         stream << "  }" << std::endl;
         stream << "  :: else -> break;" << std::endl;
         stream << "  od;" << std::endl;
-
+        
         stream << "  " << _prefix << "STATES_AND(" << _prefix << "ctx.exit_set, " << _prefix << "config)" << std::endl;
         
         stream << std::endl;
@@ -1626,13 +1921,13 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << std::endl;
     }
     stream << std::endl;
-	stream << "#if TRACE_EXECUTION" << std::endl;
-	stream << "printf(\"Target Set: \");" << std::endl;
-	printBitArray(stream, _prefix + "ctx.target_set", _states.size());
-	stream << "printf(\"\\n\");" << std::endl;
-	stream << "#endif" << std::endl;
+    stream << "#if TRACE_EXECUTION" << std::endl;
+    stream << "printf(\"Target Set: \");" << std::endl;
+    printBitArray(stream, _prefix + "ctx.target_set", _states.size());
+    stream << "printf(\"\\n\");" << std::endl;
+    stream << "#endif" << std::endl;
     stream << std::endl;
-
+    
     stream << std::endl;
     stream << "#if TRACE_EXECUTION" << std::endl;
     stream << "printf(\"Exit Set: \");" << std::endl;
@@ -1640,66 +1935,60 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "printf(\"\\n\");" << std::endl;
     stream << "#endif" << std::endl;
     stream << std::endl;
-    
 
-	stream << "  if" << std::endl;
+    stream << "  if" << std::endl;
     stream << "  :: !" << _prefix << "STATES_HAS_ANY(" << _prefix << "config) -> {" << std::endl;
     stream << "    /* Enter initial configuration */" << std::endl;
     stream << "    " << _prefix << "STATES_COPY(" << _prefix << "ctx.target_set, " << _prefix << "states[0].completion)" << std::endl;
     stream << "    " << _prefix << "flags[USCXML_CTX_SPONTANEOUS] = true;" << std::endl;
     stream << "    " << _prefix << "flags[USCXML_CTX_TRANSITION_FOUND] = true;" << std::endl;
-
+    
     TRACE_EXECUTION("Entering initial default completion");
     
-//    stream << "    goto " << _prefix << "ESTABLISH_ENTRY_SET;" << std::endl;
+    //    stream << "    goto " << _prefix << "ESTABLISH_ENTRY_SET;" << std::endl;
     stream << std::endl;
     
     stream << "  }" << std::endl;
-	stream << "  :: " << _prefix << "flags[USCXML_CTX_TRANSITION_FOUND] -> {" << std::endl;
-
-    TRACE_EXECUTION("Found transitions");
-
-    stream << "    " << _prefix << "flags[USCXML_CTX_SPONTANEOUS] = true;" << std::endl;
-	stream << "  }" << std::endl;
-	stream << "  :: else {" << std::endl;
-	stream << "    " << _prefix << "flags[USCXML_CTX_SPONTANEOUS] = false;" << std::endl;
-
-    TRACE_EXECUTION("Found NO transitions");
-
-//    stream << "    goto " << _prefix << "MICROSTEP;" << std::endl;
-	stream << "  }" << std::endl;
-	stream << "  fi" << std::endl;
-	stream << std::endl;
-    stream << "} /* d_step */" << std::endl;
-
-    
-    stream << "  if" << std::endl;
     stream << "  :: " << _prefix << "flags[USCXML_CTX_TRANSITION_FOUND] -> {" << std::endl;
-    stream << "    /* only process anything if we found transitions or are on initial entry */" << std::endl;
-
     
-    stream << "/* ---------------------------- */" << std::endl;
-	stream << "/* REMEMBER_HISTORY: */" << std::endl;
-    stream << "d_step {" << std::endl;
-    TRACE_EXECUTION("Save history configurations");
+    TRACE_EXECUTION("Found transitions");
+    
+    stream << "    " << _prefix << "flags[USCXML_CTX_SPONTANEOUS] = true;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  :: else {" << std::endl;
+    stream << "    " << _prefix << "flags[USCXML_CTX_SPONTANEOUS] = false;" << std::endl;
+    
+    TRACE_EXECUTION("Found NO transitions");
+    
+    //    stream << "    goto " << _prefix << "MICROSTEP;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  fi" << std::endl;
+    stream << std::endl;
 
+}
+
+void ChartToPromela::writeFSMRememberHistory(std::ostream& stream) {
+    stream << "/* ---------------------------- */" << std::endl;
+    stream << "/* REMEMBER_HISTORY: */" << std::endl;
+    TRACE_EXECUTION("Save history configurations");
+    
     stream << "  if" << std::endl;
     stream << "  :: " << _prefix << "STATES_HAS_ANY(" << _prefix << "config) -> {" << std::endl;
     stream << "    /* only remember history on non-initial entry */" << std::endl;
-
-    stream << "    i = 0;" << std::endl;
-	stream << "    do" << std::endl;
-	stream << "    :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
-
-	stream << "      if" << std::endl;
-	stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_HISTORY_SHALLOW] ||" << std::endl;
-	stream << "         " << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] -> {" << std::endl;
-	stream << "        if" << std::endl;
-	stream << "        :: " << _prefix << "ctx.exit_set[" << _prefix << "states[i].parent] -> {" << std::endl;
     
-	stream << "          /* a history state whose parent is about to be exited */" << std::endl;
+    stream << "    i = 0;" << std::endl;
+    stream << "    do" << std::endl;
+    stream << "    :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+    
+    stream << "      if" << std::endl;
+    stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_HISTORY_SHALLOW] ||" << std::endl;
+    stream << "         " << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] -> {" << std::endl;
+    stream << "        if" << std::endl;
+    stream << "        :: " << _prefix << "ctx.exit_set[" << _prefix << "states[i].parent] -> {" << std::endl;
+    
+    stream << "          /* a history state whose parent is about to be exited */" << std::endl;
     TRACE_EXECUTION_V("history state %d is about to be exited", "i");
-
+    
     stream << std::endl;
     stream << "#if TRACE_EXECUTION" << std::endl;
     stream << "printf(\"COMPLET: \");" << std::endl;
@@ -1707,9 +1996,9 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "printf(\"\\n\");" << std::endl;
     stream << "#endif" << std::endl;
     stream << std::endl;
-
+    
     stream << "          " << _prefix << "STATES_COPY(" << _prefix << "ctx.tmp_states, " << _prefix << "states[i].completion)" << std::endl;
-
+    
     stream << std::endl;
     stream << "          /* set those states who were enabled */" << std::endl;
     stream << "          " << _prefix << "STATES_AND(" << _prefix << "ctx.tmp_states, " << _prefix << "config)" << std::endl;
@@ -1729,30 +2018,30 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "printf(\"\\n\");" << std::endl;
     stream << "#endif" << std::endl;
     stream << std::endl;
-
+    
     stream << std::endl;
     stream << "          /* clear current history with completion mask */" << std::endl;
     stream << "          " << _prefix << "STATES_AND_NOT(" << _prefix << "history, " << _prefix << "states[i].completion)" << std::endl;
     stream << std::endl;
-
+    
     stream << "          /* set history */" << std::endl;
     stream << "          " << _prefix << "STATES_OR(" << _prefix << "history, " << _prefix << "ctx.tmp_states)" << std::endl;
     
     stream << std::endl;
-
+    
     stream << "        }" << std::endl;
-	stream << "        :: else -> skip;" << std::endl;
-	stream << "        fi;" << std::endl;
-	stream << "      }" << std::endl;
-	stream << "      :: else -> skip;" << std::endl;
-	stream << "      fi;" << std::endl;
-
-	stream << "      i = i + 1;" << std::endl;
-	stream << "    }" << std::endl;
-	stream << "    :: else -> break;" << std::endl;
-	stream << "    od;" << std::endl;
-	stream << std::endl;
-
+    stream << "        :: else -> skip;" << std::endl;
+    stream << "        fi;" << std::endl;
+    stream << "      }" << std::endl;
+    stream << "      :: else -> skip;" << std::endl;
+    stream << "      fi;" << std::endl;
+    
+    stream << "      i = i + 1;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    :: else -> break;" << std::endl;
+    stream << "    od;" << std::endl;
+    stream << std::endl;
+    
     stream << std::endl;
     stream << "#if TRACE_EXECUTION" << std::endl;
     stream << "printf(\"History: \");" << std::endl;
@@ -1762,58 +2051,56 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "  }" << std::endl;
     stream << "  :: else -> skip;" << std::endl;
     stream << "  fi;" << std::endl;
-    stream << "} /* d_step */" << std::endl;
-
-    stream << std::endl;
-
+}
+    
+void ChartToPromela::writeFSMEstablishEntrySet(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
-	stream << _prefix << "ESTABLISH_ENTRY_SET:" << std::endl;
-    stream << "d_step {" << std::endl;
-	stream << "  /* calculate new entry set */" << std::endl;
+    stream << _prefix << "ESTABLISH_ENTRY_SET:" << std::endl;
+    stream << "  /* calculate new entry set */" << std::endl;
     stream << "  " << _prefix << "STATES_COPY(" << _prefix << "ctx.entry_set, " << _prefix << "ctx.target_set)" << std::endl;
-	stream << std::endl;
-
-	stream << "  i = 0;" << std::endl;
-	stream << "  do" << std::endl;
-	stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
-
-	stream << "    if" << std::endl;
-	stream << "    :: " << _prefix << "ctx.entry_set[i] -> {" << std::endl;
-	stream << "      /* ancestor completion */" << std::endl;
+    stream << std::endl;
+    
+    stream << "  i = 0;" << std::endl;
+    stream << "  do" << std::endl;
+    stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+    
+    stream << "    if" << std::endl;
+    stream << "    :: " << _prefix << "ctx.entry_set[i] -> {" << std::endl;
+    stream << "      /* ancestor completion */" << std::endl;
     stream << "      " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "states[i].ancestors)" << std::endl;
-
-	stream << "    }" << std::endl;
-	stream << "    :: else -> skip;" << std::endl;
-	stream << "    fi;" << std::endl;
-
-	stream << "    i = i + 1;" << std::endl;
-	stream << "  }" << std::endl;
-	stream << "  :: else -> break;" << std::endl;
-	stream << "  od;" << std::endl;
-	stream << std::endl;
-
-	stream << "  /* iterate for descendants */" << std::endl;
-	stream << "  i = 0;" << std::endl;
-	stream << "  do" << std::endl;
-	stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
-	stream << "    if" << std::endl;
-	stream << "    :: " << _prefix << "ctx.entry_set[i] -> {" << std::endl;
-	stream << "      if" << std::endl;
-
-	stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_PARALLEL] -> {" << std::endl;
+    
+    stream << "    }" << std::endl;
+    stream << "    :: else -> skip;" << std::endl;
+    stream << "    fi;" << std::endl;
+    
+    stream << "    i = i + 1;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  :: else -> break;" << std::endl;
+    stream << "  od;" << std::endl;
+    stream << std::endl;
+    
+    stream << "  /* iterate for descendants */" << std::endl;
+    stream << "  i = 0;" << std::endl;
+    stream << "  do" << std::endl;
+    stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: " << _prefix << "ctx.entry_set[i] -> {" << std::endl;
+    stream << "      if" << std::endl;
+    
+    stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_PARALLEL] -> {" << std::endl;
     stream << "        " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "states[i].completion)" << std::endl;
-	stream << "      }" << std::endl;
-
-
-	stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_HISTORY_SHALLOW] ||" << std::endl;
-	stream << "         " << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] -> {" << std::endl;
-
+    stream << "      }" << std::endl;
+    
+    
+    stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_HISTORY_SHALLOW] ||" << std::endl;
+    stream << "         " << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] -> {" << std::endl;
+    
     TRACE_EXECUTION_V("Descendant completion for history state %d", "i")
-
+    
     stream << "        if" << std::endl;
-	stream << "        :: !" << _prefix << "STATES_HAS_AND(" << _prefix << "states[i].completion, " << _prefix << "history)";
-//	bit_has_and(stream, _prefix + "states[i].completion", _prefix + "history", _states.size(), 5);
-	stream << " && !" << _prefix << "config[" << _prefix << "states[i].parent]" << " -> {" << std::endl;
+    stream << "        :: !" << _prefix << "STATES_HAS_AND(" << _prefix << "states[i].completion, " << _prefix << "history)";
+    //	bit_has_and(stream, _prefix + "states[i].completion", _prefix + "history", _states.size(), 5);
+    stream << " && !" << _prefix << "config[" << _prefix << "states[i].parent]" << " -> {" << std::endl;
     stream << "          /* nothing set for history, look for a default transition */" << std::endl;
     TRACE_EXECUTION("Fresh history in target set")
     if (_transitions.size() > 0) {
@@ -1823,13 +2110,13 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "             if" << std::endl;
         stream << "             :: " << _prefix << "transitions[j].source == i -> {" << std::endl;
         stream << "               " << _prefix << "ctx.trans_set[j] = true;" << std::endl;
-
+        
         stream << "               " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "transitions[j].target)" << std::endl;
         stream << std::endl;
         stream << "               if" << std::endl;
         stream << "               :: (" << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] &&" << std::endl;
         stream << "                   !" << _prefix << "STATES_HAS_AND(" << _prefix << "transitions[j].target, " << _prefix << "states[i].children)";
-    //    bit_has_and(stream, _prefix + "transitions[j].target", _prefix + "states[i].children", _states.size(), 10);
+        //    bit_has_and(stream, _prefix + "transitions[j].target", _prefix + "states[i].children", _states.size(), 10);
         stream << "                  ) -> {" << std::endl;
         stream << "                 k = i + 1" << std::endl;
         stream << "                 do" << std::endl;
@@ -1858,8 +2145,8 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "          :: else -> break" << std::endl;
         stream << "          od" << std::endl;
     }
-	stream << "          skip;" << std::endl;
-	stream << "        }" << std::endl;
+    stream << "          skip;" << std::endl;
+    stream << "        }" << std::endl;
     stream << "        :: else -> {" << std::endl;
     
     TRACE_EXECUTION("Established history in target set")
@@ -1905,17 +2192,17 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "          }" << std::endl;
     stream << "          :: else -> skip;" << std::endl;
     stream << "          fi" << std::endl;
-
+    
     stream << "        }" << std::endl;
-	stream << "        fi;" << std::endl;
-
-	stream << "      }" << std::endl;
-
+    stream << "        fi;" << std::endl;
+    
+    stream << "      }" << std::endl;
+    
     if (_transitions.size() > 0) {
         stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_INITIAL] -> {" << std::endl;
-
+        
         TRACE_EXECUTION_V("Descendant completion for initial state %d", "i")
-
+        
         stream << "        j = 0" << std::endl;
         stream << "        do" << std::endl;
         stream << "        :: j < " << _prefix << "USCXML_NUMBER_TRANS -> {" << std::endl;
@@ -1923,22 +2210,22 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "          :: " << _prefix << "transitions[j].source == i -> {" << std::endl;
         stream << "            " << _prefix << "ctx.trans_set[j] = true;" << std::endl;
         stream << "            " << _prefix << "ctx.entry_set[i] = false;" << std::endl;
-
+        
         TRACE_EXECUTION_V("Adding transition %d!", "j");
-
+        
         
         stream << "            " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "transitions[j].target)" << std::endl;
         stream << std::endl;
-
+        
         stream << "            k = i + 1;" << std::endl;
         stream << "            do" << std::endl;
         stream << "            :: k < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
         stream << "              if" << std::endl;
         stream << "              :: " << _prefix << "transitions[j].target[k] -> {" << std::endl;
-
+        
         stream << "                " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "states[k].ancestors)" << std::endl;
         stream << std::endl;
-
+        
         stream << "              }" << std::endl;
         stream << "              :: else -> break;" << std::endl;
         stream << "              fi" << std::endl;
@@ -1953,97 +2240,97 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "        }" << std::endl;
         stream << "        :: else -> break" << std::endl;
         stream << "        od;" << std::endl;
-
+        
         stream << "      }" << std::endl;
     }
-
-	stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_COMPOUND] -> {" << std::endl;
-
-//    TRACE_EXECUTION_V("Descendant completion for compound state %d", "i")
-
-	stream << "        /* we need to check whether one child is already in entry_set */" << std::endl;
-	stream << "        if" << std::endl;
-	stream << "        :: (" << std::endl;
-	stream << "          !" << _prefix << "STATES_HAS_AND(" << _prefix << "ctx.entry_set, " << _prefix << "states[i].children)";
-	stream << " && " << std::endl;
-	stream << "           (!" << _prefix << "STATES_HAS_AND(" << _prefix << "config, " << _prefix << "states[i].children)";
-//	bit_has_and(stream, _prefix + "config", _prefix + "states[i].children", _states.size(), 5);
-	stream << " || " << _prefix << "STATES_HAS_AND(" << _prefix << "ctx.exit_set, " << _prefix << "states[i].children)" << std::endl;
-	stream << ")) " << std::endl;
-	stream << "        -> {" << std::endl;
-
-    stream << "          " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "states[i].completion)" << std::endl;
-
-	stream << "          if" << std::endl;
-	stream << "          :: (" << _prefix << "STATES_HAS_AND(" << _prefix << "states[i].completion, " << _prefix << "states[i].children)";
-//	bit_has_and(stream, _prefix + "states[i].completion", _prefix + "states[i].children", _states.size(), 6);
-    stream << std::endl;
-	stream << "          ) -> {" << std::endl;
-	stream << "            /* deep completion */" << std::endl;
-	stream << "            j = i + 1;" << std::endl;
     
-//    TRACE_EXECUTION_V("Deep completion for compound state %d", "i")
-
+    stream << "      :: " << _prefix << "states[i].type[USCXML_STATE_COMPOUND] -> {" << std::endl;
+    
+    //    TRACE_EXECUTION_V("Descendant completion for compound state %d", "i")
+    
+    stream << "        /* we need to check whether one child is already in entry_set */" << std::endl;
+    stream << "        if" << std::endl;
+    stream << "        :: (" << std::endl;
+    stream << "          !" << _prefix << "STATES_HAS_AND(" << _prefix << "ctx.entry_set, " << _prefix << "states[i].children)";
+    stream << " && " << std::endl;
+    stream << "           (!" << _prefix << "STATES_HAS_AND(" << _prefix << "config, " << _prefix << "states[i].children)";
+    //	bit_has_and(stream, _prefix + "config", _prefix + "states[i].children", _states.size(), 5);
+    stream << " || " << _prefix << "STATES_HAS_AND(" << _prefix << "ctx.exit_set, " << _prefix << "states[i].children)" << std::endl;
+    stream << ")) " << std::endl;
+    stream << "        -> {" << std::endl;
+    
+    stream << "          " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "states[i].completion)" << std::endl;
+    
+    stream << "          if" << std::endl;
+    stream << "          :: (" << _prefix << "STATES_HAS_AND(" << _prefix << "states[i].completion, " << _prefix << "states[i].children)";
+    //	bit_has_and(stream, _prefix + "states[i].completion", _prefix + "states[i].children", _states.size(), 6);
+    stream << std::endl;
+    stream << "          ) -> {" << std::endl;
+    stream << "            /* deep completion */" << std::endl;
+    stream << "            j = i + 1;" << std::endl;
+    
+    //    TRACE_EXECUTION_V("Deep completion for compound state %d", "i")
+    
     stream << "            do" << std::endl;
-	stream << "            :: j < " << _prefix << "USCXML_NUMBER_STATES - 1 -> {" << std::endl;
-	stream << "              j = j + 1;" << std::endl;
-	stream << "              if" << std::endl;
-	stream << "              :: " << _prefix << "states[i].completion[j] -> {" << std::endl;
-
+    stream << "            :: j < " << _prefix << "USCXML_NUMBER_STATES - 1 -> {" << std::endl;
+    stream << "              j = j + 1;" << std::endl;
+    stream << "              if" << std::endl;
+    stream << "              :: " << _prefix << "states[i].completion[j] -> {" << std::endl;
+    
     stream << "                " << _prefix << "STATES_OR(" << _prefix << "ctx.entry_set, " << _prefix << "states[j].ancestors)" << std::endl;
-	stream << std::endl;
-
-	stream << "                /* completion of compound is single state */" << std::endl;
-	stream << "                break;" << std::endl;
-	stream << "              } " << std::endl;
-	stream << "              :: else -> skip;" << std::endl;
-	stream << "              fi" << std::endl;
-	stream << "            }" << std::endl;
-	stream << "            :: else -> break;" << std::endl;
-	stream << "            od" << std::endl;
-
-	stream << "          }" << std::endl;
-	stream << "          :: else -> skip;" << std::endl;
-	stream << "          fi" << std::endl;
-
-	stream << "        }" << std::endl;
-	stream << "        :: else -> skip;" << std::endl;
-	stream << "        fi" << std::endl;
-	stream << "      }" << std::endl;
-
-	stream << "      :: else -> skip;" << std::endl;
-	stream << "      fi;" << std::endl;
-	stream << "    }" << std::endl;
-	stream << "    :: else -> skip;" << std::endl;
-	stream << "    fi;" << std::endl;
-	stream << "    i = i + 1;" << std::endl;
-	stream << "  }" << std::endl;
-	stream << "  :: else -> break;" << std::endl;
-	stream << "  od;" << std::endl;
-	stream << std::endl;
-
     stream << std::endl;
-	stream << "#if TRACE_EXECUTION" << std::endl;
-	stream << "printf(\"Entry Set\");" << std::endl;
-	printBitArray(stream, _prefix + "ctx.entry_set", _states.size());
-	stream << "printf(\"\\n\");" << std::endl;
-	stream << "#endif" << std::endl;
+    
+    stream << "                /* completion of compound is single state */" << std::endl;
+    stream << "                break;" << std::endl;
+    stream << "              } " << std::endl;
+    stream << "              :: else -> skip;" << std::endl;
+    stream << "              fi" << std::endl;
+    stream << "            }" << std::endl;
+    stream << "            :: else -> break;" << std::endl;
+    stream << "            od" << std::endl;
+    
+    stream << "          }" << std::endl;
+    stream << "          :: else -> skip;" << std::endl;
+    stream << "          fi" << std::endl;
+    
+    stream << "        }" << std::endl;
+    stream << "        :: else -> skip;" << std::endl;
+    stream << "        fi" << std::endl;
+    stream << "      }" << std::endl;
+    
+    stream << "      :: else -> skip;" << std::endl;
+    stream << "      fi;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    :: else -> skip;" << std::endl;
+    stream << "    fi;" << std::endl;
+    stream << "    i = i + 1;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  :: else -> break;" << std::endl;
+    stream << "  od;" << std::endl;
     stream << std::endl;
-    stream << "} /* d_step */" << std::endl;
+    
+    stream << std::endl;
+    stream << "#if TRACE_EXECUTION" << std::endl;
+    stream << "printf(\"Entry Set\");" << std::endl;
+    printBitArray(stream, _prefix + "ctx.entry_set", _states.size());
+    stream << "printf(\"\\n\");" << std::endl;
+    stream << "#endif" << std::endl;
+    stream << std::endl;
+}
 
+void ChartToPromela::writeFSMExitStates(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
-	stream << "/* EXIT_STATES: */" << std::endl;
-    stream << "d_step {" << std::endl;
-	stream << "  i = " << _prefix << "USCXML_NUMBER_STATES;" << std::endl;
-	stream << "  do" << std::endl;
-	stream << "  :: i > 0 -> {" << std::endl;
-	stream << "    i = i - 1;" << std::endl;
-	stream << "    if" << std::endl;
-	stream << "    :: " << _prefix << "ctx.exit_set[i] && " << _prefix << "config[i] -> {" << std::endl;
-	stream << "      /* call all on-exit handlers */" << std::endl;
-
+    stream << "/* EXIT_STATES: */" << std::endl;
+    stream << "  i = " << _prefix << "USCXML_NUMBER_STATES;" << std::endl;
+    stream << "  do" << std::endl;
+    stream << "  :: i > 0 -> {" << std::endl;
+    stream << "    i = i - 1;" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: " << _prefix << "ctx.exit_set[i] && " << _prefix << "config[i] -> {" << std::endl;
+    stream << "      /* call all on-exit handlers */" << std::endl;
+    
     TRACE_EXECUTION_V("Exiting state %d", "i");
-
+    
     stream << "      if" << std::endl;
     for (auto i = 0; i < _states.size(); i++) {
         std::list<DOMElement*> onexits = DOMUtils::filterChildElements(XML_PREFIX(_states[i]).str() + "onexit" , _states[i]);
@@ -2058,24 +2345,22 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "      :: else -> skip;" << std::endl;
     stream << "      fi" << std::endl;
     stream << std::endl;
+    
+    stream << "      " << _prefix << "config[i] = false;" << std::endl;
+    stream << "      skip;" << std::endl;
+    stream << "    }" << std::endl;
+    stream << "    :: else -> skip;" << std::endl;
+    stream << "    fi;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  :: else -> break;" << std::endl;
+    stream << "  od;" << std::endl;
+    stream << std::endl;
+}
 
-	stream << "      " << _prefix << "config[i] = false;" << std::endl;
-	stream << "      skip;" << std::endl;
-	stream << "    }" << std::endl;
-	stream << "    :: else -> skip;" << std::endl;
-	stream << "    fi;" << std::endl;
-	stream << "  }" << std::endl;
-	stream << "  :: else -> break;" << std::endl;
-	stream << "  od;" << std::endl;
-//    stream << "} /* d_step */" << std::endl;
-	stream << std::endl;
-
-//    TRACE_EXECUTION("Exited States")
-
+void ChartToPromela::writeFSMTakeTransitions(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
     stream << "/* TAKE_TRANSITIONS: */" << std::endl;
     if (_transitions.size() > 0) {
-//        stream << "d_step {" << std::endl;
         stream << "  i = 0;" << std::endl;
         stream << "  do" << std::endl;
         stream << "  :: i < " << _prefix << "USCXML_NUMBER_TRANS -> {" << std::endl;
@@ -2105,59 +2390,58 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "  }" << std::endl;
         stream << "  :: else -> break;" << std::endl;
         stream << "  od;" << std::endl;
-//        stream << "} /* d_step */" << std::endl;
     }
-    stream << std::endl;
+}
 
+void ChartToPromela::writeFSMEnterStates(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
-	stream << "/* ENTER_STATES: */" << std::endl;
-//    stream << "d_step {" << std::endl;
-	stream << "  i = 0;" << std::endl;
-	stream << "  do" << std::endl;
-	stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
-	stream << "    if" << std::endl;
-	stream << "    :: (" << _prefix << "ctx.entry_set[i] &&" << std::endl;
-	stream << "        !" << _prefix << "config[i] && " << std::endl;
-	stream << "        /* these are no proper states */" << std::endl;
-	stream << "        !" << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] && " << std::endl;
-	stream << "        !" << _prefix << "states[i].type[USCXML_STATE_HISTORY_SHALLOW] && " << std::endl;
-	stream << "        !" << _prefix << "states[i].type[USCXML_STATE_INITIAL]" << std::endl;
-	stream << "       ) -> {" << std::endl;
-
+    stream << "/* ENTER_STATES: */" << std::endl;
+    stream << "  i = 0;" << std::endl;
+    stream << "  do" << std::endl;
+    stream << "  :: i < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
+    stream << "    if" << std::endl;
+    stream << "    :: (" << _prefix << "ctx.entry_set[i] &&" << std::endl;
+    stream << "        !" << _prefix << "config[i] && " << std::endl;
+    stream << "        /* these are no proper states */" << std::endl;
+    stream << "        !" << _prefix << "states[i].type[USCXML_STATE_HISTORY_DEEP] && " << std::endl;
+    stream << "        !" << _prefix << "states[i].type[USCXML_STATE_HISTORY_SHALLOW] && " << std::endl;
+    stream << "        !" << _prefix << "states[i].type[USCXML_STATE_INITIAL]" << std::endl;
+    stream << "       ) -> {" << std::endl;
+    
     TRACE_EXECUTION_V("Entering state %d", "i");
-
-	stream << "         " << _prefix << "config[i] = true;" << std::endl;
-	stream << std::endl;
-
+    
+    stream << "         " << _prefix << "config[i] = true;" << std::endl;
+    stream << std::endl;
+    
 #if 0
-	stream << "         if" << std::endl;
-	stream << "         :: !" << _prefix << "initialized_data[i] -> {" << std::endl;
-	stream << "           /* TODO: late data binding not supported yet */" << std::endl;
-	stream << "           " << _prefix << "initialized_data[i] = true;" << std::endl;
-	stream << "           skip" << std::endl;
-	stream << "         }" << std::endl;
-	stream << "         :: else -> skip;" << std::endl;
-	stream << "         fi" << std::endl;
-	stream << std::endl;
+    stream << "         if" << std::endl;
+    stream << "         :: !" << _prefix << "initialized_data[i] -> {" << std::endl;
+    stream << "           /* TODO: late data binding not supported yet */" << std::endl;
+    stream << "           " << _prefix << "initialized_data[i] = true;" << std::endl;
+    stream << "           skip" << std::endl;
+    stream << "         }" << std::endl;
+    stream << "         :: else -> skip;" << std::endl;
+    stream << "         fi" << std::endl;
+    stream << std::endl;
 #endif
     
-	stream << "         /* Process executable content for entering a state */" << std::endl;
-	stream << "         if" << std::endl;
-	for (auto i = 0; i < _states.size(); i++) {
-		std::list<DOMElement*> onentries = DOMUtils::filterChildElements(XML_PREFIX(_states[i]).str() + "onentry" , _states[i]);
-		if (onentries.size() > 0) {
-			stream << "         :: i == " << toStr(i) << " -> {" << std::endl;
+    stream << "         /* Process executable content for entering a state */" << std::endl;
+    stream << "         if" << std::endl;
+    for (auto i = 0; i < _states.size(); i++) {
+        std::list<DOMElement*> onentries = DOMUtils::filterChildElements(XML_PREFIX(_states[i]).str() + "onentry" , _states[i]);
+        if (onentries.size() > 0) {
+            stream << "         :: i == " << toStr(i) << " -> {" << std::endl;
             TRACE_EXECUTION_V("Processing executable content for entering state %d", "i");
-			for (auto onentry : onentries)
-				writeExecContent(stream, onentry, 5);
-			stream << "         }" << std::endl;
-		}
-	}
-	stream << "         :: else ->skip;" << std::endl;
-	stream << "         fi" << std::endl;
-	stream << std::endl;
-
-	stream << "         /* take history and initial transitions */" << std::endl;
+            for (auto onentry : onentries)
+                writeExecContent(stream, onentry, 5);
+            stream << "         }" << std::endl;
+        }
+    }
+    stream << "         :: else ->skip;" << std::endl;
+    stream << "         fi" << std::endl;
+    stream << std::endl;
+    
+    stream << "         /* take history and initial transitions */" << std::endl;
     if (_transitions.size() > 0) {
         stream << "         j = 0;" << std::endl;
         stream << "         do" << std::endl;
@@ -2172,7 +2456,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         for (auto i = 0; i < _transitions.size(); i++) {
             stream << "              :: j == " << toStr(i) << " -> {" << std::endl;
             TRACE_EXECUTION_V("Processing executable content for transition %d", "j");
-
+            
             writeExecContent(stream, _transitions[i], 8);
             stream << "                skip;" << std::endl;
             stream << "              }" << std::endl;
@@ -2180,7 +2464,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "              :: else ->skip;" << std::endl;
         stream << "              fi" << std::endl;
         stream << std::endl;
-
+        
         stream << "           }" << std::endl;
         stream << "           :: else -> skip;" << std::endl;
         stream << "           fi" << std::endl;
@@ -2189,25 +2473,25 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         stream << "         :: else -> break;" << std::endl;
         stream << "         od" << std::endl;
     }
-
-	stream << "         /* handle final states */" << std::endl;
-	stream << "         if" << std::endl;
-	stream << "         :: " << _prefix << "states[i].type[USCXML_STATE_FINAL] -> {" << std::endl;
-
-	stream << "           if" << std::endl;
-	stream << "           :: " << _prefix << "states[" << _prefix << "states[i].parent].children[1] -> {" << std::endl;
+    
+    stream << "         /* handle final states */" << std::endl;
+    stream << "         if" << std::endl;
+    stream << "         :: " << _prefix << "states[i].type[USCXML_STATE_FINAL] -> {" << std::endl;
+    
+    stream << "           if" << std::endl;
+    stream << "           :: " << _prefix << "states[" << _prefix << "states[i].parent].children[1] -> {" << std::endl;
     stream << "             /* exit topmost SCXML state */" << std::endl;
     stream << "             " << _prefix << "flags[USCXML_CTX_TOP_LEVEL_FINAL] = true;" << std::endl;
     stream << "             " << _prefix << "flags[USCXML_CTX_FINISHED] = true;" << std::endl;
-	stream << "           }" << std::endl;
-	stream << "           :: else -> {" << std::endl;
+    stream << "           }" << std::endl;
+    stream << "           :: else -> {" << std::endl;
     stream << "             /* raise done event */" << std::endl;
     stream << "             if" << std::endl;
-
+    
     std::string insertOp = "!";
-//    if (_analyzer->usesEventField("delay"))
-//        insertOp += "!";
-
+    //    if (_analyzer->usesEventField("delay"))
+    //        insertOp += "!";
+    
     for (auto state : _states) {
         if (state->getParentNode() == NULL || state->getParentNode()->getNodeType() != DOMNode::ELEMENT_NODE)
             continue;
@@ -2218,16 +2502,16 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         DOMElement* parent = static_cast<DOMElement*>(state->getParentNode());
         if (!HAS_ATTR(parent, "id"))
             continue;
-
+        
         std::string doneEvent = _analyzer->macroForLiteral("done.state." + ATTR_CAST(state->getParentNode(), "id"));
-
+        
         stream << "             :: (i == " << ATTR(state, "documentOrder") << ") -> {" << std::endl;
-
+        
         if (_analyzer->usesComplexEventStruct()) {
             std::string typeReset = _analyzer->getTypeReset(_prefix + "_tmpE", _analyzer->getType("_event"), 7);
             stream << typeReset << std::endl;
             stream << "               " << _prefix << "_tmpE.name = " << doneEvent << ";" << std::endl;
-
+            
             std::list<DOMElement*> donedatas = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "donedata" , state);
             if (donedatas.size() > 0) {
                 writeRaiseDoneDate(stream, donedatas.front(), 8);
@@ -2236,31 +2520,31 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
             doneEvent = _prefix + "_tmpE";
         }
         
-
+        
         stream << "               " << _prefix << "iQ" << insertOp << doneEvent << ";" << std::endl;
         stream << "             }" << std::endl;
-
+        
     }
     stream << "             :: else -> skip;" << std::endl;
     stream << "             fi" << std::endl;
     
-	stream << "           }" << std::endl;
-	stream << "           fi" << std::endl;
-
+    stream << "           }" << std::endl;
+    stream << "           fi" << std::endl;
+    
     stream << "           /**" << std::endl;
     stream << "            * are we the last final state to leave a parallel state?:" << std::endl;
-	stream << "            * 1. Gather all parallel states in our ancestor chain" << std::endl;
-	stream << "            * 2. Find all states for which these parallels are ancestors" << std::endl;
-	stream << "            * 3. Iterate all active final states and remove their ancestors" << std::endl;
-	stream << "            * 4. If a state remains, not all children of a parallel are final" << std::endl;
-	stream << "            */" << std::endl;
+    stream << "            * 1. Gather all parallel states in our ancestor chain" << std::endl;
+    stream << "            * 2. Find all states for which these parallels are ancestors" << std::endl;
+    stream << "            * 3. Iterate all active final states and remove their ancestors" << std::endl;
+    stream << "            * 4. If a state remains, not all children of a parallel are final" << std::endl;
+    stream << "            */" << std::endl;
     stream << "            j = 0;" << std::endl;
     stream << "            do" << std::endl;
     stream << "            :: j < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
     stream << "              if" << std::endl;
     stream << "              :: " << _prefix << "states[j].type[USCXML_STATE_PARALLEL] && " << _prefix << "states[i].ancestors[j] -> {" << std::endl;
     stream << "                " << _prefix << "STATES_CLEAR(" << _prefix << "ctx.tmp_states)" << std::endl;
-
+    
     stream << "                k = 0;" << std::endl;
     stream << "                do" << std::endl;
     stream << "                :: k < " << _prefix << "USCXML_NUMBER_STATES -> {" << std::endl;
@@ -2286,18 +2570,18 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "                if" << std::endl;
     stream << "                :: !" << _prefix << "STATES_HAS_ANY(" << _prefix << "ctx.tmp_states) -> {" << std::endl;
     stream << "                  if" << std::endl;
-
+    
     for (auto state : _states) {
         if (isParallel(state) && HAS_ATTR(state, "id")) {
             stream << "                  :: j == " << toStr(ATTR(state, "documentOrder")) << " -> {" << std::endl;
-
+            
             std::string doneEvent = _analyzer->macroForLiteral("done.state." + ATTR(state, "id"));
-
+            
             if (_analyzer->usesComplexEventStruct()) {
                 std::string typeReset = _analyzer->getTypeReset(_prefix + "_tmpE", _analyzer->getType("_event"), 10);
                 stream << typeReset << std::endl;
                 stream << "                    " << _prefix << "_tmpE.name = " << doneEvent << ";" << std::endl;
-
+                
                 std::list<DOMElement*> donedatas = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "donedata" , state);
                 if (donedatas.size() > 0) {
                     writeRaiseDoneDate(stream, donedatas.front(), 11);
@@ -2312,7 +2596,7 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     
     stream << "                  :: else -> skip;" << std::endl;
     stream << "                  fi" << std::endl;
-
+    
     stream << "                }" << std::endl;
     stream << "                :: else -> skip;" << std::endl;
     stream << "                fi" << std::endl;
@@ -2323,32 +2607,27 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "            }" << std::endl;
     stream << "            :: else -> break;" << std::endl;
     stream << "            od" << std::endl;
-
-
-	stream << "         }" << std::endl;
-	stream << "         :: else -> skip;" << std::endl;
-	stream << "         fi" << std::endl;
-
-	stream << "" << std::endl;
-
-	stream << "    }" << std::endl;
-	stream << "    :: else -> skip;" << std::endl;
-	stream << "    i = i + 1;" << std::endl;
-	stream << "    fi;" << std::endl;
-	stream << "  }" << std::endl;
-	stream << "  :: else -> break;" << std::endl;
-    stream << "  od;" << std::endl;
-    stream << "} /* d_step */" << std::endl;
-
-    stream << "  }" << std::endl;
-    stream << "  :: else -> skip;" << std::endl;
-    stream << "  fi" << std::endl;
-    stream << "}" << std::endl;
-	stream << ":: else -> break;" << std::endl;
-	stream << "od" << std::endl;
+    
+    
+    stream << "         }" << std::endl;
+    stream << "         :: else -> skip;" << std::endl;
+    stream << "         fi" << std::endl;
+    
     stream << std::endl;
+    
+    stream << "    }" << std::endl;
+    stream << "    :: else -> skip;" << std::endl;
+    stream << "    i = i + 1;" << std::endl;
+    stream << "    fi;" << std::endl;
+    stream << "  }" << std::endl;
+    stream << "  :: else -> break;" << std::endl;
+    stream << "  od;" << std::endl;
+}
+
+void ChartToPromela::writeFSMTerminateMachine(std::ostream& stream) {
     stream << "/* ---------------------------- */" << std::endl;
     stream << _prefix << "TERMINATE_MACHINE:" << std::endl;
+    
     stream << "skip; d_step {" << std::endl;
 
     TRACE_EXECUTION("Machine finished");
@@ -2404,21 +2683,21 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
     stream << "}" << std::endl;
     stream << ":: else -> break;" << std::endl;
     stream << "od;" << std::endl;
-
+    
     stream << std::endl;
-
+    
     if (_machinesAll->size() > 1 && _analyzer->usesEventField("delay")) {
         /* TODO: We nee to clear all events if we were canceled */
         TRACE_EXECUTION("Removing pending events");
         stream << "removePendingEventsFromInvoker(" << _analyzer->macroForLiteral(_invokerid) << ")" << std::endl;
     }
-
+    
     
     if (_parent != NULL) {
         stream << "/* send done event */" << std::endl;
         stream << "if" << std::endl;
         stream << ":: " << _prefix << "flags[USCXML_CTX_TOP_LEVEL_FINAL] -> {" << std::endl;
-
+        
         if (_analyzer->usesComplexEventStruct()) {
             std::string typeReset = _analyzer->getTypeReset(_prefix + "_tmpE", _analyzer->getType("_event"), 2);
             stream << typeReset << std::endl;
@@ -2441,22 +2720,14 @@ void ChartToPromela::writeFSM(std::ostream& stream) {
         }
         stream << "}" << std::endl;
         stream << ":: else -> skip" << std::endl;
-        stream << "fi" << std::endl;
+        stream << "fi;" << std::endl;
         stream << std::endl;
-
+        
     }
     stream << "} /* d_step */" << std::endl;
 
-    stream << std::endl;
-    
-    TRACE_EXECUTION("Done");
-
-
-	stream << "} }" << std::endl;
-	stream << std::endl;
-
 }
-
+    
 void ChartToPromela::writeIfBlock(std::ostream& stream, std::list<DOMElement*>& condChain, size_t indent) {
 	if (condChain.size() == 0)
 		return;
