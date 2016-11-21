@@ -34,7 +34,7 @@ std::string escapedMacro(std::string const& s) {
             returnValue += c;
         }
         else {
-            returnValue += "__";
+            returnValue += "_";
             switch(c) {
                 case '"':  returnValue += "COLON";  break;
                 case '\\': returnValue += "BACHSLASH"; break;
@@ -47,7 +47,7 @@ std::string escapedMacro(std::string const& s) {
                     returnValue += hexdig[c >> 4];
                     returnValue += hexdig[c & 0xF];
             }
-            returnValue += "__";
+            returnValue += "_";
         }
     }
     return returnValue;
