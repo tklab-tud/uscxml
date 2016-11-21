@@ -138,6 +138,11 @@ namespace uscxml {
 
     }
 
+    bool ChartToVHDL::filterSupportedExecContent(DOMElement *execContentElement) {
+        return (TAGNAME(execContentElement) == XML_PREFIX(_scxml).str() + "raise" ||
+                TAGNAME(execContentElement) == XML_PREFIX(_scxml).str() + "send");
+    }
+
     void ChartToVHDL::writeTo(std::ostream &stream) {
         //    checkDocument();
         findEvents();
@@ -539,8 +544,7 @@ namespace uscxml {
         for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
             DOMElement *exContentElem = *ecIter;
 
-            if (TAGNAME(exContentElem) == XML_PREFIX(_scxml).str() + "raise" ||
-                TAGNAME(exContentElem) == XML_PREFIX(_scxml).str() + "send") {
+            if (filterSupportedExecContent(exContentElem)) {
 
                 stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
                 << std::endl;
@@ -556,8 +560,7 @@ namespace uscxml {
         //for (auto exContentElem : _execContent) {
         for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
             DOMElement *exContentElem = *ecIter;
-            //TODO y not send here --> general filter function ?
-            if (TAGNAME(exContentElem) == XML_PREFIX(_scxml).str() + "raise") {
+            if (filterSupportedExecContent(exContentElem)) {
                 stream << "      done_" << toStr(i) << "_sig <= '0';" << std::endl;
             }
         }
@@ -588,18 +591,16 @@ namespace uscxml {
         if (_execContent.size() > 1) {
             i = 0;
             for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
-                if (i == 0) {
-                    // prevent writing seq_0_sig since this should be hardcoded to '1'
-                    continue;
+                // prevent writing seq_0_sig since this should be hardcoded to '1'
+                if (i != 0) {
+                    // seq lines (input if process i is in seqence now)
+                    stream << "seq_" << toStr(i) << "_sig <= "
+                    << "done_" << toStr(i - 1) << "_sig or "
+                    << "( not "
+                    << getLineForExecContent(*ecIter);
+                    stream << " and seq_" << toStr(i - 1) << "_sig";
+                    stream << " );" << std::endl;
                 }
-                // seq lines (input if process i is in seqence now)
-
-                stream << "seq_" << toStr(i) << "_sig <= "
-                << "done_" << toStr(i - 1) << "_sig or "
-                << "( not "
-                << getLineForExecContent(*ecIter);
-                stream << " and seq_" << toStr(i - 1) << "_sig";
-                stream << " );" << std::endl;
             }
         }
         stream << std::endl;
@@ -940,7 +941,7 @@ namespace uscxml {
         stream << "        if spontaneous_en = '1' then" << std::endl;
         stream << "            spontaneous_en <= optimal_transition_set_combined_sig;" << std::endl;
         stream << "        else" << std::endl;
-        //TODO if new event is dequeued then 1 else stay 0
+        //if new event is dequeued then 1 else stay 0
         stream << "            spontaneous_en <= next_event_dequeued;" << std::endl;
         stream << "        end if;" << std::endl;
         stream << "    end if;" << std::endl;
