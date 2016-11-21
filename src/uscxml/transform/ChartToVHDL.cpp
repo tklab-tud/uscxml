@@ -176,7 +176,7 @@ namespace uscxml {
 
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << seperator << "hwe_" << macro_escaped((*eventIter)->value);
+            stream << seperator << "hwe_" << escapedMacro((*eventIter)->value);
             seperator = ", ";
         }
         stream << " );" << std::endl;
@@ -544,7 +544,7 @@ namespace uscxml {
 
                 stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
                 << std::endl;
-                stream << "      event_bus <= hwe_" << macro_escaped(ATTR(exContentElem, "event"))
+                stream << "      event_bus <= hwe_" << escapedMacro(ATTR(exContentElem, "event"))
                 << ";" << std::endl;
                 stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
                 stream << "      event_we <= '1';" << std::endl;
@@ -866,7 +866,7 @@ namespace uscxml {
         std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix("");
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "signal event_" << macro_escaped((*eventIter)->value) << "_sig : std_logic;" << std::endl;
+            stream << "signal event_" << escapedMacro((*eventIter)->value) << "_sig : std_logic;" << std::endl;
         }
         stream << std::endl;
 
@@ -959,7 +959,7 @@ namespace uscxml {
         std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix("");
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "        event_" << macro_escaped((*eventIter)->value) << "_sig <= '0';" << std::endl;
+            stream << "        event_" << escapedMacro((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
 
         stream << "        next_event_dequeued <= '0';" << std::endl;
@@ -987,11 +987,11 @@ namespace uscxml {
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
             stream << "      when hwe_"
-            << macro_escaped((*eventIter)->value) << " =>" << std::endl;
+            << escapedMacro((*eventIter)->value) << " =>" << std::endl;
             for (std::list<TrieNode *>::iterator eventIter2 = eventNames.begin();
                  eventIter2 != eventNames.end(); eventIter2++) {
-                stream << "        event_" << macro_escaped((*eventIter2)->value);
-                if (macro_escaped((*eventIter)->value) == macro_escaped((*eventIter2)->value)) {
+                stream << "        event_" << escapedMacro((*eventIter2)->value);
+                if (escapedMacro((*eventIter)->value) == escapedMacro((*eventIter2)->value)) {
                     stream << "_sig <= '1';" << std::endl;
                 } else {
                     stream << "_sig <= '0';" << std::endl;
@@ -1002,7 +1002,7 @@ namespace uscxml {
         stream << "      when others =>" << std::endl;
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "        event_" << macro_escaped((*eventIter)->value) << "_sig <= '0';" << std::endl;
+            stream << "        event_" << escapedMacro((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
         stream << "        next_event_dequeued <= '0';" << std::endl;
         stream << "      end case;" << std::endl;
@@ -1010,7 +1010,7 @@ namespace uscxml {
 
         for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
              eventIter != eventNames.end(); eventIter++) {
-            stream << "        event_" << macro_escaped((*eventIter)->value) << "_sig <= '0';" << std::endl;
+            stream << "        event_" << escapedMacro((*eventIter)->value) << "_sig <= '0';" << std::endl;
         }
         stream << "        next_event_dequeued <= '0';" << std::endl;
         stream << "    end if;" << std::endl;
@@ -1072,7 +1072,7 @@ namespace uscxml {
                             (*descIter) == "*" ? "" : *descIter);
                     for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
                          eventIter != eventNames.end(); eventIter++) {
-                        *nameMatchers += VLINE("event_" + macro_escaped((*eventIter)->value) + "_sig");
+                        *nameMatchers += VLINE("event_" + escapedMacro((*eventIter)->value) + "_sig");
                     }
                 }
             } else {
