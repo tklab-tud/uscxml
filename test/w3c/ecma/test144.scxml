@@ -5,7 +5,7 @@ foo occurs before bar, success, otherwise failure -->
   <state id="s0">
     <onentry>
       <raise event="foo"/>
-      <raise event="bar"/>
+      <raise event="*"/>
     </onentry>
     <transition event="foo" target="s1"/>
     <transition event="*" target="fail"/>

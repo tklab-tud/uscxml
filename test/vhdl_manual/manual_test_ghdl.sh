@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# https://sourceforge.net/p/umhdl/wiki/Installation%20-%20Linux/
+# https://linux.die.net/man/1/ghdl
+# 
 
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )/"

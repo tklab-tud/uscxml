@@ -64,6 +64,10 @@ public:
 			return ptr;
 		}
 
+		operator VBranch*() {
+			return static_cast<VBranch*> (ptr);
+		}
+
 		VPointer& operator /( VNode* p ) {
 			ptr = p;
 			return *this;
@@ -197,8 +201,6 @@ protected:
 	std::list< XERCESC_NS::DOMElement* > _execContent;
 
 private:
-	std::string eventNameEscape(const std::string& eventName);
-
 	std::string getLineForExecContent(const XERCESC_NS::DOMNode* elem);
 
 };
