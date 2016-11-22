@@ -25,31 +25,26 @@ namespace uscxml {
 
 #define ISWHITESPACE(char) (isspace(char))
 
-std::string escapedMacro(std::string const& s) {
+std::string escapeMacro(std::string const &s) {
     // inspired by http://stackoverflow.com/questions/2417588/escaping-a-c-string
     std::string returnValue="";
+	std::string specialChars="";
     for (std::string::const_iterator iter = s.begin(), end = s.end(); iter != end; ++iter) {
         char c = *iter;
-        if (' ' <= c && c <= '~' && c != '\\' && c != '"') {
+        if (('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_') {
             returnValue += c;
         }
         else {
-            returnValue += "_";
-            switch(c) {
-                case '"':  returnValue += "COLON";  break;
-                case '\\': returnValue += "BACHSLASH"; break;
-                case '\t': returnValue += "TAB";  break;
-                case '\r': returnValue += "RETURN";  break;
-                case '\n': returnValue += "NEWLINE";  break;
-                default:
-                    char const* const hexdig = "0123456789ABCDEF";
-                    returnValue += 'x';
-                    returnValue += hexdig[c >> 4];
-                    returnValue += hexdig[c & 0xF];
-            }
-            returnValue += "_";
+            specialChars += c;
         }
     }
+	if (!specialChars.empty()){
+		// http://www.cplusplus.com/reference/functional/hash/
+		// returns the same result for a given string within one execution
+		std::hash<std::string> strHash;
+		returnValue += "_";
+		returnValue += strHash(specialChars);
+	}
     return returnValue;
 }
 
