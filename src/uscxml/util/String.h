@@ -25,15 +25,15 @@
 
 namespace uscxml {
 
-	std::string escapeMacro(std::string const &s);
+std::string escapeMacro(std::string const &s);
 
-	std::string toBinStr(size_t val, size_t margin);
+std::string toBinStr(size_t val, size_t margin);
 
-	std::list<std::string> tokenize(const std::string &line, const char seperator = ' ', bool trimWhiteSpace = true);
+std::list<std::string> tokenize(const std::string &line, const char seperator = ' ', bool trimWhiteSpace = true);
 
-	std::string spaceNormalize(const std::string &text);
+std::string spaceNormalize(const std::string &text);
 
-	bool nameMatch(const std::string &eventDescs, const std::string &event);
+bool nameMatch(const std::string &eventDescs, const std::string &event);
 
 }
 
