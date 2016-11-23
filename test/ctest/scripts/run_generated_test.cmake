@@ -37,7 +37,7 @@ if (${TARGETLANG} STREQUAL "vhdl")
 
     message(STATUS "${GHDL_BIN} -e --std=08 ${VHDL_TESTBENCH_NAME}")
     execute_process(
-            COMMAND time -p ${GHDL_BIN} -e --std=08 ${OUTDIR}/${TEST_FILE_NAME}.machine.vhdl
+            COMMAND time -p ${GHDL_BIN} -e --std=08 ${VHDL_TESTBENCH_NAME}
             WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
     if (CMD_RESULT)
         message(FATAL_ERROR "Error running ghdl ${GHDL_BIN}: ${CMD_RESULT}")
