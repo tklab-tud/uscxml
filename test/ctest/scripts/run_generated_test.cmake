@@ -44,9 +44,9 @@ if (${TARGETLANG} STREQUAL "vhdl")
     endif ()
     message(STATUS "time for transforming to binary")
 
-    message(STATUS "${GHDL_BIN} -r ${VHDL_TESTBENCH_NAME} --vcd=${VHDL_TESTBENCH_NAME}.vcd")
+    message(STATUS "${GHDL_BIN} -r ${VHDL_TESTBENCH_NAME}")
     execute_process(
-            COMMAND time -p ${GHDL_BIN} -r ${VHDL_TESTBENCH_NAME} --vcd=${VHDL_TESTBENCH_NAME}.vcd
+            COMMAND time -p ${GHDL_BIN} -r ${VHDL_TESTBENCH_NAME}
             WORKING_DIRECTORY ${OUTDIR} RESULT_VARIABLE CMD_RESULT)
     if (CMD_RESULT)
         message(FATAL_ERROR "Error running ghdl ${GHDL_BIN}: ${CMD_RESULT}")
