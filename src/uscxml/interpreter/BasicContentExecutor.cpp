@@ -630,12 +630,14 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 			for (auto textIter = textChildren.begin(); textIter != textChildren.end(); textIter++) {
 				contentSS << X((*textIter)->getNodeValue());
 			}
-			try {
+#if 0
+            try {
 				Data d = _callbacks->getAsData(contentSS.str());
 				if (!d.empty())
 					return d;
 			} catch(...) {}
-
+#endif
+            // test294, test562
 			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
 		}
 	}
