@@ -251,33 +251,33 @@ if (NOT BUILD_MINIMAL)
 						if (TEST_TYPE MATCHES "^gen/${TEST_TARGET}")
 
 							if (TEST_TARGET MATCHES "vhdl" AND "${GHDL_VERSION}" VERSION_LESS "0.32")
-								continue()
-							endif()
+								# do nothing
+							else()
 							
-							# generate native interpreters
-							add_test(NAME "${TEST_NAME}"
-								COMMAND ${CMAKE_COMMAND}
-									-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
-									-DTESTFILE:FILEPATH=${W3C_TEST}
-									-DTARGETLANG=${TEST_TARGET}
-									-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
-									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-									-DCC_BIN:FILEPATH=${CC}
-									-DCXX_BIN:FILEPATH=${CXX}
-									-DGHDL_BIN:FILEPATH=${GHDL}
-									-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-									-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
-									-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
-									-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
-									-DXercesC_INCLUDE_DIRS=${XercesC_INCLUDE_DIRS}
-									-DURIPARSER_INCLUDE_DIR=${URIPARSER_INCLUDE_DIR}
-									-DLIBEVENT_INCLUDE_DIR=${LIBEVENT_INCLUDE_DIR}
-									-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-									-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-gen-c.cpp
-									-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_generated_test.cmake)
-							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
-							set(TEST_ADDED ON)
-
+								# generate native interpreters
+								add_test(NAME "${TEST_NAME}"
+									COMMAND ${CMAKE_COMMAND}
+										-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
+										-DTESTFILE:FILEPATH=${W3C_TEST}
+										-DTARGETLANG=${TEST_TARGET}
+										-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+										-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+										-DCC_BIN:FILEPATH=${CC}
+										-DCXX_BIN:FILEPATH=${CXX}
+										-DGHDL_BIN:FILEPATH=${GHDL}
+										-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+										-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+										-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+										-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+										-DXercesC_INCLUDE_DIRS=${XercesC_INCLUDE_DIRS}
+										-DURIPARSER_INCLUDE_DIR=${URIPARSER_INCLUDE_DIR}
+										-DLIBEVENT_INCLUDE_DIR=${LIBEVENT_INCLUDE_DIR}
+										-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+										-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-gen-c.cpp
+										-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_generated_test.cmake)
+								set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
+								set(TEST_ADDED ON)
+							endif()
 						endif()
 
 					elseif (TEST_TYPE MATCHES "^binding.*")
