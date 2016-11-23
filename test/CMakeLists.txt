@@ -8,6 +8,7 @@ find_program(ANT_EXECUTABLE ant)
 find_program(PERL perl)
 find_program(GHDL ghdl)
 
+set(GHDL_VERSION "0")
 if (GHDL)
 	execute_process(COMMAND ${GHDL} -v OUTPUT_VARIABLE GHDL_VERSION_OUT)
 	string(REGEX REPLACE "^GHDL " "" GHDL_VERSION_OUT ${GHDL_VERSION_OUT})
