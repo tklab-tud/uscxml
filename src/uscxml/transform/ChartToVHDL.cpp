@@ -176,13 +176,13 @@ void ChartToVHDL::writeTypes(std::ostream &stream) {
 	stream << " downto 0);" << std::endl;
 
 	std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix("");
-	stream << "  type event_type is ( hwe_null, ";
-	seperator = "";
+	stream << "  type event_type is ( hwe_null";
+	seperator = ", ";
 
 	for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
 	        eventIter != eventNames.end(); eventIter++) {
 		stream << seperator << "hwe_" << escapeMacro((*eventIter)->value);
-		seperator = ", ";
+		//	seperator = ", ";
 	}
 	stream << " );" << std::endl;
 
@@ -431,7 +431,7 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "    if (completed_o = '1') then" << std::endl;
 	if (!passStateNo.empty()) {
 		stream << "      assert (state_active_" << passStateNo;
-		stream << "_sig = '1') report \"Complted with errors\" severity error;" << std::endl;
+		stream << "_sig = '1') report \"Completed with errors\" severity error;" << std::endl;
 	}
 	stream << "      -- stop simulation" << std::endl;
 	stream << "      finish(0);" << std::endl; // use 0 for ctest
@@ -508,6 +508,7 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 	stream << "architecture behavioral of event_controller is " << std::endl;
 	stream << std::endl;
 
+
 	// Add signals and components
 	stream << "signal rst : std_logic;" << std::endl;
 	stream << "signal micro_stepper_en : std_logic;" << std::endl;
@@ -529,128 +530,152 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 
 	stream << "begin" << std::endl;
 	stream << std::endl;
-	// system signal mapping
-	stream << "rst <= rst_i;" << std::endl;
-	stream << "micro_stepper_en_o <= micro_stepper_en;" << std::endl;
-	stream << "event_o <= event_bus;" << std::endl;
-	stream << "event_we_o <= event_we;" << std::endl;
-	stream << std::endl;
 
-	// stall management
-	stream << "-- stalling microstepper" << std::endl;
-	stream << "micro_stepper_en <= completed_sig or not ( '0' ";
-	for (auto state : _states) {
-
-		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << std::endl << "      or entry_set_" << ATTR(state, "documentOrder")
-			       << "_i";
-		}
-
-		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << std::endl << "      or exit_set_" << ATTR(state, "documentOrder")
-			       << "_i";
-		}
-	}
-	for (auto transition : _transitions) {
-		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << std::endl << "      or transition_set_" << ATTR(transition, "postFixOrder")
-			       << "_i";
-		}
-	}
-	stream << ");" << std::endl;
-	stream << std::endl;
-
-	// sequential code operation
-	stream << "-- seq code block " << std::endl;
-	stream << "ex_content_block : process (clk, rst) " << std::endl;
-	stream << "begin" << std::endl;
-	stream << "  if rst = '1' then" << std::endl;
-	for (int i = 0; i < _execContent.size(); i++) {
-		stream << "    done_" << toStr(i) << "_sig <= '0';" << std::endl;
-	}
-	stream << "    event_bus <= hwe_null;" << std::endl;
-	stream << "    event_we <= '0';" << std::endl;
-	stream << "    cmpl_buf <= '0';" << std::endl;
-	stream << "    completed_sig <= '0';" << std::endl;
-	stream << "  elsif rising_edge(clk) then" << std::endl;
-
-	stream << "    if micro_stepper_en = '1' then" << std::endl;
-	stream << "      cmpl_buf <= '0' ;" << std::endl;
-	stream << "    else" << std::endl;
-	stream << "      cmpl_buf <= seq_" << toStr(_execContent.size() - 1)
-	       << "_sig;" << std::endl;
-	stream << "    end if;" << std::endl;
-	stream << "    completed_sig <= cmpl_buf;" << std::endl << std::endl;
-
-	size_t i = 0;
-	std::string seperator = "    ";
-	for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
-		DOMElement *exContentElem = *ecIter;
-
+	// check if there is SUPPORTED executable content
+	bool foundSupportedExecContent = false;
+	for (auto exContentElem : _execContent) {
 		if (filterSupportedExecContent(exContentElem)) {
-
-			stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
-			       << std::endl;
-			stream << "      event_bus <= hwe_" << escapeMacro(ATTR(exContentElem, "event"))
-			       << ";" << std::endl;
-			stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
-			stream << "      event_we <= '1';" << std::endl;
-			seperator = "    els";
+			foundSupportedExecContent = true;
+			break;
 		}
 	}
-	stream << "    elsif micro_stepper_en = '1' then" << std::endl;
-	i = 0;
-	//for (auto exContentElem : _execContent) {
-	for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
-		DOMElement *exContentElem = *ecIter;
-		if (filterSupportedExecContent(exContentElem)) {
-			stream << "      done_" << toStr(i) << "_sig <= '0';" << std::endl;
-		}
-	}
-	stream << "      event_we <= '0';" << std::endl;
-	stream << "    end if;" << std::endl;
-	stream << "  end if;" << std::endl;
-	stream << "end process;" << std::endl;
-	stream << std::endl;
+	if (!foundSupportedExecContent) {
+		// set output correct if there is no supported excontent
 
-	i = 0;
-	for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
-		// start lines
-		stream << "start_" << toStr(i) << "_sig <= "
-		       << getLineForExecContent(*ecIter) << " and "
-		       << "not done_" << toStr(i) << "_sig";
+		stream << "-- no supported executable content found" << std::endl;
+		stream << "-- state machine may not run correctly" << std::endl;
+		stream << "-- setting output lines to fulfil dummy functionality" << std::endl;
+		stream << "micro_stepper_en_o <= '1';" << std::endl;
+		stream << "event_o <= hwe_null;" << std::endl;
+		stream << "event_we_o <= '0';" << std::endl;
+		stream << std::endl;
+	} else {
+		// system signal mapping
+		stream << "rst <= rst_i;" << std::endl;
+		stream << "micro_stepper_en_o <= micro_stepper_en;" << std::endl;
+		stream << "event_o <= event_bus;" << std::endl;
+		stream << "event_we_o <= event_we;" << std::endl;
+		stream << std::endl;
 
-		// if not needed, since seq_0_sig is hard coded as '1'.
-//		if (i != 0) { // if not first element
-		stream << " and seq_" << toStr(i) << "_sig";
-//		}
+		// stall management
+		stream << "-- stalling microstepper" << std::endl;
+		stream << "micro_stepper_en <= completed_sig or not ( '0' ";
+		for (auto state : _states) {
 
-		stream << ";" << std::endl;
+			if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
+				stream << std::endl << "      or entry_set_" << ATTR(state, "documentOrder")
+				       << "_i";
+			}
 
-	}
-
-	stream << "seq_0_sig <= '1';" << std::endl;
-
-	if (_execContent.size() > 1) {
-		i = 0;
-		for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
-			// prevent writing seq_0_sig since this should be hardcoded to '1'
-			if (i != 0) {
-				// seq lines (input if process i is in seqence now)
-				stream << "seq_" << toStr(i) << "_sig <= "
-				       << "done_" << toStr(i - 1) << "_sig or "
-				       << "( not "
-				       << getLineForExecContent(*ecIter);
-				stream << " and seq_" << toStr(i - 1) << "_sig";
-				stream << " );" << std::endl;
+			if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
+				stream << std::endl << "      or exit_set_" << ATTR(state, "documentOrder")
+				       << "_i";
 			}
 		}
-	}
-	stream << std::endl;
+		for (auto transition : _transitions) {
+			if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
+				stream << std::endl << "      or transition_set_" << ATTR(transition, "postFixOrder")
+				       << "_i";
+			}
+		}
+		stream << ");" << std::endl;
+		stream << std::endl;
 
-	stream << "end behavioral; " << std::endl;
-	stream << "-- END Event Controller Logic" << std::endl;
-	stream << std::endl;
+		// sequential code operation
+		stream << "-- seq code block " << std::endl;
+		stream << "ex_content_block : process (clk, rst) " << std::endl;
+		stream << "begin" << std::endl;
+		stream << "  if rst = '1' then" << std::endl;
+		for (int i = 0; i < _execContent.size(); i++) {
+			stream << "    done_" << toStr(i) << "_sig <= '0';" << std::endl;
+		}
+		stream << "    event_bus <= hwe_null;" << std::endl;
+		stream << "    event_we <= '0';" << std::endl;
+		stream << "    cmpl_buf <= '0';" << std::endl;
+		stream << "    completed_sig <= '0';" << std::endl;
+		stream << "  elsif rising_edge(clk) then" << std::endl;
+
+		stream << "    if micro_stepper_en = '1' then" << std::endl;
+		stream << "      cmpl_buf <= '0' ;" << std::endl;
+		stream << "    else" << std::endl;
+		stream << "      cmpl_buf <= seq_" << toStr(_execContent.size() - 1)
+		       << "_sig;" << std::endl;
+		stream << "    end if;" << std::endl;
+		stream << "    completed_sig <= cmpl_buf;" << std::endl << std::endl;
+
+		size_t i = 0;
+		std::string seperator = "    ";
+		for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
+			DOMElement *exContentElem = *ecIter;
+
+			if (filterSupportedExecContent(exContentElem)) {
+
+				stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
+				       << std::endl;
+				stream << "      event_bus <= hwe_" << escapeMacro(ATTR(exContentElem, "event"))
+				       << ";" << std::endl;
+				stream << "      done_" << toStr(i) << "_sig <= '1';" << std::endl;
+				stream << "      event_we <= '1';" << std::endl;
+				seperator = "    els";
+			}
+		}
+		stream << "    elsif micro_stepper_en = '1' then" << std::endl;
+		i = 0;
+		//for (auto exContentElem : _execContent) {
+		for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
+			DOMElement *exContentElem = *ecIter;
+			if (filterSupportedExecContent(exContentElem)) {
+				stream << "      done_" << toStr(i) << "_sig <= '0';" << std::endl;
+			}
+		}
+		stream << "      event_we <= '0';" << std::endl;
+		stream << "    end if;" << std::endl;
+		stream << "  end if;" << std::endl;
+		stream << "end process;" << std::endl;
+		stream << std::endl;
+
+		i = 0;
+		for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
+			// start lines
+			stream << "start_" << toStr(i) << "_sig <= "
+			       << getLineForExecContent(*ecIter) << " and "
+			       << "not done_" << toStr(i) << "_sig";
+
+			// if not needed, since seq_0_sig is hard coded as '1'.
+//		if (i != 0) { // if not first element
+			stream << " and seq_" << toStr(i) << "_sig";
+//		}
+
+			stream << ";" << std::endl;
+
+		}
+
+		stream << "seq_0_sig <= '1';" << std::endl;
+
+		if (_execContent.size() > 1) {
+			i = 0;
+			for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
+				// prevent writing seq_0_sig since this should be hardcoded to '1'
+				if (i != 0) {
+					// seq lines (input if process i is in seqence now)
+					stream << "seq_" << toStr(i) << "_sig <= "
+					       << "done_" << toStr(i - 1) << "_sig or "
+					       << "( not "
+					       << getLineForExecContent(*ecIter);
+					stream << " and seq_" << toStr(i - 1) << "_sig";
+					stream << " );" << std::endl;
+				}
+			}
+		}
+		stream << std::endl;
+	}
+
+	stream << "end behavioral; " <<
+	       std::endl;
+	stream << "-- END Event Controller Logic" <<
+	       std::endl;
+	stream <<
+	       std::endl;
 }
 
 std::string ChartToVHDL::getLineForExecContent(const DOMNode *elem) {
