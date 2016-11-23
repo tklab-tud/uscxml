@@ -421,6 +421,7 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 		}
 	}
 
+	// test observation and exit condition
 	stream << "  -- Test observation" << std::endl;
 	stream << "  process (clk)" << std::endl;
 	stream << "  variable count_clk : integer := 0;" << std::endl;
@@ -433,7 +434,7 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 		stream << "_sig = '1') report \"Complted with errors\" severity error;" << std::endl;
 	}
 	stream << "      -- stop simulation" << std::endl;
-	stream << "      finish(1);" << std::endl;
+	stream << "      finish(0);" << std::endl; // use 0 for ctest
 //        -- For both STOP and FINISH the STATUS values are those used
 //        -- in the Verilog $finish task
 //        -- 0 prints nothing
