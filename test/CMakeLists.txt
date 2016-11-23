@@ -249,7 +249,7 @@ if (NOT BUILD_MINIMAL)
 						get_filename_component(TEST_TARGET ${TEST_TYPE} NAME)
 						if (TEST_TYPE MATCHES "^gen/${TEST_TARGET}")
 
-							if (TEST_TARGET MATCHES "vhdl" AND ${GHDL_VERSION} VERSION_LESS "0.32")
+							if (TEST_TARGET MATCHES "vhdl" AND "${GHDL_VERSION}" VERSION_LESS "0.32")
 								continue()
 							endif()
 							
