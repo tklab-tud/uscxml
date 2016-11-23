@@ -31,121 +31,129 @@
 
 namespace uscxml {
 
-class USCXML_API ChartToVHDL : public ChartToC {
-public:
+    class USCXML_API ChartToVHDL : public ChartToC {
+    public:
 
-	virtual ~ChartToVHDL();
-	static Transformer transform(const Interpreter& other);
+        virtual ~ChartToVHDL();
 
-	void writeTo(std::ostream& stream);
+        static Transformer transform(const Interpreter &other);
+
+        void writeTo(std::ostream &stream);
 
 
-	struct VNode {
-		virtual void print(std::ostream& stream, const std::string padding = "") = 0;
-		virtual ~VNode() {};
-	};
-	struct VBranch : VNode {
-		std::vector< VNode* > v;
-		virtual ~VBranch() {
-			for(unsigned i = 0; i < v.size(); i++)
-				delete v[i];
-		}
+        struct VNode {
+            virtual void print(std::ostream &stream, const std::string padding = "") = 0;
 
-		VBranch& operator +=(VNode* p ) {
-			v.push_back(p);
-			return *this;
-		}
-	};
+            virtual ~VNode() { };
+        };
 
-	struct VPointer {
-		VNode* ptr;
+        struct VBranch : VNode {
+            std::vector<VNode *> v;
 
-		operator VNode*() {
-			return ptr;
-		}
+            virtual ~VBranch() {
+                for (unsigned i = 0; i < v.size(); i++)
+                    delete v[i];
+            }
 
-		operator VBranch*() {
-			return static_cast<VBranch*> (ptr);
-		}
+            VBranch &operator+=(VNode *p) {
+                v.push_back(p);
+                return *this;
+            }
+        };
 
-		VPointer& operator /( VNode* p ) {
-			ptr = p;
-			return *this;
-		}
-	};
+        struct VPointer {
+            VNode *ptr;
 
-	struct VContainer {
-		VBranch* ptr;
+            operator VNode *() {
+                return ptr;
+            }
 
-		operator VBranch*() {
-			return ptr;
-		}
-		VContainer& operator /( VBranch* p ) {
-			ptr = p;
-			return *this;
-		}
-		VContainer& operator , ( VPointer p ) {
-			if(ptr) ptr->v.push_back(p.ptr);
-			return *this;
-		}
-		VContainer& operator , ( VContainer c ) {
-			if(ptr) ptr->v.push_back(c.ptr);
-			return *this;
-		}
-	};
+            operator VBranch *() {
+                return static_cast<VBranch *> (ptr);
+            }
 
-	struct VLine : VNode {
-		VLine(const std::string& name) : name(name) {}
-		virtual void print(std::ostream& stream, const std::string padding = "") {
-			stream << " " << name;
-		}
+            VPointer &operator/(VNode *p) {
+                ptr = p;
+                return *this;
+            }
+        };
 
-		std::string name;
-	};
+        struct VContainer {
+            VBranch *ptr;
 
-	struct VAssign : VBranch {
-		virtual void print(std::ostream& stream, const std::string padding = "") {
-			v[0]->print(stream, padding);
-			stream << padding << " <=";
-			v[1]->print(stream, padding + "  ");
-		}
-	};
+            operator VBranch *() {
+                return ptr;
+            }
 
-	struct VAnd : VBranch {
-		virtual void print(std::ostream& stream, const std::string padding = "") {
-			stream << std::endl << padding << "( '1' ";
-			for(unsigned i = 0; i < v.size(); i++) {
-				stream << std::endl << padding << "  and";
-				v[i]->print(stream, padding + "    ");
-			}
-			stream << padding << ")" << std::endl;
-		}
-	};
+            VContainer &operator/(VBranch *p) {
+                ptr = p;
+                return *this;
+            }
 
-	struct VOr : VBranch {
-		virtual void print(std::ostream& stream, const std::string padding = "") {
-			stream << std::endl << padding << "( '0' ";
-			for(unsigned i = 0; i < v.size(); i++) {
-				stream << std::endl << padding << "  or";
-				v[i]->print(stream, padding + "    ");
-			}
-			stream << std::endl << padding << ")" << std::endl;
-		}
-	};
+            VContainer &operator,(VPointer p) {
+                if (ptr) ptr->v.push_back(p.ptr);
+                return *this;
+            }
 
-	struct VNot : VBranch {
-		virtual void print(std::ostream& stream, const std::string padding = "") {
-			stream << " ( not";
-			v[0]->print(stream, padding + "  ");
-			stream << " )";
-		}
-	};
+            VContainer &operator,(VContainer c) {
+                if (ptr) ptr->v.push_back(c.ptr);
+                return *this;
+            }
+        };
 
-	struct VNop : VBranch {
-		virtual void print(std::ostream& stream, const std::string padding = "") {
-			v[0]->print(stream, padding);
-		}
-	};
+        struct VLine : VNode {
+            VLine(const std::string &name) : name(name) { }
+
+            virtual void print(std::ostream &stream, const std::string padding = "") {
+                stream << " " << name;
+            }
+
+            std::string name;
+        };
+
+        struct VAssign : VBranch {
+            virtual void print(std::ostream &stream, const std::string padding = "") {
+                v[0]->print(stream, padding);
+                stream << padding << " <=";
+                v[1]->print(stream, padding + "  ");
+            }
+        };
+
+        struct VAnd : VBranch {
+            virtual void print(std::ostream &stream, const std::string padding = "") {
+                stream << std::endl << padding << "( '1' ";
+                for (unsigned i = 0; i < v.size(); i++) {
+                    stream << std::endl << padding << "  and";
+                    v[i]->print(stream, padding + "    ");
+                }
+                stream << padding << ")" << std::endl;
+            }
+        };
+
+        struct VOr : VBranch {
+            virtual void print(std::ostream &stream, const std::string padding = "") {
+                stream << std::endl << padding << "( '0' ";
+                for (unsigned i = 0; i < v.size(); i++) {
+                    stream << std::endl << padding << "  or";
+                    v[i]->print(stream, padding + "    ");
+                }
+                stream << std::endl << padding << ")" << std::endl;
+            }
+        };
+
+        struct VNot : VBranch {
+            virtual void print(std::ostream &stream, const std::string padding = "") {
+                stream << " ( not";
+                v[0]->print(stream, padding + "  ");
+                stream << " )";
+            }
+        };
+
+        struct VNop : VBranch {
+            virtual void print(std::ostream &stream, const std::string padding = "") {
+                v[0]->print(stream, padding);
+            }
+        };
 
 //TODO can we create the macros without IDE errors ?!
 #define VLINE   VPointer()/new VLine
@@ -156,54 +164,71 @@ public:
 #define VNOP    VContainer()/new VNop
 
 
+    protected:
+        ChartToVHDL(const Interpreter &other);
 
-protected:
-	ChartToVHDL(const Interpreter& other);
+        void checkDocument();
 
-	void checkDocument();
-	void findEvents();
+        void findEvents();
 
-	void writeTypes(std::ostream& stream);
-	void writeIncludes(std::ostream& stream);
+        void writeTypes(std::ostream &stream);
 
-	// top layer components
-	void writeFiFo(std::ostream& stream);
-	void writeEventController(std::ostream & stream);
-	void writeMicroStepper(std::ostream& stream);
-	void writeTestbench(std::ostream & stream);
+        void writeIncludes(std::ostream &stream);
 
-	// system
-	void writeSignalsAndComponents(std::ostream& stream);
-	void writeSystemSignalMapping(std::ostream& stream);
-	void writeModuleInstantiation(std::ostream& stream);
+        // top layer components
+        void writeFiFo(std::ostream &stream);
 
-	// combinatorial logic
-	void writeOptimalTransitionSetSelection(std::ostream& stream);
-	void writeExitSet(std::ostream & stream);
-	void writeEntrySet(std::ostream & stream);
-	void writeTransitionSet(std::ostream & stream);
-	void writeDefaultCompletions(std::ostream & stream);
-	void writeCompleteEntrySet(std::ostream & stream);
-	void writeActiveStateNplusOne(std::ostream & stream);
+        void writeEventController(std::ostream &stream);
 
-	// handler
-	void writeStateHandler(std::ostream& stream);
-	void writeResetHandler(std::ostream & stream);
-	void writeSpontaneousHandler(std::ostream & stream);
-	void writeInternalEventHandler(std::ostream & stream);
-	void writeErrorHandler(std::ostream& stream);
+        void writeMicroStepper(std::ostream &stream);
 
-	// event generation
-	void writeExContentBlock(std::ostream & stream, std::string index,
-	                         std::list< XERCESC_NS::DOMElement* > commandSequence);
+        void writeTestbench(std::ostream &stream);
 
-	Trie _eventTrie;
-	std::list< XERCESC_NS::DOMElement* > _execContent;
+        // system
+        void writeSignalsAndComponents(std::ostream &stream);
 
-private:
-	std::string getLineForExecContent(const XERCESC_NS::DOMNode* elem);
+        void writeSystemSignalMapping(std::ostream &stream);
 
-};
+        void writeModuleInstantiation(std::ostream &stream);
+
+        // combinatorial logic
+        void writeOptimalTransitionSetSelection(std::ostream &stream);
+
+        void writeExitSet(std::ostream &stream);
+
+        void writeEntrySet(std::ostream &stream);
+
+        void writeTransitionSet(std::ostream &stream);
+
+        void writeDefaultCompletions(std::ostream &stream);
+
+        void writeCompleteEntrySet(std::ostream &stream);
+
+        void writeActiveStateNplusOne(std::ostream &stream);
+
+        // handler
+        void writeStateHandler(std::ostream &stream);
+
+        void writeResetHandler(std::ostream &stream);
+
+        void writeSpontaneousHandler(std::ostream &stream);
+
+        void writeInternalEventHandler(std::ostream &stream);
+
+        void writeErrorHandler(std::ostream &stream);
+
+        // event generation
+        void writeExContentBlock(std::ostream &stream, std::string index,
+                                 std::list<XERCESC_NS::DOMElement *> commandSequence);
+
+        Trie _eventTrie;
+        std::list<XERCESC_NS::DOMElement *> _execContent;
+
+    private:
+        std::string getLineForExecContent(const XERCESC_NS::DOMNode *elem);
+
+        bool filterSupportedExecContent(XERCESC_NS::DOMElement *execContentElement);
+    };
 
 }
 
