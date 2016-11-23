@@ -227,7 +227,7 @@ protected:
 private:
 	std::string getLineForExecContent(const XERCESC_NS::DOMNode *elem);
 
-	bool filterSupportedExecContent(XERCESC_NS::DOMElement *execContentElement);
+	bool isSupportedExecContent(XERCESC_NS::DOMElement *execContentElement);
 };
 
 }

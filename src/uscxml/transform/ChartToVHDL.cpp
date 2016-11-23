@@ -138,7 +138,7 @@ void ChartToVHDL::findEvents() {
 
 }
 
-bool ChartToVHDL::filterSupportedExecContent(DOMElement *execContentElement) {
+bool ChartToVHDL::isSupportedExecContent(DOMElement *execContentElement) {
 	return (TAGNAME(execContentElement) == XML_PREFIX(_scxml).str() + "raise" ||
 	        TAGNAME(execContentElement) == XML_PREFIX(_scxml).str() + "send");
 }
@@ -534,7 +534,7 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 	// check if there is SUPPORTED executable content
 	bool foundSupportedExecContent = false;
 	for (auto exContentElem : _execContent) {
-		if (filterSupportedExecContent(exContentElem)) {
+		if (isSupportedExecContent(exContentElem)) {
 			foundSupportedExecContent = true;
 			break;
 		}
@@ -608,7 +608,7 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 		for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
 			DOMElement *exContentElem = *ecIter;
 
-			if (filterSupportedExecContent(exContentElem)) {
+			if (isSupportedExecContent(exContentElem)) {
 
 				stream << seperator << "if start_" << toStr(i) << "_sig = '1' then"
 				       << std::endl;
@@ -624,7 +624,7 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 		//for (auto exContentElem : _execContent) {
 		for (auto ecIter = _execContent.begin(); ecIter != _execContent.end(); ecIter++, i++) {
 			DOMElement *exContentElem = *ecIter;
-			if (filterSupportedExecContent(exContentElem)) {
+			if (isSupportedExecContent(exContentElem)) {
 				stream << "      done_" << toStr(i) << "_sig <= '0';" << std::endl;
 			}
 		}
