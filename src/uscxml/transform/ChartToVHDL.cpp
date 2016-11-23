@@ -48,48 +48,6 @@ namespace uscxml {
 	ChartToVHDL::~ChartToVHDL() {
 	}
 
-	void ChartToVHDL::checkDocument() {
-		// filter unsupported stuff
-		std::list<DOMElement *> unsupported;
-		unsupported = DOMUtils::inDocumentOrder({
-														XML_PREFIX(_scxml).str() + "datamodel",
-														XML_PREFIX(_scxml).str() + "data",
-														XML_PREFIX(_scxml).str() + "assign",
-														XML_PREFIX(_scxml).str() + "donedata",
-														XML_PREFIX(_scxml).str() + "content",
-														XML_PREFIX(_scxml).str() + "param",
-														XML_PREFIX(_scxml).str() + "script",
-														XML_PREFIX(_scxml).str() + "parallel",
-														XML_PREFIX(_scxml).str() + "history",
-														XML_PREFIX(_scxml).str() + "if",
-														XML_PREFIX(_scxml).str() + "foreach",
-														XML_PREFIX(_scxml).str() + "send",
-														XML_PREFIX(_scxml).str() + "cancel",
-														XML_PREFIX(_scxml).str() + "invoke",
-														XML_PREFIX(_scxml).str() + "finalize"
-												}, _scxml);
-
-		std::stringstream ss;
-		if (unsupported.size() > 0) {
-			for (auto elem : unsupported) {
-				ss << "  " << DOMUtils::xPathForNode(elem) << " unsupported" << std::endl;
-			}
-			throw std::runtime_error("Unsupported elements found:\n" + ss.str());
-		}
-
-		unsupported = DOMUtils::inDocumentOrder({XML_PREFIX(_scxml).str() + "transition"}, _scxml);
-
-		for (auto transition : unsupported) {
-			if (HAS_ATTR(transition, "cond")) {
-				ERROR_PLATFORM_THROW("transition with conditions not supported!");
-			}
-			if (!HAS_ATTR(transition, "target")) {
-				ERROR_PLATFORM_THROW("targetless transition not supported!");
-			}
-		}
-
-	}
-
 	void ChartToVHDL::findEvents() {
 		// elements with an event attribute
 		std::list<DOMElement *> withEvents = DOMUtils::inDocumentOrder({
@@ -147,7 +105,6 @@ namespace uscxml {
 	}
 
 	void ChartToVHDL::writeTo(std::ostream &stream) {
-		//    checkDocument();
 		findEvents();
 
 
@@ -158,7 +115,6 @@ namespace uscxml {
 		stream << "--   gtkwave tb.vcd" << std::endl;
 		stream << std::endl;
 
-//		writeTypes(stream);
 		writeFiFo(stream);
 		writeEventController(stream);
 		writeMicroStepper(stream);
@@ -166,35 +122,6 @@ namespace uscxml {
 		writeTopLevel(stream);
 	}
 
-	// no longer required since events are a std_logic_vector now
-//	void ChartToVHDL::writeTypes(std::ostream &stream) {
-//		std::string seperator;
-//
-//		stream << "-- required global types" << std::endl;
-//		stream << "library IEEE;" << std::endl;
-//		stream << "use IEEE.std_logic_1164.all;" << std::endl;
-//		stream << std::endl;
-//		stream << "package machine" << _md5 << " is" << std::endl;
-//		// create state type
-//		stream << "  subtype state_type is std_logic_vector( ";
-//		stream << _states.size() - 1;
-//		stream << " downto 0);" << std::endl;
-//
-//		std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix("");
-//		stream << "  type event_type is ( hwe_null";
-//		seperator = ", ";
-//
-//		for (std::list<TrieNode *>::iterator eventIter = eventNames.begin();
-//			 eventIter != eventNames.end(); eventIter++) {
-//			stream << seperator << "hwe_" << escapeMacro((*eventIter)->value);
-//			//	seperator = ", ";
-//		}
-//		stream << " );" << std::endl;
-//
-//		stream << "end machine" << _md5 << ";" << std::endl;
-//		stream << std::endl;
-//		stream << "-- END needed global types" << std::endl;
-//	}
 
 	void ChartToVHDL::writeIncludes(std::ostream &stream) {
 		// Add controler specific stuff here

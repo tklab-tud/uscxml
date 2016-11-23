@@ -167,11 +167,8 @@ namespace uscxml {
 	protected:
 		ChartToVHDL(const Interpreter &other);
 
-		void checkDocument();
-
 		void findEvents();
 
-		void writeTypes(std::ostream &stream);
 
 		void writeIncludes(std::ostream &stream);
 
@@ -224,6 +221,7 @@ namespace uscxml {
 
 	private:
 		std::string getLineForExecContent(const XERCESC_NS::DOMNode *elem);
+
 		bool isSupportedExecContent(XERCESC_NS::DOMElement *execContentElement);
 	};
 
