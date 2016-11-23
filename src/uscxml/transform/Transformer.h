@@ -39,16 +39,16 @@ public:
 		_binding = other.getImpl()->_binding;
 	}
 
-    
-    
+
+
 	virtual void writeTo(std::ostream& stream) = 0;
 	virtual operator Interpreter() {
 		throw std::runtime_error("Transformer cannot be interpreted as an Interpreter again");
 	}
 
-    virtual XERCESC_NS::DOMDocument* getDocument() const {
-        return _document;
-    }
+	virtual XERCESC_NS::DOMDocument* getDocument() const {
+		return _document;
+	}
 
 protected:
 	std::multimap<std::string, std::string> _extensions;
