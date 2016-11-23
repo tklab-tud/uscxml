@@ -1,13 +1,42 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use strict;
 use Data::Dumper;
 use XML::Simple;
+use File::Basename;
+use File::Find;
+use Cwd 'abs_path';
 
-my $manifest = XMLin("./manifest.xml");
-# print Dumper($manifest->{'assert'});
+my $ctest = 'ctest'; # we assume it to be in the path
 
-my $perSpecId;
+my $possibleBuildDir = shift | "../../build/cli";
+chdir dirname(abs_path($0)) or die($!);
+my $manifest = XMLin("manifest.xml");
+
+if (-d $possibleBuildDir) {
+	chdir $possibleBuildDir or die($!);
+}
+
+my %testClasses = (
+'w3c/ecma' => 'ECMA',
+'w3c/lua' => 'Lua',
+'w3c/namespace' => 'NS',
+'w3c/promela' => 'Promela',
+# 'w3c/c89' => 'C89',
+'w3c/gen/c/ecma' => 'C (ECMA)',
+'w3c/gen/c/lua' => 'C (Lua)',
+# 'w3c/binding/java/jexl' => 'JEXL',
+'w3c/spin/promela' => 'Spin'
+);
+
+my %specClass = (
+'3' => 'Core Constructs',
+'4' => 'Executable Content',
+'5' => 'Data Model and Manipulation',
+'6' => 'External Communications',
+'C' => 'Data Models',
+'D' => 'Event I/O Processor'	
+);
 
 my %specName = (
 'C.1' => 'The Null Data Model',
@@ -43,6 +72,8 @@ my %specName = (
 my %specLink = (
 );
 
+my $perSpecId;
+
 TESTS: for my $testNr (keys $manifest->{'assert'}) {
 	my @tests;
 	my $thisTest = $manifest->{'assert'}->{$testNr};
@@ -71,23 +102,32 @@ TESTS: for my $testNr (keys $manifest->{'assert'}) {
 
 print << "EOF";
 <table>
-<thead>
-	<tr>
-		<th colspan="3">Test (Req. / Man.)</th>
-		<th>NameSpace</th>
-		<th>ECMA</th>
-		<th>Lua</th>
-		<th>PROMELA</th>
-		<th>Prolog</th>
-	</tr>
-</thead>
+
+	<thead>
+		<tr>
+			<th colspan="3">Test (Req. / Man.)</th>
+EOF
+
+for my $testClass (values %testClasses) {
+	print << "EOF";
+			<th>${testClass}</th>
+EOF
+	
+}
+
+print << "EOF";
+		</tr>
+	</thead>
+	<tbody>
 EOF
 
 # print '| Test |  | ECMA   | Lua |' . "\n";
 # print '|-----:|--|:------:|:---:|' . "\n";
-
+my $nrCols = 0;
+my $lastSpecClass = "";
 for my $specid (sort { $a cmp $b } keys $perSpecId) {
 	my $specName = $specName{$specid};
+	my $specClass = $specClass{substr($specid, 0, 1)};
 	if ($specName =~ s/^<(.*)>$/ucfirst($1)/eg) {
 		# $specName = join " ", map {ucfirst} split " ", $specName;
 		$specName = 'The ' .$specName. ' Element';
@@ -96,19 +136,33 @@ for my $specid (sort { $a cmp $b } keys $perSpecId) {
 	
 	# print "| <br> |   |   |  |  |\n";
 	
+	$nrCols = 3 + (keys %testClasses);
+	if ($specClass ne $lastSpecClass) {
+		print << "EOF";
+		<tr>
+			<td colspan="${nrCols}"><b><big>${specClass}</big></b></td>
+		</tr>
+EOF
+		$lastSpecClass = $specClass;
+	}
+	
 	my $link = "http://www.w3.org/TR/2015/REC-scxml-20150901/" . ${specLink{${specid}}};
 	
+	$nrCols = 2 + (keys %testClasses);
 	print << "EOF";
-	<tr>
-		<td>**<a href="${link}">&sect;${specid}</a>**</td>
-		<td colspan="7"><sub>&nbsp;</sub>**${specName}**<sup>&nbsp;</sup></td>
-	</tr>
+		<tr>
+			<td><b><a href="${link}">&sect;${specid}</a></b></td>
+			<td colspan="${nrCols}"><sub>&nbsp;</sub><b>${specName}</b><sup>&nbsp;</sup></td>
+		</tr>
 EOF
 	
 	
 	# print "| **[&sect;${specid}](http://www.w3.org/TR/2015/REC-scxml-20150901/${specLink{${specid}}})** | **${specName}** | <br><br> |  |\n";
 	
 	for my $test (sort {$a<=>$b} keys $perSpecId->{$specid}) {
+		
+		print STDERR "\n${test} ";
+		
 		my $content = $perSpecId->{$specid}->{$test}->{'content'};
 		$content =~ s/^\s+|\s+$//g ; # trim
 		$content =~ s/[\n]//g; # remove special chars
@@ -138,37 +192,40 @@ EOF
 		
 		my $output;
 		
-		
-		my $pass = '`pass`';
-		my $fail = '**`FAIL`**';
-		
-		my $ecmaPass = $fail;
-		my $ecmaFile = "/Users/sradomski/Documents/TK/Code/uscxml2/test/w3c/ecma/test${test}.scxml";
-		$output = `../../build/cli/bin/test-w3c $ecmaFile 2>&1 /dev/null`;
-		$ecmaPass = $pass if $? == 0;
-
-		my $luaPass = $fail;
-		my $luaFile = "/Users/sradomski/Documents/TK/Code/uscxml2/test/w3c/lua/test${test}.scxml";
-		$output = `../../build/cli/bin/test-w3c $luaFile 2>&1 /dev/null`;
-		$luaPass = $pass if $? == 0;
-
-		my $nsPass = $fail;
-		my $nsFile = "/Users/sradomski/Documents/TK/Code/uscxml2/test/w3c/namespace/test${test}.scxml";
-		$output = `../../build/cli/bin/test-w3c $nsFile 2>&1 /dev/null`;
-		$nsPass = $pass if $? == 0;
+		my $pass = '<code>pass</code>';
+		my $fail = '<code><mark>FAIL</mark></code>';
 		
 		$link = "https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test${test}.txml";
 		
 		print << "EOF";
 		<tr>
-			<td>&nbsp;&nbsp;&nbsp;**<a href="${link}" alt="${content}">`${test}`</a>**</td>
+			<td>&nbsp;&nbsp;&nbsp;<b><a href="${link}" alt="${content}">${test}</a></b></td>
 			<td>${required}</td>
 			<td>${manual}</td>
-			<td>${nsPass}</td>
-			<td>${ecmaPass}</td>
-			<td>${luaPass}</td>
-			<td>`N/A`</td>
-			<td>`N/A`</td>
+EOF
+
+		for my $testClass (keys %testClasses) {
+			my $testPass = $fail;
+			my $testName = "${testClass}/test${test}.scxml";
+			print STDERR "$testClasses{$testClass}";
+			$output = `$ctest -L $testName 2>&1 /dev/null`;
+			if ($output =~ /No tests were found!!!/) {
+				$testPass = '<code>N/A</code>';
+				print STDERR "? ";
+			} elsif ($output =~ /Passed/) {
+				$testPass = $pass;
+				print STDERR "+ ";
+			} else {
+				print STDERR "! ";
+			}
+			
+			print << "EOF";
+			<td>${testPass}</td>
+EOF
+			
+		}		
+		
+		print << "EOF";
 		</tr>
 EOF
 		
@@ -177,4 +234,7 @@ EOF
 	}
 }
 
-print '</table>'
+		print << "EOF";
+	</tbody>
+</table>
+EOF
