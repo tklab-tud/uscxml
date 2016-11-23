@@ -3,6 +3,12 @@
 # https://sourceforge.net/p/umhdl/wiki/Installation%20-%20Linux/
 # https://linux.die.net/man/1/ghdl
 # 
+# needs a up-to-date verson of ghdl (at least 0.32)
+# https://github.com/tgingold/ghdl
+# ./configure --with-llvm-config=/usr/bin/llvm-config --prefix=/opt/ghdl
+# sudo mkdir /opt/ghdl
+# make
+# sudo make install
 
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )/"
@@ -16,7 +22,7 @@ VHDL_OUT=${SIM_DIR}vhd/
 SIM_LIB_DIR=${SIM_DIR}scxml/
 VHDL_TB_NAME=tb
 
-SIMULATION_CMD="${INSTALL_DIR}vsim work.tb -do debug.do"
+GHDL=/opt/ghdl/bin/ghdl
 
 # get arguments
 TEST_NUMBER="test144.scxml"
@@ -43,8 +49,9 @@ fi
 
 # compile stuff
 cd ${SIM_DIR}
-ghdl --clean
-ghdl -a -Wa,--32 ${VHDL_OUT}dut.vhd
+${GHDL} --clean
+${GHDL} -a --std=08 ${VHDL_OUT}dut.vhd
+#${GHDL} -a -Wa,--32 ${VHDL_OUT}dut.vhd
 
 if [ $? -eq 0 ] ; then
     echo "syntax check ok."
@@ -53,7 +60,8 @@ else
     exit -1
 fi
 
-ghdl -e -Wa,--32 -Wl,-m32 ${VHDL_TB_NAME}
+${GHDL} -e --std=08 ${VHDL_TB_NAME}
+#${GHDL} -e -Wa,--32 -Wl,-m32 ${VHDL_TB_NAME}
 
 if [ $? -eq 0 ] ; then
     echo "compilation done."
@@ -63,4 +71,5 @@ else
 fi
 
 # start simulator
-ghdl -r tb --stop-time=10ms --vcd=tb.vcd
+${GHDL} -r tb --vcd=tb.vcd
+#${GHDL} -r tb --stop-time=10ms --vcd=tb.vcd

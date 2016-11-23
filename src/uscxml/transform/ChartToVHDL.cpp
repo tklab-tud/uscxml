@@ -203,6 +203,7 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 
 	stream << "-- TESTBENCH" << std::endl;
 	writeIncludes(stream);
+	stream << "use std.env.all;" << std::endl;
 	stream << std::endl;
 
 	stream << "-- empty entity" << std::endl;
@@ -432,7 +433,14 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 		stream << "_sig = '1') report \"Complted with errors\" severity error;" << std::endl;
 	}
 	stream << "      -- stop simulation" << std::endl;
-	stream << "      assert false report \"Simulation Finished\" severity failure;" << std::endl;
+	stream << "      finish(1);" << std::endl;
+//        -- For both STOP and FINISH the STATUS values are those used
+//        -- in the Verilog $finish task
+//        -- 0 prints nothing
+//        -- 1 prints simulation time and location
+//        -- 2 prints simulation time, location, and statistics about
+//        --   the memory and CPU times used in simulation
+	//stream << "      assert false report \"Simulation Finished\" severity failure;" << std::endl;
 	stream << "    else" << std::endl;
 	stream << "      -- state machine not completed" << std::endl;
 	stream << "      -- check if it is time to stop waiting (100 clk per state+transition+excontent)" << std::endl;
