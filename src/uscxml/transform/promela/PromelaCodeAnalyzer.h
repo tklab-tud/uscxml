@@ -64,10 +64,10 @@ public:
 			return true;
 		return false;
 	}
-    bool usesCancel(const std::string& elementName) {
-        return _usesCancel;
-    }
-    
+	bool usesCancel(const std::string& elementName) {
+		return _usesCancel;
+	}
+
 	bool usesEventDataField(const std::string& fieldName) {
 		if (usesComplexEventStruct() &&
 		        _typeDefs.types["_event"].types.find("data") != _typeDefs.types["_event"].types.end() &&
@@ -76,8 +76,8 @@ public:
 		return false;
 	}
 
-    size_t largestDelay = 0;
-    
+	size_t largestDelay = 0;
+
 	std::string getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, size_t indent = 0);
 	std::string getTypeReset(const std::string& var, const PromelaTypedef& type, size_t indent = 0);
 
@@ -91,9 +91,9 @@ public:
 		return _usesPlatformVars;
 	}
 
-    bool hasIndexLessLoops() {
-        return _hasIndexLessLoops;
-    }
+	bool hasIndexLessLoops() {
+		return _hasIndexLessLoops;
+	}
 
 	std::string macroForLiteral(const std::string& literal);
 	int indexForLiteral(const std::string& literal);
@@ -121,17 +121,17 @@ public:
 	}
 
 	std::string sanitizeCode(const std::string& code);
-    void addEvent(const std::string& eventName);
-    std::string createMacroName(const std::string& literal);
+	void addEvent(const std::string& eventName);
+	std::string createMacroName(const std::string& literal);
 
 protected:
-    void addState(const std::string& stateName, size_t index);
+	void addState(const std::string& stateName, size_t index);
 
 	int enumerateLiteral(const std::string& literal, int forceIndex = -1);
 
 	std::map<std::string, std::string> _strMacros;  // macronames for string literals
 	std::map<std::string, int> _strIndex;               // integer enumeration for string
-    std::set<std::string> _literals;
+	std::set<std::string> _literals;
 
 	PromelaTypedef _typeDefs;
 	Trie _eventTrie;
@@ -139,8 +139,8 @@ protected:
 private:
 	std::set<std::string> _macroNameSet; // helper set for uniqueness of macros
 	int _lastStrIndex = 1;
-    bool _usesCancel = false;
-    bool _usesInPredicate = false;
+	bool _usesCancel = false;
+	bool _usesInPredicate = false;
 	bool _usesPlatformVars = false;
 	bool _hasIndexLessLoops = false;
 };

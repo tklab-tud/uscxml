@@ -33,20 +33,20 @@ using namespace XERCESC_NS;
 
 void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 
-    /** 
-      Create macro names for state identifiers
-      Do not add as literals as they are not unique with nested state-charts
-     */
-    {
-        for (size_t i = 0; i < interpreter->_states.size(); i++) {
-            DOMElement* state = interpreter->_states[i];
-            if (HAS_ATTR(state, "id")) {
-                createMacroName(ATTR(state, "id"));
-            }
-        }
-    }
+	/**
+	  Create macro names for state identifiers
+	  Do not add as literals as they are not unique with nested state-charts
+	 */
+	{
+		for (size_t i = 0; i < interpreter->_states.size(); i++) {
+			DOMElement* state = interpreter->_states[i];
+			if (HAS_ATTR(state, "id")) {
+				createMacroName(ATTR(state, "id"));
+			}
+		}
+	}
 //    _lastStrIndex = interpreter->_states.size();
-    
+
 	/** Find all event names that might occur */
 	{
 		std::list<XERCESC_NS::DOMElement*> internalEventNames = DOMUtils::inDocumentOrder({
@@ -77,24 +77,24 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 				addEvent("done.state." + ATTR(state, "id"));
 			}
 		}
-        
-        std::list<XERCESC_NS::DOMElement*> invokers = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml, false);
-        for (auto invoker : invokers) {
-            addCode("_event.invokeid", interpreter);
 
-            if (HAS_ATTR(invoker, "id")) {
-                addEvent("done.state." + ATTR(invoker, "id"));
-            }
-        }
+		std::list<XERCESC_NS::DOMElement*> invokers = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml, false);
+		for (auto invoker : invokers) {
+			addCode("_event.invokeid", interpreter);
+
+			if (HAS_ATTR(invoker, "id")) {
+				addEvent("done.state." + ATTR(invoker, "id"));
+			}
+		}
 	}
 
-    // add event names from trie to string literals
-    std::list<TrieNode*> events = _eventTrie.getWordsWithPrefix("");
-    for (auto event : events) {
-        addLiteral(event->value);
-    }
-    
-    
+	// add event names from trie to string literals
+	std::list<TrieNode*> events = _eventTrie.getWordsWithPrefix("");
+	for (auto event : events) {
+		addLiteral(event->value);
+	}
+
+
 	/** Find all string literals */
 	{
 		// string literals for raise / send content
@@ -103,8 +103,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto content : contents) {
-            if (!content->hasChildNodes())
-                continue;
+			if (!content->hasChildNodes())
+				continue;
 			std::string contentStr = spaceNormalize(X(content->getFirstChild()->getNodeValue()));
 			if (!isNumeric(contentStr.c_str(), 10)) {
 				addLiteral(contentStr);
@@ -129,7 +129,7 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 			if (HAS_ATTR(cond, "cond")) {
 				std::string code = ATTR_CAST(cond, "cond");
 				code = sanitizeCode(code);
-                addCode(code, interpreter);
+				addCode(code, interpreter);
 				cond->setAttribute(X("cond"), X(code));
 			}
 		}
@@ -159,7 +159,7 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 			if (HAS_ATTR(location, "location")) {
 				std::string code = ATTR_CAST(location, "location");
 				code = sanitizeCode(code);
-                addCode(code, interpreter);
+				addCode(code, interpreter);
 				location->setAttribute(X("location"), X(code));
 			}
 		}
@@ -175,7 +175,7 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 				std::string code = X(textText->getNodeValue()).str();
 				if (code.size() > 0) {
 					code = sanitizeCode(code);
-                    addCode(code, interpreter);
+					addCode(code, interpreter);
 					textText->setNodeValue(X(code));
 				}
 			}
@@ -186,73 +186,73 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto foreach : foreachs) {
-            if (HAS_ATTR(foreach, "index")) {
-                addCode(ATTR(foreach, "index"), interpreter);
-            } else {
-                _hasIndexLessLoops = true;
-            }
-            if (HAS_ATTR(foreach, "item")) {
-                addCode(ATTR(foreach, "item"), interpreter);
-            }
-        }
+				if (HAS_ATTR(foreach, "index")) {
+					addCode(ATTR(foreach, "index"), interpreter);
+				} else {
+					_hasIndexLessLoops = true;
+				}
+				if (HAS_ATTR(foreach, "item")) {
+					addCode(ATTR(foreach, "item"), interpreter);
+				}
+			}
 
-        // do we need sendid / invokeid?
-        {
-            std::list<DOMElement*> invokes = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml);
-            std::list<DOMElement*> sends = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "send"}, interpreter->_scxml);
-            std::list<DOMElement*> cancels = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "cancel"}, interpreter->_scxml);
-            
-            if (cancels.size() > 0) {
-                addCode("_event.origin", interpreter);
-                _usesCancel = true;
-            }
-            
-            for (auto send : sends) {
-                if (HAS_ATTR(send, "idlocation")) {
-                    addCode("_event.sendid", interpreter);
-                }
-                if (HAS_ATTR(send, "id")) {
-                    addLiteral(ATTR(send, "id"));
-                    addCode("_event.sendid", interpreter);
-                }
-            
-                // do we need delays?
-                if (HAS_ATTR(send, "delay") || HAS_ATTR(send, "delayexpr")) {
-                    size_t delay = strTo<size_t>(ATTR(send, "delay"));
-                    if (delay > largestDelay)
-                        largestDelay = delay;
-                    addCode("_event.delay", interpreter);
+		// do we need sendid / invokeid?
+		{
+			std::list<DOMElement*> invokes = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml);
+			std::list<DOMElement*> sends = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "send"}, interpreter->_scxml);
+			std::list<DOMElement*> cancels = DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "cancel"}, interpreter->_scxml);
+
+			if (cancels.size() > 0) {
+				addCode("_event.origin", interpreter);
+				_usesCancel = true;
+			}
+
+			for (auto send : sends) {
+				if (HAS_ATTR(send, "idlocation")) {
+					addCode("_event.sendid", interpreter);
+				}
+				if (HAS_ATTR(send, "id")) {
+					addLiteral(ATTR(send, "id"));
+					addCode("_event.sendid", interpreter);
+				}
+
+				// do we need delays?
+				if (HAS_ATTR(send, "delay") || HAS_ATTR(send, "delayexpr")) {
+					size_t delay = strTo<size_t>(ATTR(send, "delay"));
+					if (delay > largestDelay)
+						largestDelay = delay;
+					addCode("_event.delay", interpreter);
 #if NEW_DELAY_RESHUFFLE
 #else
-                    addCode("_event.seqNr", interpreter);
+					addCode("_event.seqNr", interpreter);
 #endif
-                }
-            }
-        }
+				}
+			}
+		}
 
-        // add all namelist entries to the _event structure
-        {
-            std::list<DOMElement*> withNamelists;
-            withNamelists.splice(withNamelists.end(), DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "send"}, interpreter->_scxml));
-            withNamelists.splice(withNamelists.end(), DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml));
-            for (auto withNamelist : withNamelists) {
-                if (HAS_ATTR(withNamelist, "namelist")) {
-                    std::string namelist = ATTR(withNamelist, "namelist");
-                    std::list<std::string> names = tokenize(namelist);
-                    for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
-                        addCode("_event.data." + *nameIter + " = 0;", interpreter); // introduce for _event_t typedef
-                    }
-                }
-            }
-        }
+		// add all namelist entries to the _event structure
+		{
+			std::list<DOMElement*> withNamelists;
+			withNamelists.splice(withNamelists.end(), DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "send"}, interpreter->_scxml));
+			withNamelists.splice(withNamelists.end(), DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml));
+			for (auto withNamelist : withNamelists) {
+				if (HAS_ATTR(withNamelist, "namelist")) {
+					std::string namelist = ATTR(withNamelist, "namelist");
+					std::list<std::string> names = tokenize(namelist);
+					for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
+						addCode("_event.data." + *nameIter + " = 0;", interpreter); // introduce for _event_t typedef
+					}
+				}
+			}
+		}
 
 	}
 
 }
 
 void PromelaCodeAnalyzer::addEvent(const std::string& eventName) {
-    addLiteral(eventName);
-    _eventTrie.addWord(eventName);
+	addLiteral(eventName);
+	_eventTrie.addWord(eventName);
 }
 
 std::string PromelaCodeAnalyzer::sanitizeCode(const std::string& code) {
@@ -401,14 +401,14 @@ void PromelaCodeAnalyzer::addCode(const std::string& code, ChartToPromela* inter
 
 	}
 }
-    
+
 void PromelaCodeAnalyzer::addLiteral(const std::string& literal, int forceIndex) {
 	if (boost::starts_with(literal, "'"))
 		throw std::runtime_error("Literal " + literal + " passed with quotes");
 
-    if (_literals.find(literal) != _literals.end())
-        return;
-    _literals.insert(literal);
+	if (_literals.find(literal) != _literals.end())
+		return;
+	_literals.insert(literal);
 	createMacroName(literal);
 	enumerateLiteral(literal, forceIndex);
 }
@@ -519,16 +519,16 @@ std::string PromelaCodeAnalyzer::adaptCode(const std::string& code, const std::s
 		lastPos = 0;
 
 		while (posIter != posList.end()) {
-            std::string token = code.substr(posIter->first, posIter->second - posIter->first);
-            if (std::all_of(token.begin(), token.end(), ::isupper) && false) {
-                // assume it is a state-name macro
-                processedStr << code.substr(lastPos, posIter->first - lastPos) << token;
-            } else if (boost::starts_with(prefix, token)) {
-                processedStr << code.substr(lastPos, posIter->first - lastPos) << token;
-            } else {
-                processedStr << code.substr(lastPos, posIter->first - lastPos) << prefix << token;
-            }
-            lastPos = posIter->second;
+			std::string token = code.substr(posIter->first, posIter->second - posIter->first);
+			if (std::all_of(token.begin(), token.end(), ::isupper) && false) {
+				// assume it is a state-name macro
+				processedStr << code.substr(lastPos, posIter->first - lastPos) << token;
+			} else if (boost::starts_with(prefix, token)) {
+				processedStr << code.substr(lastPos, posIter->first - lastPos) << token;
+			} else {
+				processedStr << code.substr(lastPos, posIter->first - lastPos) << prefix << token;
+			}
+			lastPos = posIter->second;
 			posIter++;
 		}
 		processedStr << processed.substr(lastPos, processed.size() - lastPos);
@@ -595,9 +595,9 @@ std::list<std::pair<size_t, size_t> > PromelaCodeAnalyzer::getTokenPositions(con
 
 std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const PromelaTypedef& type, size_t indent) {
 	std::stringstream assignment;
-    std::string padding;
-    for (size_t i = 0; i < indent; i++)
-        padding += "  ";
+	std::string padding;
+	for (size_t i = 0; i < indent; i++)
+		padding += "  ";
 
 	std::map<std::string, PromelaTypedef>::const_iterator typeIter = type.types.begin();
 	while(typeIter != type.types.end()) {
@@ -618,26 +618,26 @@ std::string PromelaCodeAnalyzer::getTypeReset(const std::string& var, const Prom
 }
 
 std::string PromelaCodeAnalyzer::getTypeAssignment(const std::string& varTo, const std::string& varFrom, const PromelaTypedef& type, size_t indent) {
-    std::stringstream assignment;
-    std::string padding;
-    for (size_t i = 0; i < indent; i++)
-        padding += "  ";
+	std::stringstream assignment;
+	std::string padding;
+	for (size_t i = 0; i < indent; i++)
+		padding += "  ";
 
-    std::map<std::string, PromelaTypedef>::const_iterator typeIter = type.types.begin();
-    while(typeIter != type.types.end()) {
-        const PromelaTypedef& innerType = typeIter->second;
-        if (innerType.arraySize > 0) {
-            for (size_t i = 0; i < innerType.arraySize; i++) {
-                assignment << padding << varTo << "." << typeIter->first << "[" << i << "] = " << varFrom << "." << typeIter->first << "[" << i << "];" << std::endl;
-            }
-        } else if (innerType.types.size() > 0) {
-            assignment << getTypeAssignment(varTo + "." + typeIter->first, varFrom + "." + typeIter->first, typeIter->second, indent);
-        } else {
-            assignment << padding << varTo << "." << typeIter->first << " = " << varFrom << "." << typeIter->first << ";" << std::endl;
-        }
-        typeIter++;
-    }
-    return assignment.str();
+	std::map<std::string, PromelaTypedef>::const_iterator typeIter = type.types.begin();
+	while(typeIter != type.types.end()) {
+		const PromelaTypedef& innerType = typeIter->second;
+		if (innerType.arraySize > 0) {
+			for (size_t i = 0; i < innerType.arraySize; i++) {
+				assignment << padding << varTo << "." << typeIter->first << "[" << i << "] = " << varFrom << "." << typeIter->first << "[" << i << "];" << std::endl;
+			}
+		} else if (innerType.types.size() > 0) {
+			assignment << getTypeAssignment(varTo + "." + typeIter->first, varFrom + "." + typeIter->first, typeIter->second, indent);
+		} else {
+			assignment << padding << varTo << "." << typeIter->first << " = " << varFrom << "." << typeIter->first << ";" << std::endl;
+		}
+		typeIter++;
+	}
+	return assignment.str();
 }
 
 }

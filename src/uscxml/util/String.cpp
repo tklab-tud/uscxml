@@ -26,26 +26,25 @@ namespace uscxml {
 #define ISWHITESPACE(char) (isspace(char))
 
 std::string escapeMacro(std::string const &s) {
-    // inspired by http://stackoverflow.com/questions/2417588/escaping-a-c-string
-    std::string returnValue="";
+	// inspired by http://stackoverflow.com/questions/2417588/escaping-a-c-string
+	std::string returnValue="";
 	std::string specialChars="";
-    for (std::string::const_iterator iter = s.begin(), end = s.end(); iter != end; ++iter) {
-        char c = *iter;
-        if (('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_') {
-            returnValue += c;
-        }
-        else {
-            specialChars += c;
-        }
-    }
-	if (!specialChars.empty()){
+	for (std::string::const_iterator iter = s.begin(), end = s.end(); iter != end; ++iter) {
+		char c = *iter;
+		if (('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_') {
+			returnValue += c;
+		} else {
+			specialChars += c;
+		}
+	}
+	if (!specialChars.empty()) {
 		// http://www.cplusplus.com/reference/functional/hash/
 		// returns the same result for a given string within one execution
 		std::hash<std::string> strHash;
 		returnValue += "_";
 		returnValue += strHash(specialChars);
 	}
-    return returnValue;
+	return returnValue;
 }
 
 std::list<std::string> tokenize(const std::string& line, const char sep, bool trimWhiteSpace) {

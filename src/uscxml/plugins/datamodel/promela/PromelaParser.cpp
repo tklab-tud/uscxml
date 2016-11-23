@@ -85,7 +85,7 @@ void PromelaParser::init(const std::string& expr) {
 	parseInCompound = 0;
 	input_length = expr.length() + 2;  // plus some zero terminators
 	input = (char*) calloc(1, input_length);
-    memcpy(input, expr.c_str(), expr.length());
+	memcpy(input, expr.c_str(), expr.length());
 
 	promela_lex_init(&scanner);
 	//	promela_assign_set_extra(ast, &scanner);
