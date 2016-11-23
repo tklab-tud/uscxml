@@ -6,6 +6,18 @@ find_program(CC gcc)
 find_program(CXX g++)
 find_program(ANT_EXECUTABLE ant)
 find_program(PERL perl)
+find_program(GHDL ghdl)
+
+if (GHDL)
+	execute_process(COMMAND ${GHDL} -v OUTPUT_VARIABLE GHDL_VERSION_OUT)
+	string(REGEX REPLACE "^GHDL " "" GHDL_VERSION_OUT ${GHDL_VERSION_OUT})
+	string(REGEX MATCH "^([0-9]+\\.[0-9]+)" GHDL_VERSION ${GHDL_VERSION_OUT})	
+
+	if (${GHDL_VERSION} VERSION_LESS "0.32")
+		message(WARNING "GHDL version 0.32 required - ${GHDL_VERSION} found, not building VHDL tests")
+		unset(GHDL)
+	endif()
+endif()
 
 function(USCXML_TEST_COMPILE)
 	set(options BUILD_ONLY)
@@ -247,6 +259,7 @@ if (NOT BUILD_MINIMAL)
 									-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
 									-DCC_BIN:FILEPATH=${CC}
 									-DCXX_BIN:FILEPATH=${CXX}
+									-DGHDL_BIN:FILEPATH=${GHDL}
 									-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
 									-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
 									-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
