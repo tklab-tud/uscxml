@@ -18,15 +18,15 @@ if (-d $possibleBuildDir) {
 }
 
 my %testClasses = (
-'w3c/ecma/' => 'ECMA',
-'w3c/lua/' => 'Lua',
-'w3c/namespace/' => 'NS',
-'w3c/promela/' => 'Promela',
-'w3c/c89/' => 'C89',
-'w3c/gen/c/ecma/' => 'C (ECMA)',
-'w3c/gen/c/lua/' => 'C (Lua)',
-'w3c/binding/java/jexl/' => 'JEXL',
-# 'w3c/spin/promela/' => 'Spin'
+'w3c/ecma' => 'ECMA',
+'w3c/lua' => 'Lua',
+'w3c/namespace' => 'NS',
+'w3c/promela' => 'Promela',
+# 'w3c/c89' => 'C89',
+'w3c/gen/c/ecma' => 'C (ECMA)',
+'w3c/gen/c/lua' => 'C (Lua)',
+# 'w3c/binding/java/jexl' => 'JEXL',
+'w3c/spin/promela' => 'Spin'
 );
 
 my %specClass = (
@@ -123,7 +123,7 @@ EOF
 
 # print '| Test |  | ECMA   | Lua |' . "\n";
 # print '|-----:|--|:------:|:---:|' . "\n";
-
+my $nrCols = 0;
 my $lastSpecClass = "";
 for my $specid (sort { $a cmp $b } keys $perSpecId) {
 	my $specName = $specName{$specid};
@@ -136,10 +136,11 @@ for my $specid (sort { $a cmp $b } keys $perSpecId) {
 	
 	# print "| <br> |   |   |  |  |\n";
 	
+	$nrCols = 3 + (keys %testClasses);
 	if ($specClass ne $lastSpecClass) {
 		print << "EOF";
 		<tr>
-			<td colspan="$(3 + (scalar keys %testClasses))"><b><big>${specClass}</big></b></td>
+			<td colspan="${nrCols}"><b><big>${specClass}</big></b></td>
 		</tr>
 EOF
 		$lastSpecClass = $specClass;
@@ -147,10 +148,11 @@ EOF
 	
 	my $link = "http://www.w3.org/TR/2015/REC-scxml-20150901/" . ${specLink{${specid}}};
 	
+	$nrCols = 2 + (keys %testClasses);
 	print << "EOF";
 		<tr>
 			<td><b><a href="${link}">&sect;${specid}</a></b></td>
-			<td colspan="$(2 + (scalar keys %testClasses))"><sub>&nbsp;</sub><b>${specName}</b><sup>&nbsp;</sup></td>
+			<td colspan="${nrCols}"><sub>&nbsp;</sub><b>${specName}</b><sup>&nbsp;</sup></td>
 		</tr>
 EOF
 	
@@ -203,19 +205,22 @@ EOF
 EOF
 
 		for my $testClass (keys %testClasses) {
-			print STDERR "$testClasses{$testClass}";
 			my $testPass = $fail;
 			my $testName = "${testClass}/test${test}.scxml";
+			print STDERR "$testClasses{$testClass}";
 			$output = `$ctest -L $testName 2>&1 /dev/null`;
-			if ($? == 0) {
+			if ($output =~ /No tests were found!!!/) {
+				$testPass = '<code>N/A</code>';
+				print STDERR "? ";
+			} elsif ($output =~ /Passed/) {
 				$testPass = $pass;
-				print STDERR "+ "
+				print STDERR "+ ";
 			} else {
-				print STDERR "! "
+				print STDERR "! ";
 			}
 			
 			print << "EOF";
-			<td>${pass}</td>
+			<td>${testPass}</td>
 EOF
 			
 		}		
