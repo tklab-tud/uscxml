@@ -167,11 +167,8 @@ public:
 protected:
 	ChartToVHDL(const Interpreter &other);
 
-	void checkDocument();
-
 	void findEvents();
 
-	void writeTypes(std::ostream &stream);
 
 	void writeIncludes(std::ostream &stream);
 
@@ -183,6 +180,8 @@ protected:
 	void writeMicroStepper(std::ostream &stream);
 
 	void writeTestbench(std::ostream &stream);
+
+	void writeTopLevel(std::ostream &stream);
 
 	// system
 	void writeSignalsAndComponents(std::ostream &stream);
@@ -197,10 +196,6 @@ protected:
 	void writeExitSet(std::ostream &stream);
 
 	void writeEntrySet(std::ostream &stream);
-
-	void writeTransitionSet(std::ostream &stream);
-
-	void writeDefaultCompletions(std::ostream &stream);
 
 	void writeCompleteEntrySet(std::ostream &stream);
 
@@ -217,17 +212,17 @@ protected:
 
 	void writeErrorHandler(std::ostream &stream);
 
-	// event generation
-	void writeExContentBlock(std::ostream &stream, std::string index,
-	                         std::list<XERCESC_NS::DOMElement *> commandSequence);
 
 	Trie _eventTrie;
+	std::list<TrieNode *> _eventNames;
+	size_t _eventBitSize = 0;
+	std::map<std::string, std::string> _eventsOnBus;
 	std::list<XERCESC_NS::DOMElement *> _execContent;
 
 private:
 	std::string getLineForExecContent(const XERCESC_NS::DOMNode *elem);
 
-	bool filterSupportedExecContent(XERCESC_NS::DOMElement *execContentElement);
+	bool isSupportedExecContent(XERCESC_NS::DOMElement *execContentElement);
 };
 
 }
