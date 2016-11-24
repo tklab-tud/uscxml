@@ -161,6 +161,7 @@ if (NOT BUILD_MINIMAL)
 			# "gen/c/promela"
 			"gen/vhdl/ecma"
 			"gen/vhdl/null"
+			"gen/java/jexl"
 
 			# bindings
 			"binding/java/jexl"
