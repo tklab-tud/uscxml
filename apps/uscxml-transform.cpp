@@ -125,6 +125,7 @@ int main(int argc, char** argv) {
 		break;
 		case 'o':
 			outputFile = optarg;
+            extensions.insert(std::pair<std::string, std::string>("outputFile", outputFile));
 			break;
 		case 'l':
 			break;
@@ -370,38 +371,15 @@ int main(int argc, char** argv) {
             outStream.close();
 
         }
-#if 0
-		if (options.size() > 0) {
-			ChartToFSM annotater(interpreter);
-			if (std::find(options.begin(), options.end(), "priority") != options.end())
-				annotater.indexTransitions();
-			if (std::find(options.begin(), options.end(), "conflicts") != options.end())
-				annotater.annotateConflicts();
-			if (std::find(options.begin(), options.end(), "exitset") != options.end())
-				annotater.annotateExitSet();
-			if (std::find(options.begin(), options.end(), "entryset") != options.end())
-				annotater.annotateEntrySet();
-			if (std::find(options.begin(), options.end(), "domain") != options.end())
-				annotater.annotateDomain();
-
-			if (outputFile.size() == 0 || outputFile == "-") {
-				std::cout << annotater.getDocument();
-			} else {
-				std::ofstream outStream;
-				outStream.open(outputFile.c_str());
-				outStream << annotater.getDocument();
-				outStream.close();
-			}
-			exit(EXIT_SUCCESS);
-		}
-#endif
 
 
 	} catch (Event e) {
 		std::cout << e << std::endl;
+        return EXIT_FAILURE;
 	} catch (const std::exception &e) {
 		std::cout << e.what() << std::endl;
+        return EXIT_FAILURE;
 	}
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

@@ -31,7 +31,7 @@ class USCXML_API TransformerImpl {
 public:
 	TransformerImpl(const Interpreter& other) {
 		interpreter = other; // we need to keep a reference to retain the document!
-		other.getImpl()->init();
+		other.getImpl()->setupDOM();
 		_document = other.getImpl()->_document;
 		_baseURL = other.getImpl()->_baseURL;
 		_scxml =  other.getImpl()->_scxml;

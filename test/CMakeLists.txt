@@ -1,23 +1,23 @@
 set(TEST_TIMEOUT 30)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
-find_program(SPIN spin)
-find_program(CC gcc)
-find_program(CXX g++)
-find_program(ANT_EXECUTABLE ant)
-find_program(PERL perl)
-find_program(GHDL ghdl)
+find_program(SPIN_BIN spin)
+find_program(CC_BIN gcc)
+find_program(CXX_BIN g++)
+find_program(ANT_BIN ant)
+find_program(PERL_BIN perl)
+find_program(GHDL_BIN ghdl)
 
 set(GHDL_VERSION "0")
-if (GHDL)
-	execute_process(COMMAND ${GHDL} -v OUTPUT_VARIABLE GHDL_VERSION_OUT)
+if (GHDL_BIN)
+	execute_process(COMMAND ${GHDL_BIN} -v OUTPUT_VARIABLE GHDL_VERSION_OUT)
 	string(REGEX REPLACE "^GHDL " "" GHDL_VERSION_OUT ${GHDL_VERSION_OUT})
 	string(REGEX MATCH "^([0-9]+\\.[0-9]+)" GHDL_VERSION ${GHDL_VERSION_OUT})
 
 	if (${GHDL_VERSION} VERSION_LESS "0.32")
 		message(WARNING "GHDL version 0.32 required - ${GHDL_VERSION} found, not building VHDL tests")
 		message(WARNING "Try https://github.com/tgingold/ghdl/releases/tag/v0.33")
-		unset(GHDL)
+		unset(GHDL_BIN)
 	endif ()
 endif ()
 
@@ -110,8 +110,8 @@ foreach (USCXML_HEADER ${USCXML_PUBLIC_HEADERS})
 	add_test(NAME "header/${USCXML_REL_HEADER}"
 			COMMAND ${CMAKE_COMMAND}
 			-DTESTFILE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/headers/${USCXML_REL_HEADER}.cpp
-			-DCC_BIN:FILEPATH=${CC}
-			-DCXX_BIN:FILEPATH=${CXX}
+			-DCC_BIN:FILEPATH=${CC_BIN}
+			-DCXX_BIN:FILEPATH=${CXX_BIN}
 			-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
 			-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
 			-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
@@ -123,9 +123,9 @@ foreach (USCXML_HEADER ${USCXML_PUBLIC_HEADERS})
 endforeach ()
 
 # debugger REST API
-if (PERL)
+if (PERL_BIN)
 	add_test(NAME "general/test-debug-api"
-			COMMAND ${PERL}
+			COMMAND ${PERL_BIN}
 			"${PROJECT_SOURCE_DIR}/test/src/test-http-debugger.pl"
 			"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-browser"
 			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test/src
@@ -247,81 +247,84 @@ if (NOT BUILD_MINIMAL)
 
 					# more properties for standard tests
 
-				else ()
+				elseif (TEST_TYPE MATCHES "^gen.*")
+					# tests for generated languages via ctest/scripts/test_generated_${TEST_TARGET}.cmake
+					get_filename_component(TEST_TARGET ${TEST_TYPE} NAME)
+					if (TEST_TYPE MATCHES "^gen/${TEST_TARGET}")
 
-					if (TEST_TYPE MATCHES "^gen.*")
-						get_filename_component(TEST_TARGET ${TEST_TYPE} NAME)
-						if (TEST_TYPE MATCHES "^gen/${TEST_TARGET}")
-
-							if (TEST_TARGET MATCHES "vhdl" AND "${GHDL_VERSION}" VERSION_LESS "0.32")
-								# do nothing
-							else ()
-
-								# generate native interpreters
-								add_test(NAME "${TEST_NAME}"
-										COMMAND ${CMAKE_COMMAND}
-										-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
-										-DTESTFILE:FILEPATH=${W3C_TEST}
-										-DTARGETLANG=${TEST_TARGET}
-										-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
-										-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-										-DCC_BIN:FILEPATH=${CC}
-										-DCXX_BIN:FILEPATH=${CXX}
-										-DGHDL_BIN:FILEPATH=${GHDL}
-										-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-										-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
-										-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
-										-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
-										-DXercesC_INCLUDE_DIRS=${XercesC_INCLUDE_DIRS}
-										-DURIPARSER_INCLUDE_DIR=${URIPARSER_INCLUDE_DIR}
-										-DLIBEVENT_INCLUDE_DIR=${LIBEVENT_INCLUDE_DIR}
-										-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-										-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-gen-c.cpp
-										-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_generated_test.cmake)
-								set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
-								set(TEST_ADDED ON)
-							endif()
-						endif ()
-
-					elseif (TEST_TYPE MATCHES "^binding.*")
-						get_filename_component(TEST_LANG ${TEST_TYPE} NAME)
-
-						if (TARGET jar AND TEST_LANG STREQUAL "java")
-							add_test(NAME "${TEST_NAME}"
-									COMMAND
-									${ANT_EXECUTABLE}
-									-Dtest.file=${W3C_TEST}
-									-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
-									WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bindings/java
-									)
-							set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
-							set(TEST_ADDED ON)
-						endif ()
-
-					elseif (TEST_TYPE MATCHES "^spin.*")
-
-						if (NOT ${TEST_DATAMODEL} STREQUAL "promela")
+						# a few necessary preconditions per target language
+						if (TEST_TARGET MATCHES "vhdl" AND "${GHDL_VERSION}" VERSION_LESS "0.32")
 							break()
-						endif ()
+						endif()
 
+						if (TEST_TARGET MATCHES "java" AND NOT ANT_BIN)
+							break()
+						endif()
+
+						# call test script
 						add_test(NAME "${TEST_NAME}"
 								COMMAND ${CMAKE_COMMAND}
-								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
+								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
 								-DTESTFILE:FILEPATH=${W3C_TEST}
+								-DTARGETLANG=${TEST_TARGET}
+								-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
 								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
-								-DSPIN_BIN:FILEPATH=${SPIN}
-								-DCC_BIN:FILEPATH=${CC}
-								-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_promela_test.cmake)
-						set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
-						set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
+								-DANT_BIN:FILEPATH=${ANT_BIN}
+								-DCC_BIN:FILEPATH=${CC_BIN}
+								-DCXX_BIN:FILEPATH=${CXX_BIN}
+								-DGHDL_BIN:FILEPATH=${GHDL_BIN}
+								-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+								-DUSCXML_PLATFORM_ID=${USCXML_PLATFORM_ID}
+								-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+								-DPROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}
+								-DXercesC_INCLUDE_DIRS=${XercesC_INCLUDE_DIRS}
+								-DURIPARSER_INCLUDE_DIR=${URIPARSER_INCLUDE_DIR}
+								-DLIBEVENT_INCLUDE_DIR=${LIBEVENT_INCLUDE_DIR}
+								-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+								-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-gen-c.cpp
+								-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/test_generated_${TEST_TARGET}.cmake)
+						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
 						set(TEST_ADDED ON)
+					endif()
 
-					elseif (TEST_TYPE MATCHES "^fsm.*")
+				elseif (TEST_TYPE MATCHES "^binding.*")
+					get_filename_component(TEST_LANG ${TEST_TYPE} NAME)
 
-						add_test("${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-state-pass -f ${W3C_TEST})
+					if (TARGET jar AND TEST_LANG STREQUAL "java")
+						add_test(NAME "${TEST_NAME}"
+								COMMAND
+								${ANT_BIN}
+								-Dtest.file=${W3C_TEST}
+								-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
+								WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bindings/java
+								)
+						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
 						set(TEST_ADDED ON)
-
 					endif ()
+
+				elseif (TEST_TYPE MATCHES "^spin.*")
+
+					if (NOT ${TEST_DATAMODEL} STREQUAL "promela")
+						break()
+					endif ()
+
+					add_test(NAME "${TEST_NAME}"
+							COMMAND ${CMAKE_COMMAND}
+							-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/promela
+							-DTESTFILE:FILEPATH=${W3C_TEST}
+							-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
+							-DSPIN_BIN:FILEPATH=${SPIN_BIN}
+							-DCC_BIN:FILEPATH=${CC_BIN}
+							-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_promela_test.cmake)
+					set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
+					set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
+					set(TEST_ADDED ON)
+
+				elseif (TEST_TYPE MATCHES "^fsm.*")
+
+					add_test("${TEST_NAME}" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-state-pass -f ${W3C_TEST})
+					set(TEST_ADDED ON)
+
 				endif ()
 
 				if (TEST_ADDED)

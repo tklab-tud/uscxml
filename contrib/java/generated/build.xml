@@ -1,0 +1,35 @@
+<project name="java-tests" default="test-w3c">
+
+	<property environment="env"/>
+
+	<property file="build.properties" />
+	<property name="src" value="." />
+	<property name="common" value="../common" />
+	<property name="bin" value="bin" />
+
+	<target name="clean">
+		<delete dir="${bin}" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="${bin}" />
+		<javac destdir="${bin}" debuglevel="lines,vars,source" debug="on"
+			encoding="utf-8" includeantruntime="false" target="1.5" source="1.5">
+			<src path="${src}" />
+			<src path="${common}" />
+			<src path="${generated.dir}" />
+			<classpath>
+				<pathelement location="${logging.jar}" />
+				<pathelement location="${jexl.jar}" />
+			</classpath>
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<target name="test-w3c" depends="compile">
+		<java classpath="${jexl.jar}:${logging.jar}:${bin}:${generated.dir}" classname="org.uscxml.tests.gen.TestStateChart">
+			<arg value="${test.file}"/>
+		</java>
+	</target>
+
+</project>

@@ -90,7 +90,8 @@ std::list<std::string> tokenize(const std::string &line, const char sep, bool tr
 				i++;    // skip multiple occurences of seperator and whitespaces
 			}
 			start = i;
-		} else if (i + 1 == line.size()) {
+		}
+        if (i + 1 == line.size()) {
 			tokens.push_back(line.substr(start, i + 1 - start));
 		}
 	}

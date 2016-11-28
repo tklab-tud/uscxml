@@ -90,7 +90,7 @@ void ChartToVHDL::findEvents() {
 	// Calculate needed bit size for the event fifo
 	// --> |log2(n)| +1 with n is number of events
 	// we do not add +1 because the std_logic_vector startes with 0
-	_eventBitSize = ceil(abs(log2(_eventNames.size())));
+    _eventBitSize = ceil(std::abs(log2(_eventNames.size())));
 
 	_execContent = DOMUtils::inDocumentOrder({
 		XML_PREFIX(_scxml).str() + "raise",
