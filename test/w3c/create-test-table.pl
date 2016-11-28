@@ -9,24 +9,28 @@ use Cwd 'abs_path';
 
 my $ctest = 'ctest'; # we assume it to be in the path
 
-my $possibleBuildDir = shift | "../../build/cli";
+my $possibleBuildDir = "../../build/cli";
+if (@ARGV>0) {
+    $possibleBuildDir = $ARGV[0];
+}
+#print $possibleBuildDir;
 chdir dirname(abs_path($0)) or die($!);
 my $manifest = XMLin("manifest.xml");
 
-if (-d $possibleBuildDir) {
+#if (-d $possibleBuildDir) {
 	chdir $possibleBuildDir or die($!);
-}
+#}
 
 my %testClasses = (
 'w3c/ecma' => 'ECMA',
-'w3c/lua' => 'Lua',
-'w3c/namespace' => 'NS',
-'w3c/promela' => 'Promela',
+#'w3c/lua' => 'Lua',
+#'w3c/namespace' => 'NS',
+#'w3c/promela' => 'Promela',
 # 'w3c/c89' => 'C89',
-'w3c/gen/c/ecma' => 'C (ECMA)',
-'w3c/gen/c/lua' => 'C (Lua)',
+#'w3c/gen/c/ecma' => 'C (ECMA)',
+#'w3c/gen/c/lua' => 'C (Lua)',
 # 'w3c/binding/java/jexl' => 'JEXL',
-'w3c/spin/promela' => 'Spin'
+#'w3c/spin/promela' => 'Spin'
 );
 
 my %specClass = (
