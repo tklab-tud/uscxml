@@ -2,6 +2,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/util/String.h"
 #include "uscxml/transform/ChartToC.h"
+#include "uscxml/transform/ChartToJava.h"
 #include "uscxml/transform/ChartToVHDL.h"
 #include "uscxml/transform/ChartToPromela.h"
 
@@ -39,7 +40,8 @@ void printUsageAndExit(const char* progName) {
 	printf("Options\n");
 	printf("\t-t c           : convert to C program\n");
 	printf("\t-t pml         : convert to spin/promela program\n");
-	printf("\t-t vhdl        : convert to VHDL hardware description\n");
+    printf("\t-t vhdl        : convert to VHDL hardware description\n");
+    printf("\t-t java        : convert to Java classes\n");
 	printf("\t-t flat        : flatten to SCXML state-machine\n");
 	printf("\t-a FILE        : write annotated SCXML document for transformation\n");
 	printf("\t-X {PARAMETER} : pass additional parameters to the transformation\n");
@@ -187,7 +189,8 @@ int main(int argc, char** argv) {
 	        outType != "scxml" &&
 	        outType != "pml" &&
 	        outType != "c" &&
-	        outType != "vhdl" &&
+            outType != "vhdl" &&
+            outType != "java" &&
 	        outType != "min" &&
 	        std::find(options.begin(), options.end(), "priority") == options.end() &&
 	        std::find(options.begin(), options.end(), "domain") == options.end() &&
@@ -278,6 +281,21 @@ int main(int argc, char** argv) {
 				outStream.close();
 			}
 		}
+
+        if (outType == "java") {
+            transformer = ChartToJava::transform(interpreter);
+            transformer.setExtensions(extensions);
+            transformer.setOptions(options);
+            
+            if (outputFile.size() == 0 || outputFile == "-") {
+                transformer.writeTo(std::cout);
+            } else {
+                std::ofstream outStream;
+                outStream.open(outputFile.c_str());
+                transformer.writeTo(outStream);
+                outStream.close();
+            }
+        }
 
 		if (outType == "vhdl") {
             transformer = ChartToVHDL::transform(interpreter);
