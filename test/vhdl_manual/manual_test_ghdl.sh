@@ -9,6 +9,7 @@
 # sudo mkdir /opt/ghdl
 # make
 # sudo make install
+# OR install from https://github.com/tgingold/ghdl/releases/tag/v0.33
 
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )/"
@@ -22,7 +23,8 @@ VHDL_OUT=${SIM_DIR}vhd/
 SIM_LIB_DIR=${SIM_DIR}scxml/
 VHDL_TB_NAME=tb
 
-GHDL=/opt/ghdl/bin/ghdl
+#GHDL=/opt/ghdl/bin/ghdl
+GHDL=ghdl
 
 # get arguments
 TEST_NUMBER="test144.scxml"
