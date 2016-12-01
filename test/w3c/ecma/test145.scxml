@@ -14,7 +14,7 @@
     <transition event="*" target="fail"/>
   </state>
   <state id="s2">
-    <transition target="s2"/>
+    <transition target="pass"/>
   </state>
   <final id="pass">
     <onentry>
