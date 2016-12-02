@@ -10,10 +10,11 @@ package org.uscxml;
 
 public class StateChartJava5Impl extends StateChart {
 	
+	DataModel dataModel;
+	
 	@Override
 	public boolean isTrue(String expression) {
-		// TODO Auto-generated method stub
-		return false;
+		return dataModel.evalAsBool(expression);
 	}
 
 	@Override

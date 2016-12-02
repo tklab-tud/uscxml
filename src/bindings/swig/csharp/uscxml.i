@@ -16,8 +16,6 @@
 typedef uscxml::Blob Blob;
 typedef uscxml::Data Data;
 typedef uscxml::Event Event;
-typedef uscxml::InvokeRequest InvokeRequest;
-typedef uscxml::SendRequest SendRequest;
 typedef uscxml::Invoker Invoker;
 typedef uscxml::IOProcessor IOProcessor;
 typedef uscxml::DataModel DataModel;
@@ -61,25 +59,33 @@ typedef uscxml::InterpreterIssue InterpreterIssue;
 
 %{
 
-#include "../../../uscxml/Message.h"
-#include "../../../uscxml/Factory.h"
+#include "uscxml/config.h"
 #include "../../../uscxml/Interpreter.h"
-#include "../../../uscxml/concurrency/BlockingQueue.h"
-#include "../../../uscxml/server/HTTPServer.h"
-//#include "../../../uscxml/debug/DebuggerServlet.h"
+#include "../../../uscxml/debug/InterpreterIssue.h"
+#include "../../../uscxml/interpreter/InterpreterState.h"
+#include "../../../uscxml/interpreter/InterpreterMonitor.h"
+
+#include "../../../uscxml/messages/Data.h"
+#include "../../../uscxml/messages/Event.h"
+#include "../../../uscxml/util/DOM.h"
+
+#include "../../../uscxml/plugins/Factory.h"
+#include "../../../uscxml/plugins/DataModelImpl.h"
 
 #include "../wrapped/WrappedInvoker.h"
 #include "../wrapped/WrappedDataModel.h"
+#include "../wrapped/WrappedActionLanguage.h"
 #include "../wrapped/WrappedExecutableContent.h"
 #include "../wrapped/WrappedIOProcessor.h"
 #include "../wrapped/WrappedInterpreterMonitor.h"
 
 using namespace uscxml;
-using namespace Arabica::DOM;
+using namespace XERCESC_NS;
 
 // the wrapped* C++ classes get rid of DOM nodes and provide more easily wrapped base classes
 #include "../wrapped/WrappedInvoker.cpp"
 #include "../wrapped/WrappedDataModel.cpp"
+#include "../wrapped/WrappedActionLanguage.cpp"
 #include "../wrapped/WrappedExecutableContent.cpp"
 #include "../wrapped/WrappedIOProcessor.cpp"
 #include "../wrapped/WrappedInterpreterMonitor.cpp"
@@ -160,8 +166,6 @@ WRAP_THROW_EXCEPTION(uscxml::Interpreter::interpret);
 
 WRAP_TO_STRING(uscxml::Event);
 WRAP_TO_STRING(uscxml::Data);
-WRAP_TO_STRING(uscxml::SendRequest);
-WRAP_TO_STRING(uscxml::InvokeRequest);
 WRAP_TO_STRING(uscxml::InterpreterIssue);
 
 %include "../uscxml_ignores.i"
@@ -390,32 +394,37 @@ using System.Runtime.InteropServices;
 //***********************************************
 
 %include "../../../uscxml/Common.h"
-%include "../../../uscxml/Factory.h"
-%include "../../../uscxml/Message.h"
-%include "../../../uscxml/Interpreter.h"
-%include "../../../uscxml/concurrency/BlockingQueue.h"
-%include "../../../uscxml/server/HTTPServer.h"
-//%include "../../../uscxml/debug/DebuggerServlet.h"
-%include "../../../uscxml/debug/InterpreterIssue.h"
-
 %include "../../../uscxml/messages/Blob.h"
 %include "../../../uscxml/messages/Data.h"
 %include "../../../uscxml/messages/Event.h"
-%include "../../../uscxml/messages/InvokeRequest.h"
-%include "../../../uscxml/messages/SendRequest.h"
+
+%include "../../../uscxml/plugins/Factory.h"
+%include "../../../uscxml/interpreter/InterpreterState.h"
+%include "../../../uscxml/interpreter/InterpreterMonitor.h"
+
+//%include "../../../uscxml/interpreter/MicroStep.h"
+//%include "../../../uscxml/interpreter/ContentExecutor.h"
+
+%include "../../../uscxml/Interpreter.h"
+%include "../../../uscxml/debug/InterpreterIssue.h"
+
+%include "../../../uscxml/plugins/EventHandler.h"
 
 %include "../../../uscxml/plugins/DataModel.h"
-%include "../../../uscxml/plugins/EventHandler.h"
+%include "../../../uscxml/plugins/DataModelImpl.h"
 %include "../../../uscxml/plugins/ExecutableContent.h"
+%include "../../../uscxml/plugins/ExecutableContentImpl.h"
 %include "../../../uscxml/plugins/Invoker.h"
+%include "../../../uscxml/plugins/InvokerImpl.h"
 %include "../../../uscxml/plugins/IOProcessor.h"
+%include "../../../uscxml/plugins/IOProcessorImpl.h"
 
 %include "../wrapped/WrappedInvoker.h"
 %include "../wrapped/WrappedDataModel.h"
+%include "../wrapped/WrappedActionLanguage.h"
 %include "../wrapped/WrappedExecutableContent.h"
 %include "../wrapped/WrappedIOProcessor.h"
 %include "../wrapped/WrappedInterpreterMonitor.h"
-
 
 %template(IssueList) std::list<uscxml::InterpreterIssue>;
 %template(DataList) std::list<uscxml::Data>;
@@ -426,4 +435,3 @@ using System.Runtime.InteropServices;
 %template(ParamMap) std::map<std::string, std::list<uscxml::Data> >;
 %template(IOProcMap) std::map<std::string, IOProcessor>;
 %template(InvokerMap) std::map<std::string, Invoker>;
-%template(ParentQueue) uscxml::concurrency::BlockingQueue<uscxml::SendRequest>;
