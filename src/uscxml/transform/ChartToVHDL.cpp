@@ -1102,7 +1102,7 @@ void ChartToVHDL::writeSignalsAndComponents(std::ostream &stream) {
 	stream << "signal int_event_input : std_logic_vector( " << _eventBitSize << " downto 0);" << std::endl;
 	stream << "signal int_event_output : std_logic_vector( " << _eventBitSize << " downto 0);" << std::endl;
 	stream << "signal next_event_re : std_logic;" << std::endl;
-	stream << "signal next_event_dequeued : std_logic;" << std::endl;
+	stream << "signal event_dequeued : std_logic;" << std::endl;
 	stream << "signal next_event : std_logic_vector( " << _eventBitSize << " downto 0);" << std::endl;
 	stream << "signal event_consumed : std_logic;" << std::endl;
 	stream << std::endl;
@@ -1183,8 +1183,8 @@ void ChartToVHDL::writeSpontaneousHandler(std::ostream &stream) {
 	stream << "        if spontaneous_en = '1' then" << std::endl;
 	stream << "            spontaneous_en <= optimal_transition_set_combined_sig;" << std::endl;
 	stream << "        else" << std::endl;
-	//if new event is dequeued then 1 else stay 0
-	stream << "            spontaneous_en <= next_event_dequeued;" << std::endl;
+	//if new event is dequeued then 1 else stay 0 (but enable it when queue is empty -> spontaneous based state chart)
+	stream << "            spontaneous_en <= event_dequeued or (not event_dequeued and int_event_empty);" << std::endl;
 	stream << "        end if;" << std::endl;
 	stream << "    end if;" << std::endl;
 	stream << "end process;" << std::endl;
@@ -1204,7 +1204,7 @@ void ChartToVHDL::writeInternalEventHandler(std::ostream &stream) {
 		stream << "        event_" << escapeMacro((*eventIter)->value) << "_sig <= '0';" << std::endl;
 	}
 
-	stream << "        next_event_dequeued <= '0';" << std::endl;
+	stream << "        event_dequeued <= '0';" << std::endl;
 	stream << "        event_consumed <= '0';" << std::endl;
 
 	stream << "    elsif falling_edge(clk) and stall = '0' then" << std::endl;
@@ -1219,7 +1219,7 @@ void ChartToVHDL::writeInternalEventHandler(std::ostream &stream) {
 	}
 
 	VBranch *tree = (VASSIGN,
-	                 VLINE("event_consumed"),
+	                 VLINE("       event_consumed"),
 	                 eventConsumed);
 	tree->print(stream);
 	stream << ";" << std::endl;
@@ -1241,14 +1241,14 @@ void ChartToVHDL::writeInternalEventHandler(std::ostream &stream) {
 				stream << "_sig <= '0';" << std::endl;
 			}
 		}
-		stream << "        next_event_dequeued <= '1';" << std::endl;
+		stream << "        event_dequeued <= '1';" << std::endl;
 	}
 	stream << "      when others =>" << std::endl;
 	for (std::list<TrieNode *>::iterator eventIter = _eventNames.begin();
 	        eventIter != _eventNames.end(); eventIter++) {
 		stream << "        event_" << escapeMacro((*eventIter)->value) << "_sig <= '0';" << std::endl;
 	}
-	stream << "        next_event_dequeued <= '0';" << std::endl;
+	stream << "        event_dequeued <= '0';" << std::endl;
 	stream << "      end case;" << std::endl;
 	stream << "      elsif int_event_empty = '1' and event_consumed = '1' then" << std::endl;
 
@@ -1256,7 +1256,7 @@ void ChartToVHDL::writeInternalEventHandler(std::ostream &stream) {
 	        eventIter != _eventNames.end(); eventIter++) {
 		stream << "        event_" << escapeMacro((*eventIter)->value) << "_sig <= '0';" << std::endl;
 	}
-	stream << "        next_event_dequeued <= '0';" << std::endl;
+	stream << "        event_dequeued <= '0';" << std::endl;
 	stream << "    end if;" << std::endl;
 	stream << "    end if;" << std::endl;
 	stream << "end process;" << std::endl;
@@ -1569,8 +1569,16 @@ void ChartToVHDL::writeSystemSignalMapping(std::ostream &stream) {
 	stream << ";" << std::endl;
 
 	// tmp mapping for events
-	stream << "stall <= not en or completed_sig or ( int_event_empty and not spontaneous_en ) ; " << std::endl;
-	stream << std::endl;
+//	stream << "stall_handler : process (clk, rst) " << std::endl;
+//	stream << "begin" << std::endl;
+//	stream << "    if rst = '1' then" << std::endl;
+//	stream << "        stall <= '0';" << std::endl;
+//	stream << "    elsif rising_edge(clk) then" << std::endl;
+	// empty queue as stall source can arise some issues with state charts just based on spontaneous transitions
+	stream << "        stall <= not en or completed_sig ; --or ( int_event_empty and not spontaneous_en); " << std::endl;
+//	stream << "    end if;" << std::endl;
+//	stream << "end process;" << std::endl;
+//	stream << std::endl;
 
 	// interface signals
 	stream << "-- interface signals" << std::endl;
