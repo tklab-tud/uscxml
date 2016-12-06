@@ -159,8 +159,10 @@ if (NOT BUILD_MINIMAL)
 			# "gen/c/xpath"
 			"gen/c/lua"
 			# "gen/c/promela"
-			"gen/vhdl/ecma"
+			# "gen/vhdl/ecma"
+			"gen/vhdl/promela"
 			"gen/vhdl/null"
+
 			"gen/java/jexl"
 
 			# bindings
