@@ -39,6 +39,7 @@ public:
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 	virtual void reset();
+    virtual std::shared_ptr<EventQueueImpl> getImplBase();
 
 protected:
 	std::shared_ptr<EventQueueImpl> _impl;
@@ -56,7 +57,8 @@ public:
 	void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID);
 	void cancelDelayed(const std::string& eventUUID);
 	void cancelAllDelayed();
-
+    virtual std::shared_ptr<DelayedEventQueueImpl> getImplDelayed();
+    
 protected:
 	std::shared_ptr<DelayedEventQueueImpl> _impl;
 };

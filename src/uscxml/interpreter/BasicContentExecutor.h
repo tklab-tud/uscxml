@@ -35,6 +35,8 @@ public:
 	BasicContentExecutor(ContentExecutorCallbacks* callbacks) : ContentExecutorImpl(callbacks) {}
 	virtual ~BasicContentExecutor() {}
 
+    virtual std::shared_ptr<ContentExecutorImpl> create(ContentExecutorCallbacks* callbacks);
+
 	void processRaise(XERCESC_NS::DOMElement* content);
 	void processSend(XERCESC_NS::DOMElement* element);
 	void processCancel(XERCESC_NS::DOMElement* content);

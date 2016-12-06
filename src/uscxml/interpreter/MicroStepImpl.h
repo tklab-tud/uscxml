@@ -76,7 +76,8 @@ public:
 	};
 
 	MicroStepImpl(MicroStepCallbacks* callbacks) : _callbacks(callbacks) {}
-
+    virtual std::shared_ptr<MicroStepImpl> create(MicroStepCallbacks* callbacks) = 0;
+    
 	virtual InterpreterState step(size_t blockMs) = 0;
 	virtual void reset() = 0; ///< Reset state machine
 	virtual bool isInState(const std::string& stateId) = 0;

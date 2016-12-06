@@ -35,6 +35,10 @@ namespace uscxml {
 
 using namespace XERCESC_NS;
 
+std::shared_ptr<ContentExecutorImpl> BasicContentExecutor::create(ContentExecutorCallbacks* callbacks) {
+    return std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutor(callbacks));
+}
+
 void BasicContentExecutor::processRaise(XERCESC_NS::DOMElement* content) {
 	Event raised(ATTR(content, "event"));
 	_callbacks->enqueueInternal(raised);

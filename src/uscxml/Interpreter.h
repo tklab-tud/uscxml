@@ -52,7 +52,7 @@ class InterpreterIssue;
 class USCXML_API ActionLanguage {
 public:
 	MicroStep microStepper; ///< The microstepper instance to use
-	DataModel dataModel; ///< The datamodel to uses
+	DataModel dataModel; ///< The datamodel to use
 	ContentExecutor execContent; ///< To process executable content elements
 	EventQueue internalQueue; ///< The queue where internal events will be enqueued
 	EventQueue externalQueue; ///< The queue for external events

@@ -41,6 +41,7 @@ class USCXML_API BasicEventQueue : public EventQueueImpl {
 public:
 	BasicEventQueue();
 	virtual ~BasicEventQueue();
+    virtual std::shared_ptr<EventQueueImpl> create();
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 	virtual void reset();
@@ -59,6 +60,7 @@ class USCXML_API BasicDelayedEventQueue : public BasicEventQueue, public Delayed
 public:
 	BasicDelayedEventQueue(DelayedEventQueueCallbacks* callbacks);
 	virtual ~BasicDelayedEventQueue();
+    virtual std::shared_ptr<DelayedEventQueueImpl> create(DelayedEventQueueCallbacks* callbacks);
 	virtual void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID);
 	virtual void cancelDelayed(const std::string& eventId);
 	virtual void cancelAllDelayed();
@@ -71,6 +73,11 @@ public:
 	virtual void reset();
 
 protected:
+    virtual std::shared_ptr<EventQueueImpl> create() {
+        ErrorEvent e("Cannot create a DelayedEventQueue without callbacks");
+        throw e;
+    }
+
 	struct callbackData {
 		Event userData;
 		std::string eventUUID;

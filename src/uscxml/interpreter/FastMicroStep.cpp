@@ -89,6 +89,10 @@ FastMicroStep::~FastMicroStep() {
 	}
 }
 
+std::shared_ptr<MicroStepImpl> FastMicroStep::create(MicroStepCallbacks* callbacks) {
+    return std::shared_ptr<MicroStepImpl>(new FastMicroStep(callbacks));
+}
+
 void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 
 	/**
