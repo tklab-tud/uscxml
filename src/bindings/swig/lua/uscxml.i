@@ -3,6 +3,12 @@
 // provide a macro for the header files
 #define SWIGIMPORTED 1
 
+// fixing a bug for old swig versions with lua wchar:
+// https://github.com/swig/swig/commit/c7ef5935496a04f3a83c70af6f841abf3ad7606e
+%{
+#define wchar wchar_t
+%}
+
 %include <stl.i>
 %include <std_map.i>
 %include <std_string.i>

@@ -5,7 +5,7 @@
 [TOC]
 
 This page describes how to build uSCXML from source, starting with either a git
-checkout or from a downloaded archive. The source code is built using CMake,
+checkout or from a downloaded archive. The source code is built using CMake and
 the process of building uscxml is essentially the same on every platform.
 
 1. Read the <b>[Platform Notes](#platform-notes)</b> below to prepare your system.
@@ -40,7 +40,7 @@ directory anywhere else. This only applies to the Eclipse CDT project generator.
 generator as it croaks when calling SWIG, just have another build directory
 with the "NMake Makefiles" project generator.
 
-<b>Note:</b> In order to compile with `MinGW` on windows you will ave to adapt the build scripts in `contrib/cmake/Build*`. If you succeed, a pull request would be most appreciated.
+<b>Note:</b> In order to compile with `MinGW` on windows you will have to adapt the build scripts in `contrib/cmake/Build*`. If you succeed, a pull request would be most appreciated.
 
 
 \section deps Build Dependencies
@@ -87,8 +87,7 @@ Overview of the uSCXML dependencies. See the [Platform Notes](#platform-notes) f
 			<td>>=&nbsp;1.8</td>
 			<td>Used by <tt>make docs</tt> to generate this documentation from source comments.</td></tr>
 	</tr>
-	<tr bgcolor="grey"><td bgcolor="#dddddd" colspan="4"></td></tr>
-
+	<tr bgcolor="grey" height="0.5em"><td bgcolor="#dddddd" colspan="4"></td></tr>
 	<tr>
 		<td rowspan="2"><b>Mac OSX</b></td>
 			<td><a href="http://developer.apple.com/xcode/">XCode</a><br />required</td>
@@ -187,6 +186,10 @@ This would be all distributions based on Debian, like Ubuntu, Linux Mint and the
 
 	# uscxml required dependencies (built if not installed)
 	$ sudo apt-get install libxerces-c-dev libevent-dev libcurl4-openssl-dev
+
+	# optional dependencies for language bindings
+	$ sudo apt-get install ant swig liblua5.2-0-dev mono-devel
+
 
 There may still be packages missing due to the set of dependencies among
 packages in the various distributons. Try to run CMake and resolve dependencies

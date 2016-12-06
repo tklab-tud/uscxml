@@ -10,7 +10,6 @@ FIND_PROGRAM(DMCS_EXECUTABLE dmcs PATHS $ENV{DMCS_HOME} ENV PATH ) # Mono compil
 FIND_PROGRAM(CSC_EXECUTABLE csc PATHS $ENV{CSC_HOME} ENV PATH ) # CSharp compiler
 
 if (DMCS_EXECUTABLE OR CSC_EXECUTABLE)
-
 	# unset all library suffixes as swig will hardcode a library without
 	SET(LIB_POSTFIX ${CMAKE_LIBRARY_POSTFIX})
 
@@ -85,4 +84,6 @@ if (DMCS_EXECUTABLE OR CSC_EXECUTABLE)
 	set_target_properties(csharp PROPERTIES FOLDER "Bindings")
 	
 	set(USCXML_LANGUAGE_BINDINGS ${USCXML_LANGUAGE_BINDINGS} PARENT_SCOPE)
+else()	
+	message(STATUS "Could not find dmcs or csc binary, not building csharp bindings")
 endif()
