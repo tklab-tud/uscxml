@@ -23,14 +23,16 @@ my $manifest = XMLin("manifest.xml");
 
 my %testClasses = (
 'w3c/ecma' => 'ECMA',
-#'w3c/lua' => 'Lua',
+'w3c/lua' => 'Lua',
 #'w3c/namespace' => 'NS',
-#'w3c/promela' => 'Promela',
+'w3c/promela' => 'Promela',
 # 'w3c/c89' => 'C89',
 #'w3c/gen/c/ecma' => 'C (ECMA)',
 #'w3c/gen/c/lua' => 'C (Lua)',
 # 'w3c/binding/java/jexl' => 'JEXL',
 #'w3c/spin/promela' => 'Spin'
+'w3c/gen/vhdl/promela' => 'VHDL Promela',
+'w3c/gen/vhdl/ecma' => 'VHDL ECMA',
 );
 
 my %specClass = (
