@@ -42,6 +42,12 @@ void EventQueue::reset() {
 	return _impl->reset();
 }
 
+std::shared_ptr<EventQueueImpl> EventQueue::getImplBase() {
+    return _impl;
+}
+
+    
+    
 PIMPL_OPERATORS_INHERIT_IMPL(DelayedEventQueue, EventQueue)
 
 void DelayedEventQueue::enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) {
@@ -53,6 +59,10 @@ void DelayedEventQueue::cancelDelayed(const std::string& eventUUID) {
 
 void DelayedEventQueue::cancelAllDelayed() {
 	return _impl->cancelAllDelayed();
+}
+
+std::shared_ptr<DelayedEventQueueImpl> DelayedEventQueue::getImplDelayed() {
+    return _impl;
 }
 
 }

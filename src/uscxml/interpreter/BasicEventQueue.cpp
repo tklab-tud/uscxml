@@ -65,6 +65,10 @@ void BasicEventQueue::reset() {
 	_queue.clear();
 }
 
+std::shared_ptr<EventQueueImpl> BasicEventQueue::create() {
+    return std::shared_ptr<EventQueueImpl>(new BasicEventQueue());
+}
+
 static void dummyCallback(evutil_socket_t fd, short what, void *arg) {
 	timeval tv;
 	tv.tv_sec = 365 * 24 * 3600;
@@ -100,6 +104,10 @@ BasicDelayedEventQueue::~BasicDelayedEventQueue() {
 	evtimer_del(_dummyEvent);
 	event_free(_dummyEvent);
 	event_base_free(_eventLoop);
+}
+
+std::shared_ptr<DelayedEventQueueImpl> BasicDelayedEventQueue::create(DelayedEventQueueCallbacks* callbacks) {
+    return std::shared_ptr<DelayedEventQueueImpl>(new BasicDelayedEventQueue(_callbacks));
 }
 
 void BasicDelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg) {

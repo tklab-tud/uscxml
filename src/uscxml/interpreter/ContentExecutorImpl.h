@@ -78,6 +78,8 @@ class USCXML_API ContentExecutorImpl {
 public:
 	ContentExecutorImpl(ContentExecutorCallbacks* callbacks) : _callbacks(callbacks) {}
 
+    virtual std::shared_ptr<ContentExecutorImpl> create(ContentExecutorCallbacks* callbacks) = 0;
+    
 	virtual void process(XERCESC_NS::DOMElement* block, const X& xmlPrefix) = 0;
 
 	virtual void invoke(XERCESC_NS::DOMElement* invoke) = 0;

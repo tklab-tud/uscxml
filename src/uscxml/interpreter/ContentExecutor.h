@@ -49,7 +49,8 @@ public:
 	virtual void uninvoke(XERCESC_NS::DOMElement* invoke);
 	virtual Data elementAsData(XERCESC_NS::DOMElement* element);
 	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData);
-
+    virtual std::shared_ptr<ContentExecutorImpl> getImpl() const;
+    
 protected:
 	std::shared_ptr<ContentExecutorImpl> _impl;
 };

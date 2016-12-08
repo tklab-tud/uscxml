@@ -44,4 +44,7 @@ void MicroStep::markAsCancelled() {
 	_impl->markAsCancelled();
 }
 
+std::shared_ptr<MicroStepImpl> MicroStep::getImpl() const {
+    return _impl;
+}
 }

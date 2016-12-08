@@ -40,6 +40,7 @@ namespace uscxml {
  */
 class USCXML_API EventQueueImpl {
 public:
+    virtual std::shared_ptr<EventQueueImpl> create() = 0;
 	virtual Event dequeue(size_t blockMs) = 0;
 	virtual void enqueue(const Event& event) = 0;
 	virtual void reset() = 0;
@@ -60,6 +61,7 @@ public:
  */
 class USCXML_API DelayedEventQueueImpl : public EventQueueImpl {
 public:
+    virtual std::shared_ptr<DelayedEventQueueImpl> create(DelayedEventQueueCallbacks*) = 0;
 	virtual void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) = 0;
 	virtual void cancelDelayed(const std::string& eventId) = 0;
 	virtual void cancelAllDelayed() = 0;
