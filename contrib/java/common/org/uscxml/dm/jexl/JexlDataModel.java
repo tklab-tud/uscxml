@@ -76,8 +76,6 @@ public class JexlDataModel extends DataModel {
 	public Data evalAsData(String content) {
 		JexlExpression expr = jexl.createExpression(content);
 		Data d = getJexlObjectAsData(expr.evaluate(ctx));
-//		d.setAtom(expr.getParsedText());
-//		d.setType(Data.Type.VERBATIM);
 		return d;
 	}
 
@@ -253,6 +251,7 @@ public class JexlDataModel extends DataModel {
 
     private static Set<Class<?>> getWrapperTypes() {
         Set<Class<?>> ret = new HashSet<Class<?>>();
+        ret.add(String.class);
         ret.add(Boolean.class);
         ret.add(Character.class);
         ret.add(Byte.class);

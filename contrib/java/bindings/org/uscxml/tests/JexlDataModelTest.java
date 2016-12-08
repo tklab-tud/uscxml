@@ -14,14 +14,14 @@ import org.uscxml.helper.TestMonitor;
 
 public class JexlDataModelTest {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws MalformedURLException {
 		String uSCXMLLibPath = "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/lib/libuscxmlNativeJava.jnilib";
 		if (System.getenv().containsKey("USCXML_JAVA_LIB")) {
 			uSCXMLLibPath = System.getenv("USCXML_JAVA_LIB");
 		}
 
 		System.load(uSCXMLLibPath);
-//		String testUri = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/jexl/test144.scxml";
+		String testUri = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/jexl/test144.scxml";
 //		String testUri = "/Users/sradomski/Desktop/stopwatch.xml";
 
 		
@@ -31,20 +31,20 @@ public class JexlDataModelTest {
 
 		{
 			JexlDataModel jdm = new JexlDataModel();
-//			Factory.getInstance().registerDataModel(jdm);
+			//Factory.getInstance().registerDataModel(jdm);
 
 			
 			TestMonitor tm = new TestMonitor();
 
 			try {
-//				File testFile = new File(testUri);
-//				String testName = testFile.toURI().toURL().toString();
-				String testName = "https://raw.githubusercontent.com/woonsan/commons-scxml-examples/master/stopwatch/src/main/resources/com/github/woonsan/commons/scxml/examples/stopwatch/stopwatch.xml";
+				File testFile = new File(testUri);
+				String testName = testFile.toURI().toURL().toString();
+//				String testName = "https://raw.githubusercontent.com/woonsan/commons-scxml-examples/master/stopwatch/src/main/resources/com/github/woonsan/commons/scxml/examples/stopwatch/stopwatch.xml";
 				System.out.println(testName);
 
 				Interpreter scxml = Interpreter.fromURL(testName);
 				
-				jdm.ctx.set("stopWatch", new StopWatch());
+				//jdm.ctx.set("stopWatch", new StopWatch());
 				
 				ActionLanguage al = new ActionLanguage();
 				al.setDataModel(jdm);

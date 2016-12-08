@@ -4,6 +4,7 @@
 
 	<property file="build.properties" />
 	<property name="src" value="." />
+	<property name="common" value="../common" />
 	<property name="bin" value="bin" />
 	<!-- <property name="test.file" value="..." /> -->
 
@@ -21,6 +22,7 @@
 		<javac destdir="${bin}" debuglevel="lines,vars,source" debug="on"
 			encoding="utf-8" includeantruntime="false">
 			<src path="${src}" />
+			<src path="${common}" />
 			<classpath>
 				<pathelement location="${real.uscxml.jar}" />
 				<pathelement location="${jexl.jar}" />
