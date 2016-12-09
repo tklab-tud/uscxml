@@ -215,7 +215,7 @@ void DebugSession::run(void* instance) {
 		//			return;
 		//		}
 	}
-	LOG(DEBUG) << "done";
+	LOG(USCXML_DEBUG) << "done";
 }
 
 Data DebugSession::debugStop(const Data& data) {

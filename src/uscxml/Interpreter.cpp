@@ -170,13 +170,13 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 	}
 
 	catch (const XERCESC_NS::SAXParseException& toCatch) {
-		LOG(ERROR) << X(toCatch.getMessage());
+		LOG(USCXML_ERROR) << X(toCatch.getMessage());
 	} catch (const XERCESC_NS::RuntimeException& toCatch) {
-		LOG(ERROR) << X(toCatch.getMessage());
+		LOG(USCXML_ERROR) << X(toCatch.getMessage());
 	} catch (const XERCESC_NS::XMLException& toCatch) {
-		LOG(ERROR) << X(toCatch.getMessage());
+		LOG(USCXML_ERROR) << X(toCatch.getMessage());
 	} catch (const XERCESC_NS::DOMException& toCatch) {
-		LOG(ERROR) << X(toCatch.getMessage());
+		LOG(USCXML_ERROR) << X(toCatch.getMessage());
 	}
 
 	return interpreter;

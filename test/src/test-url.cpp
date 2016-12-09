@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 	try {
 		testFileURLs();
 	} catch (Event e) {
-		LOG(ERROR) << e;
+		LOG(USCXML_ERROR) << e;
 		exit(EXIT_FAILURE);
 	}
 

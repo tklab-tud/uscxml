@@ -248,7 +248,7 @@ bool InterpreterImpl::isTrue(const std::string& expr) {
 	} catch (ErrorEvent e) {
 		// test 244: deliver error execution
 
-		LOG(ERROR) << e;
+		LOG(USCXML_ERROR) << e;
 
 		// test 344
 		enqueueInternal(e);
@@ -280,7 +280,7 @@ Event InterpreterImpl::dequeueExternal(size_t blockMs) {
 	if (_currEvent) {
 		_dataModel.setEvent(_currEvent);
 
-//		LOG(ERROR) << e.name;
+//		LOG(USCXML_ERROR) << e.name;
 
 		// test 233
 		if (_currEvent.invokeid.size() > 0 &&

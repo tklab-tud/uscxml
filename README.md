@@ -17,6 +17,10 @@ uSCXML is a platform to work with state-charts given as
  
  3. `uscxml-transform`: A collection of [transformation](#for-transformations) implementations to transpile SCXML, e.g. onto ANSI-C and VHDL.
 
+The status of the various datamodels, bindings and generators with regard to the [W3C IRP
+tests](https://www.w3.org/Voice/2013/scxml-irp/) can be checked in the [test
+table](test/w3c/TESTS.md).
+
 ## Installation
 
 There are no installers yet and we do not feature any releases. Just check for [open issues](https://github.com/tklab-tud/uscxml/issues) and [build from source](http://tklab-tud.github.io/uscxml/building.html). If you did download and build locally, you can create installers via `make packages` though.

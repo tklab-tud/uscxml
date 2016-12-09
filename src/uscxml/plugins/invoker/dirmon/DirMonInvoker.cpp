@@ -99,7 +99,7 @@ void DirMonInvoker::eventFromSCXML(const Event& event) {
 
 void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 	if (req.params.find("dir") == req.params.end()) {
-		LOG(ERROR) << "No dir param given";
+		LOG(USCXML_ERROR) << "No dir param given";
 		return;
 	}
 
@@ -137,7 +137,7 @@ void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 		URL url = URL::resolve(dirIter->second.atom, _interpreter->getBaseURL());
 
 		if (!url.isAbsolute()) {
-			LOG(ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
+			LOG(USCXML_ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
 			_dir = url.path();
 		}
@@ -313,7 +313,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 	// stat directory for modification date
 	struct stat dirStat;
 	if (stat((_dir + _relDir).c_str(), &dirStat) != 0) {
-		LOG(ERROR) << "Error with stat on directory " << _dir << ": " << strerror(errno);
+		LOG(USCXML_ERROR) << "Error with stat on directory " << _dir << ": " << strerror(errno);
 		return;
 	}
 
@@ -327,7 +327,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 		DIR *dp;
 		dp = opendir((_dir + _relDir).c_str());
 		if (dp == NULL) {
-			LOG(ERROR) << "Error opening directory " << _dir + _relDir << ": " << strerror(errno);
+			LOG(USCXML_ERROR) << "Error opening directory " << _dir + _relDir << ": " << strerror(errno);
 			return;
 		}
 		// iterate all entries and see what changed
@@ -352,7 +352,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 
 			struct stat fileStat;
 			if (stat(filename.c_str(), &fileStat) != 0) {
-				LOG(ERROR) << "Error with stat on directory entry: " << filename << ": " << strerror(errno);
+				LOG(USCXML_ERROR) << "Error with stat on directory entry: " << filename << ": " << strerror(errno);
 				continue;
 			}
 

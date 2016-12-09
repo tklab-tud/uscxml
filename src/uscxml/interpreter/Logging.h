@@ -31,14 +31,6 @@
 #define LOG(lvl) uscxml::Logger::getDefault().log(lvl)
 #define LOG2(lvl, thing) uscxml::Logger::getDefault().log(lvl, thing);
 
-#define SCXML   USCXML_SCXML
-#define TRACE   USCXML_TRACE
-#define DEBUG   USCXML_DEBUG
-#define INFO    USCXML_INFO
-#define WARNING USCXML_WARN
-#define ERROR   USCXML_ERROR
-#define FATAL   USCXML_FATAL
-
 namespace uscxml {
 
 enum LogSeverity {

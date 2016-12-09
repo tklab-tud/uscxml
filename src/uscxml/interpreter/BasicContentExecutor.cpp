@@ -144,7 +144,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			} else if (delayAttr.unit.length() == 0) { // unit less delay is interpreted as milliseconds
 				delayMs = strTo<uint32_t>(delayAttr.value);
 			} else {
-				LOG(ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
+				LOG(USCXML_ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
 			}
 		}
 	} catch (Event e) {
@@ -355,14 +355,14 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 		} else if (iequals(tagName, xmlPrefix.str() + "script")) {
 			processScript(block);
 		} else {
-			LOG(ERROR) << tagName;
+			LOG(USCXML_ERROR) << tagName;
 			assert(false);
 		}
 	} catch (ErrorEvent exc) {
 
 		Event e(exc);
 		_callbacks->enqueueInternal(e);
-		LOG(ERROR) << exc << std::endl;
+		LOG(USCXML_ERROR) << exc << std::endl;
 		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterExecutingContent, block);
 
 		throw e; // will be catched in microstepper
@@ -646,7 +646,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 		}
 	}
 
-//	LOG(WARNING) << "Element " << DOMUtils::xPathForNode(element) << " did not yield any data";
+//	LOG(USCXML_WARN) << "Element " << DOMUtils::xPathForNode(element) << " did not yield any data";
 	return Data();
 }
 

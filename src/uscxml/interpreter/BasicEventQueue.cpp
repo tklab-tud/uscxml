@@ -47,7 +47,7 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 	if (_queue.size() > 0) {
 		Event event = _queue.front();
 		_queue.pop_front();
-//        LOG(ERROR) << event.name;
+//        LOG(USCXML_ERROR) << event.name;
 		return event;
 	}
 	return Event();

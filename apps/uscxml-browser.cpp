@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 		InterpreterOptions* currOptions = options.interpreters[0].second;
 		std::string documentURL = options.interpreters[0].first;
 
-		LOG(INFO) << "Processing " << documentURL;
+		LOG(USCXML_INFO) << "Processing " << documentURL;
 
 		try {
 			Interpreter interpreter = Interpreter::fromURL(documentURL);
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 				interpreters.push_back(interpreter);
 
 			} else {
-				LOG(ERROR) << "Cannot create interpreter from " << documentURL;
+				LOG(USCXML_ERROR) << "Cannot create interpreter from " << documentURL;
 			}
 		} catch (Event e) {
 			std::cout << e << std::endl;

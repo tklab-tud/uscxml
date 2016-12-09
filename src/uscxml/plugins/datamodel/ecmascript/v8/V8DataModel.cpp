@@ -485,27 +485,27 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 	} else if (value->IsBoolean()) {
 		data.atom = (value->ToBoolean()->Value() ? "true" : "false");
 	} else if (value->IsBooleanObject()) {
-		LOG(ERROR) << "IsBooleanObject is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsBooleanObject is unimplemented" << std::endl;
 	} else if (value->IsDate()) {
-		LOG(ERROR) << "IsDate is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsDate is unimplemented" << std::endl;
 	} else if (value->IsExternal()) {
-		LOG(ERROR) << "IsExternal is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsExternal is unimplemented" << std::endl;
 	} else if (value->IsFalse()) {
-		LOG(ERROR) << "IsFalse is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsFalse is unimplemented" << std::endl;
 	} else if (value->IsFunction()) {
-		LOG(ERROR) << "IsFunction is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsFunction is unimplemented" << std::endl;
 	} else if (value->IsInt32()) {
 		int32_t prop = value->Int32Value();
 		data.atom = toStr(prop);
 	} else if (value->IsNativeError()) {
-		LOG(ERROR) << "IsNativeError is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsNativeError is unimplemented" << std::endl;
 	} else if (value->IsNull()) {
-		LOG(ERROR) << "IsNull is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsNull is unimplemented" << std::endl;
 	} else if (value->IsNumber()) {
 		v8::String::AsciiValue prop(v8::Local<v8::String>::Cast(v8::Local<v8::Number>::Cast(value)));
 		data.atom = *prop;
 	} else if (value->IsNumberObject()) {
-		LOG(ERROR) << "IsNumberObject is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsNumberObject is unimplemented" << std::endl;
 	} else if (value->IsObject()) {
 
 //		if (V8ArrayBuffer::hasInstance(value)) {
@@ -529,21 +529,21 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 			data.compound[*key] = getValueAsData(property, alreadySeen);
 		}
 	} else if (value->IsRegExp()) {
-		LOG(ERROR) << "IsRegExp is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsRegExp is unimplemented" << std::endl;
 	} else if(value->IsString()) {
 		v8::String::AsciiValue property(v8::Local<v8::String>::Cast(value));
 		data.atom = *property;
 		data.type = Data::VERBATIM;
 	} else if(value->IsStringObject()) {
-		LOG(ERROR) << "IsStringObject is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsStringObject is unimplemented" << std::endl;
 	} else if(value->IsTrue()) {
-		LOG(ERROR) << "IsTrue is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsTrue is unimplemented" << std::endl;
 	} else if(value->IsUint32()) {
-		LOG(ERROR) << "IsUint32 is unimplemented" << std::endl;
+		LOG(USCXML_ERROR) << "IsUint32 is unimplemented" << std::endl;
 	} else if(value->IsUndefined()) {
 		data.atom = "undefined";
 	} else {
-		LOG(ERROR) << "Value's type is unknown!" << std::endl;
+		LOG(USCXML_ERROR) << "Value's type is unknown!" << std::endl;
 	}
 	return data;
 }

@@ -93,9 +93,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_port > 0) {
 		_httpHandle = evhttp_bind_socket_with_handle(_http, NULL, _port);
 		if (_httpHandle) {
-			LOG(INFO) << "HTTP server listening on tcp/" << _port;
+			LOG(USCXML_INFO) << "HTTP server listening on tcp/" << _port;
 		} else {
-			LOG(ERROR) << "HTTP server cannot bind to tcp/" << _port;
+			LOG(USCXML_ERROR) << "HTTP server cannot bind to tcp/" << _port;
 		}
 	}
 
@@ -103,9 +103,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
 		if (_wsHandle) {
-			LOG(INFO) << "WebSocket server listening on tcp/" << _wsPort;
+			LOG(USCXML_INFO) << "WebSocket server listening on tcp/" << _wsPort;
 		} else {
-			LOG(ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
+			LOG(USCXML_ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
 		}
 	}
 
@@ -146,9 +146,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 		if (_sslPort > 0) {
 			_sslHandle = evhttp_bind_socket_with_handle(_https, INADDR_ANY, _sslPort);
 			if (_sslHandle) {
-				LOG(INFO) << "HTTPS server listening on tcp/" << _wsPort;
+				LOG(USCXML_INFO) << "HTTPS server listening on tcp/" << _wsPort;
 			} else {
-				LOG(ERROR) << "HTTPS server cannot bind to tcp/" << _wsPort;
+				LOG(USCXML_ERROR) << "HTTPS server cannot bind to tcp/" << _wsPort;
 
 			}
 		}
@@ -408,7 +408,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 			assert(0);
 //            NameSpacingParser parser = NameSpacingParser::fromXML(request.data.compound["content"].atom);
 //			if (parser.errorsReported()) {
-//				LOG(ERROR) << "Cannot parse contents of HTTP request as XML";
+//				LOG(USCXML_ERROR) << "Cannot parse contents of HTTP request as XML";
 //			} else {
 //				request.data.compound["content"].node = parser.getDocument().getDocumentElement();
 //			}
@@ -462,7 +462,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 		matchesIter++;
 	}
 
-	LOG(INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix";
+	LOG(USCXML_INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix";
 	evhttp_send_error(request.evhttpReq, 404, NULL);
 }
 
@@ -505,7 +505,7 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 	Reply* reply = (Reply*)arg;
 
 	if (reply->content.size() > 0 && reply->headers.find("Content-Type") == reply->headers.end()) {
-		LOG(INFO) << "Sending content without Content-Type header";
+		LOG(USCXML_INFO) << "Sending content without Content-Type header";
 	}
 
 	std::map<std::string, std::string>::const_iterator headerIter = reply->headers.begin();
@@ -565,7 +565,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 
 	if (!INSTANCE->_httpHandle) {
-		LOG(INFO) << "Registering at unstarted HTTP Server";
+		LOG(USCXML_INFO) << "Registering at unstarted HTTP Server";
 		return true; // this is the culprit!
 	}
 
@@ -594,7 +594,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	servlet->setURL(servletURL.str());
 
 	INSTANCE->_httpServlets[suffixedPath] = servlet;
-//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str();
+//	LOG(USCXML_INFO) << "HTTP Servlet listening at: " << servletURL.str();
 
 	// register callback
 	evhttp_set_cb(INSTANCE->_http, ("/" + suffixedPath).c_str(), HTTPServer::httpRecvReqCallback, servlet);
@@ -648,7 +648,7 @@ bool HTTPServer::registerServlet(const std::string& path, WebSocketServlet* serv
 
 	INSTANCE->_wsServlets[suffixedPath] = servlet;
 
-	//	LOG(INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
+	//	LOG(USCXML_INFO) << "HTTP Servlet listening at: " << servletURL.str() << std::endl;
 
 	// register callback
 	evws_set_cb(INSTANCE->_evws, ("/" + suffixedPath).c_str(), HTTPServer::wsRecvReqCallback, NULL, servlet);
@@ -702,7 +702,7 @@ void HTTPServer::run(void* instance) {
 	while(INSTANCE->_isRunning) {
 		event_base_dispatch(INSTANCE->_base);
 	}
-	LOG(INFO) << "HTTP Server stopped";
+	LOG(USCXML_INFO) << "HTTP Server stopped";
 }
 
 void HTTPServer::determineAddress() {
