@@ -28,7 +28,7 @@
 #include "uscxml/util/Predicates.h"
 #include "uscxml/plugins/InvokerImpl.h"
 
-#include "easylogging++.h"
+#include "uscxml/interpreter/Logging.h"
 
 #include <iostream>
 

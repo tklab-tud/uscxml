@@ -33,7 +33,7 @@
 #endif
 
 #include <boost/algorithm/string.hpp>
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 namespace uscxml {
 

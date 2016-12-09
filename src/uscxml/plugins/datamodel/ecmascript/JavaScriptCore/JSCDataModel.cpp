@@ -26,7 +26,7 @@
 
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include <boost/algorithm/string.hpp>
 

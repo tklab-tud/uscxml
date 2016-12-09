@@ -24,19 +24,20 @@
 #include "uscxml/plugins/datamodel/promela/parser/promela.tab.hpp"
 
 #include <boost/algorithm/string.hpp>
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include <algorithm>
+#include <cmath>
 
 #define ADAPT_SRC(code) _analyzer->adaptCode(code, _prefix)
-#define BIT_WIDTH(number) (number > 1 ? (int)ceil(log((double)number) / log((double)2.0)) : 1)
+#define BIT_WIDTH(number) (number > 1 ? (int)ceil(log2((double)number)) : 1)
 #define EVENT_NAME (_analyzer->usesComplexEventStruct() ? "_event.name" : "_event")
 #define TMP_EVENT_NAME (_analyzer->usesComplexEventStruct() ? "_tmpE.name" : "_tmpE")
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-#define TRACE
+#define TRACE_PML
 
-#ifdef TRACE
+#ifdef TRACE_PML
 #define TRACE_EXECUTION_V(fmt, ...) \
 stream << std::endl; \
 stream << "#if TRACE_EXECUTION" << std::endl; \

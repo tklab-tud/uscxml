@@ -29,7 +29,7 @@
 
 #include "PromelaParser.h"
 #include "parser/promela.tab.hpp"
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>

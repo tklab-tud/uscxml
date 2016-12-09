@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include <boost/algorithm/string.hpp>
 
 #ifdef _WIN32

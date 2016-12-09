@@ -22,7 +22,7 @@
 #include "uscxml/util/String.h"
 
 #include <boost/algorithm/string.hpp>
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include <algorithm>
 
 namespace uscxml {

@@ -3,7 +3,7 @@
 //#include "uscxml/Factory.h"
 #include "uscxml/server/HTTPServer.h"
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include "uscxml/plugins/invoker/dirmon/DirMonInvoker.h"
 #include <boost/algorithm/string.hpp>

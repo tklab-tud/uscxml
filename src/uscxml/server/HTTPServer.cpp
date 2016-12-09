@@ -40,7 +40,7 @@ extern "C" {
 #include <event2/thread.h>
 }
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include <boost/algorithm/string.hpp>
 
 #ifndef _WIN32

@@ -26,7 +26,7 @@
 #include "uscxml/util/Convenience.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #define BIT_ANY_SET(b) (!b.none())
 #define BIT_HAS(idx, bitset) (bitset[idx])

@@ -23,7 +23,7 @@
 #include <string>
 #include <cassert>
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include "uscxml/config.h"
 
 

@@ -2,7 +2,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/debug/InterpreterIssue.h"
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include <xercesc/util/PlatformUtils.hpp>
 
 using namespace uscxml;

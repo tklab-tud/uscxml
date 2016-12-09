@@ -300,7 +300,7 @@ if (NOT BUILD_MINIMAL)
 								${ANT_BIN}
 								-Dtest.file=${W3C_TEST}
 								-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
-								WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bindings/java
+								WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java/bindings
 								)
 						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
 						set(TEST_ADDED ON)

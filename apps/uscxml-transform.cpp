@@ -16,7 +16,7 @@
 #include "uscxml/server/HTTPServer.h"
 #include "getopt.h"
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #define ANNOTATE(envKey, annotationParam) \
 envVarIsTrue(envKey) || std::find(options.begin(), options.end(), annotationParam) != options.end()

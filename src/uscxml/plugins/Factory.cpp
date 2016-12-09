@@ -22,7 +22,7 @@
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/messages/Data.h"
 #include "uscxml/Interpreter.h"
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include "uscxml/plugins/ExecutableContentImpl.h"
 

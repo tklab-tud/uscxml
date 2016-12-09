@@ -21,7 +21,7 @@
 #define DEBUGGERSERVLET_H_ATUMDA3G
 
 #include "uscxml/Common.h"
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include "uscxml/util/BlockingQueue.h"
 #include "uscxml/server/HTTPServer.h"
 
@@ -29,7 +29,7 @@
 
 namespace uscxml {
 
-class USCXML_API DebuggerServlet : public Debugger, public HTTPServlet, public el::LogDispatchCallback {
+class USCXML_API DebuggerServlet : public Debugger, public HTTPServlet, public Logger {
 public:
 	class LogMessage : public Data {
 	public:
@@ -91,8 +91,8 @@ public:
 	                  const char* base_filename, int line,
 	                  const struct ::tm* tm_time,
 	                  const char* message, size_t message_len);
+     void handle(const el::LogDispatchData* data);
 	*/
-	void handle(const el::LogDispatchData* data);
 
 protected:
 	void serverPushData(std::shared_ptr<DebugSession>);

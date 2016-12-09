@@ -6,7 +6,7 @@
 #include "uscxml/interpreter/InterpreterMonitor.h"
 #include "uscxml/util/DOM.h"
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/server/HTTPServer.h"

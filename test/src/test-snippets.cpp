@@ -7,6 +7,7 @@
 
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/LoggingImpl.h"
 
 using namespace uscxml;
 
@@ -31,5 +32,6 @@ void microstep_snippet() {
 }
 
 int main(int argc, char** argv) {
+    Logger::getDefault().log(USCXML_FATAL) << "Foo!" << " BAR?";
 	microstep_snippet();
 }

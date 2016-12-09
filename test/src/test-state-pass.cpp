@@ -14,7 +14,7 @@
 #include "uscxml/util/Predicates.h"
 #include "uscxml/util/Convenience.h" // iequals
 
-#include "easylogging++.h"
+#include "uscxml/interpreter/Logging.h"
 
 #include "uscxml/messages/Event.h"
 #include "uscxml/server/HTTPServer.h"
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	size_t iterations = 1;
 
 	std::string documentURI;
-	el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line: %msg");
+//	el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level %fbase:%line: %msg");
 
 	if (argc < 2) {
 		exit(EXIT_FAILURE);

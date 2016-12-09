@@ -26,7 +26,7 @@
 #include "uscxml/util/String.h"
 #include <math.h>
 #include <boost/algorithm/string.hpp>
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include <algorithm>
 #include <iomanip>

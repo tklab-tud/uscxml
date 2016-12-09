@@ -5,7 +5,7 @@
 #include "uscxml/config.h"
 
 #include <xercesc/parsers/XercesDOMParser.hpp>
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 #include <assert.h>
 #include <iostream>
 

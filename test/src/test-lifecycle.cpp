@@ -1,7 +1,7 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 #include <boost/algorithm/string.hpp>
 #include <xercesc/util/PlatformUtils.hpp>

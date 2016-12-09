@@ -30,7 +30,7 @@
 #include <xercesc/sax/HandlerBase.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
-#include "easylogging++.h"
+#include "uscxml/interpreter/Logging.h"
 
 #include <iostream>
 #include <boost/algorithm/string.hpp>
@@ -39,9 +39,6 @@
 #include <algorithm>
 #include <memory>
 #include <mutex>
-
-#include "easylogging++.h"
-INITIALIZE_EASYLOGGINGPP
 
 #define VERBOSE 0
 

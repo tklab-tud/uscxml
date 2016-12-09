@@ -21,7 +21,7 @@
 #include "uscxml/debug/Debugger.h"
 #include "uscxml/util/Predicates.h"
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 namespace uscxml {
 

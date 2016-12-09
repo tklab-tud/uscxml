@@ -29,7 +29,7 @@
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 
-#include "easylogging++.h"
+#include "uscxml/interpreter/Logging.h"
 
 //#include <glog/logging.h>
 //#include <boost/algorithm/string.hpp>

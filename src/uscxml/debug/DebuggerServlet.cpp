@@ -238,10 +238,10 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 	returnData(request, replyData);
 }
 
+    /*
 void DebuggerServlet::handle(const el::LogDispatchData* data) {
 }
 
-/*
 void DebuggerServlet::send(google::LogSeverity severity, const char* full_filename,
                            const char* base_filename, int line,
                            const struct ::tm* tm_time,

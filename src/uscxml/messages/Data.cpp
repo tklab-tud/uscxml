@@ -24,7 +24,7 @@
 
 #include "uscxml/util/DOM.h"
 
-#include "easylogging++.h"
+#include "uscxml/interpreter/Logging.h"
 
 #ifdef HAS_STRING_H
 #include <string.h>

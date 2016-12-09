@@ -22,7 +22,7 @@
 #include <event2/thread.h>
 #include <assert.h>
 
-#include <easylogging++.h>
+#include "uscxml/interpreter/Logging.h"
 
 namespace uscxml {
 
