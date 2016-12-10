@@ -107,7 +107,7 @@ BasicDelayedEventQueue::~BasicDelayedEventQueue() {
 }
 
 std::shared_ptr<DelayedEventQueueImpl> BasicDelayedEventQueue::create(DelayedEventQueueCallbacks* callbacks) {
-    return std::shared_ptr<DelayedEventQueueImpl>(new BasicDelayedEventQueue(_callbacks));
+    return std::shared_ptr<DelayedEventQueueImpl>(new BasicDelayedEventQueue(callbacks));
 }
 
 void BasicDelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg) {
