@@ -36,7 +36,7 @@ if (V8_FOUND)
 endif()
 
 
-if (LUA51_FOUND)
+if (LUA51_FOUND AND WITH_DM_LUA)
 	set(USCXML_DATAMODELS "lua ${USCXML_DATAMODELS}")
 	# Lua ecmascript datamodel
 	file(GLOB LUA_DATAMODEL

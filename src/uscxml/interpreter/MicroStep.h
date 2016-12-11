@@ -25,11 +25,9 @@
 #include <list>
 #include <string>
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/interpreter/InterpreterState.h"
 
-// #include <xercesc/dom/DOM.hpp>
 
 // forward declare
 namespace XERCESC_NS {

@@ -44,7 +44,7 @@
 #cmakedefine USCXML_VERSION_PATCH "@USCXML_VERSION_PATCH@"
 #cmakedefine USCXML_VERSION "@USCXML_VERSION@"
 
-#cmakedefine XERCESC_NS @XERCESC_NS@
+// #cmakedefine XERCESC_NS @XERCESC_NS@
 
 /** build type */
 #cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"

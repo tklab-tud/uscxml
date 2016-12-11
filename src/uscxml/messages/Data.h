@@ -24,7 +24,6 @@
 #include <map>
 #include <memory>
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/util/Convenience.h"
 #include "uscxml/messages/Blob.h"

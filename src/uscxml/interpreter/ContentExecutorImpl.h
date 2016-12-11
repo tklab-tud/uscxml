@@ -22,15 +22,21 @@
 
 
 #include "uscxml/Common.h"
-#include "uscxml/util/DOM.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
 
-#include <xercesc/dom/DOM.hpp>
 #include <string>
+#include <set>
+
+namespace XERCESC_NS {
+    class DOMDocument;
+    class DOMNode;
+}
 
 namespace uscxml {
 
+class X;
+    
 /**
  * @ingroup execcontent
  * @ingroup callback

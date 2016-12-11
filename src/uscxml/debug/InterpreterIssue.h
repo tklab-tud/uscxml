@@ -21,7 +21,6 @@
 #ifndef INTERPRETERISSUE_H_962CB305
 #define INTERPRETERISSUE_H_962CB305
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 
 #include <list>

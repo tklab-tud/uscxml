@@ -23,6 +23,7 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/interpreter/InterpreterImpl.h" // beware cyclic reference!
 #include "uscxml/interpreter/BasicEventQueue.h"
+#include "uscxml/interpreter/BasicDelayedEventQueue.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"

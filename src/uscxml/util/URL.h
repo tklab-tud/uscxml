@@ -23,8 +23,6 @@
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
 
-#define DOWNLOAD_IF_NECESSARY if (!_isDownloaded) { download(true); }
-
 #include <string>
 #include <sstream>
 #include <map>
@@ -32,10 +30,6 @@
 #include <list>
 #include <thread>
 #include <condition_variable>
-#include <curl/curl.h>
-#include <uriparser/Uri.h>
-
-#define USCXML_URI_STRING(obj, field) std::string(obj.field.first, obj.field.afterLast - obj.field.first)
 
 namespace uscxml {
 
@@ -60,31 +54,12 @@ public:
 	URLImpl(const std::string& url);
 	~URLImpl();
 
-	bool isAbsolute() const {
-		// see https://sourceforge.net/p/uriparser/bugs/3/
-		return _uri.absolutePath || ((_uri.hostText.first != nullptr) && (_uri.pathHead != nullptr));
-	}
-
-	std::string scheme() const {
-		return USCXML_URI_STRING(_uri, scheme);
-	}
-
-	std::string userInfo() const {
-		return USCXML_URI_STRING(_uri, userInfo);
-	}
-
-	std::string host() const {
-		return USCXML_URI_STRING(_uri, hostText);
-	}
-
-	std::string port() const {
-		return USCXML_URI_STRING(_uri, portText);
-	}
-
-	std::string fragment() const {
-		return USCXML_URI_STRING(_uri, fragment);
-	}
-
+    bool isAbsolute() const;
+    std::string scheme() const;
+    std::string userInfo() const;
+    std::string host() const;
+    std::string port() const;
+    std::string fragment() const;
 	std::map<std::string, std::string> query() const;
 	std::string path() const;
 	std::list<std::string> pathComponents() const;
@@ -103,48 +78,15 @@ public:
 	}
 
 	// downloading / uploading
-	void addOutHeader(const std::string& key, const std::string& value) {
-		_outHeader[key] = value;
-	}
-	void setOutContent(const std::string& content) {
-		_outContent = content;
-		_requestType = URLRequestType::POST;
-	}
-	void setRequestType(URLRequestType requestType) {
-		_requestType = requestType;
+    void addOutHeader(const std::string& key, const std::string& value);
+    void setOutContent(const std::string& content);
+    void setRequestType(URLRequestType requestType);
+    const std::map<std::string, std::string> getInHeaderFields();
+    const std::string getInHeaderField(const std::string& key);
 
-	}
-
-	const std::map<std::string, std::string> getInHeaderFields() {
-		DOWNLOAD_IF_NECESSARY
-		return _inHeaders;
-	}
-
-	const std::string getInHeaderField(const std::string& key) {
-		DOWNLOAD_IF_NECESSARY
-		if (_inHeaders.find(key) != _inHeaders.end()) {
-			return _inHeaders[key];
-		}
-		return "";
-	}
-
-	const std::string getStatusCode() const {
-//        DOWNLOAD_IF_NECESSARY
-		return _statusCode;
-	}
-
-	const std::string getStatusMessage() const {
-//        DOWNLOAD_IF_NECESSARY
-		return _statusMsg;
-	}
-
-	const std::string getInContent(bool forceReload = false) {
-		if (forceReload)
-			_isDownloaded = false;
-		DOWNLOAD_IF_NECESSARY
-		return _rawInContent.str();
-	}
-
+    const std::string getStatusCode() const;
+    const std::string getStatusMessage() const;
+    const std::string getInContent(bool forceReload = false);
 	const void download(bool blocking = false);
 
 	operator Data() const;
@@ -152,20 +94,20 @@ public:
 
 protected:
 	URLImpl();
-	UriUriA _uri;
+	void* _uri = NULL;
 	std::string _orig;
 
-	CURL* getCurlHandle();
+	void* getCurlHandle();
 	static size_t writeHandler(void *ptr, size_t size, size_t nmemb, void *userdata);
 	static size_t headerHandler(void *ptr, size_t size, size_t nmemb, void *userdata);
 
 	void downloadStarted();
 	void downloadCompleted();
-	void downloadFailed(CURLcode errorCode);
+	void downloadFailed(int errorCode);
 
-	static void prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, UriParserStateA* parser);
+	static void prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, void* parser);
 
-	CURL* _handle = NULL;
+	void* _handle = NULL;
 	std::stringstream _rawInContent;
 	std::stringstream _rawInHeader;
 	std::map<std::string, std::string> _inHeaders;
@@ -324,10 +266,10 @@ protected:
 	std::recursive_mutex _mutex;
 	bool _isStarted;
 
-	std::map<CURL*, URL> _handlesToURLs;
-	std::map<CURL*, curl_slist*> _handlesToHeaders;
-	CURLM* _multiHandle;
-	char* _envProxy;
+	std::map<void*, URL> _handlesToURLs;
+	std::map<void*, void*> _handlesToHeaders;
+	void* _multiHandle = NULL;
+	char* _envProxy = NULL;
 };
 
 }

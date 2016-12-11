@@ -29,8 +29,6 @@
 #include <mutex>
 #include <condition_variable>
 
-#include <event2/event.h>
-
 
 namespace uscxml {
 

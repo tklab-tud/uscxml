@@ -21,7 +21,6 @@
 #define CONTENTEXECUTOR_H_A2D592FA
 
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/messages/Data.h"
 #include <string>

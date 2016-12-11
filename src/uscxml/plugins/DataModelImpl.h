@@ -20,12 +20,14 @@
 #ifndef DATAMODELIMPL_H_5A33C087
 #define DATAMODELIMPL_H_5A33C087
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/IOProcessor.h"
 
-#include <xercesc/dom/DOM.hpp>
+namespace XERCESC_NS {
+	class DOMDocument;
+	class DOMNode;
+}
 
 #include <list>
 #include <string>

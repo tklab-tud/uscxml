@@ -35,7 +35,6 @@
 #include "uscxml/interpreter/EventQueue.h"
 #include "uscxml/interpreter/EventQueueImpl.h"
 #include "uscxml/util/DOM.h"
-#include <xercesc/dom/DOM.hpp>
 
 namespace uscxml {
 

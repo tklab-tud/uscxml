@@ -20,13 +20,16 @@
 #ifndef EXECUTABLECONTENTIMPL_H_CCE9F02D
 #define EXECUTABLECONTENTIMPL_H_CCE9F02D
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 
-#include <xercesc/dom/DOM.hpp>
 #include <string>
 #include <memory>
 #include <sstream>
+
+namespace XERCESC_NS {
+    class DOMDocument;
+    class DOMNode;
+}
 
 namespace uscxml {
 

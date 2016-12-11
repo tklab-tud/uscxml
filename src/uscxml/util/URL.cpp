@@ -26,6 +26,9 @@
 #include "uscxml/interpreter/Logging.h"
 #include "uscxml/config.h"
 
+#include <curl/curl.h>
+#include <uriparser/Uri.h>
+
 
 #ifdef _WIN32
 #include <direct.h>
@@ -36,14 +39,17 @@
 //#include <pwd.h>
 #endif
 
+#define DOWNLOAD_IF_NECESSARY if (!_isDownloaded) { download(true); }
+#define USCXML_URI_STRING(obj, field) std::string(obj.field.first, (obj.field.afterLast - obj.field.first))
+
 namespace uscxml {
 
-void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, UriParserStateA* parser) {
+ void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, void* parser) {
 	exception.data.compound["uri"].atom = origUri;
 
-	if (parser != NULL && parser->errorPos != NULL) {
+	if (parser != NULL && ((UriParserStateA*)parser)->errorPos != NULL) {
 		const char* startPtr = origUri.c_str();
-		while(startPtr != parser->errorPos && *startPtr != '\0') {
+		while(startPtr != ((UriParserStateA*)parser)->errorPos && *startPtr != '\0') {
 			exception.data.compound["urk"].atom += " ";
 			startPtr++;
 		}
@@ -82,16 +88,18 @@ void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::
 }
 
 URLImpl::URLImpl() : _handle(NULL), _requestType(GET), _isDownloaded(false), _hasFailed(false) {
+    _uri = malloc(sizeof(UriUriA));
 }
 
 URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _requestType(GET), _isDownloaded(false), _hasFailed(false) {
 	UriParserStateA state;
-	state.uri = &_uri;
+    _uri = malloc(sizeof(UriUriA));
+	state.uri = (UriUriA*)_uri;
 
 	int err = uriParseUriA(&state, _orig.c_str());
 	if (err != URI_SUCCESS) {
 		UriParserStateA state2;
-		state2.uri = &_uri;
+		state2.uri = (UriUriA*)_uri;
 
 		char* tmp = (char*)malloc(8 + 3 * _orig.size() + 1);
 		uriWindowsFilenameToUriStringA(_orig.c_str(), tmp);
@@ -102,7 +110,7 @@ URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _requestTy
 
 	if (err != URI_SUCCESS) {
 		UriParserStateA state2;
-		state2.uri = &_uri;
+		state2.uri = (UriUriA*)_uri;
 
 		char* tmp = (char*)malloc(7 + 3 * _orig.size() + 1 );
 		uriUnixFilenameToUriStringA(_orig.c_str(), tmp);
@@ -119,14 +127,17 @@ URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _requestTy
 }
 
 URLImpl::~URLImpl() {
-	uriFreeUriMembersA(&_uri);
+	uriFreeUriMembersA((UriUriA*)_uri);
 	if (_handle != NULL)
 		curl_easy_cleanup(_handle);
+    free(_uri);
 }
 
 URL URLImpl::resolve(URLImpl* relative, URLImpl* absolute) {
 	std::shared_ptr<URLImpl> dest(new URLImpl());
-	int err = uriAddBaseUriExA(&(dest->_uri), &(relative->_uri), &(absolute->_uri), URI_RESOLVE_IDENTICAL_SCHEME_COMPAT);
+	int err = uriAddBaseUriExA(((UriUriA*)dest->_uri),
+                               ((UriUriA*)relative->_uri),
+                               ((UriUriA*)absolute->_uri), URI_RESOLVE_IDENTICAL_SCHEME_COMPAT);
 	if (err != URI_SUCCESS) {
 		ErrorEvent exc("Cannot resolve " + (std::string)(*relative) + " with " + (std::string)(*absolute));
 		prepareException(exc, err, "", NULL);
@@ -156,7 +167,9 @@ URL URLImpl::resolveWithCWD(URLImpl* relative) {
 
 URL URLImpl::refer(URLImpl* absoluteSource, URLImpl* absoluteBase) {
 	std::shared_ptr<URLImpl> dest(new URLImpl());
-	int err = uriRemoveBaseUriA(&(dest->_uri), &(absoluteSource->_uri), &(absoluteBase->_uri), URI_FALSE);
+	int err = uriRemoveBaseUriA(((UriUriA*)dest->_uri),
+                                ((UriUriA*)absoluteSource->_uri),
+                                ((UriUriA*)absoluteBase->_uri), URI_FALSE);
 	if (err != URI_SUCCESS) {
 		ErrorEvent exc("Cannot make a relative reference for " + (std::string)(*absoluteSource) + " with " + (std::string)(*absoluteBase));
 		prepareException(exc, err, "", NULL);
@@ -168,7 +181,7 @@ URL URLImpl::refer(URLImpl* absoluteSource, URLImpl* absoluteBase) {
 }
 
 void URLImpl::normalize() {
-	int err = uriNormalizeSyntaxA(&_uri);
+	int err = uriNormalizeSyntaxA((UriUriA*)_uri);
 	if (err != URI_SUCCESS) {
 		ErrorEvent exc("Cannot normalize URL " + (std::string)*this);
 		prepareException(exc, err, _orig, NULL);
@@ -176,8 +189,33 @@ void URLImpl::normalize() {
 	}
 }
 
+bool URLImpl::isAbsolute() const {
+    // see https://sourceforge.net/p/uriparser/bugs/3/
+    return ((UriUriA*)_uri)->absolutePath || ((((UriUriA*)_uri)->hostText.first != nullptr) && (((UriUriA*)_uri)->pathHead != nullptr));
+}
+
+std::string URLImpl::scheme() const {
+    return USCXML_URI_STRING((*(UriUriA*)_uri), scheme);
+}
+
+std::string URLImpl::userInfo() const {
+    return USCXML_URI_STRING((*(UriUriA*)_uri), userInfo);
+}
+
+std::string URLImpl::host() const {
+    return USCXML_URI_STRING((*(UriUriA*)_uri), hostText);
+}
+
+std::string URLImpl::port() const {
+    return USCXML_URI_STRING((*(UriUriA*)_uri), portText);
+}
+
+std::string URLImpl::fragment() const {
+    return USCXML_URI_STRING((*(UriUriA*)_uri), fragment);
+}
+
 std::string URLImpl::path() const {
-	UriPathSegmentA* firstSeg = _uri.pathHead;
+	UriPathSegmentA* firstSeg = ((UriUriA*)_uri)->pathHead;
 	UriPathSegmentA* lastSeg = firstSeg;
 	while(lastSeg->next) {
 		lastSeg = lastSeg->next;
@@ -186,12 +224,12 @@ std::string URLImpl::path() const {
 	std::string path;
 
 	// what a mess!
-	if (_uri.absolutePath ||
-	        (_uri.pathHead != NULL &&
-	         (_uri.hostText.first != NULL ||
-	          _uri.hostData.ip4 != NULL ||
-	          _uri.hostData.ip6 != NULL ||
-	          _uri.hostData.ipFuture.first != NULL))) {
+	if (((UriUriA*)_uri)->absolutePath ||
+	        (((UriUriA*)_uri)->pathHead != NULL &&
+	         (((UriUriA*)_uri)->hostText.first != NULL ||
+	          ((UriUriA*)_uri)->hostData.ip4 != NULL ||
+	          ((UriUriA*)_uri)->hostData.ip6 != NULL ||
+	          ((UriUriA*)_uri)->hostData.ipFuture.first != NULL))) {
 		path += "/";
 	}
 	path += std::string(firstSeg->text.first, lastSeg->text.afterLast - firstSeg->text.first);
@@ -201,7 +239,7 @@ std::string URLImpl::path() const {
 std::list<std::string> URLImpl::pathComponents() const {
 	std::list<std::string> pathList;
 
-	UriPathSegmentA* currSeg = _uri.pathHead;
+	UriPathSegmentA* currSeg = ((UriUriA*)_uri)->pathHead;
 	while(currSeg != NULL) {
 		pathList.push_back(USCXML_URI_STRING((*currSeg), text));
 		currSeg = currSeg->next;
@@ -216,7 +254,7 @@ std::map<std::string, std::string> URLImpl::query() const {
 	std::map<std::string, std::string> queryMap;
 	int itemCount;
 
-	int err = uriDissectQueryMallocA(&queryList, &itemCount, _uri.query.first, _uri.query.afterLast);
+	int err = uriDissectQueryMallocA(&queryList, &itemCount, (*(UriUriA*)_uri).query.first, (*(UriUriA*)_uri).query.afterLast);
 	if (err != URI_SUCCESS) {
 		ErrorEvent exc("Cannot get query from URL " + (std::string)*this);
 		prepareException(exc, err, _orig, NULL);
@@ -327,10 +365,10 @@ void URLImpl::downloadCompleted() {
 	}
 }
 
-void URLImpl::downloadFailed(CURLcode errorCode) {
+void URLImpl::downloadFailed(int errorCode) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
-	_error = curl_easy_strerror(errorCode);
+	_error = curl_easy_strerror((CURLcode)errorCode);
 	_hasFailed = true;
 	_isDownloaded = false;
 	_condVar.notify_all();
@@ -341,6 +379,48 @@ void URLImpl::downloadFailed(CURLcode errorCode) {
 		monIter++;
 	}
 
+}
+    
+void URLImpl::addOutHeader(const std::string& key, const std::string& value) {
+    _outHeader[key] = value;
+}
+void URLImpl::setOutContent(const std::string& content) {
+    _outContent = content;
+    _requestType = URLRequestType::POST;
+}
+void URLImpl::setRequestType(URLRequestType requestType) {
+    _requestType = requestType;
+    
+}
+
+const std::map<std::string, std::string> URLImpl::getInHeaderFields() {
+    DOWNLOAD_IF_NECESSARY
+    return _inHeaders;
+}
+
+const std::string URLImpl::getInHeaderField(const std::string& key) {
+    DOWNLOAD_IF_NECESSARY
+    if (_inHeaders.find(key) != _inHeaders.end()) {
+        return _inHeaders[key];
+    }
+    return "";
+}
+
+const std::string URLImpl::getStatusCode() const {
+    //        DOWNLOAD_IF_NECESSARY
+    return _statusCode;
+}
+
+const std::string URLImpl::getStatusMessage() const {
+    //        DOWNLOAD_IF_NECESSARY
+    return _statusMsg;
+}
+
+const std::string URLImpl::getInContent(bool forceReload) {
+    if (forceReload)
+        _isDownloaded = false;
+    DOWNLOAD_IF_NECESSARY
+    return _rawInContent.str();
 }
 
 const void URLImpl::download(bool blocking) {
@@ -399,7 +479,7 @@ URLImpl::operator Data() const {
 
 URLImpl::operator std::string() const {
 	int charsRequired = 0;
-	if (uriToStringCharsRequiredA(&_uri, &charsRequired) != URI_SUCCESS) {
+	if (uriToStringCharsRequiredA((UriUriA*)_uri, &charsRequired) != URI_SUCCESS) {
 		throw ErrorEvent("Cannot recompose URL");
 	}
 	charsRequired++;
@@ -410,7 +490,7 @@ URLImpl::operator std::string() const {
 		throw ErrorEvent("Malloc failed");
 	}
 
-	if (uriToStringA(uriString, &_uri, charsRequired, NULL) != URI_SUCCESS) {
+	if (uriToStringA(uriString, (UriUriA*)_uri, charsRequired, NULL) != URI_SUCCESS) {
 		free(uriString);
 		throw ErrorEvent("Cannot recompose URL");
 	}
@@ -635,7 +715,7 @@ void URLFetcher::breakURL(URL& url) {
 		instance->_handlesToURLs.erase(handle);
 	}
 	if (instance->_handlesToHeaders.find(handle) != instance->_handlesToHeaders.end()) {
-		curl_slist_free_all(instance->_handlesToHeaders[handle]);
+		curl_slist_free_all((struct curl_slist *)instance->_handlesToHeaders[handle]);
 		instance->_handlesToHeaders.erase(handle);
 	}
 }
@@ -765,7 +845,7 @@ void URLFetcher::perform() {
 
 					}
 					_handlesToURLs.erase(msg->easy_handle);
-					curl_slist_free_all(_handlesToHeaders[msg->easy_handle]);
+					curl_slist_free_all((struct curl_slist *)_handlesToHeaders[msg->easy_handle]);
 					_handlesToHeaders.erase(msg->easy_handle);
 
 				} else {

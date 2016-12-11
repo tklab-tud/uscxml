@@ -20,7 +20,6 @@
 #ifndef INTERPRETERMONITOR_H_D3F21429
 #define INTERPRETERMONITOR_H_D3F21429
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/debug/InterpreterIssue.h"

@@ -30,6 +30,7 @@
 
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/interpreter/BasicEventQueue.h"
+#include "uscxml/interpreter/BasicDelayedEventQueue.h"
 
 #ifdef BUILD_PROFILING
 #   include "uscxml/plugins/DataModel.h"

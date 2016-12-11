@@ -20,12 +20,9 @@
 #ifndef MICROSTEPIMPL_H_98233709
 #define MICROSTEPIMPL_H_98233709
 
-#include "uscxml/config.h"
-
 #include <list>
 #include <set>
 #include <string>
-#include <xercesc/dom/DOM.hpp>
 
 #include "uscxml/Common.h"
 #include "uscxml/Interpreter.h"

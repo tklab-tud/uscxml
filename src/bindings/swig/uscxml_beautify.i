@@ -38,10 +38,6 @@
 		
 };
 
-%{
-	#include <easylogging++.h>
-%}
-
 %extend uscxml::Data {
 	std::vector<std::string> getCompoundKeys() {
 		std::vector<std::string> keys;

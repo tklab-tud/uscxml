@@ -21,15 +21,14 @@
 #define INVOKER_H_CAC11892
 
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/messages/Event.h"
-#include <xercesc/dom/DOM.hpp>
 
 namespace XERCESC_NS {
-class DOMDocument;
-class DOMNode;
+    class DOMElement;
+    class DOMDocument;
+    class DOMNode;
 }
 
 namespace uscxml {
