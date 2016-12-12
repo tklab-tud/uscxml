@@ -93,8 +93,8 @@ void BasicDelayedEventQueue::enqueueDelayed(const Event& event, size_t delayMs, 
 	struct event* e = event_new(_eventLoop, -1, 0, timerCallback, &_callbackData[eventUUID]);
 
 	_callbackData[eventUUID].event = e;
-	gettimeofday(&(_callbackData[eventUUID].added), NULL);
-	timeradd(&delay, &_callbackData[eventUUID].added, &_callbackData[eventUUID].due);
+	evutil_gettimeofday(&(_callbackData[eventUUID].added), NULL);
+	evutil_timeradd(&delay, &_callbackData[eventUUID].added, &_callbackData[eventUUID].due);
 
 	event_add(e, &delay);
 }

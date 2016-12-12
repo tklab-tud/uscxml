@@ -4,6 +4,8 @@
 #include "uscxml/interpreter/BasicEventQueue.h"
 #include "uscxml/interpreter/BasicDelayedEventQueue.h"
 
+#include <event2/util.h>                // for evutil_socket_t
+
 #include <chrono>
 #include <mutex>
 
@@ -64,7 +66,7 @@ public:
 			return; // we are already paused!
 		}
 
-		gettimeofday(&_pausedAt, NULL); // remember when we paused
+		evutil_gettimeofday(&_pausedAt, NULL); // remember when we paused
 
 		{
 			// Verbatim copy of stop() without cancelAllDelayed()
@@ -93,16 +95,16 @@ public:
 			struct timeval now;
 			struct timeval pausedFor;
 
-			gettimeofday(&now, NULL);
-			timersub(&now, &_pausedAt, &pausedFor);
+			evutil_gettimeofday(&now, NULL);
+			evutil_timersub(&now, &_pausedAt, &pausedFor);
 			_pausedAt = {0,0};
 
 			for(auto& callbackData : _callbackData) {
 				// add the time we were paused to all due times
-				timeradd(&callbackData.second.due, &pausedFor, &callbackData.second.due);
+				evutil_timeradd(&callbackData.second.due, &pausedFor, &callbackData.second.due);
 
 				struct timeval remain;
-				timersub(&callbackData.second.due, &now, &remain);
+				evutil_timersub(&callbackData.second.due, &now, &remain);
 
 #if 0
 				std::cout << "Now      : " << now.tv_sec << "." << now.tv_usec << std::endl;
