@@ -238,23 +238,6 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 	returnData(request, replyData);
 }
 
-std::shared_ptr<LoggerImpl> DebuggerServlet::create() {
-	assert(false);
-	return std::shared_ptr<LoggerImpl>(this);
-}
-
-void DebuggerServlet::log(LogSeverity severity, const Event& event) {
-	pushData(std::shared_ptr<DebugSession>(), event.data);
-}
-
-void DebuggerServlet::log(LogSeverity severity, const Data& data) {
-	pushData(std::shared_ptr<DebugSession>(), data);
-}
-
-void DebuggerServlet::log(LogSeverity severity, const std::string& message) {
-	pushData(std::shared_ptr<DebugSession>(), Data(message));
-}
-
 /*
 void DebuggerServlet::handle(const el::LogDispatchData* data) {
 }

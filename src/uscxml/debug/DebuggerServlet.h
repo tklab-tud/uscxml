@@ -21,7 +21,6 @@
 #define DEBUGGERSERVLET_H_ATUMDA3G
 
 #include "uscxml/Common.h"
-#include "uscxml/interpreter/LoggingImpl.h"
 #include "uscxml/util/BlockingQueue.h"
 #include "uscxml/server/HTTPServer.h"
 
@@ -29,7 +28,7 @@
 
 namespace uscxml {
 
-class USCXML_API DebuggerServlet : public Debugger, public HTTPServlet, public LoggerImpl {
+class USCXML_API DebuggerServlet : public Debugger, public HTTPServlet {
 public:
 	virtual ~DebuggerServlet() {}
 
@@ -66,12 +65,6 @@ public:
 //	void processRemoveBreakPoint(const HTTPServer::Request& request);
 //	void processPoll(const HTTPServer::Request& request);
 
-	// Logger
-	virtual std::shared_ptr<LoggerImpl> create();
-
-	virtual void log(LogSeverity severity, const Event& event);
-	virtual void log(LogSeverity severity, const Data& data);
-	virtual void log(LogSeverity severity, const std::string& message);
 
 protected:
 	void serverPushData(std::shared_ptr<DebugSession>);

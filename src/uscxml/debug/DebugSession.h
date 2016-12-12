@@ -22,6 +22,8 @@
 
 #include "uscxml/debug/Breakpoint.h"
 #include "uscxml/Interpreter.h"
+#include "uscxml/interpreter/LoggingImpl.h"
+
 #include <time.h>
 #include <set>
 #include <thread>
@@ -31,7 +33,7 @@ namespace uscxml {
 
 class Debugger;
 
-class USCXML_API DebugSession : public std::enable_shared_from_this<DebugSession> {
+class USCXML_API DebugSession : public LoggerImpl ,public std::enable_shared_from_this<DebugSession> {
 public:
 	DebugSession() {
 		_isRunning = false;
@@ -76,6 +78,13 @@ public:
 	void markForDeletion(bool mark) {
 		_markedForDeletion = mark;
 	}
+
+    // Logger
+    virtual std::shared_ptr<LoggerImpl> create();
+    
+    virtual void log(LogSeverity severity, const Event& event);
+    virtual void log(LogSeverity severity, const Data& data);
+    virtual void log(LogSeverity severity, const std::string& message);
 
 protected:
 	void breakExecution(Data replyData);

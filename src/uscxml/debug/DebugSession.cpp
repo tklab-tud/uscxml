@@ -415,5 +415,70 @@ Data DebugSession::debugEval(const Data& data) {
 	return replyData;
 }
 
+std::shared_ptr<LoggerImpl> DebugSession::create() {
+    return shared_from_this();
+}
+
+void DebugSession::log(LogSeverity severity, const Event& event) {
+    Data d;
+    d.compound["data"] = event.data;
+    d.compound["name"] = Data(event.name);
+    d.compound["origin"] = Data(event.origin);
+    d.compound["origintype"] = Data(event.origintype);
+    
+    switch (event.eventType) {
+        case Event::Type::INTERNAL:
+            d.compound["eventType"] = Data("INTERNAL");
+            break;
+        case Event::Type::EXTERNAL:
+            d.compound["eventType"] = Data("EXTERNAL");
+            break;
+        case Event::Type::PLATFORM:
+            d.compound["eventType"] = Data("PLATFORM");
+            break;
+        default:
+            break;
+    }
+    if (!event.hideSendId)
+        d.compound["sendid"] = Data(event.sendid);
+    if (event.invokeid.size() > 0)
+        d.compound["invokeid"] = Data(event.invokeid);
+
+    // handle params
+    Data& params = d.compound["params"];
+    bool convertedToArray = false;
+    for (auto param : event.params) {
+        if (params.compound.find(param.first) != d.compound.end()) {
+            // no such key, add as literal data
+            d.compound[param.first] = param.second;
+        } else if (params.compound[param.first].array.size() > 0 && convertedToArray) {
+            // key is already an array
+            params.compound[param.first].array.push_back(param.second);
+        } else {
+            // key already given as literal data, move to array
+            Data& existingParam = params.compound[param.first];
+            params.compound[param.first].array.push_back(existingParam);
+            params.compound[param.first].array.push_back(param.second);
+            params.compound[param.first].compound.clear();
+            convertedToArray = true;
+        }
+    }
+    
+    // handle namelist
+    Data& namelist = d.compound["namelist"];
+    for (auto name : event.namelist) {
+        namelist.compound[name.first] = name.second;
+    }
+    
+    _debugger->pushData(shared_from_this(), d);
+}
+
+void DebugSession::log(LogSeverity severity, const Data& data) {
+    _debugger->pushData(shared_from_this(), data);
+}
+
+void DebugSession::log(LogSeverity severity, const std::string& message) {
+    _debugger->pushData(shared_from_this(), Data(message));
+}
 
 }
