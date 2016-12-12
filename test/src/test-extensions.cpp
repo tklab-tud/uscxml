@@ -53,7 +53,10 @@ std::shared_ptr<PausableDelayedEventQueue> nestedDelayQueue;
  */
 class PausableDelayedEventQueue : public BasicDelayedEventQueue {
 public:
-	PausableDelayedEventQueue(DelayedEventQueueCallbacks* callbacks) : BasicDelayedEventQueue(callbacks) {}
+	PausableDelayedEventQueue(DelayedEventQueueCallbacks* callbacks) : BasicDelayedEventQueue(callbacks) {
+        _pausedAt.tv_sec = 0;
+        _pausedAt.tv_usec = 0;
+    }
 
 	std::shared_ptr<DelayedEventQueueImpl> create(DelayedEventQueueCallbacks* callbacks) {
 		// remember as nestedDelayQueue in global scope
@@ -97,7 +100,8 @@ public:
 
 			evutil_gettimeofday(&now, NULL);
 			evutil_timersub(&now, &_pausedAt, &pausedFor);
-			_pausedAt = {0,0};
+            _pausedAt.tv_sec = 0;
+            _pausedAt.tv_usec = 0;
 
 			for(auto& callbackData : _callbackData) {
 				// add the time we were paused to all due times
@@ -121,7 +125,7 @@ public:
 	}
 
 protected:
-	timeval _pausedAt = {0,0};
+	timeval _pausedAt;
 };
 
 bool testPausableEventQueue() {
