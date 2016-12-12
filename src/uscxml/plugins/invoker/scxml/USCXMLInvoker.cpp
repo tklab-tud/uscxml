@@ -100,7 +100,7 @@ void USCXMLInvoker::run(void* instance) {
 
 	InterpreterState state = USCXML_UNDEF;
 	while(state != USCXML_FINISHED) {
-		state = INSTANCE->_invokedInterpreter.step(true);
+		state = INSTANCE->_invokedInterpreter.step();
 
 //		if (!INSTANCE->_isStarted) {
 //			// we have been cancelled
@@ -158,31 +158,30 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		_invokedInterpreter.getImpl()->_invokeId = invokeEvent.invokeid;
 		_invokedInterpreter.getImpl()->_invokeReq = invokeEvent;
 
-        // create new instances from the parent's ActionLanguage
+		// create new instances from the parent's ActionLanguage
 #if 1
-        InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
-        invoked->_execContent = _interpreter->_execContent.getImpl()->create(invoked);
-        invoked->_delayQueue = _interpreter->_delayQueue.getImplDelayed()->create(invoked);
-        invoked->_internalQueue = _interpreter->_internalQueue.getImplBase()->create();
-        invoked->_externalQueue = _interpreter->_externalQueue.getImplBase()->create();
-        invoked->_microStepper = _interpreter->_microStepper.getImpl()->create(invoked);
-        
-        // TODO: setup invokers dom, check datamodel attribute and create new instance from parent if matching?
+		InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
+		invoked->_execContent = _interpreter->_execContent.getImpl()->create(invoked);
+		invoked->_delayQueue = _interpreter->_delayQueue.getImplDelayed()->create(invoked);
+		invoked->_internalQueue = _interpreter->_internalQueue.getImplBase()->create();
+		invoked->_externalQueue = _interpreter->_externalQueue.getImplBase()->create();
+		invoked->_microStepper = _interpreter->_microStepper.getImpl()->create(invoked);
+
+		// TODO: setup invokers dom, check datamodel attribute and create new instance from parent if matching?
 #endif
 		// copy monitors
-//		std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
-//		while(monIter != _interpreter->_monitors.end()) {
-//			if ((*monIter)->copyToInvokers()) {
-//				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
-//			}
-//			monIter++;
-//		}
+		std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
+		while(monIter != _interpreter->_monitors.end()) {
+			if ((*monIter)->copyToInvokers()) {
+				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
+			}
+			monIter++;
+		}
 
-
-		/** 
-         * test240 assumes that invoke request params will carry over to the datamodel
-         * This is solved by passing the invoke request above
-         */
+		/**
+		 * test240 assumes that invoke request params will carry over to the datamodel
+		 * This is solved by passing the invoke request above
+		 */
 //		_invokedInterpreter.getImpl()->setInvokeRequest(req);
 		_isActive = true;
 

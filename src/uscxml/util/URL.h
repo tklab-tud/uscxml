@@ -54,12 +54,12 @@ public:
 	URLImpl(const std::string& url);
 	~URLImpl();
 
-    bool isAbsolute() const;
-    std::string scheme() const;
-    std::string userInfo() const;
-    std::string host() const;
-    std::string port() const;
-    std::string fragment() const;
+	bool isAbsolute() const;
+	std::string scheme() const;
+	std::string userInfo() const;
+	std::string host() const;
+	std::string port() const;
+	std::string fragment() const;
 	std::map<std::string, std::string> query() const;
 	std::string path() const;
 	std::list<std::string> pathComponents() const;
@@ -78,15 +78,15 @@ public:
 	}
 
 	// downloading / uploading
-    void addOutHeader(const std::string& key, const std::string& value);
-    void setOutContent(const std::string& content);
-    void setRequestType(URLRequestType requestType);
-    const std::map<std::string, std::string> getInHeaderFields();
-    const std::string getInHeaderField(const std::string& key);
+	void addOutHeader(const std::string& key, const std::string& value);
+	void setOutContent(const std::string& content);
+	void setRequestType(URLRequestType requestType);
+	const std::map<std::string, std::string> getInHeaderFields();
+	const std::string getInHeaderField(const std::string& key);
 
-    const std::string getStatusCode() const;
-    const std::string getStatusMessage() const;
-    const std::string getInContent(bool forceReload = false);
+	const std::string getStatusCode() const;
+	const std::string getStatusMessage() const;
+	const std::string getInContent(bool forceReload = false);
 	const void download(bool blocking = false);
 
 	operator Data() const;

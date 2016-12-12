@@ -44,7 +44,7 @@
 
 namespace uscxml {
 
- void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, void* parser) {
+void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, void* parser) {
 	exception.data.compound["uri"].atom = origUri;
 
 	if (parser != NULL && ((UriParserStateA*)parser)->errorPos != NULL) {
@@ -88,12 +88,12 @@ namespace uscxml {
 }
 
 URLImpl::URLImpl() : _handle(NULL), _requestType(GET), _isDownloaded(false), _hasFailed(false) {
-    _uri = malloc(sizeof(UriUriA));
+	_uri = malloc(sizeof(UriUriA));
 }
 
 URLImpl::URLImpl(const std::string& url) : _orig(url), _handle(NULL), _requestType(GET), _isDownloaded(false), _hasFailed(false) {
 	UriParserStateA state;
-    _uri = malloc(sizeof(UriUriA));
+	_uri = malloc(sizeof(UriUriA));
 	state.uri = (UriUriA*)_uri;
 
 	int err = uriParseUriA(&state, _orig.c_str());
@@ -130,14 +130,14 @@ URLImpl::~URLImpl() {
 	uriFreeUriMembersA((UriUriA*)_uri);
 	if (_handle != NULL)
 		curl_easy_cleanup(_handle);
-    free(_uri);
+	free(_uri);
 }
 
 URL URLImpl::resolve(URLImpl* relative, URLImpl* absolute) {
 	std::shared_ptr<URLImpl> dest(new URLImpl());
 	int err = uriAddBaseUriExA(((UriUriA*)dest->_uri),
-                               ((UriUriA*)relative->_uri),
-                               ((UriUriA*)absolute->_uri), URI_RESOLVE_IDENTICAL_SCHEME_COMPAT);
+	                           ((UriUriA*)relative->_uri),
+	                           ((UriUriA*)absolute->_uri), URI_RESOLVE_IDENTICAL_SCHEME_COMPAT);
 	if (err != URI_SUCCESS) {
 		ErrorEvent exc("Cannot resolve " + (std::string)(*relative) + " with " + (std::string)(*absolute));
 		prepareException(exc, err, "", NULL);
@@ -168,8 +168,8 @@ URL URLImpl::resolveWithCWD(URLImpl* relative) {
 URL URLImpl::refer(URLImpl* absoluteSource, URLImpl* absoluteBase) {
 	std::shared_ptr<URLImpl> dest(new URLImpl());
 	int err = uriRemoveBaseUriA(((UriUriA*)dest->_uri),
-                                ((UriUriA*)absoluteSource->_uri),
-                                ((UriUriA*)absoluteBase->_uri), URI_FALSE);
+	                            ((UriUriA*)absoluteSource->_uri),
+	                            ((UriUriA*)absoluteBase->_uri), URI_FALSE);
 	if (err != URI_SUCCESS) {
 		ErrorEvent exc("Cannot make a relative reference for " + (std::string)(*absoluteSource) + " with " + (std::string)(*absoluteBase));
 		prepareException(exc, err, "", NULL);
@@ -190,28 +190,28 @@ void URLImpl::normalize() {
 }
 
 bool URLImpl::isAbsolute() const {
-    // see https://sourceforge.net/p/uriparser/bugs/3/
-    return ((UriUriA*)_uri)->absolutePath || ((((UriUriA*)_uri)->hostText.first != nullptr) && (((UriUriA*)_uri)->pathHead != nullptr));
+	// see https://sourceforge.net/p/uriparser/bugs/3/
+	return ((UriUriA*)_uri)->absolutePath || ((((UriUriA*)_uri)->hostText.first != nullptr) && (((UriUriA*)_uri)->pathHead != nullptr));
 }
 
 std::string URLImpl::scheme() const {
-    return USCXML_URI_STRING((*(UriUriA*)_uri), scheme);
+	return USCXML_URI_STRING((*(UriUriA*)_uri), scheme);
 }
 
 std::string URLImpl::userInfo() const {
-    return USCXML_URI_STRING((*(UriUriA*)_uri), userInfo);
+	return USCXML_URI_STRING((*(UriUriA*)_uri), userInfo);
 }
 
 std::string URLImpl::host() const {
-    return USCXML_URI_STRING((*(UriUriA*)_uri), hostText);
+	return USCXML_URI_STRING((*(UriUriA*)_uri), hostText);
 }
 
 std::string URLImpl::port() const {
-    return USCXML_URI_STRING((*(UriUriA*)_uri), portText);
+	return USCXML_URI_STRING((*(UriUriA*)_uri), portText);
 }
 
 std::string URLImpl::fragment() const {
-    return USCXML_URI_STRING((*(UriUriA*)_uri), fragment);
+	return USCXML_URI_STRING((*(UriUriA*)_uri), fragment);
 }
 
 std::string URLImpl::path() const {
@@ -380,47 +380,47 @@ void URLImpl::downloadFailed(int errorCode) {
 	}
 
 }
-    
+
 void URLImpl::addOutHeader(const std::string& key, const std::string& value) {
-    _outHeader[key] = value;
+	_outHeader[key] = value;
 }
 void URLImpl::setOutContent(const std::string& content) {
-    _outContent = content;
-    _requestType = URLRequestType::POST;
+	_outContent = content;
+	_requestType = URLRequestType::POST;
 }
 void URLImpl::setRequestType(URLRequestType requestType) {
-    _requestType = requestType;
-    
+	_requestType = requestType;
+
 }
 
 const std::map<std::string, std::string> URLImpl::getInHeaderFields() {
-    DOWNLOAD_IF_NECESSARY
-    return _inHeaders;
+	DOWNLOAD_IF_NECESSARY
+	return _inHeaders;
 }
 
 const std::string URLImpl::getInHeaderField(const std::string& key) {
-    DOWNLOAD_IF_NECESSARY
-    if (_inHeaders.find(key) != _inHeaders.end()) {
-        return _inHeaders[key];
-    }
-    return "";
+	DOWNLOAD_IF_NECESSARY
+	if (_inHeaders.find(key) != _inHeaders.end()) {
+		return _inHeaders[key];
+	}
+	return "";
 }
 
 const std::string URLImpl::getStatusCode() const {
-    //        DOWNLOAD_IF_NECESSARY
-    return _statusCode;
+	//        DOWNLOAD_IF_NECESSARY
+	return _statusCode;
 }
 
 const std::string URLImpl::getStatusMessage() const {
-    //        DOWNLOAD_IF_NECESSARY
-    return _statusMsg;
+	//        DOWNLOAD_IF_NECESSARY
+	return _statusMsg;
 }
 
 const std::string URLImpl::getInContent(bool forceReload) {
-    if (forceReload)
-        _isDownloaded = false;
-    DOWNLOAD_IF_NECESSARY
-    return _rawInContent.str();
+	if (forceReload)
+		_isDownloaded = false;
+	DOWNLOAD_IF_NECESSARY
+	return _rawInContent.str();
 }
 
 const void URLImpl::download(bool blocking) {

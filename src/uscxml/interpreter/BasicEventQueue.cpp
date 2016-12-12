@@ -22,6 +22,8 @@
 #include <event2/thread.h>
 #include <assert.h>
 
+//#include <iostream>
+
 #include "uscxml/interpreter/Logging.h"
 
 namespace uscxml {
@@ -36,12 +38,18 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 
 	if (blockMs > 0) {
 
-		// block for given milliseconds or until queue is filled
+		// block for given milliseconds or until queue is non-empty
 		auto endTime = std::chrono::system_clock::now() + std::chrono::milliseconds(blockMs);
+//        std::time_t ttp = std::chrono::system_clock::to_time_t(endTime);
+//        std::cout << "End: " << ttp << std::endl;
+//        std::cout << "Now: " << std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) << std::endl;
 
-		while (_queue.empty()) {
+		while (endTime > std::chrono::system_clock::now() && _queue.empty()) {
 			_cond.wait_until(_mutex, endTime);
+//            std::cout << "Aft: " << std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) << std::endl;
+//            std::cout << blockMs << ".";
 		}
+
 	}
 
 	if (_queue.size() > 0) {
@@ -66,7 +74,7 @@ void BasicEventQueue::reset() {
 }
 
 std::shared_ptr<EventQueueImpl> BasicEventQueue::create() {
-    return std::shared_ptr<EventQueueImpl>(new BasicEventQueue());
+	return std::shared_ptr<EventQueueImpl>(new BasicEventQueue());
 }
 
 }

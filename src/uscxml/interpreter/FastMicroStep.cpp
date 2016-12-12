@@ -90,7 +90,7 @@ FastMicroStep::~FastMicroStep() {
 }
 
 std::shared_ptr<MicroStepImpl> FastMicroStep::create(MicroStepCallbacks* callbacks) {
-    return std::shared_ptr<MicroStepImpl>(new FastMicroStep(callbacks));
+	return std::shared_ptr<MicroStepImpl>(new FastMicroStep(callbacks));
 }
 
 void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
@@ -1162,7 +1162,7 @@ bool FastMicroStep::hasLegalConfiguration() {
 				if (isMember(childs[j], config)) {
 					if (foundChildState) {
 						LOG(USCXML_ERROR) << "Invalid configuration: Multiple childs of compound '" << ATTR_CAST(config[i], "id")
-						           << "' are active '" << ATTR_CAST(foundChildState, "id") << "' and '" << ATTR_CAST(childs[j], "id") << "'";
+						                  << "' are active '" << ATTR_CAST(foundChildState, "id") << "' and '" << ATTR_CAST(childs[j], "id") << "'";
 						return false;
 					}
 					foundChildState = childs[j];

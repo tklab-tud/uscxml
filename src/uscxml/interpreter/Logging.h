@@ -34,8 +34,8 @@
 namespace uscxml {
 
 enum LogSeverity {
-    USCXML_SCXML,
-    USCXML_TRACE,
+	USCXML_SCXML,
+	USCXML_TRACE,
 	USCXML_DEBUG,
 	USCXML_INFO,
 	USCXML_WARN,
@@ -50,37 +50,37 @@ void log(LogSeverity severity, const Data& data);
 
 class StreamLogger {
 public:
-    std::ostream& operator<<(const std::string& message);
-    ~StreamLogger();
+	std::ostream& operator<<(const std::string& message);
+	~StreamLogger();
 
 protected:
-    StreamLogger(LogSeverity severity, std::shared_ptr<LoggerImpl> logger) : _severity(severity), _logger(logger) {}
-    StreamLogger(const StreamLogger& other) : _severity(other._severity), _logger(other._logger) {}
-    
-    LogSeverity _severity;
-    std::shared_ptr<LoggerImpl> _logger;
-    std::stringstream ss;
-    
-    friend class Logger;
+	StreamLogger(LogSeverity severity, std::shared_ptr<LoggerImpl> logger) : _severity(severity), _logger(logger) {}
+	StreamLogger(const StreamLogger& other) : _severity(other._severity), _logger(other._logger) {}
+
+	LogSeverity _severity;
+	std::shared_ptr<LoggerImpl> _logger;
+	std::stringstream ss;
+
+	friend class Logger;
 };
 
 class USCXML_API Logger {
 public:
-    PIMPL_OPERATORS(Logger);
-    
+	PIMPL_OPERATORS(Logger);
+
 	virtual void log(LogSeverity severity, const Event& event);
-    virtual void log(LogSeverity severity, const Data& data);
-    virtual void log(LogSeverity severity, const std::string& message);
-    
-    virtual StreamLogger log(LogSeverity severity);
-    static std::string severityToString(LogSeverity severity);
-    
-    static Logger getDefault();
-    
+	virtual void log(LogSeverity severity, const Data& data);
+	virtual void log(LogSeverity severity, const std::string& message);
+
+	virtual StreamLogger log(LogSeverity severity);
+	static std::string severityToString(LogSeverity severity);
+
+	static Logger getDefault();
+
 	std::shared_ptr<LoggerImpl> getImpl() const;
 protected:
 	std::shared_ptr<LoggerImpl> _impl;
-	
+
 };
 
 }

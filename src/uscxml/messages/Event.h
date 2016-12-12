@@ -109,12 +109,12 @@ public:
 		return name.size() > 0;
 	}
 
-    operator std::string() {
-        std::stringstream ss;
-        ss << *this;
-        return ss.str();
-    }
-    
+	operator std::string() {
+		std::stringstream ss;
+		ss << *this;
+		return ss.str();
+	}
+
 	typedef std::multimap<std::string, Data> params_t;
 	typedef std::map<std::string, Data> namelist_t;
 
@@ -198,7 +198,7 @@ class USCXML_API ErrorEvent : public Event {
 public:
 	ErrorEvent() : Event() {}
 	ErrorEvent(const std::string& msg) : Event("error.platform") {
-        data.compound["msg"] = Data(msg, Data::VERBATIM);
+		data.compound["msg"] = Data(msg, Data::VERBATIM);
 	}
 };
 

@@ -91,7 +91,7 @@ public:
 	                  const char* base_filename, int line,
 	                  const struct ::tm* tm_time,
 	                  const char* message, size_t message_len);
-     void handle(const el::LogDispatchData* data);
+	 void handle(const el::LogDispatchData* data);
 	*/
 
 protected:

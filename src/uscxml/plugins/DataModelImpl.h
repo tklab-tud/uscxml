@@ -25,8 +25,8 @@
 #include "uscxml/plugins/IOProcessor.h"
 
 namespace XERCESC_NS {
-	class DOMDocument;
-	class DOMNode;
+class DOMDocument;
+class DOMNode;
 }
 
 #include <list>

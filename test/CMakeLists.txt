@@ -41,6 +41,7 @@ function(USCXML_TEST_COMPILE)
 endfunction()
 
 # simple one file tests
+USCXML_TEST_COMPILE(NAME test-extensions LABEL general/test-extensions FILES src/test-extensions.cpp)
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)

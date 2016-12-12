@@ -55,7 +55,7 @@ public:
 	virtual void init(XERCESC_NS::DOMElement* scxml);
 	virtual void markAsCancelled();
 
-    std::shared_ptr<MicroStepImpl> getImpl() const;
+	std::shared_ptr<MicroStepImpl> getImpl() const;
 protected:
 	std::shared_ptr<MicroStepImpl> _impl;
 };

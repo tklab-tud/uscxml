@@ -91,7 +91,7 @@ std::list<std::string> tokenize(const std::string &line, const char sep, bool tr
 			}
 			start = i;
 		}
-        if (i + 1 == line.size()) {
+		if (i + 1 == line.size()) {
 			tokens.push_back(line.substr(start, i + 1 - start));
 		}
 	}

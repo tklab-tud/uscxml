@@ -36,7 +36,7 @@ namespace uscxml {
 using namespace XERCESC_NS;
 
 std::shared_ptr<ContentExecutorImpl> BasicContentExecutor::create(ContentExecutorCallbacks* callbacks) {
-    return std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutor(callbacks));
+	return std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutor(callbacks));
 }
 
 void BasicContentExecutor::processRaise(XERCESC_NS::DOMElement* content) {
@@ -635,13 +635,13 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 				contentSS << X((*textIter)->getNodeValue());
 			}
 #if 0
-            try {
+			try {
 				Data d = _callbacks->getAsData(contentSS.str());
 				if (!d.empty())
 					return d;
 			} catch(...) {}
 #endif
-            // test294, test562
+			// test294, test562
 			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
 		}
 	}

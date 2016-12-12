@@ -238,26 +238,26 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 	returnData(request, replyData);
 }
 
-    /*
+/*
 void DebuggerServlet::handle(const el::LogDispatchData* data) {
 }
 
 void DebuggerServlet::send(google::LogSeverity severity, const char* full_filename,
-                           const char* base_filename, int line,
-                           const struct ::tm* tm_time,
-                           const char* message, size_t message_len) {
+                       const char* base_filename, int line,
+                       const struct ::tm* tm_time,
+                       const char* message, size_t message_len) {
 
-	// _sendQueue is thread-safe, not sure about ToString though
+// _sendQueue is thread-safe, not sure about ToString though
 
-	LogMessage msg(severity,
-	               full_filename,
-	               base_filename,
-	               line,
-	               tm_time,
-	               std::string(message, message_len),
-	               ToString(severity, base_filename, line, tm_time, message, message_len));
-	msg.compound["replyType"] = Data("log", Data::VERBATIM);
-	pushData(std::shared_ptr<DebugSession>(), msg);
+LogMessage msg(severity,
+               full_filename,
+               base_filename,
+               line,
+               tm_time,
+               std::string(message, message_len),
+               ToString(severity, base_filename, line, tm_time, message, message_len));
+msg.compound["replyType"] = Data("log", Data::VERBATIM);
+pushData(std::shared_ptr<DebugSession>(), msg);
 }
 */
 

@@ -40,13 +40,13 @@ public:
 	virtual std::shared_ptr<LoggerImpl> create() = 0;
 
 	virtual void log(LogSeverity severity, const Event& event) = 0;
-    virtual void log(LogSeverity severity, const Data& data) = 0;
-    virtual void log(LogSeverity severity, const std::string& message) = 0;
+	virtual void log(LogSeverity severity, const Data& data) = 0;
+	virtual void log(LogSeverity severity, const std::string& message) = 0;
 
-    static std::shared_ptr<LoggerImpl> getDefault();
-    
+	static std::shared_ptr<LoggerImpl> getDefault();
+
 private:
-    static std::shared_ptr<LoggerImpl> _defaultLogger;
+	static std::shared_ptr<LoggerImpl> _defaultLogger;
 };
 
 }

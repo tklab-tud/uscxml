@@ -38,7 +38,7 @@ class USCXML_API BasicEventQueue : public EventQueueImpl {
 public:
 	BasicEventQueue();
 	virtual ~BasicEventQueue();
-    virtual std::shared_ptr<EventQueueImpl> create();
+	virtual std::shared_ptr<EventQueueImpl> create();
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 	virtual void reset();

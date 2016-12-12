@@ -43,7 +43,7 @@ class FastMicroStep : public MicroStepImpl {
 public:
 	FastMicroStep(MicroStepCallbacks* callbacks);
 	virtual ~FastMicroStep();
-    virtual std::shared_ptr<MicroStepImpl> create(MicroStepCallbacks* callbacks);
+	virtual std::shared_ptr<MicroStepImpl> create(MicroStepCallbacks* callbacks);
 
 	virtual InterpreterState step(size_t blockMs);
 	virtual void reset();

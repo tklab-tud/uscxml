@@ -44,7 +44,7 @@ void ContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::
 }
 
 std::shared_ptr<ContentExecutorImpl> ContentExecutor::getImpl() const {
-    return _impl;
+	return _impl;
 }
 
 }

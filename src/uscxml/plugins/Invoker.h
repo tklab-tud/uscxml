@@ -26,9 +26,9 @@
 #include "uscxml/messages/Event.h"
 
 namespace XERCESC_NS {
-    class DOMElement;
-    class DOMDocument;
-    class DOMNode;
+class DOMElement;
+class DOMDocument;
+class DOMNode;
 }
 
 namespace uscxml {
