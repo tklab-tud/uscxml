@@ -6,8 +6,9 @@
 <area shape="rect" id="node6" href="$_fast_micro_step_8cpp.html" title="interpreter/FastMicroStep.cpp" alt="" coords="771,87,968,114"/>
 <area shape="rect" id="node7" href="$_interpreter_impl_8cpp.html" title="interpreter/InterpreterImpl.cpp" alt="" coords="993,87,1191,114"/>
 <area shape="rect" id="node8" href="$_chart_to_c_8cpp.html" title="transform/ChartToC.cpp" alt="" coords="1216,87,1381,114"/>
-<area shape="rect" id="node9" href="$_chart_to_promela_8cpp.html" title="transform/ChartToPromela.cpp" alt="" coords="1405,87,1611,114"/>
-<area shape="rect" id="node10" href="$_chart_to_v_h_d_l_8cpp.html" title="transform/ChartToVHDL.cpp" alt="" coords="1635,87,1826,114"/>
-<area shape="rect" id="node11" href="$_promela_code_analyzer_8cpp.html" title="transform/promela/Promela\lCodeAnalyzer.cpp" alt="" coords="1851,80,2035,121"/>
-<area shape="rect" id="node12" href="$_predicates_8cpp.html" title="util/Predicates.cpp" alt="" coords="2059,87,2189,114"/>
+<area shape="rect" id="node9" href="$_chart_to_java_8cpp.html" title="transform/ChartToJava.cpp" alt="" coords="1405,87,1589,114"/>
+<area shape="rect" id="node10" href="$_chart_to_promela_8cpp.html" title="transform/ChartToPromela.cpp" alt="" coords="1613,87,1819,114"/>
+<area shape="rect" id="node11" href="$_chart_to_v_h_d_l_8cpp.html" title="transform/ChartToVHDL.cpp" alt="" coords="1843,87,2034,114"/>
+<area shape="rect" id="node12" href="$_promela_code_analyzer_8cpp.html" title="transform/promela/Promela\lCodeAnalyzer.cpp" alt="" coords="2059,80,2243,121"/>
+<area shape="rect" id="node13" href="$_predicates_8cpp.html" title="util/Predicates.cpp" alt="" coords="2267,87,2397,114"/>
 </map>

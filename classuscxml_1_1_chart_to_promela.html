@@ -109,14 +109,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="dynheader">
 Inheritance diagram for uscxml::ChartToPromela:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_chart_to_promela__inherit__graph.svg" width="180" height="187"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
-</div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_chart_to_promela__inherit__graph.svg" width="180" height="187"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for uscxml::ChartToPromela:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_chart_to_promela__coll__graph.svg" width="100%" height="491"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
-</div>
+<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_chart_to_promela__coll__graph.svg" width="100%" height="491"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -128,6 +126,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>writeTo</b> (std::ost
 <tr class="memitem:a00bce6c9e93822148c417e06e8c1b425 inherit pub_methods_classuscxml_1_1_transformer_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a00bce6c9e93822148c417e06e8c1b425"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TransformerImpl</b> (const <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;other)</td></tr>
 <tr class="separator:a00bce6c9e93822148c417e06e8c1b425 inherit pub_methods_classuscxml_1_1_transformer_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdd2c0b28c233f9e2fee2afe30e395ac inherit pub_methods_classuscxml_1_1_transformer_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afdd2c0b28c233f9e2fee2afe30e395ac"></a>
+virtual XERCESC_NS::DOMDocument *&#160;</td><td class="memItemRight" valign="bottom"><b>getDocument</b> () const </td></tr>
+<tr class="separator:afdd2c0b28c233f9e2fee2afe30e395ac inherit pub_methods_classuscxml_1_1_transformer_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac9803028b658772eaa141e746adca33 inherit pub_methods_classuscxml_1_1_transformer_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac9803028b658772eaa141e746adca33"></a>
 virtual&#160;</td><td class="memItemRight" valign="bottom"><b>operator Interpreter</b> ()</td></tr>
 <tr class="separator:aac9803028b658772eaa141e746adca33 inherit pub_methods_classuscxml_1_1_transformer_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,9 +148,125 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a9eafae2cd79784cc37cb6b1984c854d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9eafae2cd79784cc37cb6b1984c854d3"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ChartToPromela</b> (const <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;other)</td></tr>
 <tr class="separator:a9eafae2cd79784cc37cb6b1984c854d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae11af86523d1841b75bf462eda0092aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae11af86523d1841b75bf462eda0092aa"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>writeEvents</b> (std::ostream &amp;stream)</td></tr>
-<tr class="separator:ae11af86523d1841b75bf462eda0092aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1521b8007b3a245745548e06db43301"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae1521b8007b3a245745548e06db43301"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>beautifyIndentation</b> (const std::string &amp;code, size_t indent=0)</td></tr>
+<tr class="separator:ae1521b8007b3a245745548e06db43301"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d7ce5e5b36584469b6aa9571346a221"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5d7ce5e5b36584469b6aa9571346a221"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>dataToAssignments</b> (const std::string &amp;prefix, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
+<tr class="separator:a5d7ce5e5b36584469b6aa9571346a221"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a993b950e25f367c4037d58067aa382c2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a993b950e25f367c4037d58067aa382c2"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>declForRange</b> (const std::string &amp;identifier, long minValue, long maxValue, bool nativeOnly=false)</td></tr>
+<tr class="separator:a993b950e25f367c4037d58067aa382c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7edec936f880928db0f657508a2e5e84"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7edec936f880928db0f657508a2e5e84"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>prepare</b> ()</td></tr>
+<tr class="separator:a7edec936f880928db0f657508a2e5e84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a656621a0849241a1dd58cf2c1411e0d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a656621a0849241a1dd58cf2c1411e0d0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>printBitArray</b> (std::ostream &amp;stream, const std::string &amp;array, size_t length, size_t indent=0)</td></tr>
+<tr class="separator:a656621a0849241a1dd58cf2c1411e0d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8d0df666d9ec1dec47458be616c227b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af8d0df666d9ec1dec47458be616c227b"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>sanitizeCode</b> (const std::string &amp;code)</td></tr>
+<tr class="separator:af8d0df666d9ec1dec47458be616c227b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad936813b1dd702b839363391165449dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad936813b1dd702b839363391165449dd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeAdvanceTime</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:ad936813b1dd702b839363391165449dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adff8985fd4ddaf6e9723d5f882054d21"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adff8985fd4ddaf6e9723d5f882054d21"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitAndMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:adff8985fd4ddaf6e9723d5f882054d21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a533a0bab7a438cef02566f616381085b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a533a0bab7a438cef02566f616381085b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitAndNotMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a533a0bab7a438cef02566f616381085b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b337b16b4902b9858f40ce83fc36e5a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b337b16b4902b9858f40ce83fc36e5a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitClearMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a1b337b16b4902b9858f40ce83fc36e5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88391bed220d90c870dc0c471f3ea0b8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88391bed220d90c870dc0c471f3ea0b8"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitCopyMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a88391bed220d90c870dc0c471f3ea0b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66df9da759e2849918ebb2fe052ec480"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66df9da759e2849918ebb2fe052ec480"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitHasAndMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a66df9da759e2849918ebb2fe052ec480"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ad39ca67b5d2748c7b5ddca0b7915a5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ad39ca67b5d2748c7b5ddca0b7915a5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitHasAnyMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a7ad39ca67b5d2748c7b5ddca0b7915a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c2740771d8645dc4ab0692fe6bb41bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8c2740771d8645dc4ab0692fe6bb41bc"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeBitOrMacro</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a8c2740771d8645dc4ab0692fe6bb41bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a635efa9e9409323f2bdead13e93a7bcb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a635efa9e9409323f2bdead13e93a7bcb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeCancelEvents</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:a635efa9e9409323f2bdead13e93a7bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9898404fb3a83e97109b819f3c6d4fd4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9898404fb3a83e97109b819f3c6d4fd4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeCommonTypeDefs</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a9898404fb3a83e97109b819f3c6d4fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac74e338d74768782a12aa40bdb76991a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac74e338d74768782a12aa40bdb76991a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeCommonVariables</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:ac74e338d74768782a12aa40bdb76991a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a751f1586fad9fbaf8e837a3bfce666e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a751f1586fad9fbaf8e837a3bfce666e3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeDetermineShortestDelay</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:a751f1586fad9fbaf8e837a3bfce666e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0585bab8d71b1982b9017fdcef7479f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac0585bab8d71b1982b9017fdcef7479f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeExecContent</b> (std::ostream &amp;stream, const XERCESC_NS::DOMNode *node, size_t indent=0)</td></tr>
+<tr class="separator:ac0585bab8d71b1982b9017fdcef7479f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca97250ca8b390b3c935f79dab0d547d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca97250ca8b390b3c935f79dab0d547d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSM</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:aca97250ca8b390b3c935f79dab0d547d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2db9c2a66dfd2541314473c5b5b9fc0b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2db9c2a66dfd2541314473c5b5b9fc0b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMDequeueEvent</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a2db9c2a66dfd2541314473c5b5b9fc0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e7d1baf898d21075a4b6937269a33b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e7d1baf898d21075a4b6937269a33b5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMEnterStates</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a5e7d1baf898d21075a4b6937269a33b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60fbbe150451563939d4bc6cffadf846"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60fbbe150451563939d4bc6cffadf846"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMEstablishEntrySet</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a60fbbe150451563939d4bc6cffadf846"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbf24024911bc87146e8e5472195f446"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbf24024911bc87146e8e5472195f446"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMExitStates</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:afbf24024911bc87146e8e5472195f446"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4b9be8a2b7cd9fb7b28980e2f41358e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4b9be8a2b7cd9fb7b28980e2f41358e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMRememberHistory</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:aa4b9be8a2b7cd9fb7b28980e2f41358e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad36e70fdf4c8e4683bdc59ecf8480314"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad36e70fdf4c8e4683bdc59ecf8480314"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMSelectTransitions</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:ad36e70fdf4c8e4683bdc59ecf8480314"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8c7dc47b3eb092ae8e43e462734c55e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8c7dc47b3eb092ae8e43e462734c55e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMTakeTransitions</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:ac8c7dc47b3eb092ae8e43e462734c55e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2de62b43d676b90212bfc2094756aecd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2de62b43d676b90212bfc2094756aecd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeFSMTerminateMachine</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a2de62b43d676b90212bfc2094756aecd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa57e0f908cc0d0ab602307eba370101c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa57e0f908cc0d0ab602307eba370101c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeIfBlock</b> (std::ostream &amp;stream, std::list&lt; XERCESC_NS::DOMElement * &gt; &amp;condChain, size_t indent=0)</td></tr>
+<tr class="separator:aa57e0f908cc0d0ab602307eba370101c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8e970da51a600d3ebc123f59caee97b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8e970da51a600d3ebc123f59caee97b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeInsertWithDelay</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:ac8e970da51a600d3ebc123f59caee97b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bac9512a67fdb0f01b278afffbcea4d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5bac9512a67fdb0f01b278afffbcea4d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeMacros</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a5bac9512a67fdb0f01b278afffbcea4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d20c270434a5be2205b6c80ba2756c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d20c270434a5be2205b6c80ba2756c6"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeRaiseDoneDate</b> (std::ostream &amp;stream, const XERCESC_NS::DOMElement *donedata, size_t indent=0)</td></tr>
+<tr class="separator:a7d20c270434a5be2205b6c80ba2756c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88bea1ea3fc9c42bf569152dbcd5ece0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88bea1ea3fc9c42bf569152dbcd5ece0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeRemovePendingEventsFromInvoker</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:a88bea1ea3fc9c42bf569152dbcd5ece0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca020b95c4c5768073a071c0f7aaf2e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca020b95c4c5768073a071c0f7aaf2e9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeRescheduleProcess</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:aca020b95c4c5768073a071c0f7aaf2e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae40323078404f10021c4f9dcac6b3f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaae40323078404f10021c4f9dcac6b3f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeScheduleMachines</b> (std::ostream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:aaae40323078404f10021c4f9dcac6b3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e03050f9b062588b721a71a5a3ede20"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e03050f9b062588b721a71a5a3ede20"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeStates</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a6e03050f9b062588b721a71a5a3ede20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f831b572fe409200727b67d6d3bc024"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f831b572fe409200727b67d6d3bc024"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeStrings</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a8f831b572fe409200727b67d6d3bc024"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9378282c439ad7f9e42e0c641886b444"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_chart_to_promela.html#a9378282c439ad7f9e42e0c641886b444">writeTransitions</a> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a9378282c439ad7f9e42e0c641886b444"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9865cdf7d62edf4b34b4abc4167806d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9865cdf7d62edf4b34b4abc4167806d3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeTypeDefs</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a9865cdf7d62edf4b34b4abc4167806d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a1e1251e97eefb2fc56287f1ca25fbb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a1e1251e97eefb2fc56287f1ca25fbb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeVariables</b> (std::ostream &amp;stream)</td></tr>
+<tr class="separator:a6a1e1251e97eefb2fc56287f1ca25fbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classuscxml_1_1_chart_to_c"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classuscxml_1_1_chart_to_c')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classuscxml_1_1_chart_to_c.html">uscxml::ChartToC</a></td></tr>
 <tr class="memitem:a9875ece733e00f9781d0c5beabac7870 inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9875ece733e00f9781d0c5beabac7870"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ChartToC</b> (const <a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;other)</td></tr>
@@ -179,9 +296,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>writeElementInfoInvoc
 <tr class="memitem:a4729df13d9588d3fb5392e9d5122380c inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4729df13d9588d3fb5392e9d5122380c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>writeExecContent</b> (std::ostream &amp;stream)</td></tr>
 <tr class="separator:a4729df13d9588d3fb5392e9d5122380c inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4dc6984d20b258aaf37811030c79b0a inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4dc6984d20b258aaf37811030c79b0a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>writeExecContent</b> (std::ostream &amp;stream, const XERCESC_NS::DOMNode *node, int indent=0)</td></tr>
-<tr class="separator:ae4dc6984d20b258aaf37811030c79b0a inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ad4691f17244e30a45f6dbfbafebd4b inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ad4691f17244e30a45f6dbfbafebd4b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>writeExecContent</b> (std::ostream &amp;stream, const XERCESC_NS::DOMNode *node, size_t indent=0)</td></tr>
+<tr class="separator:a0ad4691f17244e30a45f6dbfbafebd4b inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a879a7713d4958c753749099cd08daf14 inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a879a7713d4958c753749099cd08daf14"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>writeExecContentFinalize</b> (std::ostream &amp;stream)</td></tr>
 <tr class="separator:a879a7713d4958c753749099cd08daf14 inherit pro_methods_classuscxml_1_1_chart_to_c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -215,9 +332,45 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>writeTypes</b> (std::
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:afa54372199b13aa03750a03cf66f03da"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa54372199b13aa03750a03cf66f03da"></a>
-<a class="el" href="classuscxml_1_1_promela_code_analyzer.html">PromelaCodeAnalyzer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_analyzer</b></td></tr>
-<tr class="separator:afa54372199b13aa03750a03cf66f03da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5353cd3ee88768c13e9992936b2a583"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5353cd3ee88768c13e9992936b2a583"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_allowEventInterleaving</b> = false</td></tr>
+<tr class="separator:af5353cd3ee88768c13e9992936b2a583"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af51e64111df63b4535e1d48a302d30c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af51e64111df63b4535e1d48a302d30c9"></a>
+<a class="el" href="classuscxml_1_1_promela_code_analyzer.html">PromelaCodeAnalyzer</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_analyzer</b> = NULL</td></tr>
+<tr class="separator:af51e64111df63b4535e1d48a302d30c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a151122bc967ec2e877f66720f55fd761"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a151122bc967ec2e877f66720f55fd761"></a>
+std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_dataModelVars</b></td></tr>
+<tr class="separator:a151122bc967ec2e877f66720f55fd761"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa9b8cc4949fb40972362307a0699637"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa9b8cc4949fb40972362307a0699637"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_externalQueueLength</b> = 7</td></tr>
+<tr class="separator:aaa9b8cc4949fb40972362307a0699637"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38968001e0fad2e77c3d5d6b35d14d4b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38968001e0fad2e77c3d5d6b35d14d4b"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_internalQueueLength</b> = 7</td></tr>
+<tr class="separator:a38968001e0fad2e77c3d5d6b35d14d4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a093dfc27d8f589677417fb742f57eac6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a093dfc27d8f589677417fb742f57eac6"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_invokerid</b></td></tr>
+<tr class="separator:a093dfc27d8f589677417fb742f57eac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac579ad6cba41d7a749ca55e86b048653"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac579ad6cba41d7a749ca55e86b048653"></a>
+std::map&lt; XERCESC_NS::DOMElement *, <a class="el" href="classuscxml_1_1_chart_to_promela.html">ChartToPromela</a> * &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>_machinesAll</b> = NULL</td></tr>
+<tr class="separator:ac579ad6cba41d7a749ca55e86b048653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a461806f28d7c531e0607a18a224c4c23"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a461806f28d7c531e0607a18a224c4c23"></a>
+std::map&lt; std::string, XERCESC_NS::DOMElement * &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>_machinesAllPerId</b> = NULL</td></tr>
+<tr class="separator:a461806f28d7c531e0607a18a224c4c23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa796a7b5e1d54d93aed2ccce7688eb96"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa796a7b5e1d54d93aed2ccce7688eb96"></a>
+std::map&lt; XERCESC_NS::DOMElement *, <a class="el" href="classuscxml_1_1_chart_to_promela.html">ChartToPromela</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_machinesNested</b></td></tr>
+<tr class="separator:aa796a7b5e1d54d93aed2ccce7688eb96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18679f798c9e8b775915993d024d5548"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a18679f798c9e8b775915993d024d5548"></a>
+std::map&lt; std::string, XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_machinesPerId</b></td></tr>
+<tr class="separator:a18679f798c9e8b775915993d024d5548"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa288a20fed1eeed40058ddc8659c1bcf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa288a20fed1eeed40058ddc8659c1bcf"></a>
+<a class="el" href="classuscxml_1_1_chart_to_promela.html">ChartToPromela</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_parent</b> = NULL</td></tr>
+<tr class="separator:aa288a20fed1eeed40058ddc8659c1bcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4ad726c8f7359ccf4c92266f4adf022"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad4ad726c8f7359ccf4c92266f4adf022"></a>
+<a class="el" href="classuscxml_1_1_chart_to_promela.html">ChartToPromela</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_parentTopMost</b> = NULL</td></tr>
+<tr class="separator:ad4ad726c8f7359ccf4c92266f4adf022"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a293139a230b37a11ad2678ecd3bc3c68"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a293139a230b37a11ad2678ecd3bc3c68"></a>
+std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_varInitializers</b></td></tr>
+<tr class="separator:a293139a230b37a11ad2678ecd3bc3c68"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classuscxml_1_1_chart_to_c"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_chart_to_c')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_chart_to_c.html">uscxml::ChartToC</a></td></tr>
 <tr class="memitem:a86e363c2d08355f91a6f1143886eaf02 inherit pro_attribs_classuscxml_1_1_chart_to_c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86e363c2d08355f91a6f1143886eaf02"></a>
 std::list&lt; <a class="el" href="classuscxml_1_1_chart_to_c.html">ChartToC</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_allMachines</b></td></tr>
@@ -302,6 +455,33 @@ Friends</h2></td></tr>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>PromelaCodeAnalyzer</b></td></tr>
 <tr class="separator:af5ca28383b5c96b2449476181daa8d9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a9378282c439ad7f9e42e0c641886b444"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void uscxml::ChartToPromela::writeTransitions </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>source</p>
+<p>target </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>transform/<a class="el" href="_chart_to_promela_8h_source.html">ChartToPromela.h</a></li>
 <li>transform/<a class="el" href="_chart_to_promela_8cpp.html">ChartToPromela.cpp</a></li>
@@ -315,7 +495,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PromelaCodeAnalyzer<
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -1,16 +1,17 @@
 <map id="plugins/datamodel/ecmascript/v8/V8DataModel.cpp" name="plugins/datamodel/ecmascript/v8/V8DataModel.cpp">
-<area shape="rect" id="node2" href="$_common_8h.html" title="uscxml/Common.h" alt="" coords="1591,632,1723,659"/>
-<area shape="rect" id="node5" href="$_u_r_l_8h.html" title="uscxml/util/URL.h" alt="" coords="479,333,604,360"/>
-<area shape="rect" id="node6" href="$_event_8h.html" title="uscxml/messages/Event.h" alt="" coords="1042,408,1219,435"/>
-<area shape="rect" id="node23" href="$_string_8h.html" title="uscxml/util/String.h" alt="" coords="681,483,815,509"/>
-<area shape="rect" id="node24" href="$_v8_data_model_8h.html" title="V8DataModel.h" alt="" coords="1598,95,1711,121"/>
-<area shape="rect" id="node31" href="$_d_o_m_8h.html" title="uscxml/util/DOM.h" alt="" coords="2040,333,2171,360"/>
-<area shape="rect" id="node7" href="$_data_8h.html" title="uscxml/messages/Data.h" alt="" coords="1193,483,1364,509"/>
-<area shape="rect" id="node17" href="$_u_u_i_d_8h.html" title="uscxml/util/UUID.h" alt="" coords="1039,557,1171,584"/>
-<area shape="rect" id="node12" href="$_convenience_8h.html" title="uscxml/util/Convenience.h" alt="" coords="838,557,1015,584"/>
-<area shape="rect" id="node16" href="$_blob_8h.html" title="uscxml/messages/Blob.h" alt="" coords="1247,557,1417,584"/>
-<area shape="rect" id="node25" href="$_data_model_impl_8h.html" title="uscxml/plugins/DataModel\lImpl.h" alt="" coords="1566,169,1743,211"/>
-<area shape="rect" id="node26" href="$_invoker_8h.html" title="uscxml/plugins/Invoker.h" alt="" coords="1692,259,1860,285"/>
-<area shape="rect" id="node29" href="$_i_o_processor_8h.html" title="uscxml/plugins/IOProcessor.h" alt="" coords="1335,259,1534,285"/>
-<area shape="rect" id="node27" href="$_event_handler_8h.html" title="uscxml/plugins/EventHandler.h" alt="" coords="1299,333,1504,360"/>
+<area shape="rect" id="node2" href="$_common_8h.html" title="uscxml/Common.h" alt="" coords="1585,647,1717,673"/>
+<area shape="rect" id="node5" href="$_u_r_l_8h.html" title="uscxml/util/URL.h" alt="" coords="933,341,1058,367"/>
+<area shape="rect" id="node6" href="$_event_8h.html" title="uscxml/messages/Event.h" alt="" coords="1656,423,1833,449"/>
+<area shape="rect" id="node20" href="$_string_8h.html" title="uscxml/util/String.h" alt="" coords="545,497,678,524"/>
+<area shape="rect" id="node21" href="$_v8_data_model_8h.html" title="V8DataModel.h" alt="" coords="1275,95,1388,121"/>
+<area shape="rect" id="node26" href="$_logging_8h.html" title="uscxml/interpreter\l/Logging.h" alt="" coords="2061,333,2189,375"/>
+<area shape="rect" id="node29" href="$_d_o_m_8h.html" title="uscxml/util/DOM.h" alt="" coords="386,341,517,367"/>
+<area shape="rect" id="node7" href="$_data_8h.html" title="uscxml/messages/Data.h" alt="" coords="1637,497,1807,524"/>
+<area shape="rect" id="node16" href="$_u_u_i_d_8h.html" title="uscxml/util/UUID.h" alt="" coords="1405,572,1537,599"/>
+<area shape="rect" id="node11" href="$_convenience_8h.html" title="uscxml/util/Convenience.h" alt="" coords="1204,572,1381,599"/>
+<area shape="rect" id="node15" href="$_blob_8h.html" title="uscxml/messages/Blob.h" alt="" coords="1715,572,1884,599"/>
+<area shape="rect" id="node22" href="$_data_model_impl_8h.html" title="uscxml/plugins/DataModel\lImpl.h" alt="" coords="1592,169,1769,211"/>
+<area shape="rect" id="node23" href="$_invoker_8h.html" title="uscxml/plugins/Invoker.h" alt="" coords="1493,259,1661,285"/>
+<area shape="rect" id="node25" href="$_i_o_processor_8h.html" title="uscxml/plugins/IOProcessor.h" alt="" coords="1685,259,1884,285"/>
+<area shape="rect" id="node24" href="$_event_handler_8h.html" title="uscxml/plugins/EventHandler.h" alt="" coords="1502,341,1707,367"/>
 </map>

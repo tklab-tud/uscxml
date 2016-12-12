@@ -114,7 +114,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 </ul>
 </div>
-<div class="textblock"><p>This page describes how to build uSCXML from source, starting with either a git checkout or from a downloaded archive. The source code is built using CMake, the process of building uscxml is essentially the same on every platform.</p>
+<div class="textblock"><p>This page describes how to build uSCXML from source, starting with either a git checkout or from a downloaded archive. The source code is built using CMake and the process of building uscxml is essentially the same on every platform.</p>
 <ol type="1">
 <li>Read the <b><a href="#platform-notes">Platform Notes</a></b> below to prepare your system.</li>
 <li>Checkout uscxml into a convenient directory.</li>
@@ -131,7 +131,7 @@ $ cmake .. &amp;&amp; make
 </pre><p><b>Note:</b> If you want to build for another IDE or build-system, just create a new <em>out-of-source</em> build directory and start over with CMake. To get an idea of supported IDEs and build-environments on your platform, type <code>cmake &ndash;help</code> or run the CMake-GUI and look for the <em>Generators</em> section at the end of the output.</p>
 <p><b>Note:</b> If you plan to use the Eclipse CDT generator, you cannot have a build directory anywhere under the source directory - just create the build directory anywhere else. This only applies to the Eclipse CDT project generator.</p>
 <p><b>Note:</b> I could not build the language bindings with the Visual Studio generator as it croaks when calling SWIG, just have another build directory with the "NMake Makefiles" project generator.</p>
-<p><b>Note:</b> In order to compile with <code>MinGW</code> on windows you will ave to adapt the build scripts in <code>contrib/cmake/Build*</code>. If you succeed, a pull request would be most appreciated.</p>
+<p><b>Note:</b> In order to compile with <code>MinGW</code> on windows you will have to adapt the build scripts in <code>contrib/cmake/Build*</code>. If you succeed, a pull request would be most appreciated.</p>
 <h1><a class="anchor" id="deps"></a>
 Build Dependencies</h1>
 <p>Overview of the uSCXML dependencies. See the <a href="#platform-notes">Platform Notes</a> for details.</p>
@@ -160,10 +160,8 @@ optional </td><td>&gt;=&#160;2.0.6 </td><td>Generates language bindings to embed
 <tr>
 <td><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a><br />
 optional </td><td>&gt;=&#160;1.8 </td><td>Used by <code>make docs</code> to generate this documentation from source comments.  </td></tr>
-<tr bgcolor="grey">
-<td bgcolor="#dddddd" colspan="4"><p class="starttd"></p>
-<p class="endtd"></p>
-</td></tr>
+<tr bgcolor="grey" height="0.5em">
+<td bgcolor="#dddddd" colspan="4"></td></tr>
 <tr>
 <td rowspan="2"><b>Mac OSX</b> </td><td><a href="http://developer.apple.com/xcode/">XCode</a><br />
 required </td><td>4.2 works </td><td>Apple's SDK with all the toolchains.  </td></tr>
@@ -228,6 +226,9 @@ $ sudo apt-get install git cmake cmake-curses-gui make g++
 
 # uscxml required dependencies (built if not installed)
 $ sudo apt-get install libxerces-c-dev libevent-dev libcurl4-openssl-dev
+
+# optional dependencies for language bindings
+$ sudo apt-get install ant swig liblua5.2-0-dev mono-devel
 </pre><p>There may still be packages missing due to the set of dependencies among packages in the various distributons. Try to run CMake and resolve dependencies until you are satisfied.</p>
 <h3><a class="anchor" id="yum"></a>
 Preparing yum based distributions</h3>
@@ -324,7 +325,7 @@ Important Note for Windows</h2>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

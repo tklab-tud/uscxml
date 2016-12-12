@@ -99,6 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classuscxml_1_1_promela_code_analyzer-members.html">List of all members</a>  </div>
@@ -109,8 +110,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="dynheader">
 Collaboration diagram for uscxml::PromelaCodeAnalyzer:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_promela_code_analyzer__coll__graph.svg" width="350" height="231"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
-</div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_promela_code_analyzer__coll__graph.svg" width="350" height="231"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -132,44 +132,35 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>addEvent</b> (const s
 <tr class="memitem:a2978951ca692d66bc906b2e4c7a7abdf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2978951ca692d66bc906b2e4c7a7abdf"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>addLiteral</b> (const std::string &amp;stateName, int forceIndex=-1)</td></tr>
 <tr class="separator:a2978951ca692d66bc906b2e4c7a7abdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ffffbcb5b1f78b6a2371c0ee81814c5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9ffffbcb5b1f78b6a2371c0ee81814c5"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>addOrigState</b> (const std::string &amp;stateName)</td></tr>
-<tr class="separator:a9ffffbcb5b1f78b6a2371c0ee81814c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae65d6dfe41772b1b042ecdb1744d3d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae65d6dfe41772b1b042ecdb1744d3d2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>addState</b> (const std::string &amp;stateName)</td></tr>
-<tr class="separator:aae65d6dfe41772b1b042ecdb1744d3d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cb51d268bbf670265eb100bfdedf795"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_promela_code_analyzer.html#a5cb51d268bbf670265eb100bfdedf795">analyze</a> (<a class="el" href="classuscxml_1_1_chart_to_promela.html">ChartToPromela</a> *interpreter)</td></tr>
 <tr class="separator:a5cb51d268bbf670265eb100bfdedf795"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e1b234cc099326cc93b2da7ddacfc39"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e1b234cc099326cc93b2da7ddacfc39"></a>
-std::map&lt; std::string, int &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getEvents</b> ()</td></tr>
-<tr class="separator:a0e1b234cc099326cc93b2da7ddacfc39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab15b70e5dcea1c9ecf8dc256cdda394f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab15b70e5dcea1c9ecf8dc256cdda394f"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>createMacroName</b> (const std::string &amp;literal)</td></tr>
+<tr class="separator:ab15b70e5dcea1c9ecf8dc256cdda394f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a562c4f66c3661483793c4d059a9703dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a562c4f66c3661483793c4d059a9703dc"></a>
 std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getEventsWithPrefix</b> (const std::string &amp;prefix)</td></tr>
 <tr class="separator:a562c4f66c3661483793c4d059a9703dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af18f696ea3f567eb3801d0466d6ca191"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af18f696ea3f567eb3801d0466d6ca191"></a>
 std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getLiterals</b> ()</td></tr>
 <tr class="separator:af18f696ea3f567eb3801d0466d6ca191"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aedf98cfeb3b201dd5138f5002493179d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aedf98cfeb3b201dd5138f5002493179d"></a>
-std::map&lt; std::string, int &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getOrigStates</b> ()</td></tr>
-<tr class="separator:aedf98cfeb3b201dd5138f5002493179d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a772f678f0ea631488a65c647d329075d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a772f678f0ea631488a65c647d329075d"></a>
-std::map&lt; std::string, int &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getStates</b> ()</td></tr>
-<tr class="separator:a772f678f0ea631488a65c647d329075d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b78272664abb5f87d103ff35c0766d3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b78272664abb5f87d103ff35c0766d3"></a>
 <a class="el" href="structuscxml_1_1_trie.html">Trie</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getTrie</b> ()</td></tr>
 <tr class="separator:a1b78272664abb5f87d103ff35c0766d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45ac75e223983b0cab68af37ae54e0e4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a45ac75e223983b0cab68af37ae54e0e4"></a>
 <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getType</b> (const std::string &amp;typeName)</td></tr>
 <tr class="separator:a45ac75e223983b0cab68af37ae54e0e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9257846c61f20bb4ec7c28ebe4f304ee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9257846c61f20bb4ec7c28ebe4f304ee"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getTypeAssignment</b> (const std::string &amp;varTo, const std::string &amp;varFrom, const <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a> &amp;type, const std::string padding=&quot;&quot;)</td></tr>
-<tr class="separator:a9257846c61f20bb4ec7c28ebe4f304ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb1f17466d6aa113280be94348a55f47"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb1f17466d6aa113280be94348a55f47"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getTypeReset</b> (const std::string &amp;var, const <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a> &amp;type, const std::string padding=&quot;&quot;)</td></tr>
-<tr class="separator:abb1f17466d6aa113280be94348a55f47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f8a40ec355a31e64442ef6ced2e20e4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9f8a40ec355a31e64442ef6ced2e20e4"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getTypeAssignment</b> (const std::string &amp;varTo, const std::string &amp;varFrom, const <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a> &amp;type, size_t indent=0)</td></tr>
+<tr class="separator:a9f8a40ec355a31e64442ef6ced2e20e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15725156bf72de939f2bed6af61e0907"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15725156bf72de939f2bed6af61e0907"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getTypeReset</b> (const std::string &amp;var, const <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a> &amp;type, size_t indent=0)</td></tr>
+<tr class="separator:a15725156bf72de939f2bed6af61e0907"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad342ef6f73fcc122a2a249640daf3d1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad342ef6f73fcc122a2a249640daf3d1f"></a>
 <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getTypes</b> ()</td></tr>
 <tr class="separator:ad342ef6f73fcc122a2a249640daf3d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a324871d0b4057909ff473e35c9ded6e8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a324871d0b4057909ff473e35c9ded6e8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>hasIndexLessLoops</b> ()</td></tr>
+<tr class="separator:a324871d0b4057909ff473e35c9ded6e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14c5688304067db258540e7ab70e72d0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a14c5688304067db258540e7ab70e72d0"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>indexForLiteral</b> (const std::string &amp;literal)</td></tr>
 <tr class="separator:a14c5688304067db258540e7ab70e72d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,6 +170,9 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>macroForLitera
 <tr class="memitem:a287651e2953b09b9f8fef03fa59f3915"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a287651e2953b09b9f8fef03fa59f3915"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>sanitizeCode</b> (const std::string &amp;code)</td></tr>
 <tr class="separator:a287651e2953b09b9f8fef03fa59f3915"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a3045ed8bdcaf7162ed9a501c69b16a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a3045ed8bdcaf7162ed9a501c69b16a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>usesCancel</b> (const std::string &amp;elementName)</td></tr>
+<tr class="separator:a8a3045ed8bdcaf7162ed9a501c69b16a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a491345023fe53d7695731f6fb4020686"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a491345023fe53d7695731f6fb4020686"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>usesComplexEventStruct</b> ()</td></tr>
 <tr class="separator:a491345023fe53d7695731f6fb4020686"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -200,45 +194,42 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>usesPlatformVars</b> 
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a17c9e18de406dc179e9b79c7a070642b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a17c9e18de406dc179e9b79c7a070642b"></a>
+<tr class="memitem:a7b9b81a6b53b9a112d91284e8a6f2359"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b9b81a6b53b9a112d91284e8a6f2359"></a>
 static std::list&lt; std::pair&lt; size_t, size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getTokenPositions</b> (const std::string &amp;expr, int type, <a class="el" href="classuscxml_1_1_promela_parser_node.html">PromelaParserNode</a> *ast)</td></tr>
-<tr class="separator:a17c9e18de406dc179e9b79c7a070642b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a7b9b81a6b53b9a112d91284e8a6f2359"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a044ceb6e7990a779bd9fdfb6cafd6526"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a044ceb6e7990a779bd9fdfb6cafd6526"></a>
 static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>prefixIdentifiers</b> (const std::string &amp;expr, const std::string &amp;prefix)</td></tr>
 <tr class="separator:a044ceb6e7990a779bd9fdfb6cafd6526"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a43531d8a52521c812a964fb15f9e76d8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a43531d8a52521c812a964fb15f9e76d8"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>largestDelay</b> = 0</td></tr>
+<tr class="separator:a43531d8a52521c812a964fb15f9e76d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:ab15b70e5dcea1c9ecf8dc256cdda394f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab15b70e5dcea1c9ecf8dc256cdda394f"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>createMacroName</b> (const std::string &amp;literal)</td></tr>
-<tr class="separator:ab15b70e5dcea1c9ecf8dc256cdda394f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab41530eec4d51e1e72266357148bd704"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab41530eec4d51e1e72266357148bd704"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>addState</b> (const std::string &amp;stateName, size_t index)</td></tr>
+<tr class="separator:ab41530eec4d51e1e72266357148bd704"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5520e427624b7108f4c1172fb50ff3b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac5520e427624b7108f4c1172fb50ff3b"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>enumerateLiteral</b> (const std::string &amp;literal, int forceIndex=-1)</td></tr>
 <tr class="separator:ac5520e427624b7108f4c1172fb50ff3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a3291cfcd3114e729944433ebca947804"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3291cfcd3114e729944433ebca947804"></a>
-std::map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_events</b></td></tr>
-<tr class="separator:a3291cfcd3114e729944433ebca947804"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9404822edb532c39dbb6d3e10ab56b1d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9404822edb532c39dbb6d3e10ab56b1d"></a>
 <a class="el" href="structuscxml_1_1_trie.html">Trie</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_eventTrie</b></td></tr>
 <tr class="separator:a9404822edb532c39dbb6d3e10ab56b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58fc85d97ca7e14cd69bde3d70a514f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a58fc85d97ca7e14cd69bde3d70a514f9"></a>
-std::map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_origStateIndex</b></td></tr>
-<tr class="separator:a58fc85d97ca7e14cd69bde3d70a514f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae50daa9114b97393f3ab48d42e69fba6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae50daa9114b97393f3ab48d42e69fba6"></a>
-std::map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_states</b></td></tr>
-<tr class="separator:ae50daa9114b97393f3ab48d42e69fba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcfd4dcc05aaa1feec8738db86de2aa1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adcfd4dcc05aaa1feec8738db86de2aa1"></a>
+std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_literals</b></td></tr>
+<tr class="separator:adcfd4dcc05aaa1feec8738db86de2aa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e2c7415570ed9fc19bcf989c311398a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5e2c7415570ed9fc19bcf989c311398a"></a>
 std::map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_strIndex</b></td></tr>
 <tr class="separator:a5e2c7415570ed9fc19bcf989c311398a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4a3a4e2799625a3708bc22b48763cefc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a3a4e2799625a3708bc22b48763cefc"></a>
-std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_strLiterals</b></td></tr>
-<tr class="separator:a4a3a4e2799625a3708bc22b48763cefc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b2ba515ffaa3d7cedeebdcb8db95deb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b2ba515ffaa3d7cedeebdcb8db95deb"></a>
-std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_strMacroNames</b></td></tr>
-<tr class="separator:a7b2ba515ffaa3d7cedeebdcb8db95deb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5970b25d2ca174eab56d3a9333abecf6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5970b25d2ca174eab56d3a9333abecf6"></a>
+std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_strMacros</b></td></tr>
+<tr class="separator:a5970b25d2ca174eab56d3a9333abecf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2d9308b6002a456e71eba23118fd913"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab2d9308b6002a456e71eba23118fd913"></a>
 <a class="el" href="classuscxml_1_1_promela_code_analyzer_1_1_promela_typedef.html">PromelaTypedef</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_typeDefs</b></td></tr>
 <tr class="separator:ab2d9308b6002a456e71eba23118fd913"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -257,6 +248,7 @@ std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" va
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Create macro names for state identifiers Do not add as literals as they are not unique with nested state-charts</p>
 <p>Find all event names that might occur</p>
 <p>Find all string literals</p>
 <p>Extract and analyze source code </p>
@@ -276,7 +268,7 @@ std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" va
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -106,13 +106,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;std::list&lt;std::string&gt; tokenize(<span class="keyword">const</span> std::string&amp; line, <span class="keyword">const</span> <span class="keywordtype">char</span> seperator = <span class="charliteral">&#39; &#39;</span>, <span class="keywordtype">bool</span> trimWhiteSpace = <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;std::string spaceNormalize(<span class="keyword">const</span> std::string&amp; text);</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keywordtype">bool</span> nameMatch(<span class="keyword">const</span> std::string&amp; eventDescs, <span class="keyword">const</span> std::string&amp; event);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;std::string escapeMacro(std::string <span class="keyword">const</span> &amp;s);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;std::string toBinStr(<span class="keywordtype">size_t</span> val, <span class="keywordtype">size_t</span> margin);</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;}</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;std::list&lt;std::string&gt; tokenize(<span class="keyword">const</span> std::string &amp;line, <span class="keyword">const</span> <span class="keywordtype">char</span> seperator = <span class="charliteral">&#39; &#39;</span>, <span class="keywordtype">bool</span> trimWhiteSpace = <span class="keyword">true</span>);</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: STRING_H_FD462039 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;std::string spaceNormalize(<span class="keyword">const</span> std::string &amp;text);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keywordtype">bool</span> nameMatch(<span class="keyword">const</span> std::string &amp;eventDescs, <span class="keyword">const</span> std::string &amp;event);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: STRING_H_FD462039 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
@@ -123,7 +129,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

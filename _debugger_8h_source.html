@@ -177,15 +177,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">void</span> handleEvent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, Breakpoint::When when);</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    std::list&lt;Breakpoint&gt; getQualifiedTransBreakpoints(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* impl,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                                       <span class="keyword">const</span> XERCESC_NS::DOMElement* transition,</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                                                       <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a> breakpointTemplate);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            <span class="keyword">const</span> XERCESC_NS::DOMElement* transition,</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a> breakpointTemplate);</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    std::list&lt;Breakpoint&gt; getQualifiedStateBreakpoints(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* impl,</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                                                       <span class="keyword">const</span> XERCESC_NS::DOMElement* state,</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                                                       <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a> breakpointTemplate);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            <span class="keyword">const</span> XERCESC_NS::DOMElement* state,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a> breakpointTemplate);</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    std::list&lt;Breakpoint&gt; getQualifiedInvokeBreakpoints(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* impl,</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                                                        <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem,</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                                                        <span class="keyword">const</span> std::string invokeId,</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                                                        <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a> breakpointTemplate);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            <span class="keyword">const</span> std::string invokeId,</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a> breakpointTemplate);</div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    std::recursive_mutex _sessionMutex;</div>
 <div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="classuscxml_1_1_debugger.html#a7c9373662ff21a481787df7208802828">  111</a></span>&#160;    std::map&lt;InterpreterImpl*, std::shared_ptr&lt;DebugSession&gt; &gt; <a class="code" href="classuscxml_1_1_debugger.html#a7c9373662ff21a481787df7208802828">_sessionForInterpreter</a>;</div>
@@ -197,17 +197,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: DEBUGGERMONITOR_H_Z050WPFH */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_interpreter_impl_8h_html"><div class="ttname"><a href="_interpreter_impl_8h.html">InterpreterImpl.h</a></div></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_monitor_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></div><div class="ttdef"><b>Definition:</b> InterpreterMonitor.h:57</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:77</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_monitor_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></div><div class="ttdef"><b>Definition:</b> InterpreterMonitor.h:56</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:79</div></div>
 <div class="ttc" id="classuscxml_1_1_debugger_html_a7c9373662ff21a481787df7208802828"><div class="ttname"><a href="classuscxml_1_1_debugger.html#a7c9373662ff21a481787df7208802828">uscxml::Debugger::_sessionForInterpreter</a></div><div class="ttdeci">std::map&lt; InterpreterImpl *, std::shared_ptr&lt; DebugSession &gt; &gt; _sessionForInterpreter</div><div class="ttdef"><b>Definition:</b> Debugger.h:111</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_impl_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a></div><div class="ttdef"><b>Definition:</b> InterpreterImpl.h:49</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_impl_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a></div><div class="ttdef"><b>Definition:</b> InterpreterImpl.h:48</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
 <div class="ttc" id="classuscxml_1_1_breakpoint_html"><div class="ttname"><a href="classuscxml_1_1_breakpoint.html">uscxml::Breakpoint</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:36</div></div>
 <div class="ttc" id="classuscxml_1_1_debugger_html"><div class="ttname"><a href="classuscxml_1_1_debugger.html">uscxml::Debugger</a></div><div class="ttdef"><b>Definition:</b> Debugger.h:32</div></div>
 <div class="ttc" id="_breakpoint_8h_html"><div class="ttname"><a href="_breakpoint_8h.html">Breakpoint.h</a></div></div>
 <div class="ttc" id="_data_8h_html"><div class="ttname"><a href="_data_8h.html">Data.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -217,7 +217,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

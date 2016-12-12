@@ -101,103 +101,111 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#ifndef DATAMODELIMPL_H_5A33C087</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#define DATAMODELIMPL_H_5A33C087</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;uscxml/config.h&quot;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_invoker_8h.html">uscxml/plugins/Invoker.h</a>&quot;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_i_o_processor_8h.html">uscxml/plugins/IOProcessor.h</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_invoker_8h.html">uscxml/plugins/Invoker.h</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_i_o_processor_8h.html">uscxml/plugins/IOProcessor.h</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_logging_8h.html">uscxml/interpreter/Logging.h</a>&quot;</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;xercesc/dom/DOM.hpp&gt;</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &lt;list&gt;</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">class </span>InterpreterImpl;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">class </span>DataModelImpl;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a> {</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">class </span>DOMDocument;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">class </span>DOMNode;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &lt;list&gt;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_callbacks.html">   44</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a> {</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">   46</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">~DataModelCallbacks</a>() {} </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::string&amp; getName() = 0;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::string&amp; getSessionId() = 0;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::map&lt;std::string, IOProcessor&gt;&amp; getIOProcessors() = 0;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isInState(<span class="keyword">const</span> std::string&amp; stateId) = 0;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> XERCESC_NS::DOMDocument* getDocument() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::map&lt;std::string, Invoker&gt;&amp; getInvokers() = 0;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;};</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_extension.html">   55</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> {</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a>() : dm(NULL) {}</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a>() {}</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">virtual</span> std::string provides() = 0;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> getValueOf(<span class="keyword">const</span> std::string&amp; member) = 0;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> setValueOf(<span class="keyword">const</span> std::string&amp; member, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="code" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a>* dm;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;};</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
-<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_impl.html">   70</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a> {</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a>() {}</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;DataModelImpl&gt; create(<a class="code" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a>* callbacks) = 0;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">virtual</span> std::list&lt;std::string&gt; getNames() = 0;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">class </span>InterpreterImpl;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">class </span>DataModelImpl;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_callbacks.html">   47</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a> {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00049"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">   49</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">~DataModelCallbacks</a>() {} </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::string&amp; getName() = 0;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::string&amp; getSessionId() = 0;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::map&lt;std::string, IOProcessor&gt;&amp; getIOProcessors() = 0;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isInState(<span class="keyword">const</span> std::string&amp; stateId) = 0;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keyword">virtual</span> XERCESC_NS::DOMDocument* getDocument() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> std::map&lt;std::string, Invoker&gt;&amp; getInvokers() = 0;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_logger.html">Logger</a> getLogger() = 0;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_extension.html">   59</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a>() : dm(NULL) {}</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a>() {}</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">virtual</span> std::string provides() = 0;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> invoke(<span class="keyword">const</span> std::string&amp; member, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; params) = 0;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> getValueOf(<span class="keyword">const</span> std::string&amp; member) = 0;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> setValueOf(<span class="keyword">const</span> std::string&amp; member, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a>* dm;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;};</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_impl.html">   75</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a> {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a>() {}</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;DataModelImpl&gt; create(<a class="code" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a>* callbacks) = 0;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00096"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_impl.html#a6758e7946232dce852814d71886b1078">   96</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classuscxml_1_1_data_model_impl.html#a6758e7946232dce852814d71886b1078">isValidSyntax</a>(<span class="keyword">const</span> std::string&amp; expr) {</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>; <span class="comment">// overwrite when datamodel supports it</span></div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    }</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> setEvent(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">size_t</span> replaceExpressions(std::string&amp; content);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">virtual</span> uint32_t getLength(<span class="keyword">const</span> std::string&amp; expr) = 0;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> setForeach(<span class="keyword">const</span> std::string&amp; item,</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                            <span class="keyword">const</span> std::string&amp; array,</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                            <span class="keyword">const</span> std::string&amp; index,</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                            uint32_t iteration) = 0;</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> getAsData(<span class="keyword">const</span> std::string&amp; content) = 0;</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> evalAsData(<span class="keyword">const</span> std::string&amp; content) = 0;</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> evalAsBool(<span class="keyword">const</span> std::string&amp; expr) = 0;</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isDeclared(<span class="keyword">const</span> std::string&amp; expr) = 0;</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> assign(<span class="keyword">const</span> std::string&amp; location, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> init(<span class="keyword">const</span> std::string&amp; location, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> addExtension(<a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a>* ext);</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;</div>
-<div class="line"><a name="l00204"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">  204</a></span>&#160;    <span class="keyword">virtual</span> std::string <a class="code" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">andExpressions</a>(std::list&lt;std::string&gt;) {</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;        <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    }</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <a class="code" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a>* _callbacks;</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;};</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;}</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: DATAMODELIMPL_H_5A33C087 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keyword">virtual</span> std::list&lt;std::string&gt; getNames() = 0;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_impl.html#a6758e7946232dce852814d71886b1078">  101</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classuscxml_1_1_data_model_impl.html#a6758e7946232dce852814d71886b1078">isValidSyntax</a>(<span class="keyword">const</span> std::string&amp; expr) {</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>; <span class="comment">// overwrite when datamodel supports it</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    }</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> setEvent(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keywordtype">size_t</span> replaceExpressions(std::string&amp; content);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keyword">virtual</span> uint32_t getLength(<span class="keyword">const</span> std::string&amp; expr) = 0;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> setForeach(<span class="keyword">const</span> std::string&amp; item,</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;                            <span class="keyword">const</span> std::string&amp; array,</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                            <span class="keyword">const</span> std::string&amp; index,</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                            uint32_t iteration) = 0;</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> getAsData(<span class="keyword">const</span> std::string&amp; content) = 0;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> evalAsData(<span class="keyword">const</span> std::string&amp; content) = 0;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> evalAsBool(<span class="keyword">const</span> std::string&amp; expr) = 0;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isDeclared(<span class="keyword">const</span> std::string&amp; expr) = 0;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> assign(<span class="keyword">const</span> std::string&amp; location, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> init(<span class="keyword">const</span> std::string&amp; location, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> addExtension(<a class="code" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a>* ext);</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;</div>
+<div class="line"><a name="l00209"></a><span class="lineno"><a class="line" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">  209</a></span>&#160;    <span class="keyword">virtual</span> std::string <a class="code" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">andExpressions</a>(std::list&lt;std::string&gt;) {</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    }</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    <a class="code" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a>* _callbacks;</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;};</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;}</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: DATAMODELIMPL_H_5A33C087 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_i_o_processor_8h_html"><div class="ttname"><a href="_i_o_processor_8h.html">IOProcessor.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_data_model_impl_html_a85a2bdd7493a4dfb156c723b204e858a"><div class="ttname"><a href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">uscxml::DataModelImpl::andExpressions</a></div><div class="ttdeci">virtual std::string andExpressions(std::list&lt; std::string &gt;)</div><div class="ttdoc">Concat the given terms into a conjunctive form. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:204</div></div>
+<div class="ttc" id="classuscxml_1_1_data_model_impl_html_a85a2bdd7493a4dfb156c723b204e858a"><div class="ttname"><a href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">uscxml::DataModelImpl::andExpressions</a></div><div class="ttdeci">virtual std::string andExpressions(std::list&lt; std::string &gt;)</div><div class="ttdoc">Concat the given terms into a conjunctive form. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:209</div></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="_invoker_8h_html"><div class="ttname"><a href="_invoker_8h.html">Invoker.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_data_model_callbacks_html_a7fe222e1ccfe55df21b3786c5fb96749"><div class="ttname"><a href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">uscxml::DataModelCallbacks::~DataModelCallbacks</a></div><div class="ttdeci">virtual ~DataModelCallbacks()</div><div class="ttdoc">silence virtual destructor warning from swig </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:46</div></div>
-<div class="ttc" id="classuscxml_1_1_data_model_extension_html"><div class="ttname"><a href="classuscxml_1_1_data_model_extension.html">uscxml::DataModelExtension</a></div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:55</div></div>
-<div class="ttc" id="classuscxml_1_1_data_model_impl_html"><div class="ttname"><a href="classuscxml_1_1_data_model_impl.html">uscxml::DataModelImpl</a></div><div class="ttdoc">Abstract base class for all data-model implementations. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:70</div></div>
+<div class="ttc" id="classuscxml_1_1_data_model_callbacks_html_a7fe222e1ccfe55df21b3786c5fb96749"><div class="ttname"><a href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">uscxml::DataModelCallbacks::~DataModelCallbacks</a></div><div class="ttdeci">virtual ~DataModelCallbacks()</div><div class="ttdoc">silence virtual destructor warning from swig </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:49</div></div>
+<div class="ttc" id="classuscxml_1_1_data_model_extension_html"><div class="ttname"><a href="classuscxml_1_1_data_model_extension.html">uscxml::DataModelExtension</a></div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:59</div></div>
+<div class="ttc" id="classuscxml_1_1_data_model_impl_html"><div class="ttname"><a href="classuscxml_1_1_data_model_impl.html">uscxml::DataModelImpl</a></div><div class="ttdoc">Abstract base class for all data-model implementations. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:75</div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
-<div class="ttc" id="classuscxml_1_1_data_model_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_data_model_callbacks.html">uscxml::DataModelCallbacks</a></div><div class="ttdoc">Callbacks available for every data-model. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:44</div></div>
-<div class="ttc" id="classuscxml_1_1_data_model_impl_html_a6758e7946232dce852814d71886b1078"><div class="ttname"><a href="classuscxml_1_1_data_model_impl.html#a6758e7946232dce852814d71886b1078">uscxml::DataModelImpl::isValidSyntax</a></div><div class="ttdeci">virtual bool isValidSyntax(const std::string &amp;expr)</div><div class="ttdoc">Determine whether a given string constitutes valid syntax in the data-model&#39;s language. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:96</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
+<div class="ttc" id="namespace_x_e_r_c_e_s_c___n_s_html"><div class="ttname"><a href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:30</div></div>
+<div class="ttc" id="classuscxml_1_1_data_model_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_data_model_callbacks.html">uscxml::DataModelCallbacks</a></div><div class="ttdoc">Callbacks available for every data-model. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:47</div></div>
+<div class="ttc" id="classuscxml_1_1_data_model_impl_html_a6758e7946232dce852814d71886b1078"><div class="ttname"><a href="classuscxml_1_1_data_model_impl.html#a6758e7946232dce852814d71886b1078">uscxml::DataModelImpl::isValidSyntax</a></div><div class="ttdeci">virtual bool isValidSyntax(const std::string &amp;expr)</div><div class="ttdoc">Determine whether a given string constitutes valid syntax in the data-model&#39;s language. </div><div class="ttdef"><b>Definition:</b> DataModelImpl.h:101</div></div>
+<div class="ttc" id="classuscxml_1_1_logger_html"><div class="ttname"><a href="classuscxml_1_1_logger.html">uscxml::Logger</a></div><div class="ttdef"><b>Definition:</b> Logging.h:69</div></div>
+<div class="ttc" id="_logging_8h_html"><div class="ttname"><a href="_logging_8h.html">Logging.h</a></div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -207,7 +215,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

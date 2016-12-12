@@ -3,5 +3,6 @@
 <area shape="rect" id="node3" href="$classuscxml_1_1_delayed_event_queue.html" title="uscxml::DelayedEventQueue" alt="" coords="200,133,393,160"/>
 <area shape="rect" id="node4" href="$classuscxml_1_1_event_queue.html" title="uscxml::EventQueue" alt="" coords="5,96,151,123"/>
 <area shape="rect" id="node5" href="$classuscxml_1_1_data_model.html" title="The facade for data&#45;models. " alt="" coords="229,184,365,211"/>
-<area shape="rect" id="node6" href="$classuscxml_1_1_content_executor.html" title="uscxml::ContentExecutor" alt="" coords="211,235,382,261"/>
+<area shape="rect" id="node6" href="$classuscxml_1_1_logger.html" title="uscxml::Logger" alt="" coords="241,235,353,261"/>
+<area shape="rect" id="node7" href="$classuscxml_1_1_content_executor.html" title="uscxml::ContentExecutor" alt="" coords="211,285,382,312"/>
 </map>

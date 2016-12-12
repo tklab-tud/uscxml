@@ -1,29 +1,30 @@
 <map id="transform/Transformer.h" name="transform/Transformer.h">
-<area shape="rect" id="node4" href="$_interpreter_8h.html" title="uscxml/Interpreter.h" alt="" coords="2135,259,2275,285"/>
-<area shape="rect" id="node34" href="$_interpreter_impl_8h.html" title="uscxml/interpreter\l/InterpreterImpl.h" alt="" coords="2015,80,2143,121"/>
-<area shape="rect" id="node5" href="$_common_8h.html" title="Common.h" alt="" coords="2470,944,2557,971"/>
-<area shape="rect" id="node10" href="$_micro_step_8h.html" title="uscxml/interpreter\l/MicroStep.h" alt="" coords="2785,765,2913,807"/>
-<area shape="rect" id="node14" href="$_interpreter_state_8h.html" title="uscxml/interpreter\l/InterpreterState.h" alt="" coords="2682,855,2811,896"/>
-<area shape="rect" id="node15" href="$_data_model_8h.html" title="uscxml/plugins/DataModel.h" alt="" coords="1953,594,2143,621"/>
-<area shape="rect" id="node23" href="$_factory_8h.html" title="uscxml/plugins/Factory.h" alt="" coords="2826,333,2995,360"/>
-<area shape="rect" id="node32" href="$_content_executor_8h.html" title="uscxml/interpreter\l/ContentExecutor.h" alt="" coords="1956,676,2092,717"/>
-<area shape="rect" id="node33" href="$_event_queue_8h.html" title="uscxml/interpreter\l/EventQueue.h" alt="" coords="1423,408,1551,449"/>
-<area shape="rect" id="node16" href="$_event_8h.html" title="uscxml/messages/Event.h" alt="" coords="1551,683,1729,710"/>
-<area shape="rect" id="node17" href="$_data_8h.html" title="uscxml/messages/Data.h" alt="" coords="1983,773,2153,799"/>
-<area shape="rect" id="node22" href="$_u_u_i_d_8h.html" title="uscxml/util/UUID.h" alt="" coords="1618,862,1750,889"/>
-<area shape="rect" id="node18" href="$_convenience_8h.html" title="uscxml/util/Convenience.h" alt="" coords="1774,862,1951,889"/>
-<area shape="rect" id="node21" href="$_blob_8h.html" title="uscxml/messages/Blob.h" alt="" coords="2179,862,2349,889"/>
-<area shape="rect" id="node24" href="$_executable_content_8h.html" title="uscxml/plugins/Executable\lContent.h" alt="" coords="3292,765,3471,807"/>
-<area shape="rect" id="node25" href="$_event_handler_8h.html" title="uscxml/plugins/EventHandler.h" alt="" coords="2668,594,2873,621"/>
-<area shape="rect" id="node26" href="$_i_o_processor_8h.html" title="uscxml/plugins/IOProcessor.h" alt="" coords="2674,505,2873,531"/>
-<area shape="rect" id="node27" href="$_invoker_8h.html" title="uscxml/plugins/Invoker.h" alt="" coords="2999,505,3167,531"/>
-<area shape="rect" id="node29" href="$_data_model_impl_8h.html" title="uscxml/plugins/DataModel\lImpl.h" alt="" coords="3083,408,3261,449"/>
-<area shape="rect" id="node30" href="$_string_8h.html" title="string.h" alt="" coords="1450,773,1515,799"/>
-<area shape="rect" id="node36" href="$_u_r_l_8h.html" title="uscxml/util/URL.h" alt="" coords="460,594,585,621"/>
-<area shape="rect" id="node41" href="$_micro_step_impl_8h.html" title="uscxml/interpreter\l/MicroStepImpl.h" alt="" coords="2471,169,2599,211"/>
-<area shape="rect" id="node42" href="$_content_executor_impl_8h.html" title="uscxml/interpreter\l/ContentExecutorImpl.h" alt="" coords="1533,497,1694,539"/>
-<area shape="rect" id="node43" href="$_d_o_m_8h.html" title="uscxml/util/DOM.h" alt="" coords="3387,594,3517,621"/>
-<area shape="rect" id="node47" href="$_event_queue_impl_8h.html" title="uscxml/interpreter\l/EventQueueImpl.h" alt="" coords="833,587,969,628"/>
-<area shape="rect" id="node45" href="$_interpreter_monitor_8h.html" title="uscxml/interpreter\l/InterpreterMonitor.h" alt="" coords="1786,587,1929,628"/>
-<area shape="rect" id="node46" href="$_interpreter_issue_8h.html" title="Identifies some common problems with SCXML documents. " alt="" coords="2471,676,2641,717"/>
+<area shape="rect" id="node4" href="$_interpreter_8h.html" title="uscxml/Interpreter.h" alt="" coords="1649,259,1789,285"/>
+<area shape="rect" id="node34" href="$_interpreter_impl_8h.html" title="uscxml/interpreter\l/InterpreterImpl.h" alt="" coords="2813,80,2941,121"/>
+<area shape="rect" id="node5" href="$_common_8h.html" title="Common.h" alt="" coords="2342,944,2429,971"/>
+<area shape="rect" id="node10" href="$_micro_step_8h.html" title="uscxml/interpreter\l/MicroStep.h" alt="" coords="1461,765,1589,807"/>
+<area shape="rect" id="node13" href="$_interpreter_state_8h.html" title="uscxml/interpreter\l/InterpreterState.h" alt="" coords="2066,855,2195,896"/>
+<area shape="rect" id="node14" href="$_logging_8h.html" title="uscxml/interpreter\l/Logging.h" alt="" coords="1909,587,2037,628"/>
+<area shape="rect" id="node23" href="$_data_model_8h.html" title="uscxml/plugins/DataModel.h" alt="" coords="904,594,1093,621"/>
+<area shape="rect" id="node24" href="$_factory_8h.html" title="uscxml/plugins/Factory.h" alt="" coords="965,333,1134,360"/>
+<area shape="rect" id="node32" href="$_content_executor_8h.html" title="uscxml/interpreter\l/ContentExecutor.h" alt="" coords="1004,676,1140,717"/>
+<area shape="rect" id="node33" href="$_event_queue_8h.html" title="uscxml/interpreter\l/EventQueue.h" alt="" coords="1935,408,2063,449"/>
+<area shape="rect" id="node16" href="$_data_8h.html" title="uscxml/messages/Data.h" alt="" coords="1664,773,1835,799"/>
+<area shape="rect" id="node21" href="$_event_8h.html" title="uscxml/messages/Event.h" alt="" coords="1721,683,1898,710"/>
+<area shape="rect" id="node17" href="$_convenience_8h.html" title="uscxml/util/Convenience.h" alt="" coords="1661,862,1838,889"/>
+<area shape="rect" id="node20" href="$_blob_8h.html" title="uscxml/messages/Blob.h" alt="" coords="1259,862,1429,889"/>
+<area shape="rect" id="node22" href="$_u_u_i_d_8h.html" title="uscxml/util/UUID.h" alt="" coords="1453,862,1585,889"/>
+<area shape="rect" id="node25" href="$_executable_content_8h.html" title="uscxml/plugins/Executable\lContent.h" alt="" coords="1056,855,1235,896"/>
+<area shape="rect" id="node26" href="$_event_handler_8h.html" title="uscxml/plugins/EventHandler.h" alt="" coords="1117,594,1323,621"/>
+<area shape="rect" id="node27" href="$_i_o_processor_8h.html" title="uscxml/plugins/IOProcessor.h" alt="" coords="1330,505,1529,531"/>
+<area shape="rect" id="node28" href="$_invoker_8h.html" title="uscxml/plugins/Invoker.h" alt="" coords="1137,505,1305,531"/>
+<area shape="rect" id="node29" href="$_data_model_impl_8h.html" title="uscxml/plugins/DataModel\lImpl.h" alt="" coords="1239,408,1417,449"/>
+<area shape="rect" id="node30" href="$_string_8h.html" title="string.h" alt="" coords="854,773,919,799"/>
+<area shape="rect" id="node36" href="$_u_r_l_8h.html" title="uscxml/util/URL.h" alt="" coords="2507,594,2632,621"/>
+<area shape="rect" id="node39" href="$_micro_step_impl_8h.html" title="uscxml/interpreter\l/MicroStepImpl.h" alt="" coords="2213,169,2341,211"/>
+<area shape="rect" id="node40" href="$_content_executor_impl_8h.html" title="uscxml/interpreter\l/ContentExecutorImpl.h" alt="" coords="2417,497,2578,539"/>
+<area shape="rect" id="node43" href="$_event_queue_impl_8h.html" title="uscxml/interpreter\l/EventQueueImpl.h" alt="" coords="2964,587,3100,628"/>
+<area shape="rect" id="node44" href="$_d_o_m_8h.html" title="uscxml/util/DOM.h" alt="" coords="3807,594,3937,621"/>
+<area shape="rect" id="node41" href="$_interpreter_monitor_8h.html" title="uscxml/interpreter\l/InterpreterMonitor.h" alt="" coords="3391,587,3534,628"/>
+<area shape="rect" id="node42" href="$_interpreter_issue_8h.html" title="Identifies some common problems with SCXML documents. " alt="" coords="3378,676,3547,717"/>
 </map>

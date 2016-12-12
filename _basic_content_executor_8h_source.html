@@ -112,40 +112,42 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <a class="code" href="classuscxml_1_1_basic_content_executor.html">BasicContentExecutor</a>(<a class="code" href="classuscxml_1_1_content_executor_callbacks.html">ContentExecutorCallbacks</a>* callbacks) : <a class="code" href="classuscxml_1_1_content_executor_impl.html">ContentExecutorImpl</a>(callbacks) {}</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_basic_content_executor.html">BasicContentExecutor</a>() {}</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">void</span> processRaise(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">void</span> processSend(XERCESC_NS::DOMElement* element);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">void</span> processCancel(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">void</span> processIf(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">void</span> processAssign(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">void</span> processForeach(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">void</span> processLog(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> processScript(XERCESC_NS::DOMElement* content);</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> process(XERCESC_NS::DOMElement* block, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_x.html">X</a>&amp; xmlPrefix);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;ContentExecutorImpl&gt; create(<a class="code" href="classuscxml_1_1_content_executor_callbacks.html">ContentExecutorCallbacks</a>* callbacks);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">void</span> processRaise(XERCESC_NS::DOMElement* content);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">void</span> processSend(XERCESC_NS::DOMElement* element);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">void</span> processCancel(XERCESC_NS::DOMElement* content);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">void</span> processIf(XERCESC_NS::DOMElement* content);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">void</span> processAssign(XERCESC_NS::DOMElement* content);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> processForeach(XERCESC_NS::DOMElement* content);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">void</span> processLog(XERCESC_NS::DOMElement* content);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">void</span> processScript(XERCESC_NS::DOMElement* content);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> invoke(XERCESC_NS::DOMElement* invoke);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> uninvoke(XERCESC_NS::DOMElement* invoke);</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData);</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> elementAsData(XERCESC_NS::DOMElement* element);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> process(XERCESC_NS::DOMElement* block, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_x.html">X</a>&amp; xmlPrefix);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> invoke(XERCESC_NS::DOMElement* invoke);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> uninvoke(XERCESC_NS::DOMElement* invoke);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData);</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">void</span> processNameLists(std::map&lt;std::string, Data&gt;&amp; nameMap, XERCESC_NS::DOMElement* element);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">void</span> processParams(std::multimap&lt;std::string, Data&gt;&amp; paramMap, XERCESC_NS::DOMElement* element);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;};</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> elementAsData(XERCESC_NS::DOMElement* element);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">void</span> processNameLists(std::map&lt;std::string, Data&gt;&amp; nameMap, XERCESC_NS::DOMElement* element);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">void</span> processParams(std::multimap&lt;std::string, Data&gt;&amp; paramMap, XERCESC_NS::DOMElement* element);</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;}</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;};</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: BASICCONTENTEXECUTOR_H_B873199D */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;}</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: BASICCONTENTEXECUTOR_H_B873199D */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_content_executor_impl_8h_html"><div class="ttname"><a href="_content_executor_impl_8h.html">ContentExecutorImpl.h</a></div></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="classuscxml_1_1_basic_content_executor_html"><div class="ttname"><a href="classuscxml_1_1_basic_content_executor.html">uscxml::BasicContentExecutor</a></div><div class="ttdef"><b>Definition:</b> BasicContentExecutor.h:33</div></div>
 <div class="ttc" id="namespace_x_e_r_c_e_s_c___n_s_html"><div class="ttname"><a href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:30</div></div>
-<div class="ttc" id="classuscxml_1_1_content_executor_impl_html"><div class="ttname"><a href="classuscxml_1_1_content_executor_impl.html">uscxml::ContentExecutorImpl</a></div><div class="ttdef"><b>Definition:</b> ContentExecutorImpl.h:77</div></div>
-<div class="ttc" id="classuscxml_1_1_content_executor_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_content_executor_callbacks.html">uscxml::ContentExecutorCallbacks</a></div><div class="ttdef"><b>Definition:</b> ContentExecutorImpl.h:38</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
-<div class="ttc" id="classuscxml_1_1_x_html"><div class="ttname"><a href="classuscxml_1_1_x.html">uscxml::X</a></div><div class="ttdef"><b>Definition:</b> DOM.h:125</div></div>
+<div class="ttc" id="classuscxml_1_1_content_executor_impl_html"><div class="ttname"><a href="classuscxml_1_1_content_executor_impl.html">uscxml::ContentExecutorImpl</a></div><div class="ttdef"><b>Definition:</b> ContentExecutorImpl.h:85</div></div>
+<div class="ttc" id="classuscxml_1_1_content_executor_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_content_executor_callbacks.html">uscxml::ContentExecutorCallbacks</a></div><div class="ttdef"><b>Definition:</b> ContentExecutorImpl.h:45</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_x_html"><div class="ttname"><a href="classuscxml_1_1_x.html">uscxml::X</a></div><div class="ttdef"><b>Definition:</b> DOM.h:110</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -155,7 +157,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

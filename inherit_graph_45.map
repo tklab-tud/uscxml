@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classuscxml_1_1_promela_inlines.html" title="uscxml::PromelaInlines" alt="" coords="5,5,164,32"/>
+<area shape="rect" id="node1" href="$classuscxml_1_1_promela_inline.html" title="uscxml::PromelaInline" alt="" coords="5,5,157,32"/>
+<area shape="rect" id="node2" href="$classuscxml_1_1_promela_event_source.html" title="uscxml::PromelaEventSource" alt="" coords="205,5,403,32"/>
 </map>

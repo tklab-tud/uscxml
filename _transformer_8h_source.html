@@ -112,7 +112,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <a class="code" href="classuscxml_1_1_transformer_impl.html">TransformerImpl</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; other) {</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        interpreter = other; <span class="comment">// we need to keep a reference to retain the document!</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        other.<a class="code" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a>()-&gt;init();</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        other.<a class="code" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a>()-&gt;setupDOM();</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        _document = other.<a class="code" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a>()-&gt;_document;</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        _baseURL = other.<a class="code" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a>()-&gt;_baseURL;</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        _scxml =  other.<a class="code" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a>()-&gt;_scxml;</div>
@@ -120,87 +120,93 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        _binding = other.<a class="code" href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">getImpl</a>()-&gt;_binding;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    }</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> writeTo(std::ostream&amp; stream) = 0;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">operator</span> <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>() {</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Transformer cannot be interpreted as an Interpreter again&quot;</span>);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    std::multimap&lt;std::string, std::string&gt; _extensions;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    std::list&lt;std::string&gt; _options;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    XERCESC_NS::DOMDocument* _document;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    XERCESC_NS::DOMElement* _scxml;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> interpreter;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    InterpreterImpl::Binding _binding;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="classuscxml_1_1_u_r_l.html">URL</a> _baseURL;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    std::string _name;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;};</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="classuscxml_1_1_transformer.html">   62</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a> {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">//  Transformer(const Interpreter&amp; source) { _impl = new (source) }</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>() : _impl() {} <span class="comment">// the empty, invalid interpreter</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>(std::shared_ptr&lt;TransformerImpl&gt; <span class="keyword">const</span> impl) : _impl(impl) { }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other) : _impl(other._impl) { }</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>() {};</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">operator</span> bool()<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordflow">return</span> !!_impl;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    }</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">bool</span> operator&lt; (<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)<span class="keyword"> const     </span>{</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">return</span> _impl &lt; other._impl;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    }</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)<span class="keyword"> const     </span>{</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keywordflow">return</span> _impl == other._impl;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> writeTo(std::ostream&amp; stream) = 0;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">operator</span> <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>() {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Transformer cannot be interpreted as an Interpreter again&quot;</span>);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> XERCESC_NS::DOMDocument* getDocument()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keywordflow">return</span> _document;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    std::multimap&lt;std::string, std::string&gt; _extensions;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    std::list&lt;std::string&gt; _options;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    XERCESC_NS::DOMDocument* _document;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    XERCESC_NS::DOMElement* _scxml;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> interpreter;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    InterpreterImpl::Binding _binding;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="code" href="classuscxml_1_1_u_r_l.html">URL</a> _baseURL;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    std::string _name;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;};</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="classuscxml_1_1_transformer.html">   68</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a> {</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">//  Transformer(const Interpreter&amp; source) { _impl = new (source) }</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>() : _impl() {} <span class="comment">// the empty, invalid interpreter</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>(std::shared_ptr&lt;TransformerImpl&gt; <span class="keyword">const</span> impl) : _impl(impl) { }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other) : _impl(other._impl) { }</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>() {};</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">operator</span> bool()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keywordflow">return</span> !!_impl;</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)<span class="keyword"> const     </span>{</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordflow">return</span> _impl != other._impl;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">bool</span> operator&lt; (<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)<span class="keyword"> const     </span>{</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordflow">return</span> _impl &lt; other._impl;</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    }</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; operator= (<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)   {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        _impl = other._impl;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    }</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> writeTo(std::ostream&amp; stream) {</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        _impl-&gt;writeTo(stream);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    }</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">operator</span> <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>() {</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keywordflow">return</span> _impl-&gt;operator <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>();</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    }</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    std::shared_ptr&lt;TransformerImpl&gt; getImpl() {</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keywordflow">return</span> _impl;</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">void</span> setExtensions(<span class="keyword">const</span> std::multimap&lt;std::string, std::string&gt;&amp; extensions) {</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        _impl-&gt;_extensions = extensions;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    }</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">void</span> setOptions(<span class="keyword">const</span> std::list&lt;std::string&gt;&amp; options) {</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        _impl-&gt;_options = options;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    }</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    std::shared_ptr&lt;TransformerImpl&gt; _impl;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;};</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;}</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: TRANSFORMER_H_32113356 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)<span class="keyword"> const     </span>{</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordflow">return</span> _impl == other._impl;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    }</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)<span class="keyword"> const     </span>{</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keywordflow">return</span> _impl != other._impl;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    }</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; operator= (<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_transformer.html">Transformer</a>&amp; other)   {</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        _impl = other._impl;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> writeTo(std::ostream&amp; stream) {</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        _impl-&gt;writeTo(stream);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    }</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keyword">operator</span> <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>() {</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">return</span> _impl-&gt;operator <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>();</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    }</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    std::shared_ptr&lt;TransformerImpl&gt; getImpl() {</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <span class="keywordflow">return</span> _impl;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    }</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">void</span> setExtensions(<span class="keyword">const</span> std::multimap&lt;std::string, std::string&gt;&amp; extensions) {</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        _impl-&gt;_extensions = extensions;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    }</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keywordtype">void</span> setOptions(<span class="keyword">const</span> std::list&lt;std::string&gt;&amp; options) {</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        _impl-&gt;_options = options;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    }</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    std::shared_ptr&lt;TransformerImpl&gt; _impl;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;};</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;}</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: TRANSFORMER_H_32113356 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="_interpreter_impl_8h_html"><div class="ttname"><a href="_interpreter_impl_8h.html">InterpreterImpl.h</a></div></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="_interpreter_8h_html"><div class="ttname"><a href="_interpreter_8h.html">Interpreter.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:77</div></div>
-<div class="ttc" id="classuscxml_1_1_u_r_l_html"><div class="ttname"><a href="classuscxml_1_1_u_r_l.html">uscxml::URL</a></div><div class="ttdef"><b>Definition:</b> URL.h:191</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_html_a24ac91189b526ed80edc4b34e02bca53"><div class="ttname"><a href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">uscxml::Interpreter::getImpl</a></div><div class="ttdeci">std::shared_ptr&lt; InterpreterImpl &gt; getImpl() const </div><div class="ttdoc">Return the actual implementation of the Interperter. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:201</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:79</div></div>
+<div class="ttc" id="classuscxml_1_1_u_r_l_html"><div class="ttname"><a href="classuscxml_1_1_u_r_l.html">uscxml::URL</a></div><div class="ttdef"><b>Definition:</b> URL.h:133</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_html_a24ac91189b526ed80edc4b34e02bca53"><div class="ttname"><a href="classuscxml_1_1_interpreter.html#a24ac91189b526ed80edc4b34e02bca53">uscxml::Interpreter::getImpl</a></div><div class="ttdeci">std::shared_ptr&lt; InterpreterImpl &gt; getImpl() const </div><div class="ttdoc">Return the actual implementation of the Interperter. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:207</div></div>
 <div class="ttc" id="classuscxml_1_1_transformer_impl_html"><div class="ttname"><a href="classuscxml_1_1_transformer_impl.html">uscxml::TransformerImpl</a></div><div class="ttdef"><b>Definition:</b> Transformer.h:30</div></div>
-<div class="ttc" id="classuscxml_1_1_transformer_html"><div class="ttname"><a href="classuscxml_1_1_transformer.html">uscxml::Transformer</a></div><div class="ttdef"><b>Definition:</b> Transformer.h:62</div></div>
+<div class="ttc" id="classuscxml_1_1_transformer_html"><div class="ttname"><a href="classuscxml_1_1_transformer.html">uscxml::Transformer</a></div><div class="ttdef"><b>Definition:</b> Transformer.h:68</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -210,7 +216,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:42 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

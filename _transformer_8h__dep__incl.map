@@ -1,10 +1,12 @@
 <map id="transform/Transformer.h" name="transform/Transformer.h">
-<area shape="rect" id="node2" href="$_chart_to_c_8h.html" title="transform/ChartToC.h" alt="" coords="355,80,506,107"/>
-<area shape="rect" id="node4" href="$_chart_to_promela_8h.html" title="transform/ChartToPromela.h" alt="" coords="133,155,323,181"/>
-<area shape="rect" id="node7" href="$_chart_to_v_h_d_l_8h.html" title="transform/ChartToVHDL.h" alt="" coords="538,155,715,181"/>
-<area shape="rect" id="node9" href="$_transformer_8cpp.html" title="transform/Transformer.cpp" alt="" coords="582,80,762,107"/>
-<area shape="rect" id="node3" href="$_chart_to_c_8cpp.html" title="transform/ChartToC.cpp" alt="" coords="348,155,513,181"/>
-<area shape="rect" id="node5" href="$_chart_to_promela_8cpp.html" title="transform/ChartToPromela.cpp" alt="" coords="213,237,419,263"/>
-<area shape="rect" id="node6" href="$_promela_code_analyzer_8cpp.html" title="transform/promela/Promela\lCodeAnalyzer.cpp" alt="" coords="5,229,189,271"/>
-<area shape="rect" id="node8" href="$_chart_to_v_h_d_l_8cpp.html" title="transform/ChartToVHDL.cpp" alt="" coords="531,237,722,263"/>
+<area shape="rect" id="node2" href="$_chart_to_c_8h.html" title="transform/ChartToC.h" alt="" coords="325,80,475,107"/>
+<area shape="rect" id="node4" href="$_chart_to_java_8h.html" title="transform/ChartToJava.h" alt="" coords="34,155,203,181"/>
+<area shape="rect" id="node6" href="$_chart_to_promela_8h.html" title="transform/ChartToPromela.h" alt="" coords="418,155,609,181"/>
+<area shape="rect" id="node9" href="$_chart_to_v_h_d_l_8h.html" title="transform/ChartToVHDL.h" alt="" coords="633,155,810,181"/>
+<area shape="rect" id="node11" href="$_transformer_8cpp.html" title="transform/Transformer.cpp" alt="" coords="602,80,782,107"/>
+<area shape="rect" id="node3" href="$_chart_to_c_8cpp.html" title="transform/ChartToC.cpp" alt="" coords="228,155,393,181"/>
+<area shape="rect" id="node5" href="$_chart_to_java_8cpp.html" title="transform/ChartToJava.cpp" alt="" coords="5,237,189,263"/>
+<area shape="rect" id="node7" href="$_chart_to_promela_8cpp.html" title="transform/ChartToPromela.cpp" alt="" coords="213,237,419,263"/>
+<area shape="rect" id="node8" href="$_promela_code_analyzer_8cpp.html" title="transform/promela/Promela\lCodeAnalyzer.cpp" alt="" coords="443,229,627,271"/>
+<area shape="rect" id="node10" href="$_chart_to_v_h_d_l_8cpp.html" title="transform/ChartToVHDL.cpp" alt="" coords="651,237,842,263"/>
 </map>

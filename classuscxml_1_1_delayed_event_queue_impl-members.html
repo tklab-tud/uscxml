@@ -104,6 +104,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="directory">
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>cancelAllDelayed</b>()=0 (defined in <a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>cancelDelayed</b>(const std::string &amp;eventId)=0 (defined in <a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>create</b>(DelayedEventQueueCallbacks *)=0 (defined in <a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>create</b>()=0 (defined in <a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>dequeue</b>(size_t blockMs)=0 (defined in <a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>enqueue</b>(const Event &amp;event)=0 (defined in <a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>enqueueDelayed</b>(const Event &amp;event, size_t delayMs, const std::string &amp;eventUUID)=0 (defined in <a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
@@ -117,7 +119,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

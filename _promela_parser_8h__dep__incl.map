@@ -1,8 +1,10 @@
 <map id="plugins/datamodel/promela/PromelaParser.h" name="plugins/datamodel/promela/PromelaParser.h">
 <area shape="rect" id="node2" href="$_promela_data_model_8cpp.html" title="plugins/datamodel/promela\l/PromelaDataModel.cpp" alt="" coords="5,95,188,136"/>
 <area shape="rect" id="node3" href="$_promela_parser_8cpp.html" title="plugins/datamodel/promela\l/PromelaParser.cpp" alt="" coords="212,95,395,136"/>
-<area shape="rect" id="node4" href="$_chart_to_promela_8cpp.html" title="transform/ChartToPromela.cpp" alt="" coords="354,266,559,293"/>
-<area shape="rect" id="node5" href="$_promela_code_analyzer_8h.html" title="transform/promela/Promela\lCodeAnalyzer.h" alt="" coords="474,95,658,136"/>
-<area shape="rect" id="node6" href="$_chart_to_promela_8h.html" title="transform/ChartToPromela.h" alt="" coords="471,184,661,211"/>
-<area shape="rect" id="node7" href="$_promela_code_analyzer_8cpp.html" title="transform/promela/Promela\lCodeAnalyzer.cpp" alt="" coords="595,259,779,300"/>
+<area shape="rect" id="node4" href="$_promela_code_analyzer_8h.html" title="transform/promela/Promela\lCodeAnalyzer.h" alt="" coords="419,95,603,136"/>
+<area shape="rect" id="node8" href="$_chart_to_promela_8cpp.html" title="transform/ChartToPromela.cpp" alt="" coords="609,266,814,293"/>
+<area shape="rect" id="node5" href="$_chart_to_java_8h.html" title="transform/ChartToJava.h" alt="" coords="219,184,388,211"/>
+<area shape="rect" id="node7" href="$_chart_to_promela_8h.html" title="transform/ChartToPromela.h" alt="" coords="483,184,673,211"/>
+<area shape="rect" id="node9" href="$_promela_code_analyzer_8cpp.html" title="transform/promela/Promela\lCodeAnalyzer.cpp" alt="" coords="401,259,585,300"/>
+<area shape="rect" id="node6" href="$_chart_to_java_8cpp.html" title="transform/ChartToJava.cpp" alt="" coords="193,266,377,293"/>
 </map>

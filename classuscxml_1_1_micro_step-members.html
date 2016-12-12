@@ -104,12 +104,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="directory">
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>_impl</b> (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>getConfiguration</b>() (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>init</b>(XERCESC_NS::DOMElement *scxml) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>isInState</b>(const std::string &amp;stateId) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>markAsCancelled</b>() (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>PIMPL_OPERATORS</b>(MicroStep) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>reset</b>() (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>step</b>(size_t blockMs) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getImpl</b>() const  (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>init</b>(XERCESC_NS::DOMElement *scxml) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>isInState</b>(const std::string &amp;stateId) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>markAsCancelled</b>() (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>PIMPL_OPERATORS</b>(MicroStep) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>reset</b>() (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>step</b>(size_t blockMs) (defined in <a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a>)</td><td class="entry"><a class="el" href="classuscxml_1_1_micro_step.html">uscxml::MicroStep</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
 </table></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -119,7 +120,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 21 2016 09:13:43 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->
