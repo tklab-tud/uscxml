@@ -20,9 +20,7 @@
 #ifndef LOGGING_H_3B1A3A0F
 #define LOGGING_H_3B1A3A0F
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
-
 #include "uscxml/messages/Data.h"
 #include "uscxml/messages/Event.h"
 

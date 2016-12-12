@@ -23,6 +23,26 @@
 
 namespace uscxml {
 
+NumAttr::NumAttr(const std::string& str) {
+    size_t valueStart = str.find_first_of("0123456789.");
+    if (valueStart != std::string::npos) {
+        size_t valueEnd = str.find_last_of("0123456789.");
+        if (valueEnd != std::string::npos) {
+            value = str.substr(valueStart, (valueEnd - valueStart) + 1);
+            size_t unitStart = str.find_first_not_of(" \t", valueEnd + 1);
+            if (unitStart != std::string::npos) {
+                size_t unitEnd = str.find_last_of(" \t");
+                if (unitEnd != std::string::npos && unitEnd > unitStart) {
+                    unit = str.substr(unitStart, unitEnd - unitStart);
+                } else {
+                    unit = str.substr(unitStart, str.length() - unitStart);
+                }
+            }
+        }
+    }
+}
+
+
 bool isnan(double x) {
 	return x != x;
 }

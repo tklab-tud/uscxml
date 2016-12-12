@@ -88,11 +88,11 @@ foreach (USCXML_ISSUE ${USCXML_ISSUES})
 	endif ()
 endforeach ()
 
-# make sure all headers are self-reliant
+# make sure the important headers are self-reliant
 set(USCXML_PUBLIC_HEADERS
 		"${PROJECT_SOURCE_DIR}/src/uscxml/uscxml.h"
 		"${PROJECT_SOURCE_DIR}/src/uscxml/Interpreter.h"
-		)
+	)
 
 file(GLOB_RECURSE USCXML_HEADERS
 		../src/*.h

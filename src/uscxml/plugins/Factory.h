@@ -34,7 +34,6 @@
 #include "Pluma/Pluma.hpp"
 #endif
 
-#include <string>
 #include <memory>
 #include <set>
 #include <limits>
