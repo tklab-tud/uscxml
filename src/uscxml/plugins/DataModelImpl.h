@@ -23,6 +23,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/IOProcessor.h"
+#include "uscxml/interpreter/Logging.h"
 
 namespace XERCESC_NS {
 class DOMDocument;
@@ -52,6 +53,7 @@ public:
 	virtual bool isInState(const std::string& stateId) = 0;
 	virtual XERCESC_NS::DOMDocument* getDocument() const = 0;
 	virtual const std::map<std::string, Invoker>& getInvokers() = 0;
+	virtual Logger getLogger() = 0;
 };
 
 class USCXML_API DataModelExtension {

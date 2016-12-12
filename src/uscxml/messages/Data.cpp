@@ -101,7 +101,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 		}
 		t = (jsmntok_t*)malloc((nrTokens + 1) * sizeof(jsmntok_t));
 		if (t == NULL) {
-			LOG(USCXML_ERROR) << "Cannot parse JSON, ran out of memory!";
+			throw ErrorEvent("Cannot parse JSON, ran out of memory!");
 			return data;
 		}
 		memset(t, 0, (nrTokens + 1) * sizeof(jsmntok_t));
@@ -112,13 +112,13 @@ Data Data::fromJSON(const std::string& jsonString) {
 	if (rv != 0) {
 		switch (rv) {
 		case JSMN_ERROR_NOMEM:
-			LOG(USCXML_ERROR) << "Cannot parse JSON, not enough tokens were provided!";
+			throw ErrorEvent("Cannot parse JSON, not enough tokens were provided!");
 			break;
 		case JSMN_ERROR_INVAL:
-			LOG(USCXML_ERROR) << "Cannot parse JSON, invalid character inside JSON string!";
+			throw ErrorEvent("Cannot parse JSON, invalid character inside JSON string!");
 			break;
 		case JSMN_ERROR_PART:
-			LOG(USCXML_ERROR) << "Cannot parse JSON, the string is not a full JSON packet, more bytes expected!";
+			throw ErrorEvent("Cannot parse JSON, the string is not a full JSON packet, more bytes expected!");
 			break;
 		default:
 			break;

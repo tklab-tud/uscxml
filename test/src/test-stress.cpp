@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
 		Interpreter interpreter = Interpreter::fromURL(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
 //        Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test422.scxml");
-		LOG(USCXML_INFO) << "Processing " << interpreter.getImpl()->getBaseURL();
+		LOGD(USCXML_INFO) << "Processing " << interpreter.getImpl()->getBaseURL();
 		if (interpreter) {
 
 			interpreter.addMonitor(&vm);

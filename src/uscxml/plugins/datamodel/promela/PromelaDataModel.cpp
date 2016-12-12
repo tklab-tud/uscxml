@@ -193,7 +193,7 @@ void PromelaDataModel::setEvent(const Event& event) {
 		try {
 			PromelaParser parser(expr);
 		} catch (Event e) {
-			LOG(USCXML_ERROR) << e << std::endl;
+			LOG(_callbacks->getLogger(), USCXML_ERROR) << e << std::endl;
 			return false;
 		}
 		return true;

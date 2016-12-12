@@ -55,6 +55,10 @@ public:
 		init();
 	}
 
+	virtual Logger getLogger() {
+		return Logger::getDefault();
+	}
+
 	const std::string& getName() {
 		return name;
 	}

@@ -24,6 +24,7 @@
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
+#include "uscxml/interpreter/Logging.h"
 
 #include <string>
 #include <set>
@@ -73,6 +74,7 @@ public:
 	/** Monitoring */
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
 	virtual Interpreter getInterpreter() = 0;
+	virtual Logger getLogger() = 0;
 
 };
 

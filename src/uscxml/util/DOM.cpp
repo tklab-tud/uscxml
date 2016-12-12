@@ -146,7 +146,7 @@ std::string DOMUtils::xPathForNode(const DOMNode* node, const std::string& ns) {
 		case DOMNode::DOCUMENT_NODE:
 			return xPath;
 		default:
-			LOG(USCXML_ERROR) << "Only nodes of type element supported for now";
+			throw ErrorEvent("Only nodes of type element supported for now");
 			return "";
 			break;
 		}

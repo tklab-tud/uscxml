@@ -28,8 +28,10 @@
 
 #include <memory>
 
-#define LOG(lvl) uscxml::Logger::getDefault().log(lvl)
-#define LOG2(lvl, thing) uscxml::Logger::getDefault().log(lvl, thing);
+#define LOG(logger, lvl) logger.log(lvl)
+#define LOG2(logger, lvl, thing) logger.log(lvl, thing)
+#define LOGD(lvl) uscxml::Logger::getDefault().log(lvl)
+#define LOGD2(lvl, thing) uscxml::Logger::getDefault().log(lvl, thing);
 
 namespace uscxml {
 

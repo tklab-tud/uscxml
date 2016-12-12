@@ -170,13 +170,13 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 	}
 
 	catch (const XERCESC_NS::SAXParseException& toCatch) {
-		LOG(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
 	} catch (const XERCESC_NS::RuntimeException& toCatch) {
-		LOG(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
 	} catch (const XERCESC_NS::XMLException& toCatch) {
-		LOG(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
 	} catch (const XERCESC_NS::DOMException& toCatch) {
-		LOG(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
 	}
 
 	return interpreter;
@@ -225,6 +225,10 @@ void Interpreter::addMonitor(InterpreterMonitor* monitor) {
 
 void Interpreter::removeMonitor(InterpreterMonitor* monitor) {
 	return _impl->removeMonitor(monitor);
+}
+
+Logger Interpreter::getLogger() {
+	return _impl->getLogger();
 }
 
 std::list<InterpreterIssue> Interpreter::validate() {

@@ -225,6 +225,8 @@ public:
 	/** --- */
 
 	void setActionLanguage(const ActionLanguage& al) {
+		if (al.logger) // we intialized _logger as the default logger already
+			_logger = al.logger;
 		_execContent = al.execContent;
 		_microStepper = al.microStepper;
 		_dataModel = al.dataModel;
@@ -235,6 +237,10 @@ public:
 
 	void setFactory(Factory* factory) {
 		_factory = factory;
+	}
+
+	virtual Logger getLogger() {
+		return _logger;
 	}
 
 	static std::map<std::string, std::weak_ptr<InterpreterImpl> > getInstances();
@@ -281,6 +287,7 @@ protected:
 	MicroStep _microStepper;
 	DataModel _dataModel;
 	ContentExecutor _execContent;
+	Logger _logger = Logger::getDefault();
 
 	InterpreterState _state;
 

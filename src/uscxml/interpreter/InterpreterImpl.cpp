@@ -249,7 +249,7 @@ bool InterpreterImpl::isTrue(const std::string& expr) {
 	} catch (ErrorEvent e) {
 		// test 244: deliver error execution
 
-		LOG(USCXML_ERROR) << e;
+		LOG(getLogger(), USCXML_ERROR) << e;
 
 		// test 344
 		enqueueInternal(e);

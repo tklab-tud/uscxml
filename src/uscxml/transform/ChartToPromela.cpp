@@ -694,7 +694,7 @@ void ChartToPromela::writeVariables(std::ostream& stream) {
 			if (allTypes.types.find(identifier) != allTypes.types.end()) {
 				type = allTypes.types[identifier].name;
 			} else {
-				LOG(USCXML_ERROR) << "Automatic or no type for '" << identifier << "' but no type resolved";
+				LOGD(USCXML_ERROR) << "Automatic or no type for '" << identifier << "' but no type resolved";
 				continue;
 			}
 		}

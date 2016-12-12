@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "uscxml/interpreter/MicroStep.h"
+#include "uscxml/interpreter/Logging.h"
 #include "uscxml/plugins/DataModel.h"
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/interpreter/ContentExecutor.h"
@@ -51,6 +52,7 @@ class InterpreterIssue;
  */
 class USCXML_API ActionLanguage {
 public:
+	Logger logger; ///< The logger instance to use for messages
 	MicroStep microStepper; ///< The microstepper instance to use
 	DataModel dataModel; ///< The datamodel to use
 	ContentExecutor execContent; ///< To process executable content elements
@@ -194,6 +196,10 @@ public:
 	 */
 	void removeMonitor(InterpreterMonitor* monitor);
 
+	/**
+	 * Return the logger associated with this interpreter
+	 */
+	Logger getLogger();
 
 	/**
 	 * Return the actual implementation of the Interperter.

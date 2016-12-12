@@ -73,11 +73,16 @@ public:
 		return entries;
 	}
 
+	void setLogger(Logger logger) {
+		_logger = logger;
+	}
+
 protected:
 	DirectoryWatch(const std::string& dir, const std::string& relDir) : _dir(dir), _relDir(relDir), _recurse(true), _lastChecked(0) {}
 
 	std::string _dir;
 	std::string _relDir;
+	Logger _logger;
 
 	bool _recurse;
 	std::map<std::string, struct stat> _knownEntries;
