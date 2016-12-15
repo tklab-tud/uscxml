@@ -30,7 +30,7 @@
 #include <list>
 #include <thread>
 #include <condition_variable>
-
+#include <mutex>
 namespace uscxml {
 
 class URL;
