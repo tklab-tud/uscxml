@@ -25,6 +25,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <limits>
 
 #include "uscxml/Common.h"
 #include "uscxml/util/URL.h"
@@ -107,7 +108,7 @@ public:
 	 MicrostepCallbacks
 	 */
 	virtual Event dequeueInternal() {
-		_currEvent = _internalQueue.dequeue(false);
+		_currEvent = _internalQueue.dequeue(0);
 		if (_currEvent)
 			_dataModel.setEvent(_currEvent);
 		return _currEvent;
