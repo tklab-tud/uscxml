@@ -60,6 +60,7 @@ public:
 		}
 	}
 
+	explicit Data(XERCESC_NS::DOMNode* node_) : node(node_) {}
 	//    template <typename T> Data(T value, Type type = INTERPRETED) : atom(toStr(value)), type(type) {}
 
 	// we will have to drop this constructor as it interferes with operator Data() and requires C++11
