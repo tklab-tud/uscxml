@@ -9,6 +9,7 @@ if (NOT ANT_BIN)
 	message(STATUS "No ant binary found, not generating Java tests / bindings")
 endif()
 find_program(PERL_BIN perl)
+find_program(PYTHON_BIN python)
 find_program(GHDL_BIN ghdl)
 
 set(GHDL_VERSION "0")
@@ -170,6 +171,7 @@ if (NOT BUILD_MINIMAL)
 
 			# bindings
 			"binding/java/jexl"
+			"binding/python/ecma"
 
 			# state-machine interpreters
 			# "fsm/ecma"
@@ -301,9 +303,20 @@ if (NOT BUILD_MINIMAL)
 								${ANT_BIN}
 								-Dtest.file=${W3C_TEST}
 								-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
-								WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java/bindings
-								)
+								WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java/bindings)
 						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
+						set(TEST_ADDED ON)
+					endif ()
+
+					if (PYTHON_BIN AND TEST_LANG STREQUAL "python")
+						add_test(NAME "${TEST_NAME}"
+								COMMAND
+								${PYTHON_BIN}
+								${PROJECT_SOURCE_DIR}/contrib/python/bindings/test-state-pass.py
+								${W3C_TEST}
+								WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/python/bindings)
+						
+						set_tests_properties("${TEST_NAME}" PROPERTIES ENVIRONMENT "USCXML_PYTHON_PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 						set(TEST_ADDED ON)
 					endif ()
 
