@@ -199,6 +199,7 @@ endif()
 OPTION(BUILD_BINDING_JAVA "Build language bindings for Java" ON)
 OPTION(BUILD_BINDING_LUA "Build language bindings for Lua" ON)
 OPTION(BUILD_BINDING_CSHARP "Build language bindings for CSharp" ON)
+OPTION(BUILD_BINDING_PYTHON "Build language bindings for Python" ON)
 OPTION(BUILD_BINDING_PHP "Build language bindings for PHP" OFF)
 
 
@@ -368,6 +369,18 @@ if (WITH_DM_LUA)
 		list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})
 	else()
 		set(WITH_DM_LUA OFF)
+	endif()
+endif()
+
+# Python
+OPTION(WITH_DM_PYTHON "Do search for the Python libraries" ON)
+if (WITH_DM_PYTHON)
+	find_package(PythonLibs)
+	if (PYTHONLIBS_FOUND)
+		include_directories (${PYTHON_INCLUDE_DIRS})
+		list (APPEND USCXML_OPT_LIBS ${PYTHON_LIBRARIES})
+	else()
+		set(WITH_DM_PYTHON ON)
 	endif()
 endif()
 

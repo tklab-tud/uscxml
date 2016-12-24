@@ -1,6 +1,4 @@
-C# / Java Bindings
 Plugins
-VHDL Transformer
 HTTPS
 respond element
 Arraybuffers

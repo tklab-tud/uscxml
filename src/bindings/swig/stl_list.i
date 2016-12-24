@@ -43,7 +43,7 @@ namespace std {
    };
 }
 
-%define specialize_std_list(T)
+/*%define specialize_std_list(T)
 #warning "specialize_std_list - specialization for type T no longer needed"
 %enddef
-
+*/

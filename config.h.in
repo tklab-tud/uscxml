@@ -68,6 +68,7 @@
 #cmakedefine WITH_DM_ECMA_V8
 #cmakedefine WITH_DM_ECMA_JSC
 #cmakedefine WITH_DM_LUA
+#cmakedefine WITH_DM_PYTHON
 #cmakedefine WITH_DM_C89
 #cmakedefine WITH_DM_PROMELA
 

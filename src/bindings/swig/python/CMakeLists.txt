@@ -1,0 +1,54 @@
+if (CMAKE_CROSSCOMPILING)
+	return()
+endif()
+
+set(Python_ADDITIONAL_VERSIONS)
+find_package(PythonLibs)
+if(NOT PYTHONLIBS_FOUND)
+	return()
+endif()
+
+if(NOT PYTHON_INCLUDE_DIRS)
+	return()
+else()
+  list(REMOVE_ITEM PYTHON_INCLUDE_DIRS "PYTHON_INCLUDE_DIR-NOTFOUND")
+  if(NOT PYTHON_INCLUDE_DIRS)
+  	return()
+  endif()
+endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PYTHON_INCLUDE_DIRS})
+
+# -includeall?
+SET(CMAKE_SWIG_FLAGS "-threads" "-c++")
+
+SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES SWIG_MODULE_NAME "uscxmlNativePython")
+SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES SWIG_FLAGS "-w401,362;")
+SET_SOURCE_FILES_PROPERTIES(uscxml.i PROPERTIES CPLUSPLUS ON)
+
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/uscxmlPYTHON_wrap.cxx PROPERTIES LANGUAGE CXX)
+SWIG_ADD_MODULE(uscxmlNativePython python uscxml.i)
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+	SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/uscxmlPYTHON_wrap.cxx PROPERTIES COMPILE_FLAGS "-Wno-dynamic-class-memaccess")
+endif()
+
+SWIG_LINK_LIBRARIES(uscxmlNativePython ${PYTHON_LIBRARIES})
+SWIG_LINK_LIBRARIES(uscxmlNativePython uscxml)
+
+set_target_properties(_uscxmlNativePython PROPERTIES FOLDER "Bindings")
+set_target_properties(_uscxmlNativePython PROPERTIES COMPILE_FLAGS "-DSWIG")
+
+ADD_CUSTOM_COMMAND(
+	TARGET _uscxmlNativePython
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy 
+		${CMAKE_CURRENT_BINARY_DIR}/uscxmlNativePython.py
+		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlNativePython.py
+)
+
+
+set(USCXML_LANGUAGE_BINDINGS "python ${USCXML_LANGUAGE_BINDINGS}")
+set(USCXML_LANGUAGE_BINDINGS ${USCXML_LANGUAGE_BINDINGS} PARENT_SCOPE)
+

@@ -63,7 +63,7 @@ public:
 	virtual void uninvoke() = 0;
 
 	/**
-	 * Interpreter received an event from the SCXML Interpreter.
+	 * Invoker received an event from the SCXML Interpreter.
 	 */
 	virtual void eventFromSCXML(const Event& event) = 0;
 
