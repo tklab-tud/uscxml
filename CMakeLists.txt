@@ -202,6 +202,7 @@ OPTION(BUILD_BINDING_CSHARP "Build language bindings for CSharp" ON)
 OPTION(BUILD_BINDING_PYTHON "Build language bindings for Python" ON)
 OPTION(BUILD_BINDING_PHP "Build language bindings for PHP" OFF)
 
+OPTION(WITH_CACHE_FILES "Support for caching data in temporary files" ON)
 
 #################################################
 # Dependent Libraries

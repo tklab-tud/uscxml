@@ -197,11 +197,12 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		_xmlPrefix = std::string(_xmlPrefix) + ":";
 	}
 
+    resortStates(_scxml, _xmlPrefix);
+
+#ifdef WITH_CACHE_FILES
 	bool withCache = !envVarIsTrue("USCXML_NOCACHE_FILES");
-
-	resortStates(_scxml, _xmlPrefix);
-
-	Data& cache = _callbacks->getCache().compound["FastMicroStep"];
+    Data& cache = _callbacks->getCache().compound["FastMicroStep"];
+#endif
 
 	/** -- All things states -- */
 
@@ -252,6 +253,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	auto endState = cache.compound["states"].array.end();
 
 	for (i = 0; i < _states.size(); i++) {
+#ifdef WITH_CACHE_FILES
 		Data* cachedState = NULL;
 		if (withCache) {
 			if (currState != endState) {
@@ -262,6 +264,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 				cachedState = &(*cache.compound["states"].array.rbegin());
 			}
 		}
+#endif
 		// collect states with an id attribute
 		if (HAS_ATTR(_states[i]->element, "id")) {
 			_stateIds[ATTR(_states[i]->element, "id")] = i;
@@ -314,10 +317,12 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		}
 
 		// establish the states' completion
+#ifdef WITH_CACHE_FILES
 		if (withCache && cachedState->compound.find("completion") != cachedState->compound.end()) {
 			_states[i]->completion = fromBase64(cachedState->compound["completion"]);
 		} else {
-			std::list<DOMElement*> completion = getCompletion(_states[i]->element);
+#endif
+            std::list<DOMElement*> completion = getCompletion(_states[i]->element);
 			for (j = 0; j < _states.size(); j++) {
 				if (!completion.empty() && _states[j]->element == completion.front()) {
 					_states[i]->completion[j] = true;
@@ -327,10 +332,12 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 				}
 			}
 			assert(completion.size() == 0);
+#ifdef WITH_CACHE_FILES
 			if (withCache)
 				cachedState->compound["completion"] = Data(toBase64(_states[i]->completion));
 		}
-		// this is set when establishing the completion
+#endif
+        // this is set when establishing the completion
 		if (_states[i]->element->getUserData(X("hasHistoryChild")) == _states[i]) {
 			_states[i]->type |= USCXML_STATE_HAS_HISTORY;
 		}
@@ -381,6 +388,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
 	for (i = 0; i < _transitions.size(); i++) {
 
+#ifdef WITH_CACHE_FILES
 		Data* cachedTrans = NULL;
 		if (withCache) {
 			if (currTrans != endTrans) {
@@ -391,13 +399,17 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 				cachedTrans = &(*cache.compound["transitions"].array.rbegin());
 			}
 		}
+#endif
+        
 		// establish the transitions' exit set
 		assert(_transitions[i]->element != NULL);
 
+#ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("exitset") != cachedTrans->compound.end()) {
 			_transitions[i]->exitSet = fromBase64(cachedTrans->compound["exitset"]);
 		} else {
-			std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
+#endif
+            std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
 
 			for (j = 0; j < _states.size(); j++) {
 				if (!exitList.empty() && _states[j]->element == exitList.front()) {
@@ -409,15 +421,19 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			}
 			assert(exitList.size() == 0);
 
+#ifdef WITH_CACHE_FILES
 			if (withCache)
 				cachedTrans->compound["exitset"] = Data(toBase64(_transitions[i]->exitSet));
 		}
+#endif
 
 		// establish the transitions' conflict set
+#ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("conflicts") != cachedTrans->compound.end()) {
 			_transitions[i]->conflicts = fromBase64(cachedTrans->compound["conflicts"]);
 		} else {
-			for (j = i; j < _transitions.size(); j++) {
+#endif
+            for (j = i; j < _transitions.size(); j++) {
 				if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
 					_transitions[i]->conflicts[j] = true;
 				} else {
@@ -430,26 +446,29 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			for (j = 0; j < i; j++) {
 				_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
 			}
+#ifdef WITH_CACHE_FILES
 			if (withCache)
 				cachedTrans->compound["conflicts"] = Data(toBase64(_transitions[i]->conflicts));
 
 		}
-
+#endif
 		// establish the transitions' target set
+#ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("target") != cachedTrans->compound.end()) {
 			_transitions[i]->target = fromBase64(cachedTrans->compound["target"]);
 		} else {
-			std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
+#endif
+            std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
 			for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
 				if (_stateIds.find(*tIter) != _stateIds.end()) {
 					_transitions[i]->target[_stateIds[*tIter]] = true;
 				}
 			}
+#ifdef WITH_CACHE_FILES
 			if (withCache)
 				cachedTrans->compound["target"] = Data(toBase64(_transitions[i]->target));
-
 		}
-
+#endif
 		// the transition's source
 		State* uscxmlState = (State*)(_transitions[i]->element->getParentNode()->getUserData(X("uscxmlState")));
 		_transitions[i]->source = uscxmlState->documentOrder;

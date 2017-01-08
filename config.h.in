@@ -59,6 +59,7 @@
 #cmakedefine SWI_BINARY "@SWI_BINARY@"
 
 /** whether we want some feature */
+#cmakedefine WITH_CACHE_FILES
 #cmakedefine WITH_INV_SCXML
 #cmakedefine WITH_INV_DIRMON
 

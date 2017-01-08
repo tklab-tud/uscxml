@@ -110,6 +110,7 @@ InterpreterImpl::~InterpreterImpl() {
 //    assert(_invokers.size() == 0);
 //    ::xercesc_3_1::XMLPlatformUtils::Terminate();
 
+#ifdef WITH_CACHE_FILES
 	if (!envVarIsTrue("USCXML_NOCACHE_FILES")) {
 		// save our cache
 		std::string sharedTemp = URL::getTempDir(true);
@@ -119,6 +120,7 @@ InterpreterImpl::~InterpreterImpl() {
 			dataFS.close();
 		}
 	}
+#endif
 }
 
 void InterpreterImpl::cancel() {
@@ -179,6 +181,7 @@ void InterpreterImpl::init() {
 
 	setupDOM();
 
+#ifdef WITH_CACHE_FILES
 	if (!envVarIsTrue("USCXML_NOCACHE_FILES")) {
 		// try to open chached data from resource directory
 		std::string sharedTemp = URL::getTempDir(true);
@@ -205,7 +208,8 @@ void InterpreterImpl::init() {
 		_cache.compound["InterpreterImpl"].compound["baseURL"] = Data(std::string(_baseURL));
 		_cache.compound["InterpreterImpl"].compound["md5"] = Data(_md5);
 	}
-
+#endif
+    
 	// register io processors
 	std::map<std::string, IOProcessorImpl*> ioProcs = _factory->getIOProcessors();
 	for (auto ioProcIter = ioProcs.begin(); ioProcIter != ioProcs.end(); ioProcIter++) {
