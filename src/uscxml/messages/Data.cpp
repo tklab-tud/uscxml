@@ -283,8 +283,6 @@ std::string Data::toJSON(const Data& data) {
 	} else {
 		if (data.type == Data::VERBATIM) {
 			os << "\"\""; // empty string
-		} else {
-			os << "null";
 		}
 	}
 	return os.str();

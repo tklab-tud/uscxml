@@ -143,6 +143,10 @@ public:
 		return Interpreter(shared_from_this());
 	}
 
+	virtual Data& getCache() {
+		return _cache;
+	}
+
 	/**
 	 DataModelCallbacks
 	 */
@@ -284,6 +288,7 @@ protected:
 	Factory* _factory;
 
 	URL _baseURL;
+	std::string _md5;
 
 	MicroStep _microStepper;
 	DataModel _dataModel;
@@ -304,6 +309,8 @@ protected:
 	std::map<std::string, Invoker> _invokers;
 	std::set<std::string> _autoForwarders;
 	std::set<InterpreterMonitor*> _monitors;
+
+	Data _cache;
 
 private:
 	void setupDOM();

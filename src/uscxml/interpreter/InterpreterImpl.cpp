@@ -27,11 +27,13 @@
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/String.h"
 #include "uscxml/util/Predicates.h"
+#include "uscxml/util/MD5.hpp"
 #include "uscxml/plugins/InvokerImpl.h"
 
 #include "uscxml/interpreter/Logging.h"
 
 #include <iostream>
+#include <fstream>
 
 #include <assert.h>
 #include <algorithm>
@@ -108,6 +110,15 @@ InterpreterImpl::~InterpreterImpl() {
 //    assert(_invokers.size() == 0);
 //    ::xercesc_3_1::XMLPlatformUtils::Terminate();
 
+	if (!envVarIsTrue("USCXML_NOCACHE_FILES")) {
+		// save our cache
+		std::string sharedTemp = URL::getTempDir(true);
+		std::ofstream dataFS(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache");
+		if (dataFS) {
+			dataFS << _cache;
+			dataFS.close();
+		}
+	}
 }
 
 void InterpreterImpl::cancel() {
@@ -159,7 +170,6 @@ SCXML_STOP_SEARCH:
 		_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
 
 	}
-
 }
 
 void InterpreterImpl::init() {
@@ -168,6 +178,33 @@ void InterpreterImpl::init() {
 		return;
 
 	setupDOM();
+
+	if (!envVarIsTrue("USCXML_NOCACHE_FILES")) {
+		// try to open chached data from resource directory
+		std::string sharedTemp = URL::getTempDir(true);
+		std::ifstream dataFS(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache");
+		if (dataFS.is_open()) {
+			std::string cacheStr((std::istreambuf_iterator<char>(dataFS)),
+			                     std::istreambuf_iterator<char>());
+			_cache = Data::fromJSON(cacheStr);
+		}
+
+		// get md5 of current document
+		std::stringstream ss;
+		ss << *_document;
+		_md5 = md5(ss.str());
+
+		if (_cache.compound.find("InterpreterImpl") != _cache.compound.end() &&
+		        _cache.compound["InterpreterImpl"].compound.find("md5") != _cache.compound["InterpreterImpl"].compound.end() &&
+		        _cache.compound["InterpreterImpl"].compound["md5"].atom != _md5) {
+
+			// that's not our cache!
+			_cache.clear();
+		}
+
+		_cache.compound["InterpreterImpl"].compound["baseURL"] = Data(std::string(_baseURL));
+		_cache.compound["InterpreterImpl"].compound["md5"] = Data(_md5);
+	}
 
 	// register io processors
 	std::map<std::string, IOProcessorImpl*> ioProcs = _factory->getIOProcessors();

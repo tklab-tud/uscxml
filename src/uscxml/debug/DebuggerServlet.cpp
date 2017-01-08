@@ -134,6 +134,8 @@ bool DebuggerServlet::requestFromHTTP(const HTTPServer::Request& request) {
 	} else if (boost::starts_with(request.data.at("path").atom, "/debug/disconnect")) {
 		processDisconnect(request);
 
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/issues")) {
+		replyData = session->getIssues();
 	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/enable/all")) {
 		replyData = session->enableAllBreakPoints();
 	} else if (boost::starts_with(request.data.at("path").atom, "/debug/breakpoint/disable/all")) {

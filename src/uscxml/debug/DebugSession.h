@@ -66,6 +66,7 @@ public:
 	Data disableBreakPoint(const Data& data);
 	Data enableAllBreakPoints();
 	Data disableAllBreakPoints();
+	Data getIssues();
 	Data debugEval(const Data& data);
 
 	void setDebugger(Debugger* debugger) {
@@ -80,12 +81,12 @@ public:
 		_markedForDeletion = mark;
 	}
 
-    // Logger
-    virtual std::shared_ptr<LoggerImpl> create();
-    
-    virtual void log(LogSeverity severity, const Event& event);
-    virtual void log(LogSeverity severity, const Data& data);
-    virtual void log(LogSeverity severity, const std::string& message);
+	// Logger
+	virtual std::shared_ptr<LoggerImpl> create();
+
+	virtual void log(LogSeverity severity, const Event& event);
+	virtual void log(LogSeverity severity, const Data& data);
+	virtual void log(LogSeverity severity, const std::string& message);
 
 protected:
 	void breakExecution(Data replyData);

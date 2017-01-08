@@ -33,6 +33,12 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+#ifdef _WIN32
+#define BITSET_BLOCKTYPE size_t
+#else
+#define BITSET_BLOCKTYPE
+#endif
+
 namespace uscxml {
 
 /**
@@ -57,11 +63,11 @@ protected:
 		Transition() : element(NULL), source(0), onTrans(NULL), type(0) {}
 
 		XERCESC_NS::DOMElement* element;
-		boost::dynamic_bitset<> conflicts;
-		boost::dynamic_bitset<> exitSet;
+		boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts;
+		boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet;
 
 		uint32_t source;
-		boost::dynamic_bitset<> target;
+		boost::dynamic_bitset<BITSET_BLOCKTYPE> target;
 
 		XERCESC_NS::DOMElement* onTrans;
 
@@ -77,9 +83,9 @@ protected:
 		State() : element(NULL), parent(0), documentOrder(0), doneData(NULL), type(0) {}
 
 		XERCESC_NS::DOMElement* element;
-		boost::dynamic_bitset<> completion;
-		boost::dynamic_bitset<> children;
-		boost::dynamic_bitset<> ancestors;
+		boost::dynamic_bitset<BITSET_BLOCKTYPE> completion;
+		boost::dynamic_bitset<BITSET_BLOCKTYPE> children;
+		boost::dynamic_bitset<BITSET_BLOCKTYPE> ancestors;
 		uint32_t parent;
 		uint32_t documentOrder;
 
@@ -108,12 +114,12 @@ protected:
 	std::vector<Transition*> _transitions;
 	std::list<XERCESC_NS::DOMElement*> _globalScripts;
 
-	boost::dynamic_bitset<> _configuration;
-	boost::dynamic_bitset<> _invocations;
-	boost::dynamic_bitset<> _history;
-	boost::dynamic_bitset<> _initializedData;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _configuration;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _invocations;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _history;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _initializedData;
 
-	std::set<boost::dynamic_bitset<> > _microstepConfigurations;
+	std::set<boost::dynamic_bitset<BITSET_BLOCKTYPE> > _microstepConfigurations;
 
 	Binding _binding;
 	XERCESC_NS::DOMElement* _scxml;
@@ -130,13 +136,16 @@ private:
 
 	bool conflictsCached(const XERCESC_NS::DOMElement* t1, const XERCESC_NS::DOMElement* t2, const XERCESC_NS::DOMElement* root); ///< overrides implementation Predicates::conflicts for speed
 
+	std::string toBase64(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> fromBase64(const std::string& encoded);
+
 	std::list<XERCESC_NS::DOMElement*> getExitSetCached(const XERCESC_NS::DOMElement* transition,
 	        const XERCESC_NS::DOMElement* root);
 
 	CachedPredicates _cache;
 
 #ifdef USCXML_VERBOSE
-	void printStateNames(const boost::dynamic_bitset<>& bitset);
+	void printStateNames(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
 #endif
 
 };

@@ -45,7 +45,7 @@ template <typename T> T strTo(std::string tmp) {
 
 class USCXML_API NumAttr {
 public:
-    NumAttr(const std::string& str);
+	NumAttr(const std::string& str);
 	std::string value;
 	std::string unit;
 };

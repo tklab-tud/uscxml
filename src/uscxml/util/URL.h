@@ -136,6 +136,19 @@ public:
 
 	URL(const std::string url) : _impl(new URLImpl(url)) {}
 
+	/**
+	 * Get a persistant, shared directory for resources
+	 * @return A path to an existing directory for resources.
+	 */
+	static std::string getResourceDir();
+
+	/**
+	 * Get a temporary, shared or private directory for resources
+	 * @param shared Whether the temporary directory is shared among instances.
+	 * @return A path to an existing directory for temporary files.
+	 */
+	static std::string getTempDir(bool shared = true);
+
 	bool isAbsolute() {
 		return _impl->isAbsolute();
 	}
@@ -241,6 +254,8 @@ public:
 protected:
 	std::shared_ptr<URLImpl> _impl;
 	friend class URLFetcher;
+	static std::string currTmpDir;
+
 };
 
 class USCXML_API URLFetcher {
@@ -270,6 +285,7 @@ protected:
 	std::map<void*, void*> _handlesToHeaders;
 	void* _multiHandle = NULL;
 	char* _envProxy = NULL;
+
 };
 
 }

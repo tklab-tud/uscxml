@@ -385,7 +385,7 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 
 		// check whether state is reachable
 		if (!DOMUtils::isMember(state, reachable) && areFromSameMachine(state, interpreter->_scxml)) {
-			issues.push_back(InterpreterIssue("State with id '" + stateId + "' is unreachable", state, InterpreterIssue::USCXML_ISSUE_FATAL));
+			issues.push_back(InterpreterIssue("State with id '" + stateId + "' is unreachable", state, InterpreterIssue::USCXML_ISSUE_WARNING));
 		}
 
 		// check for uniqueness of id attribute

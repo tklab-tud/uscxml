@@ -40,9 +40,9 @@ USCXML_API inline std::string base64Decode(const std::string& data) {
 	base64_init_decodestate(ctx);
 	
 	char* out = (char*)malloc(data.size());
-	base64_decode_block(data.data(), data.size(), out, ctx);
+	size_t size = base64_decode_block(data.data(), data.size(), out, ctx);
 	free(ctx);
-	std::string result(out);
+	std::string result(out, size);
 	free(out);
 	return result;
 }

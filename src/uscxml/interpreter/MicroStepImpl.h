@@ -60,6 +60,9 @@ public:
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
 	virtual Interpreter getInterpreter() = 0;
 	virtual Logger getLogger() = 0;
+
+	/** Saved State */
+	virtual Data& getCache() = 0;
 };
 
 /**

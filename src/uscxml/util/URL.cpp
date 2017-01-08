@@ -29,20 +29,174 @@
 #include <curl/curl.h>
 #include <uriparser/Uri.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
+#include <Shlobj.h>
 
 #define getcwd _getcwd
 #else
 #include <unistd.h> // getcwd
-//#include <pwd.h>
+#include <pwd.h> // getpwuid
 #endif
 
 #define DOWNLOAD_IF_NECESSARY if (!_isDownloaded) { download(true); }
 #define USCXML_URI_STRING(obj, field) std::string(obj.field.first, (obj.field.afterLast - obj.field.first))
 
 namespace uscxml {
+
+std::string URL::currTmpDir;
+
+std::string URL::getTempDir(bool shared) {
+
+#ifdef _WIN32
+	struct stat st = { 0 };
+	TCHAR tmpPrefix [MAX_PATH];
+
+	// retrieve and optionally create temporary directory
+	if (!GetTempPath(MAX_PATH, tmpPrefix)) {
+		ERROR_EXECUTION_THROW(std::string("Cannot retrieve temporary directory"));
+	}
+	if (stat(tmpPrefix, &st) == -1) {
+		CreateDirectory(tmpPrefix, NULL);
+		if (GetLastError() == ERROR_PATH_NOT_FOUND) {
+			ERROR_EXECUTION_THROW(std::string("Cannot create a temporary directory at '") + tmpPrefix + "'");
+		}
+	}
+
+	if (shared) {
+		// create uscxml folder in temporary directory
+		std::string sharedTmpDir = std::string(tmpPrefix) + PATH_SEPERATOR + "uscxml";
+
+		if (stat(sharedTmpDir.c_str(), &st) == -1) {
+			CreateDirectory (sharedTmpDir.c_str(), NULL);
+			if (GetLastError() == ERROR_PATH_NOT_FOUND) {
+				ERROR_EXECUTION_THROW(std::string("Cannot create a temporary directory at '") + sharedTmpDir + "'");
+			}
+		}
+		return sharedTmpDir;
+
+	} else {
+		if (currTmpDir.size() == 0) {
+			// create random folder in temporary directory
+			// http://stackoverflow.com/questions/6287475/creating-a-unique-temporary-directory-from-pure-c-in-windows
+			// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363875(v=vs.85).aspx
+			TCHAR tempFileName[MAX_PATH];
+			if (GetTempFileName(tmpPrefix, // directory for tmp files
+			                    TEXT("uscxml."),     // temp file name prefix
+			                    0,                // create unique name
+			                    tempFileName)) {
+				DeleteFile(tempFileName);
+
+				if (stat(tempFileName, &st) == -1) {
+					CreateDirectory(tempFileName, NULL);
+					if (GetLastError() == ERROR_PATH_NOT_FOUND) {
+						ERROR_EXECUTION_THROW(std::string("Cannot create a temporary directory at '") + tempFileName + "'");
+					}
+				}
+
+				currTmpDir = tempFileName;
+			} else {
+				ERROR_EXECUTION_THROW(std::string("Cannot create a temporary directory at '") + tmpPrefix + "'");
+			}
+		}
+		return currTmpDir;
+	}
+
+#else
+	std::string tmpPrefix = "/tmp";
+	const char* tmpEnv = getenv("TMPDIR");
+	if (tmpEnv != NULL)
+		tmpPrefix = tmpEnv;
+
+	if (tmpPrefix[tmpPrefix.size() - 1] != PATH_SEPERATOR)
+		tmpPrefix += PATH_SEPERATOR;
+
+	if (shared) {
+		struct stat st = {0};
+
+		std::string sharedTmpDir = tmpPrefix + "uscxml";
+		if (stat(sharedTmpDir.c_str(), &st) == -1) {
+			int err = mkdir(sharedTmpDir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO); // 777
+			if (err)
+				ERROR_EXECUTION_THROW(std::string("Cannot create a temporary directory at '") + sharedTmpDir + "':" + strerror(errno));
+
+		}
+		return sharedTmpDir;
+
+	} else {
+		if (currTmpDir.size() == 0) {
+			std::string tmpPrefix = "/tmp";
+			const char* tmpEnv = getenv("TMPDIR");
+			if (tmpEnv != NULL)
+				tmpPrefix = tmpEnv;
+			const char* tmpName = mkdtemp((char*)std::string(tmpPrefix + "uscxml.XXXXXX").c_str()); // can we merely drop the constness?
+			if (tmpName != NULL) {
+				currTmpDir = tmpName;
+			} else {
+				ERROR_EXECUTION_THROW(std::string("Cannot create a temporary directory:") + strerror(errno));
+			}
+		}
+		return currTmpDir;
+	}
+#endif
+}
+
+// Version for MacOSX in URL.mm
+#if (!defined APPLE && !defined IOS)
+std::string URL::getResourceDir() {
+#ifdef _WIN32
+	TCHAR szPath[MAX_PATH];
+	std::string resourceDir;
+	if (SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath) == S_OK) {
+		resourceDir = std::string(szPath) + PATH_SEPERATOR + "uscxml";
+	} else {
+		char* envData = getenv("APPDATA");
+		if (envData) {
+			resourceDir = std::string(envData) + PATH_SEPERATOR + "uscxml";
+		} else {
+			ERROR_EXECUTION_THROW("Could not get resource directory");
+		}
+	}
+
+	struct stat st = { 0 };
+
+	if (stat(resourceDir.c_str(), &st) == -1) {
+		CreateDirectory(resourceDir.c_str(), NULL);
+		if (GetLastError() == ERROR_PATH_NOT_FOUND) {
+			ERROR_EXECUTION_THROW(std::string("Cannot create a resource directory at '") + resourceDir + "'");
+		}
+	}
+	return resourceDir;
+
+#else
+	struct passwd* pw = getpwuid(getuid());
+	std::string homedir(pw->pw_dir);
+	struct stat dirStat;
+	int err = 0;
+
+	err = stat(std::string(homedir + PATH_SEPERATOR + ".config").c_str(), &dirStat);
+	if (err == ENOENT) {
+		err = mkdir(std::string(homedir + PATH_SEPERATOR + ".config").c_str(), S_IWUSR | S_IRUSR | S_IROTH);
+	}
+
+	err = stat(std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml").c_str(), &dirStat);
+	if (err != 0) {
+		// std::cout << std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml") << std::endl;
+		err = mkdir(std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml").c_str(),
+		            S_IWUSR | S_IRUSR | S_IROTH | S_IRGRP | S_IXUSR | S_IXOTH | S_IXGRP);
+	}
+
+	err = stat(std::string(homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml").c_str(), &dirStat);
+	if (err == 0) {
+		return homedir + PATH_SEPERATOR + ".config" + PATH_SEPERATOR + "uscxml";
+	}
+	return "";
+#endif
+}
+#endif
 
 void URLImpl::prepareException(ErrorEvent& exception, int errorCode, const std::string& origUri, void* parser) {
 	exception.data.compound["uri"].atom = origUri;
@@ -808,9 +962,19 @@ void URLFetcher::perform() {
 		rc = select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout);
 
 		switch(rc) {
-		case -1:
+		case -1: {
 			/* select error */
+#ifdef _WIN32
+			char *s = NULL;
+			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			              NULL, WSAGetLastError(),
+			              MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			              (LPSTR)&s, 0, NULL);
+			LOGD(USCXML_WARN) << "select: " << s;
+			LocalFree(s);
+#endif
 			break;
+		}
 		case 0: /* timeout */
 		default: { /* action */
 			std::lock_guard<std::recursive_mutex> lock(_mutex);

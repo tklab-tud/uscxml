@@ -228,11 +228,13 @@ Data DebugSession::debugStop(const Data& data) {
 
 	if (_isRunning && _interpreterThread != NULL) {
 		_isRunning = false;
+
+		// unblock
+		_resumeCond.notify_all();
+
 		_interpreterThread->join();
 		delete(_interpreterThread);
 	}
-	// unblock
-	_resumeCond.notify_all();
 
 	_skipTo = Breakpoint();
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
@@ -377,11 +379,44 @@ Data DebugSession::enableAllBreakPoints() {
 
 	return replyData;
 }
+
 Data DebugSession::disableAllBreakPoints() {
 	Data replyData;
 
 	_breakpointsEnabled = false;
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
+
+	return replyData;
+}
+
+Data DebugSession::getIssues() {
+	Data replyData;
+
+	std::list<InterpreterIssue> issues = _interpreter.validate();
+	replyData.compound["status"] = Data("success", Data::VERBATIM);
+	for (auto issue : issues) {
+		Data issueData;
+
+		issueData.compound["message"] = Data(issue.message, Data::VERBATIM);
+		issueData.compound["xPath"] = Data(issue.xPath, Data::VERBATIM);
+		issueData.compound["specRef"] = Data(issue.specRef, Data::VERBATIM);
+
+		switch (issue.severity) {
+		case InterpreterIssue::USCXML_ISSUE_FATAL:
+			issueData.compound["severity"] = Data("FATAL", Data::VERBATIM);
+			break;
+		case InterpreterIssue::USCXML_ISSUE_WARNING:
+			issueData.compound["severity"] = Data("WARN", Data::VERBATIM);
+			break;
+		case InterpreterIssue::USCXML_ISSUE_INFO:
+			issueData.compound["severity"] = Data("INFO", Data::VERBATIM);
+			break;
+		default:
+			break;
+		}
+
+		replyData.compound["issues"].array.push_back(issueData);
+	}
 
 	return replyData;
 }
@@ -416,69 +451,69 @@ Data DebugSession::debugEval(const Data& data) {
 }
 
 std::shared_ptr<LoggerImpl> DebugSession::create() {
-    return shared_from_this();
+	return shared_from_this();
 }
 
 void DebugSession::log(LogSeverity severity, const Event& event) {
-    Data d;
-    d.compound["data"] = event.data;
-    d.compound["name"] = Data(event.name);
-    d.compound["origin"] = Data(event.origin);
-    d.compound["origintype"] = Data(event.origintype);
-    
-    switch (event.eventType) {
-        case Event::Type::INTERNAL:
-            d.compound["eventType"] = Data("INTERNAL");
-            break;
-        case Event::Type::EXTERNAL:
-            d.compound["eventType"] = Data("EXTERNAL");
-            break;
-        case Event::Type::PLATFORM:
-            d.compound["eventType"] = Data("PLATFORM");
-            break;
-        default:
-            break;
-    }
-    if (!event.hideSendId)
-        d.compound["sendid"] = Data(event.sendid);
-    if (event.invokeid.size() > 0)
-        d.compound["invokeid"] = Data(event.invokeid);
+	Data d;
+	d.compound["data"] = event.data;
+	d.compound["name"] = Data(event.name);
+	d.compound["origin"] = Data(event.origin);
+	d.compound["origintype"] = Data(event.origintype);
 
-    // handle params
-    Data& params = d.compound["params"];
-    bool convertedToArray = false;
-    for (auto param : event.params) {
-        if (params.compound.find(param.first) != d.compound.end()) {
-            // no such key, add as literal data
-            d.compound[param.first] = param.second;
-        } else if (params.compound[param.first].array.size() > 0 && convertedToArray) {
-            // key is already an array
-            params.compound[param.first].array.push_back(param.second);
-        } else {
-            // key already given as literal data, move to array
-            Data& existingParam = params.compound[param.first];
-            params.compound[param.first].array.push_back(existingParam);
-            params.compound[param.first].array.push_back(param.second);
-            params.compound[param.first].compound.clear();
-            convertedToArray = true;
-        }
-    }
-    
-    // handle namelist
-    Data& namelist = d.compound["namelist"];
-    for (auto name : event.namelist) {
-        namelist.compound[name.first] = name.second;
-    }
-    
-    _debugger->pushData(shared_from_this(), d);
+	switch (event.eventType) {
+	case Event::Type::INTERNAL:
+		d.compound["eventType"] = Data("INTERNAL");
+		break;
+	case Event::Type::EXTERNAL:
+		d.compound["eventType"] = Data("EXTERNAL");
+		break;
+	case Event::Type::PLATFORM:
+		d.compound["eventType"] = Data("PLATFORM");
+		break;
+	default:
+		break;
+	}
+	if (!event.hideSendId)
+		d.compound["sendid"] = Data(event.sendid);
+	if (event.invokeid.size() > 0)
+		d.compound["invokeid"] = Data(event.invokeid);
+
+	// handle params
+	Data& params = d.compound["params"];
+	bool convertedToArray = false;
+	for (auto param : event.params) {
+		if (params.compound.find(param.first) != d.compound.end()) {
+			// no such key, add as literal data
+			d.compound[param.first] = param.second;
+		} else if (params.compound[param.first].array.size() > 0 && convertedToArray) {
+			// key is already an array
+			params.compound[param.first].array.push_back(param.second);
+		} else {
+			// key already given as literal data, move to array
+			Data& existingParam = params.compound[param.first];
+			params.compound[param.first].array.push_back(existingParam);
+			params.compound[param.first].array.push_back(param.second);
+			params.compound[param.first].compound.clear();
+			convertedToArray = true;
+		}
+	}
+
+	// handle namelist
+	Data& namelist = d.compound["namelist"];
+	for (auto name : event.namelist) {
+		namelist.compound[name.first] = name.second;
+	}
+
+	_debugger->pushData(shared_from_this(), d);
 }
 
 void DebugSession::log(LogSeverity severity, const Data& data) {
-    _debugger->pushData(shared_from_this(), data);
+	_debugger->pushData(shared_from_this(), data);
 }
 
 void DebugSession::log(LogSeverity severity, const std::string& message) {
-    _debugger->pushData(shared_from_this(), Data(message));
+	_debugger->pushData(shared_from_this(), Data(message));
 }
 
 }

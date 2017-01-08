@@ -73,6 +73,16 @@ public:
 
 	~Data() {}
 
+	void clear() {
+		type = VERBATIM;
+		compound.clear();
+		array.clear();
+		atom.clear();
+		adoptedDoc.reset();
+		binary = Blob();
+		node = NULL;
+	}
+
 	bool empty() const {
 		bool hasContent = (atom.length() > 0 || !compound.empty() || !array.empty() || binary || node);
 		return !hasContent;
@@ -101,16 +111,18 @@ public:
 		return (!compound.empty() && compound.find(key) != compound.end());
 	}
 
-	Data& operator[](const std::string& key) {
-		return operator[](key.c_str());
-	}
+#ifndef SWIGIMPORTED
 
-	const Data& operator[](const std::string& key) const {
-		return operator[](key.c_str());
+	Data& operator[](const std::string& key) {
+		return compound[key];
 	}
 
 	Data& operator[](const char* key) {
 		return compound[key];
+	}
+
+	const Data& operator[](const std::string& key) const {
+		return compound.at(key);
 	}
 
 	const Data& operator[](const char* key) const {
@@ -125,6 +137,7 @@ public:
 		for (size_t i = 0; i < index; i++, arrayIter++) {}
 		return *arrayIter;
 	}
+#endif
 
 	const Data at(const std::string& key) const {
 		return at(key.c_str());
@@ -179,14 +192,6 @@ public:
 	static std::string toJSON(const Data& data);
 	std::string asJSON() const;
 
-
-	std::map<std::string, Data> getCompound() {
-		return compound;
-	}
-	void setCompound(const std::map<std::string, Data>& compound) {
-		this->compound = compound;
-	}
-
 	std::list<Data> getArray() {
 		return array;
 	}
@@ -213,6 +218,15 @@ public:
 	}
 	void setType(const Type type) {
 		this->type = type;
+	}
+
+	// Bug in SWIG 3.0.8 Python: Data in a map has to be fully qualified!
+	std::map<std::string, uscxml::Data> getCompound() {
+		return compound;
+	}
+
+	void setCompound(const std::map<std::string, uscxml::Data>& compound) {
+		this->compound = compound;
 	}
 
 #ifdef SWIGIMPORTED

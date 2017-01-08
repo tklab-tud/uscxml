@@ -22,6 +22,7 @@
 #include "FastMicroStep.h"
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/String.h"
+#include "uscxml/util/Base64.hpp"
 #include "uscxml/util/Predicates.h"
 #include "uscxml/util/Convenience.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
@@ -101,6 +102,8 @@ void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 	 shallow histories
 	 everything else
 	 */
+
+	// TODO: We can do this in one iteration
 
 	DOMElement* child = element->getFirstElementChild();
 	while(child) {
@@ -194,9 +197,11 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		_xmlPrefix = std::string(_xmlPrefix) + ":";
 	}
 
+	bool withCache = !envVarIsTrue("USCXML_NOCACHE_FILES");
+
 	resortStates(_scxml, _xmlPrefix);
-//    assert(false);
-//    throw NULL;
+
+	Data& cache = _callbacks->getCache().compound["FastMicroStep"];
 
 	/** -- All things states -- */
 
@@ -243,7 +248,20 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		_states[0]->data = DOMUtils::filterChildElements(_xmlPrefix.str() + "data", dataModels, false);
 	}
 
+	auto currState = cache.compound["states"].array.begin();
+	auto endState = cache.compound["states"].array.end();
+
 	for (i = 0; i < _states.size(); i++) {
+		Data* cachedState = NULL;
+		if (withCache) {
+			if (currState != endState) {
+				cachedState = &(*currState);
+				currState++;
+			} else {
+				cache.compound["states"].array.push_back(Data());
+				cachedState = &(*cache.compound["states"].array.rbegin());
+			}
+		}
 		// collect states with an id attribute
 		if (HAS_ATTR(_states[i]->element, "id")) {
 			_stateIds[ATTR(_states[i]->element, "id")] = i;
@@ -273,7 +291,6 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			}
 		}
 
-
 		// set the states type
 		if (false) {
 		} else if (iequals(TAGNAME(_states[i]->element), _xmlPrefix.str() + "initial")) {
@@ -297,17 +314,22 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		}
 
 		// establish the states' completion
-		std::list<DOMElement*> completion = getCompletion(_states[i]->element);
-		for (j = 0; j < _states.size(); j++) {
-			if (!completion.empty() && _states[j]->element == completion.front()) {
-				_states[i]->completion[j] = true;
-				completion.pop_front();
-			} else {
-				_states[i]->completion[j] = false;
+		if (withCache && cachedState->compound.find("completion") != cachedState->compound.end()) {
+			_states[i]->completion = fromBase64(cachedState->compound["completion"]);
+		} else {
+			std::list<DOMElement*> completion = getCompletion(_states[i]->element);
+			for (j = 0; j < _states.size(); j++) {
+				if (!completion.empty() && _states[j]->element == completion.front()) {
+					_states[i]->completion[j] = true;
+					completion.pop_front();
+				} else {
+					_states[i]->completion[j] = false;
+				}
 			}
+			assert(completion.size() == 0);
+			if (withCache)
+				cachedState->compound["completion"] = Data(toBase64(_states[i]->completion));
 		}
-		assert(completion.size() == 0);
-
 		// this is set when establishing the completion
 		if (_states[i]->element->getUserData(X("hasHistoryChild")) == _states[i]) {
 			_states[i]->type |= USCXML_STATE_HAS_HISTORY;
@@ -354,46 +376,78 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	}
 	assert(tmp.size() == 0);
 
+	auto currTrans = cache.compound["transitions"].array.begin();
+	auto endTrans = cache.compound["transitions"].array.end();
+
 	for (i = 0; i < _transitions.size(); i++) {
 
+		Data* cachedTrans = NULL;
+		if (withCache) {
+			if (currTrans != endTrans) {
+				cachedTrans = &(*currTrans);
+				currTrans++;
+			} else {
+				cache.compound["transitions"].array.push_back(Data());
+				cachedTrans = &(*cache.compound["transitions"].array.rbegin());
+			}
+		}
 		// establish the transitions' exit set
 		assert(_transitions[i]->element != NULL);
-//		std::cout << "i: " << i << std::endl << std::flush;
-		std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
-		_cache.exitSet[_transitions[i]->element] = exitList;
 
-		for (j = 0; j < _states.size(); j++) {
-			if (!exitList.empty() && _states[j]->element == exitList.front()) {
-				_transitions[i]->exitSet[j] = true;
-				exitList.pop_front();
-			} else {
-				_transitions[i]->exitSet[j] = false;
+		if (withCache && cachedTrans->compound.find("exitset") != cachedTrans->compound.end()) {
+			_transitions[i]->exitSet = fromBase64(cachedTrans->compound["exitset"]);
+		} else {
+			std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
+
+			for (j = 0; j < _states.size(); j++) {
+				if (!exitList.empty() && _states[j]->element == exitList.front()) {
+					_transitions[i]->exitSet[j] = true;
+					exitList.pop_front();
+				} else {
+					_transitions[i]->exitSet[j] = false;
+				}
 			}
+			assert(exitList.size() == 0);
+
+			if (withCache)
+				cachedTrans->compound["exitset"] = Data(toBase64(_transitions[i]->exitSet));
 		}
-		assert(exitList.size() == 0);
 
 		// establish the transitions' conflict set
-		for (j = i; j < _transitions.size(); j++) {
-			if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
-				_transitions[i]->conflicts[j] = true;
-			} else {
-				_transitions[i]->conflicts[j] = false;
+		if (withCache && cachedTrans->compound.find("conflicts") != cachedTrans->compound.end()) {
+			_transitions[i]->conflicts = fromBase64(cachedTrans->compound["conflicts"]);
+		} else {
+			for (j = i; j < _transitions.size(); j++) {
+				if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
+					_transitions[i]->conflicts[j] = true;
+				} else {
+					_transitions[i]->conflicts[j] = false;
+				}
+				//            std::cout << ".";
 			}
-//            std::cout << ".";
-		}
 
-		// conflicts matrix is symmetric
-		for (j = 0; j < i; j++) {
-			_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
-		}
+			// conflicts matrix is symmetric
+			for (j = 0; j < i; j++) {
+				_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
+			}
+			if (withCache)
+				cachedTrans->compound["conflicts"] = Data(toBase64(_transitions[i]->conflicts));
 
+		}
 
 		// establish the transitions' target set
-		std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
-		for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
-			if (_stateIds.find(*tIter) != _stateIds.end()) {
-				_transitions[i]->target[_stateIds[*tIter]] = true;
+		if (withCache && cachedTrans->compound.find("target") != cachedTrans->compound.end()) {
+			_transitions[i]->target = fromBase64(cachedTrans->compound["target"]);
+		} else {
+			std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
+			for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
+				if (_stateIds.find(*tIter) != _stateIds.end()) {
+					_transitions[i]->target[_stateIds[*tIter]] = true;
+				}
 			}
+			if (withCache)
+				cachedTrans->compound["target"] = Data(toBase64(_transitions[i]->target));
+
 		}
 
 		// the transition's source
@@ -422,7 +476,6 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			_transitions[i]->type |= USCXML_TRANS_INITIAL;
 		}
 
-
 		// the transitions event and condition
 		_transitions[i]->event = (HAS_ATTR(_transitions[i]->element, "event") ?
 		                          ATTR(_transitions[i]->element, "event") : "");
@@ -433,10 +486,39 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		if (_transitions[i]->element->getChildElementCount() > 0) {
 			_transitions[i]->onTrans = _transitions[i]->element;
 		}
-
 	}
 	_cache.exitSet.clear();
 	_isInitialized = true;
+
+}
+
+std::string FastMicroStep::toBase64(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset) {
+	std::vector<boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type> bytes(bitset.num_blocks() + 1);
+	boost::to_block_range(bitset, bytes.begin());
+
+	std::string encoded;
+	encoded.resize(sizeof(boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type) * bytes.size());
+	bytes[bytes.size() - 1] = static_cast<boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type>(bitset.size());
+
+	static_assert(sizeof(boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type) >= sizeof(size_t), "Block type too small to encode dynamic_bitset length");
+
+	memcpy(&encoded[0], &bytes[0], sizeof(boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type) * bytes.size());
+	return base64Encode(encoded.c_str(), encoded.size(), true);
+}
+
+boost::dynamic_bitset<BITSET_BLOCKTYPE> FastMicroStep::fromBase64(const std::string& encoded) {
+
+	std::string decoded = base64Decode(encoded);
+	assert(decoded.size() % sizeof(boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type) == 0);
+	std::vector<boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type> bytes(decoded.size() / sizeof(boost::dynamic_bitset<BITSET_BLOCKTYPE>::block_type));
+
+	memcpy(&bytes[0], &decoded[0], decoded.size());
+
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> bitset;
+	bitset.init_from_block_range(bytes.begin(), --bytes.end());
+	bitset.resize(bytes[bytes.size() - 1]);
+
+	return bitset;
 }
 
 void FastMicroStep::markAsCancelled() {
@@ -451,13 +533,13 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 	size_t i, j, k;
 
-	boost::dynamic_bitset<> exitSet(_states.size(), false);
-	boost::dynamic_bitset<> entrySet(_states.size(), false);
-	boost::dynamic_bitset<> targetSet(_states.size(), false);
-	boost::dynamic_bitset<> tmpStates(_states.size(), false);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet(_states.size(), false);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> entrySet(_states.size(), false);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> targetSet(_states.size(), false);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> tmpStates(_states.size(), false);
 
-	boost::dynamic_bitset<> conflicts(_transitions.size(), false);
-	boost::dynamic_bitset<> transSet(_transitions.size(), false);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts(_transitions.size(), false);
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> transSet(_transitions.size(), false);
 
 #ifdef USCXML_VERBOSE
 	std::cerr << "Config: ";
@@ -675,14 +757,14 @@ ESTABLISH_ENTRYSET:
 
 	/* iterate for ancestors */
 	i = entrySet.find_first();
-	while(i != boost::dynamic_bitset<>::npos) {
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 		entrySet |= USCXML_GET_STATE(i).ancestors;
 		i = entrySet.find_next(i);
 	}
 
 	/* iterate for descendants */
 	i = entrySet.find_first();
-	while(i != boost::dynamic_bitset<>::npos) {
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 
 
 		switch (USCXML_STATE_MASK(USCXML_GET_STATE(i).type)) {
@@ -813,7 +895,7 @@ ESTABLISH_ENTRYSET:
 
 	/* TAKE_TRANSITIONS: */
 	i = transSet.find_first();
-	while(i != boost::dynamic_bitset<>::npos) {
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 		if ((USCXML_GET_TRANS(i).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) == 0) {
 			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeTakingTransition, USCXML_GET_TRANS(i).element);
 
@@ -841,7 +923,7 @@ ESTABLISH_ENTRYSET:
 
 	/* ENTER_STATES: */
 	i = entrySet.find_first();
-	while(i != boost::dynamic_bitset<>::npos) {
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 
 		if (BIT_HAS(i, _configuration)) {
 			// already active
@@ -924,7 +1006,7 @@ ESTABLISH_ENTRYSET:
 				            BIT_HAS(j, USCXML_GET_STATE(i).ancestors)) {
 					tmpStates.reset();
 					k = _configuration.find_first();
-					while (k != boost::dynamic_bitset<>::npos) {
+					while (k != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 						if (BIT_HAS(j, USCXML_GET_STATE(k).ancestors)) {
 							if (USCXML_STATE_MASK(USCXML_GET_STATE(k).type) == USCXML_STATE_FINAL) {
 								tmpStates ^= USCXML_GET_STATE(k).ancestors;
@@ -981,7 +1063,7 @@ bool FastMicroStep::isInState(const std::string& stateId) {
 std::list<XERCESC_NS::DOMElement*> FastMicroStep::getConfiguration() {
 	std::list<XERCESC_NS::DOMElement*> config;
 	size_t i = _configuration.find_first();
-	while(i != boost::dynamic_bitset<>::npos) {
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 		config.push_back(_states[i]->element);
 		i = _configuration.find_next(i);
 	}
@@ -1038,7 +1120,7 @@ std::list<DOMElement*> FastMicroStep::getHistoryCompletion(const DOMElement* his
 /**
  * Print name of states contained in a (debugging).
  */
-void FastMicroStep::printStateNames(const boost::dynamic_bitset<>& a) {
+void FastMicroStep::printStateNames(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& a) {
 	size_t i;
 	const char* seperator = "";
 	for (i = 0; i < a.size(); i++) {

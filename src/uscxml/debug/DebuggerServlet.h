@@ -50,6 +50,8 @@ public:
 	void processConnect(const HTTPServer::Request& request);
 	void processListSessions(const HTTPServer::Request& request);
 
+	void processIssues(const HTTPServer::Request& request);
+
 //	void processDebugPrepare(const HTTPServer::Request& request);
 //	void processDebugAttach(const HTTPServer::Request& request);
 //	void processDebugStart(const HTTPServer::Request& request);

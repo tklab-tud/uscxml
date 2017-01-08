@@ -35,17 +35,17 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	if (blockMs > 0) {
-        using namespace std::chrono;
+		using namespace std::chrono;
 
-        // TODO: do read http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2661.htm
-        system_clock::time_point now = system_clock::now();
-        system_clock::time_point endTime = now + milliseconds(blockMs);
+		// TODO: do read http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2661.htm
+		system_clock::time_point now = system_clock::now();
+		system_clock::time_point endTime = now + milliseconds(blockMs);
 
-        // now + milliseconds(blockMs) may not have fitted into a duration type - limit to maximum duration
-        if (blockMs > system_clock::duration::max().count() - duration_cast<milliseconds>(now.time_since_epoch()).count()) {
-            endTime = system_clock::time_point::max();
-        }
-        
+		// now + milliseconds(blockMs) may not have fitted into a duration type - limit to maximum duration
+		if (blockMs > system_clock::duration::max().count() - duration_cast<milliseconds>(now.time_since_epoch()).count()) {
+			endTime = system_clock::time_point::max();
+		}
+
 		// block for given milliseconds or until queue is non-empty
 		while (endTime > std::chrono::system_clock::now() && _queue.empty()) {
 			_cond.wait_until(_mutex, endTime);

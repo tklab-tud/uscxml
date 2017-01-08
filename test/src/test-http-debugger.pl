@@ -39,6 +39,42 @@ sub assertSuccess {
 	from_json($response->content())->{'status'} eq "success" or die($message);
 }
 
+sub prepareSession {
+	my $xml = shift;
+
+	### Get a session
+	my $request = GET $baseURL.'/connect';
+	$response = $ua->request($request);
+	assertSuccess($response, "Could not connect");
+
+	my $session = from_json($response->content())->{'session'};
+	die("Cannot acquire session from server") if (!$session);
+
+	### Prepare an SCXML interpreter
+	$request = POST $baseURL.'/prepare', 
+		[
+			'session' => $session,
+			'url' => 'http://localhost/anonymous.scxml',
+			'xml' => $xml
+		];
+	$response = $ua->request($request);
+	assertSuccess($response, "Could not prepare SCXML");
+	
+	return $session;
+}
+
+sub finishSession {
+	my $session = shift;
+	
+	### Prepare an SCXML interpreter
+	$request = POST $baseURL.'/disconnect', 
+		[
+			'session' => $session,
+		];
+	$response = $ua->request($request);
+	assertSuccess($response, "Could not disconnect session");
+}
+
 sub popAndCompare {
 	my $qualified = shift;
 	my $bp = shift(@breakpointSeq);
@@ -97,24 +133,8 @@ END_SCXML
 		
 	);
 
-	### Get a session
-	$request = GET $baseURL.'/connect';
-	$response = $ua->request($request);
-	assertSuccess($response, "Could not connect");
-
-	my $session = from_json($response->content())->{'session'};
-	die("Cannot acquire session from server") if (!$session);
-
-	### Prepare an SCXML interpreter
-	$request = POST $baseURL.'/prepare', 
-		[
-			'session' => $session,
-			'url' => 'http://localhost/test152.scxml',
-			'xml' => $xml
-		];
-	$response = $ua->request($request);
-	assertSuccess($response, "Could not prepare SCXML");
-
+	my $session = &prepareSession($xml);
+	
 	while(@breakpointSeq > 0) {
 		### Take a step
 		$request = POST $baseURL.'/step', ['session' => $session];
@@ -145,6 +165,7 @@ END_SCXML
 	$data = from_json($response->content());
 	die("Machine not yet finished") if ($data->{'replyType'} ne "finished");
 
+	&finishSession($session);
 }
 
 sub testBreakpoint {
@@ -163,23 +184,7 @@ sub testBreakpoint {
 	</scxml>
 END_SCXML
 	
-	### Get a session
-	$request = GET $baseURL.'/connect';
-	$response = $ua->request($request);
-	assertSuccess($response, "Could not connect");
-
-	my $session = from_json($response->content())->{'session'};
-	die("Cannot acquire session from server") if (!$session);
-
-	### Prepare an SCXML interpreter
-	$request = POST $baseURL.'/prepare', 
-		[
-			'session' => $session,
-			'url' => 'http://localhost/test154.scxml',
-			'xml' => $xml
-		];
-	$response = $ua->request($request);
-	assertSuccess($response, "Could not prepare SCXML");
+	my $session = prepareSession($xml);
 	
 	### Skip to breakpoint
 	$request = POST $baseURL.'/breakpoint/skipto', 
@@ -200,9 +205,50 @@ END_SCXML
 	
 	$data = from_json($response->content());
 	print Dumper($data);
+	
+	&finishSession($session);
 }
 
-# &testSimpleStepping();
+sub testIssueReporting {
+	my $xml = << 'END_SCXML';
+	<scxml>
+		<state id='s1'>
+			<onentry>
+				<log label="'foo'" />
+			</onentry>
+			<transition target='s2' />
+		</state>
+		<state id='s2'>
+			<transition target='pass' />
+		</state>
+		<state id='s3'>
+			<onentry>
+				<log label="'Unreachable!'" />
+			</onentry>
+		</state>
+		<final id='pass' />
+	</scxml>
+END_SCXML
+
+	my $session = prepareSession($xml);
+	
+	### Get a list of issues
+	$request = POST $baseURL.'/issues', 
+		[
+			'session' => $session
+		];
+	$response = $ua->request($request);
+	assertSuccess($response, "Could not get issues for prepared SCXML document");
+	
+	$data = from_json($response->content());
+	print Dumper($data);
+	
+	&finishSession($session);
+	
+}
+
+&testSimpleStepping();
 &testBreakpoint();
+&testIssueReporting();
 
 kill('TERM', $pid);

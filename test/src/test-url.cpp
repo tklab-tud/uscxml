@@ -9,6 +9,9 @@
 #include <assert.h>
 #include <iostream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 using namespace uscxml;
 using namespace XERCESC_NS;
 
@@ -44,6 +47,29 @@ bool canResolve(const std::string& url) {
 	} catch(...) {
 		return false;
 	}
+}
+
+bool dirExists(const std::string& path) {
+#ifdef _WIN32
+	DWORD ftyp = GetFileAttributesA(dirName_in.c_str());
+	if (ftyp == INVALID_FILE_ATTRIBUTES)
+		return false;  //something is wrong with your path!
+
+	if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+		return true;   // this is a directory!
+
+	return false;    // this is not a directory!
+#else
+	struct stat info;
+
+	if(stat( path.c_str(), &info ) != 0) {
+		return false;
+	} else if(info.st_mode & S_IFDIR) {
+		return true;
+	} else {
+		return false;
+	}
+#endif
 }
 
 void testFileURLs() {
@@ -125,117 +151,7 @@ void testFileURLs() {
 
 }
 
-int main(int argc, char** argv) {
-#ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2, 2), &wsaData);
-#endif
-
-	// some URLs from http://www-archive.mozilla.org/quality/networking/testing/filetests.html
-
-//    URL foo("file:/");
-//    assert(foo.isAbsolute());
-
-
-	HTTPServer::getInstance(8199, 8200);
-
-	std::string exeName = argv[0];
-	exeName = exeName.substr(exeName.find_last_of("\\/") + 1);
-
-	try {
-		testFileURLs();
-	} catch (Event e) {
-		LOGD(USCXML_ERROR) << e;
-		exit(EXIT_FAILURE);
-	}
-
-	{
-		try {
-			URL url("http://asdfasdfasdfasdf.wgferg");
-			url.download(true);
-			assert(false);
-		} catch (Event e) {
-		}
-	}
-
-	{
-		try {
-			URL url("http://uscxml.tk.informatik.tu-darmstadt.de/foobarfoo.html");
-			url.download(true);
-			assert(false);
-		} catch (Event e) {
-			std::cout << e << std::endl;
-		}
-	}
-
-#if 0
-	{
-		Interpreter interpreter = Interpreter::fromURI("/Users/sradomski/Desktop/application_small.scxml");
-		assert(interpreter);
-		std::list<std::string> states;
-		states.push_back("b");
-		interpreter.setConfiguration(states);
-		interpreter.interpret();
-	}
-#endif
-
-#if 0
-	{
-		try {
-
-			URL url(argv[0]);
-			assert(url.isAbsolute());
-			assert(canResolve(argv[0]));
-			assert(canResolve(url.asString()));
-
-			URL baseUrl = URL::asBaseURL(url);
-			URL exeUrl(exeName);
-			exeUrl.toAbsolute(baseUrl);
-			assert(canResolve(exeUrl.asString()));
-			std::cout << exeUrl.asString() << std::endl;
-			exeUrl.download(true);
-			assert(exeUrl.getInContent().length() > 0);
-
-		} catch (Event e) {
-			std::cout << e << std::endl;
-		}
-	}
-#endif
-
-	{
-		TestServlet* testServlet1 = new TestServlet(false);
-		TestServlet* testServlet2 = new TestServlet(false);
-
-		assert(HTTPServer::registerServlet("/foo", testServlet1));
-		assert(!HTTPServer::registerServlet("/foo", testServlet2));
-		HTTPServer::unregisterServlet(testServlet1);
-		assert(HTTPServer::registerServlet("/foo", testServlet2));
-		HTTPServer::unregisterServlet(testServlet1);
-
-		assert(HTTPServer::registerServlet("/foo/bar/", testServlet1));
-		assert(!HTTPServer::registerServlet("/foo/bar/", testServlet2));
-		HTTPServer::unregisterServlet(testServlet1);
-		HTTPServer::unregisterServlet(testServlet2);
-	}
-
-#if 0
-	{
-		TestServlet* testServlet1 = new TestServlet(true);
-		TestServlet* testServlet2 = new TestServlet(true);
-		TestServlet* testServlet3 = new TestServlet(true);
-
-		assert(HTTPServer::registerServlet("/foo", testServlet1));
-		assert(HTTPServer::registerServlet("/foo", testServlet2));
-		assert(HTTPServer::registerServlet("/foo", testServlet3));
-		assert(boost::ends_with(testServlet1->_actualUrl, "foo"));
-		assert(boost::ends_with(testServlet2->_actualUrl, "foo2"));
-		assert(boost::ends_with(testServlet3->_actualUrl, "foo3"));
-
-		HTTPServer::unregisterServlet(testServlet1);
-		HTTPServer::unregisterServlet(testServlet2);
-		HTTPServer::unregisterServlet(testServlet3);
-	}
-#endif
+void testData() {
 	{
 		Data data = Data::fromJSON("{\"shiftKey\":false,\"toElement\":{\"id\":\"\",\"localName\":\"body\"},\"clientY\":38,\"y\":38,\"x\":66,\"ctrlKey\":false,\"relatedTarget\":{\"id\":\"\",\"localName\":\"body\"},\"clientX\":66,\"screenY\":288,\"metaKey\":false,\"offsetX\":58,\"altKey\":false,\"offsetY\":30,\"fromElement\":{\"id\":\"foo\",\"localName\":\"div\"},\"screenX\":-1691,\"dataTransfer\":null,\"button\":0,\"pageY\":38,\"layerY\":38,\"pageX\":66,\"charCode\":0,\"which\":0,\"keyCode\":0,\"detail\":0,\"layerX\":66,\"returnValue\":true,\"timeStamp\":1371223991895,\"eventPhase\":2,\"target\":{\"id\":\"foo\",\"localName\":\"div\"},\"defaultPrevented\":false,\"srcElement\":{\"id\":\"foo\",\"localName\":\"div\"},\"type\":\"mouseout\",\"cancelable\":true,\"currentTarget\":{\"id\":\"foo\",\"localName\":\"div\"},\"bubbles\":true,\"cancelBubble\":false}");
 		std::cout << data << std::endl;
@@ -258,6 +174,9 @@ int main(int argc, char** argv) {
 		std::cout << data << std::endl;
 	}
 
+}
+
+void testHTTPURLs() {
 	{
 		URL url("http://www.heise.de/de/index.html");
 		std::cout << std::string(url) << std::endl;
@@ -269,7 +188,29 @@ int main(int argc, char** argv) {
 		url.download();
 	}
 
+	{
+		try {
+			URL url("http://asdfasdfasdfasdf.wgferg");
+			std::cout << std::string(url) << std::endl;
+			url.download(true);
+			assert(false);
+		} catch (Event e) {
+		}
+	}
+
+	{
+		try {
+			URL url("http://uscxml.tk.informatik.tu-darmstadt.de/foobarfoo.html");
+			std::cout << std::string(url) << std::endl;
+			url.download(true);
+			assert(false);
+		} catch (Event e) {
+			std::cout << e << std::endl;
+		}
+	}
+
 #ifndef _WIN32
+	// no SSL support on windows
 	{
 		URL url("https://raw.github.com/tklab-tud/uscxml/master/test/samples/uscxml/test-ecmascript.scxml");
 		std::cout << std::string(url) << std::endl;
@@ -279,20 +220,63 @@ int main(int argc, char** argv) {
 	}
 #endif
 
-#if 0
+}
+
+void testServlets() {
 	{
-		URL url("test/index.html");
-		assert(iequals(url.scheme(), ""));
-		url.toAbsoluteCwd();
-		assert(iequals(url.scheme(), "file"));
-		std::cout << std::string(url) << std::endl;
+		TestServlet* testServlet1 = new TestServlet(false);
+		TestServlet* testServlet2 = new TestServlet(false);
+
+		assert(HTTPServer::registerServlet("/foo", testServlet1));
+		assert(!HTTPServer::registerServlet("/foo", testServlet2));
+		HTTPServer::unregisterServlet(testServlet1);
+		assert(HTTPServer::registerServlet("/foo", testServlet2));
+		HTTPServer::unregisterServlet(testServlet1);
+
+		assert(HTTPServer::registerServlet("/foo/bar/", testServlet1));
+		assert(!HTTPServer::registerServlet("/foo/bar/", testServlet2));
+		HTTPServer::unregisterServlet(testServlet1);
+		HTTPServer::unregisterServlet(testServlet2);
 	}
 
-	{
-		URL url = URL::toLocalFile("this is quite some content!", "txt");
-		std::cout << url.asLocalFile("txt");
-		assert(url.isAbsolute());
-		assert(iequals(url.scheme(), "file"));
-	}
+}
+
+void testPaths() {
+	std::string resourceDir = URL::getResourceDir();
+	std::cout << resourceDir << std::endl;
+	assert(dirExists(resourceDir));
+
+	std::string tmpPrivateDir = URL::getTempDir(false);
+	std::cout << tmpPrivateDir << std::endl;
+	assert(dirExists(tmpPrivateDir));
+
+	std::string tmpSharedDir = URL::getTempDir(true);
+	std::cout << tmpSharedDir << std::endl;
+	assert(dirExists(tmpSharedDir));
+}
+
+int main(int argc, char** argv) {
+#ifdef _WIN32
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
+
+	// some URLs from http://www-archive.mozilla.org/quality/networking/testing/filetests.html
+
+	HTTPServer::getInstance(8199, 8200);
+
+	try {
+		testPaths();
+		testFileURLs();
+		testHTTPURLs();
+		testData();
+		testServlets();
+	} catch (Event e) {
+		LOGD(USCXML_ERROR) << e;
+		exit(EXIT_FAILURE);
+	}
+
+
+
+
 }

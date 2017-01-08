@@ -150,11 +150,9 @@ using namespace XERCESC_NS;
 %include "../wrapped/WrappedIOProcessor.h"
 %include "../wrapped/WrappedInterpreterMonitor.h"
 
-
-/*%template(IssueList) std::list<uscxml::InterpreterIssue>;
+%template(IssueList) std::list<uscxml::InterpreterIssue>;
 %template(DataList) std::list<uscxml::Data>;
 %template(StringList) std::list<std::string>;
-*/
 %template(DataMap) std::map<std::string, uscxml::Data>;
 %template(StringSet) std::set<std::string>;
 %template(StringVector) std::vector<std::string>;
