@@ -51,7 +51,7 @@ bool canResolve(const std::string& url) {
 
 bool dirExists(const std::string& path) {
 #ifdef _WIN32
-	DWORD ftyp = GetFileAttributesA(dirName_in.c_str());
+	DWORD ftyp = GetFileAttributesA(path.c_str());
 	if (ftyp == INVALID_FILE_ATTRIBUTES)
 		return false;  //something is wrong with your path!
 
