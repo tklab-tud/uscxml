@@ -190,7 +190,7 @@ Data BasicDelayedEventQueue::serialize() {
 
 		struct timeval delay, now;
 		uint64_t delayMs = 0;
-		gettimeofday(&now, NULL);
+		evutil_gettimeofday(&now, NULL);
 
 		evutil_timersub(&delay, &cb.due, &now);
 		if (delay.tv_sec > 0 || (delay.tv_sec == 0 && delay.tv_usec > 0)) {
