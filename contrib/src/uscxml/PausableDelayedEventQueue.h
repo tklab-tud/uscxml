@@ -25,7 +25,6 @@
 #include "uscxml/interpreter/BasicDelayedEventQueue.h"
 
 #include <memory>
-#include <sys/time.h>
 
 namespace uscxml {
 
