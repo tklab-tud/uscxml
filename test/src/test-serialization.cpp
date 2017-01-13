@@ -1,4 +1,4 @@
-#define protected public
+//#define protected public
 
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
@@ -119,7 +119,7 @@ RESTART_WITH_STATE:
 
 #if 1
 					if (state == USCXML_MACROSTEPPED) {
-						assert(!interpreter.getImpl()->_internalQueue.dequeue(0));
+//						assert(!interpreter.getImpl()->_internalQueue.dequeue(0));
 						serializedState = interpreter.serialize();
 //                        std::cout << serializedState << std::endl;
 						goto RESTART_WITH_STATE;
