@@ -4,13 +4,22 @@ ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 CWD=`pwd`
 
+BOOST_DIR=$1
+if [ ! -d ${BOOST_DIR} ]; then
+	echo "First argument is supposed to be the path to the boost source code"
+	exit
+fi
+
+cd $BOOST_DIR
+./bootstrap.sh
+./b2 tools/bcp
+
+cd ${DIR}
+
 SOURCE_FILES=`find ${DIR}/../../src/ -name \*.h -print -o -name \*.cpp -print`
 
-# echo ${ARABICA_FILES}
-# exit
-
-/Users/sradomski/Documents/TK/Code/boost_1_60_0/dist/bin/bcp \
---boost=/Users/sradomski/Documents/TK/Code/boost_1_60_0 \
+${BOOST_DIR}/dist/bin/bcp \
+--boost=${BOOST_DIR} \
 --scan ${SOURCE_FILES} \
 ${DIR}/../src
 
