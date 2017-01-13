@@ -146,6 +146,16 @@ public:
 	void reset();
 
 	/**
+	 * Deserialize the state for the interpreter from a string.
+	 */
+	void deserialize(const std::string& encodedState);
+
+	/**
+	 * Serialize the interpreter's state in a string.
+	 */
+	std::string serialize();
+
+	/**
 	 * Get all state elements that constitute the active configuration.
 	 * @return A list of XML elements of the active states.
 	 */
@@ -180,6 +190,11 @@ public:
 	 * Adapt the constituting components for a SCXML interpreter.
 	 */
 	void setActionLanguage(ActionLanguage actionLanguage);
+
+	/**
+	 * Return ActionLanguage with the instances actually used (i.e. those from the factory).
+	 */
+	ActionLanguage getActionLanguage();
 
 	/**
 	 * Provide a custom Factory to instantiate dynamic instances for this and invoked state-chart instances.

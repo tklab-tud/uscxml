@@ -102,7 +102,7 @@ protected:
 
 class USCXML_API StateTransitionMonitor : public uscxml::InterpreterMonitor {
 public:
-	StateTransitionMonitor() {}
+	StateTransitionMonitor(std::string prefix = "") : _logPrefix(prefix) {}
 	virtual ~StateTransitionMonitor() {}
 
 	virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition);
@@ -115,6 +115,7 @@ public:
 
 protected:
 	static std::recursive_mutex _mutex;
+	std::string _logPrefix;
 };
 
 }

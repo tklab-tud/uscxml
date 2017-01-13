@@ -44,6 +44,14 @@ void MicroStep::markAsCancelled() {
 	_impl->markAsCancelled();
 }
 
+void MicroStep::deserialize(const Data& encodedState) {
+	_impl->deserialize(encodedState);
+}
+
+Data MicroStep::serialize() {
+	return _impl->serialize();
+}
+
 std::shared_ptr<MicroStepImpl> MicroStep::getImpl() const {
 	return _impl;
 }

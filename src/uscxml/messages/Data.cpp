@@ -101,8 +101,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 		}
 		t = (jsmntok_t*)malloc((nrTokens + 1) * sizeof(jsmntok_t));
 		if (t == NULL) {
-			throw ErrorEvent("Cannot parse JSON, ran out of memory!");
-			return data;
+			ERROR_PLATFORM_THROW("Cannot parse JSON, ran out of memory!");
 		}
 		memset(t, 0, (nrTokens + 1) * sizeof(jsmntok_t));
 
@@ -111,15 +110,18 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 	if (rv != 0) {
 		switch (rv) {
-		case JSMN_ERROR_NOMEM:
-			throw ErrorEvent("Cannot parse JSON, not enough tokens were provided!");
+		case JSMN_ERROR_NOMEM: {
+			ERROR_PLATFORM_THROW("Cannot parse JSON, not enough tokens were provided!");
 			break;
-		case JSMN_ERROR_INVAL:
-			throw ErrorEvent("Cannot parse JSON, invalid character inside JSON string!");
+		}
+		case JSMN_ERROR_INVAL: {
+			ERROR_PLATFORM_THROW("Cannot parse JSON, invalid character inside JSON string!");
 			break;
-		case JSMN_ERROR_PART:
-			throw ErrorEvent("Cannot parse JSON, the string is not a full JSON packet, more bytes expected!");
+		}
+		case JSMN_ERROR_PART: {
+			ERROR_PLATFORM_THROW("Cannot parse JSON, the string is not a full JSON packet, more bytes expected!");
 			break;
+		}
 		default:
 			break;
 		}
@@ -151,10 +153,11 @@ Data Data::fromJSON(const std::string& jsonString) {
 			dataStack.back()->type = Data::VERBATIM;
 		case JSMN_PRIMITIVE: {
 			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
-			if (dataStack.back()->type == Data::VERBATIM) {
-				boost::replace_all(value, "\\\"", "\"");
-				boost::replace_all(value, "\\n", "\n");
-			}
+//			if (dataStack.back()->type == Data::VERBATIM) {
+//				boost::replace_all(value, "\\\"", "\"");
+//				boost::replace_all(value, "\\n", "\n");
+//			}
+			value = jsonUnescape(value);
 			dataStack.back()->atom = value;
 			dataStack.pop_back();
 			currTok++;
@@ -182,7 +185,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 
 		if (tokenStack.back().type == JSMN_OBJECT && (t[currTok].type == JSMN_PRIMITIVE || t[currTok].type == JSMN_STRING)) {
 			// grab key and push new data
-			std::string value = trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start);
+			std::string value = jsonUnescape(trimmed.substr(t[currTok].start, t[currTok].end - t[currTok].start));
 			dataStack.push_back(&(dataStack.back()->compound[value]));
 			currTok++;
 		}
@@ -230,7 +233,7 @@ std::string Data::toJSON(const Data& data) {
 		os << std::endl << indent << "{";
 		compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
-			os << seperator << std::endl << indent << "  \"" << compoundIter->first << "\": " << keyPadding.substr(0, longestKey - compoundIter->first.size());
+			os << seperator << std::endl << indent << "  \"" << jsonEscape(compoundIter->first) << "\": " << keyPadding.substr(0, longestKey - compoundIter->first.size());
 			_dataIndentation += 1;
 			os << compoundIter->second;
 			_dataIndentation -= 1;
@@ -254,38 +257,110 @@ std::string Data::toJSON(const Data& data) {
 	} else if (data.atom.size() > 0) {
 		// empty string is handled below
 		if (data.type == Data::VERBATIM) {
-			os << "\"";
-			for (size_t i = 0; i < data.atom.size(); i++) {
-				// escape string
-				if (false) {
-				} else if (data.atom[i] == '"') {
-					os << "\\\"";
-				} else if (data.atom[i] == '\n') {
-					os << "\\n";
-				} else if (data.atom[i] == '\t') {
-					os << "\\t";
-				} else {
-					os << data.atom[i];
-				}
-			}
-			os << "\"";
+			os << "\"" << jsonEscape(data.atom) << "\"";
 		} else {
 			os << data.atom;
 		}
 	} else if (data.node) {
 		std::ostringstream xmlSerSS;
-		xmlSerSS << data.node;
+		xmlSerSS << *data.node;
 		std::string xmlSer = xmlSerSS.str();
-		boost::replace_all(xmlSer, "\"", "\\\"");
-		boost::replace_all(xmlSer, "\n", "\\n");
-		boost::replace_all(xmlSer, "\t", "\\t");
-		os << "\"" << xmlSer << "\"";
+//		boost::replace_all(xmlSer, "\"", "\\\"");
+//		boost::replace_all(xmlSer, "\n", "\\n");
+//		boost::replace_all(xmlSer, "\t", "\\t");
+		os << "\"" << jsonEscape(xmlSer) << "\"";
 	} else {
 		if (data.type == Data::VERBATIM) {
 			os << "\"\""; // empty string
+		} else {
+			os << "null"; // non object
 		}
 	}
 	return os.str();
 }
 
+std::string Data::jsonUnescape(const std::string& expr) {
+
+	// http://stackoverflow.com/a/19636328/990120
+	bool escape = false;
+	std::string output;
+	output.reserve(expr.length());
+
+	for (std::string::size_type i = 0; i < expr.length(); ++i) {
+		if (escape) {
+			switch(expr[i])  {
+			case '"':
+				output += '\"';
+				break;
+			case '/':
+				output += '/';
+				break;
+			case 'b':
+				output += '\b';
+				break;
+			case 'f':
+				output += '\f';
+				break;
+			case 'n':
+				output += '\n';
+				break;
+			case 'r':
+				output += '\r';
+				break;
+			case 't':
+				output += '\t';
+				break;
+			case '\\':
+				output += '\\';
+				break;
+			default:
+				output += expr[i];
+				break;
+			}
+			escape = false;
+		} else {
+			switch(expr[i]) {
+			case '\\':
+				escape = true;
+				break;
+			default:
+				output += expr[i];
+				break;
+			}
+		}
+	}
+	return output;
+
+}
+
+std::string Data::jsonEscape(const std::string& expr) {
+	std::stringstream os;
+	for (size_t i = 0; i < expr.size(); i++) {
+		// escape string
+		if (false) {
+		} else if (expr[i] == '\t') {
+			os << "\\t";
+		} else if (expr[i] == '\v') {
+			os << "\\v";
+		} else if (expr[i] == '\b') {
+			os << "\\b";
+		} else if (expr[i] == '\f') {
+			os << "\\f";
+		} else if (expr[i] == '\n') {
+			os << "\\n";
+		} else if (expr[i] == '\r') {
+			os << "\\r";
+		} else if (expr[i] == '\'') {
+			os << "\\'";
+		} else if (expr[i] == '\"') {
+			os << "\\\"";
+		} else if (expr[i] == '\\') {
+			os << "\\\\";
+		} else {
+			os << expr[i];
+		}
+	}
+
+	return os.str();
+}
 }

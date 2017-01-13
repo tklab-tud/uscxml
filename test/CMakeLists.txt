@@ -42,11 +42,12 @@ function(USCXML_TEST_COMPILE)
 endfunction()
 
 # simple one file tests
-USCXML_TEST_COMPILE(NAME test-extensions LABEL general/test-extensions FILES src/test-extensions.cpp)
+USCXML_TEST_COMPILE(NAME test-extensions LABEL general/test-extensions FILES src/test-extensions.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp)
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
+USCXML_TEST_COMPILE(NAME test-serialization LABEL general/test-serialization FILES src/test-serialization.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp)
 # USCXML_TEST_COMPILE(NAME test-c89-parser LABEL general/test-c89-parser FILES src/test-c89-parser.cpp)
 
 # test-stress is not an automated test

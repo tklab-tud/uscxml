@@ -395,8 +395,14 @@ void JSCDataModel::setEvent(const Event& event) {
 }
 
 Data JSCDataModel::evalAsData(const std::string& content) {
-	JSValueRef result = evalAsValue(content);
-	return getValueAsData(result);
+	try {
+		JSValueRef result = evalAsValue(content);
+		return getValueAsData(result);
+	} catch (ErrorEvent e) {
+		// test453 vs test554
+		throw e;
+//        return Data(content, Data::INTERPRETED);
+	}
 }
 
 Data JSCDataModel::getAsData(const std::string& content) {
@@ -593,7 +599,7 @@ void JSCDataModel::setForeach(const std::string& item,
                               const std::string& index,
                               uint32_t iteration) {
 	if (!isDeclared(item)) {
-		assign(item, Data());
+		assign(item, Data("null", Data::INTERPRETED));
 	}
 	// assign array element to item
 	std::stringstream ss;
@@ -710,7 +716,11 @@ void JSCDataModel::assign(const std::string& location, const Data& data) {
 
 void JSCDataModel::init(const std::string& location, const Data& data) {
 	try {
-		assign(location, data);
+		if (data.empty()) {
+			assign(location, Data("null", Data::INTERPRETED));
+		} else {
+			assign(location, data);
+		}
 	} catch (ErrorEvent e) {
 		// test 277
 		evalAsValue(location + " = undefined", true);

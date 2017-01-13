@@ -40,4 +40,13 @@ XERCESC_NS::DOMElement* Invoker::getFinalize() {
 	return _impl->getFinalize();
 }
 
+void Invoker::deserialize(const Data& encodedState) {
+	return _impl->deserialize(encodedState);
+}
+
+Data Invoker::serialize()     {
+	return _impl->serialize();
+}
+
+
 }

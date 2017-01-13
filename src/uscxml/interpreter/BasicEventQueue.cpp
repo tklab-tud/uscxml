@@ -73,6 +73,25 @@ void BasicEventQueue::reset() {
 	_queue.clear();
 }
 
+Data BasicEventQueue::serialize() {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	Data serialized;
+
+	for (auto event : _queue) {
+		serialized["BasicEventQueue"].array.push_back(event);
+	}
+	return serialized;
+}
+
+void BasicEventQueue::deserialize(const Data& data) {
+	if (data.hasKey("BasicEventQueue")) {
+		std::lock_guard<std::recursive_mutex> lock(_mutex);
+		for (auto event : data["BasicEventQueue"].array) {
+			_queue.push_back(Event::fromData(event));
+		}
+	}
+}
+
 std::shared_ptr<EventQueueImpl> BasicEventQueue::create() {
 	return std::shared_ptr<EventQueueImpl>(new BasicEventQueue());
 }

@@ -24,20 +24,26 @@
 #include "uscxml/util/UUID.h"
 
 #define ERROR_PLATFORM_THROW(msg) \
-	ErrorEvent e; \
+	uscxml::ErrorEvent e; \
 	e.name = "error.platform"; \
-	e.data.compound["cause"] = Data(msg, Data::VERBATIM); \
+	e.data.compound["cause"] = uscxml::Data(msg, uscxml::Data::VERBATIM); \
+    e.data.compound["file"] = uscxml::Data(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \
+    e.data.compound["line"] = uscxml::Data(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \
 	throw e; \
 
 #define ERROR_EXECUTION(identifier, cause) \
 	uscxml::ErrorEvent identifier; \
 	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+    identifier.data.compound["file"] = uscxml::Data(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \
+    identifier.data.compound["line"] = uscxml::Data(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \
 	identifier.name = "error.execution"; \
 	identifier.eventType = uscxml::Event::PLATFORM;
 
 #define ERROR_EXECUTION2(identifier, cause, node) \
 	uscxml::ErrorEvent identifier; \
 	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+    identifier.data.compound["file"] = uscxml::Data(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \
+    identifier.data.compound["line"] = uscxml::Data(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \
 	identifier.name = "error.execution"; \
 	identifier.data.compound["xpath"] = uscxml::Data(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \
 	identifier.eventType = uscxml::Event::PLATFORM;
@@ -45,12 +51,16 @@
 #define ERROR_COMMUNICATION(identifier, cause) \
 	uscxml::ErrorEvent identifier; \
 	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+    identifier.data.compound["file"] = uscxml::Data(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \
+    identifier.data.compound["line"] = uscxml::Data(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \
 	identifier.name = "error.communication"; \
 	identifier.eventType = uscxml::Event::PLATFORM;
 
 #define ERROR_COMMUNICATION2(identifier, cause, node) \
 	uscxml::ErrorEvent identifier; \
 	identifier.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
+    identifier.data.compound["file"] = uscxml::Data(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \
+    identifier.data.compound["line"] = uscxml::Data(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \
 	identifier.name = "error.communication"; \
 	identifier.data.compound["xpath"] = uscxml::Data(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \
 	identifier.eventType = uscxml::Event::PLATFORM;
@@ -91,6 +101,8 @@ public:
 
 	Event() : eventType(INTERNAL), hideSendId(false), uuid(UUID::getUUID()) {}
 	explicit Event(const std::string& name, Type type = INTERNAL) : name(name), eventType(type), hideSendId(false) {}
+	static Event fromData(const Data& data);
+
 	bool operator< (const Event& other) const     {
 		return this < &other;
 	}
@@ -108,6 +120,8 @@ public:
 	operator bool() {
 		return name.size() > 0;
 	}
+
+	operator Data();
 
 	operator std::string() {
 		std::stringstream ss;

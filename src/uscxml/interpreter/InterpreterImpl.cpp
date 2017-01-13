@@ -111,7 +111,7 @@ InterpreterImpl::~InterpreterImpl() {
 //    ::xercesc_3_1::XMLPlatformUtils::Terminate();
 
 #ifdef WITH_CACHE_FILES
-	if (!envVarIsTrue("USCXML_NOCACHE_FILES")) {
+	if (!envVarIsTrue("USCXML_NOCACHE_FILES") && _document != NULL) {
 		// save our cache
 		std::string sharedTemp = URL::getTempDir(true);
 		std::ofstream dataFS(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache");
@@ -123,10 +123,137 @@ InterpreterImpl::~InterpreterImpl() {
 #endif
 }
 
+InterpreterState InterpreterImpl::step(size_t blockMs) {
+	std::lock_guard<std::recursive_mutex> lock(_serializationMutex);
+	if (!_isInitialized) {
+		init();
+		_state = USCXML_INITIALIZED;
+	} else {
+		_state = _microStepper.step(blockMs);
+	}
+	return _state;
+}
+
+void InterpreterImpl::reset() {
+	if (_microStepper)
+		_microStepper.reset();
+
+	_isInitialized = false;
+	_state = USCXML_INSTANTIATED;
+	//        _dataModel.reset();
+	if (_delayQueue)
+		_delayQueue.reset();
+	//        _contentExecutor.reset();
+}
+
 void InterpreterImpl::cancel() {
+
 	_microStepper.markAsCancelled();
 	Event unblock;
 	enqueueExternal(unblock);
+}
+
+void InterpreterImpl::deserialize(const std::string& encodedState) {
+
+	init();
+//    std::cout << encodedState << std::endl;
+	Data state = Data::fromJSON(encodedState);
+	if (!state.hasKey("microstepper")) {
+		ERROR_PLATFORM_THROW("No microstepper information in serialized state");
+	}
+
+	if (!state.hasKey("url")) {
+		ERROR_PLATFORM_THROW("No url information in serialized state");
+	}
+
+	if (!state.hasKey("md5")) {
+		ERROR_PLATFORM_THROW("No MD5 hash in serialized state");
+	}
+
+	if (state.hasKey("externalQueue")) {
+		_externalQueue.deserialize(state["externalQueue"]);
+	}
+
+	if (state.hasKey("delayQueue")) {
+		_delayQueue.deserialize(state["delayQueue"]);
+	}
+
+	if (_md5.size() == 0) {
+		// get md5 of current document
+		std::stringstream ss;
+		ss << *_document;
+		_md5 = md5(ss.str());
+	}
+
+	if (state["md5"].atom != _md5) {
+		ERROR_PLATFORM_THROW("MD5 hash mismatch in serialized state");
+	}
+
+	std::list<XERCESC_NS::DOMElement*> datas = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "data" }, _scxml);
+	for (auto data : datas) {
+		if (HAS_ATTR(data, "id") && state["datamodel"].hasKey(ATTR(data, "id")))
+			_dataModel.init(ATTR(data, "id"), state["datamodel"][ATTR(data, "id")]);
+	}
+
+	_microStepper.deserialize(state["microstepper"]);
+
+	std::list<XERCESC_NS::DOMElement*> invokes = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "invoke" }, _scxml);
+	for (auto invokeElem : invokes) {
+		// BasicContentExecutor sets invokeid userdata upon invocation
+		char* invokeId = (char*)invokeElem->getUserData(X("invokeid"));
+		if (invokeId != NULL && _invokers.find(invokeId) != _invokers.end()) {
+			std::string path = DOMUtils::xPathForNode(invokeElem);
+			if (state.hasKey("invoker") && state["invoker"].hasKey(path)) {
+				_invokers[invokeId].deserialize(state["invoker"][path]);
+			}
+		}
+	}
+
+}
+
+std::string InterpreterImpl::serialize() {
+	std::lock_guard<std::recursive_mutex> lock(_serializationMutex);
+
+	Data serialized;
+	if (_state != USCXML_IDLE && _state != USCXML_MACROSTEPPED && _state != USCXML_FINISHED) {
+		ERROR_PLATFORM_THROW("Cannot serialize an unstable interpreter");
+	}
+
+	if (_md5.size() == 0) {
+		// get md5 of current document
+		std::stringstream ss;
+		ss << *_document;
+		_md5 = md5(ss.str());
+	}
+
+	serialized["md5"] = Data(_md5);
+	serialized["url"] = Data(std::string(_baseURL));
+	serialized["microstepper"] = _microStepper.serialize();
+
+	// SCXML Rec: "the values of all attributes of type "id" must be unique within the session"
+	std::list<XERCESC_NS::DOMElement*> datas = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "data" }, _scxml);
+	for (auto data : datas) {
+		if (HAS_ATTR(data, "id")) {
+			serialized["datamodel"][ATTR(data, "id")] = _dataModel.evalAsData(ATTR(data, "id"));
+		}
+	}
+
+	// save all invokers' state
+	std::list<XERCESC_NS::DOMElement*> invokes = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "invoke" }, _scxml);
+	for (auto invokeElem : invokes) {
+		// BasicContentExecutor sets invokeid userdata upon invocation
+		char* invokeId = (char*)invokeElem->getUserData(X("invokeid"));
+		if (invokeId != NULL && _invokers.find(invokeId) != _invokers.end()) {
+			std::string path = DOMUtils::xPathForNode(invokeElem);
+			serialized["invoker"][path] = _invokers[invokeId].serialize();
+		}
+	}
+
+//    serialized["internalQueue"] = _internalQueue.serialize();
+	serialized["externalQueue"] = _externalQueue.serialize();
+	serialized["delayQueue"] = _delayQueue.serialize();
+
+	return serialized.asJSON();
 }
 
 
@@ -209,7 +336,7 @@ void InterpreterImpl::init() {
 		_cache.compound["InterpreterImpl"].compound["md5"] = Data(_md5);
 	}
 #endif
-    
+
 	// register io processors
 	std::map<std::string, IOProcessorImpl*> ioProcs = _factory->getIOProcessors();
 	for (auto ioProcIter = ioProcs.begin(); ioProcIter != ioProcs.end(); ioProcIter++) {
@@ -231,7 +358,6 @@ void InterpreterImpl::init() {
 				_ioProcs[*nameIter] = _ioProcs[ioProcIter->first];
 			}
 		}
-
 	}
 
 	if (!_microStepper) {
@@ -268,7 +394,13 @@ void InterpreterImpl::initData(XERCESC_NS::DOMElement* root) {
 		} else if (_invokeReq.namelist.find(id) != _invokeReq.namelist.end()) {
 			_dataModel.init(id, _invokeReq.namelist[id]);
 		} else {
-			_dataModel.init(id, _execContent.elementAsData(root));
+			try {
+				_dataModel.init(id, _execContent.elementAsData(root));
+			} catch (ErrorEvent e) {
+				// test 453
+				_dataModel.init(id, _execContent.elementAsData(root, true));
+
+			}
 		}
 	} catch(ErrorEvent e) {
 		// test 277

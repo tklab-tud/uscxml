@@ -39,6 +39,10 @@ public:
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 	virtual void reset();
+
+	Data serialize();
+	void deserialize(const Data& data);
+
 	virtual std::shared_ptr<EventQueueImpl> getImplBase();
 
 protected:

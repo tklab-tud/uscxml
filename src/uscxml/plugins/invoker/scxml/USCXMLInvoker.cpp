@@ -75,6 +75,29 @@ void USCXMLInvoker::stop() {
 	}
 }
 
+void USCXMLInvoker::deserialize(const Data& encodedState) {
+	_invokedInterpreter.deserialize(encodedState["intepreter"]);
+}
+
+Data USCXMLInvoker::serialize() {
+	Data encodedState;
+
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+	InterpreterState state = USCXML_UNDEF;
+	while((state = _invokedInterpreter.getState())) {
+		if (state != USCXML_IDLE && state != USCXML_MACROSTEPPED && state != USCXML_FINISHED) {
+			_cond.wait(_mutex);
+		} else {
+			break;
+		}
+	}
+
+	encodedState["intepreter"] = Data(_invokedInterpreter.serialize());
+
+	return encodedState;
+}
+
 void USCXMLInvoker::uninvoke() {
 	_isActive = false;
 	stop();
@@ -100,13 +123,9 @@ void USCXMLInvoker::run(void* instance) {
 
 	InterpreterState state = USCXML_UNDEF;
 	while(state != USCXML_FINISHED) {
-		state = INSTANCE->_invokedInterpreter.step();
-
-//		if (!INSTANCE->_isStarted) {
-//			// we have been cancelled
-//			INSTANCE->_isActive = false;
-//			return;
-//		}
+		std::lock_guard<std::recursive_mutex> lock(INSTANCE->_mutex);
+		state = INSTANCE->_invokedInterpreter.step(200);
+		INSTANCE->_cond.notify_all();
 	}
 
 	if (INSTANCE->_isActive) {
@@ -143,10 +162,11 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		XERCESC_NS::DOMNode* newNode = document->importNode(invokeEvent.data.node, true);
 		document->appendChild(newNode);
 
-//        std::cout << *document << std::endl;
-
 		// TODO: where do we get the namespace from?
 		_invokedInterpreter = Interpreter::fromDocument(document, _interpreter->getBaseURL(), false);
+	} else if (invokeEvent.data.atom.size() > 0) {
+		// test530 when deserializing
+		_invokedInterpreter = Interpreter::fromXML(invokeEvent.data.atom, _interpreter->getBaseURL());
 
 	} else {
 		_isActive = false;
@@ -191,7 +211,8 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		start();
 
 	} else {
-		/// test 530
+		// test 530
+		// TODO: Is this the correct thing/place to do?
 		Event e("done.invoke." + invokeEvent.invokeid, Event::PLATFORM);
 		eventToSCXML(e, USCXML_INVOKER_SCXML_TYPE, _invokeId);
 		_isActive = false;

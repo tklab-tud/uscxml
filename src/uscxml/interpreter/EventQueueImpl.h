@@ -42,6 +42,8 @@ public:
 	virtual Event dequeue(size_t blockMs) = 0;
 	virtual void enqueue(const Event& event) = 0;
 	virtual void reset() = 0;
+	virtual Data serialize() = 0;
+	virtual void deserialize(const Data& data) = 0;
 };
 
 /**
@@ -63,6 +65,10 @@ public:
 	virtual void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) = 0;
 	virtual void cancelDelayed(const std::string& eventId) = 0;
 	virtual void cancelAllDelayed() = 0;
+
+	virtual Data serialize() = 0;
+	virtual void deserialize(const Data& data) = 0;
+
 };
 
 }

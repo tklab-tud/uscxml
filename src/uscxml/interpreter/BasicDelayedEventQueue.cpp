@@ -170,4 +170,53 @@ void BasicDelayedEventQueue::reset() {
 	_queue.clear();
 }
 
+Data BasicDelayedEventQueue::serialize() {
+	std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+	if (_isStarted) {
+		_isStarted = false;
+		event_base_loopbreak(_eventLoop);
+	}
+	if (_thread) {
+		_thread->join();
+		delete _thread;
+		_thread = NULL;
+	}
+
+	Data serialized;
+
+	for (auto event : _queue) {
+		struct callbackData cb = _callbackData[event.uuid];
+
+		struct timeval delay, now;
+		uint64_t delayMs = 0;
+		gettimeofday(&now, NULL);
+
+		evutil_timersub(&delay, &cb.due, &now);
+		if (delay.tv_sec > 0 || (delay.tv_sec == 0 && delay.tv_usec > 0)) {
+			delayMs = delay.tv_sec * 1000 + delay.tv_usec / (double)1000;
+		}
+
+		Data delayedEvent;
+		delayedEvent["event"] = event;
+		delayedEvent["delay"] = Data(delayMs, Data::INTERPRETED);
+
+		serialized["BasicDelayedEventQueue"].array.push_back(event);
+	}
+
+	start();
+	return serialized;
+}
+
+void BasicDelayedEventQueue::deserialize(const Data& data) {
+	if (data.hasKey("BasicDelayedEventQueue")) {
+		std::lock_guard<std::recursive_mutex> lock(_mutex);
+		for (auto event : data["BasicDelayedEventQueue"].array) {
+			Event e = Event::fromData(event["event"]);
+			enqueueDelayed(e, strTo<size_t>(event["delay"]), e.uuid);
+		}
+	}
+
+}
+
 }

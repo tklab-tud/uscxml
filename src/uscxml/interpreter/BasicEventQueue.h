@@ -42,6 +42,8 @@ public:
 	virtual Event dequeue(size_t blockMs);
 	virtual void enqueue(const Event& event);
 	virtual void reset();
+	virtual Data serialize();
+	virtual void deserialize(const Data& data);
 
 protected:
 	std::list<Event> _queue;

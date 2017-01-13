@@ -57,6 +57,9 @@ public:
 	virtual std::list<XERCESC_NS::DOMElement*> getConfiguration();
 	void markAsCancelled();
 
+	virtual void deserialize(const Data& encodedState);
+	virtual Data serialize();
+
 protected:
 	class Transition {
 	public:

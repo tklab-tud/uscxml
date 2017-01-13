@@ -400,6 +400,9 @@ if (WITH_DM_C89)
 endif()
 
 OPTION(WITH_DM_PROMELA "Do build with promela datamodel support" ON)
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+	SET_SOURCE_FILES_PROPERTIES(src/uscxml/plugins/datamodel/promela/parser/promela.lex.yy.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated-register )
+endif()
 
 add_subdirectory(src/uscxml)
 add_subdirectory(src/bindings)

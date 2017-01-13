@@ -153,6 +153,15 @@ void testFileURLs() {
 
 void testData() {
 	{
+		Data data;
+		std::string key = "//state[@id=\"s0\"]/onentry[1]/send[1]";
+		data[key] = Data("fooo");
+		std::string json = data.asJSON();
+		data = Data::fromJSON(json);
+		assert(data.hasKey(key));
+	}
+
+	{
 		Data data = Data::fromJSON("{\"shiftKey\":false,\"toElement\":{\"id\":\"\",\"localName\":\"body\"},\"clientY\":38,\"y\":38,\"x\":66,\"ctrlKey\":false,\"relatedTarget\":{\"id\":\"\",\"localName\":\"body\"},\"clientX\":66,\"screenY\":288,\"metaKey\":false,\"offsetX\":58,\"altKey\":false,\"offsetY\":30,\"fromElement\":{\"id\":\"foo\",\"localName\":\"div\"},\"screenX\":-1691,\"dataTransfer\":null,\"button\":0,\"pageY\":38,\"layerY\":38,\"pageX\":66,\"charCode\":0,\"which\":0,\"keyCode\":0,\"detail\":0,\"layerX\":66,\"returnValue\":true,\"timeStamp\":1371223991895,\"eventPhase\":2,\"target\":{\"id\":\"foo\",\"localName\":\"div\"},\"defaultPrevented\":false,\"srcElement\":{\"id\":\"foo\",\"localName\":\"div\"},\"type\":\"mouseout\",\"cancelable\":true,\"currentTarget\":{\"id\":\"foo\",\"localName\":\"div\"},\"bubbles\":true,\"cancelBubble\":false}");
 		std::cout << data << std::endl;
 	}
@@ -266,11 +275,11 @@ int main(int argc, char** argv) {
 	HTTPServer::getInstance(8199, 8200);
 
 	try {
-		testPaths();
-		testFileURLs();
-		testHTTPURLs();
+//		testPaths();
+//		testFileURLs();
+//		testHTTPURLs();
 		testData();
-		testServlets();
+//		testServlets();
 	} catch (Event e) {
 		LOGD(USCXML_ERROR) << e;
 		exit(EXIT_FAILURE);

@@ -94,6 +94,45 @@ std::shared_ptr<MicroStepImpl> FastMicroStep::create(MicroStepCallbacks* callbac
 	return std::shared_ptr<MicroStepImpl>(new FastMicroStep(callbacks));
 }
 
+void FastMicroStep::deserialize(const Data& encodedState) {
+	if (!encodedState.hasKey("configuration") ||
+	        !encodedState.hasKey("invocations") ||
+	        !encodedState.hasKey("histories") ||
+	        !encodedState.hasKey("intializedData")) {
+		ERROR_PLATFORM_THROW("Data does not contain required fields for deserialization ");
+	}
+
+	_configuration   = fromBase64(encodedState["configuration"].atom);
+	assert(_configuration.size() > 0 && _configuration.num_blocks() > 0);
+	_invocations     = fromBase64(encodedState["invocations"].atom);
+	_history         = fromBase64(encodedState["histories"].atom);
+	_initializedData = fromBase64(encodedState["intializedData"].atom);
+
+	for (size_t i = 0; i < USCXML_NUMBER_STATES; i++) {
+		if (BIT_HAS(i, _invocations) && USCXML_GET_STATE(i).invoke.size() > 0) {
+			for (auto invIter = USCXML_GET_STATE(i).invoke.begin(); invIter != USCXML_GET_STATE(i).invoke.end(); invIter++) {
+				try {
+					_callbacks->invoke(*invIter);
+				} catch (ErrorEvent e) {
+					LOG(_callbacks->getLogger(), USCXML_WARN) << e;
+				} catch (...) {
+				}
+			}
+		}
+	}
+
+	_flags |= USCXML_CTX_INITIALIZED;
+}
+
+Data FastMicroStep::serialize() {
+	Data encodedState;
+	encodedState["configuration"] = Data(toBase64(_configuration));
+	encodedState["invocations"] = Data(toBase64(_invocations));
+	encodedState["histories"] = Data(toBase64(_history));
+	encodedState["intializedData"] = Data(toBase64(_initializedData));
+	return encodedState;
+}
+
 void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 
 	/**
@@ -197,11 +236,11 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		_xmlPrefix = std::string(_xmlPrefix) + ":";
 	}
 
-    resortStates(_scxml, _xmlPrefix);
+	resortStates(_scxml, _xmlPrefix);
 
 #ifdef WITH_CACHE_FILES
 	bool withCache = !envVarIsTrue("USCXML_NOCACHE_FILES");
-    Data& cache = _callbacks->getCache().compound["FastMicroStep"];
+	Data& cache = _callbacks->getCache().compound["FastMicroStep"];
 #endif
 
 	/** -- All things states -- */
@@ -319,10 +358,17 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		// establish the states' completion
 #ifdef WITH_CACHE_FILES
 		if (withCache && cachedState->compound.find("completion") != cachedState->compound.end()) {
-			_states[i]->completion = fromBase64(cachedState->compound["completion"]);
-		} else {
+			boost::dynamic_bitset<BITSET_BLOCKTYPE> completion = fromBase64(cachedState->compound["completion"]);
+			if (completion.size() != _states.size()) {
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "State completion has wrong size: Cache corrupted";
+			} else {
+				_states[i]->completion = completion;
+				goto COMPLETION_STABLISHED;
+			}
+		}
 #endif
-            std::list<DOMElement*> completion = getCompletion(_states[i]->element);
+		{
+			std::list<DOMElement*> completion = getCompletion(_states[i]->element);
 			for (j = 0; j < _states.size(); j++) {
 				if (!completion.empty() && _states[j]->element == completion.front()) {
 					_states[i]->completion[j] = true;
@@ -332,12 +378,13 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 				}
 			}
 			assert(completion.size() == 0);
-#ifdef WITH_CACHE_FILES
-			if (withCache)
-				cachedState->compound["completion"] = Data(toBase64(_states[i]->completion));
 		}
+#ifdef WITH_CACHE_FILES
+		if (withCache)
+			cachedState->compound["completion"] = Data(toBase64(_states[i]->completion));
+COMPLETION_STABLISHED:
 #endif
-        // this is set when establishing the completion
+		// this is set when establishing the completion
 		if (_states[i]->element->getUserData(X("hasHistoryChild")) == _states[i]) {
 			_states[i]->type |= USCXML_STATE_HAS_HISTORY;
 		}
@@ -400,16 +447,23 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			}
 		}
 #endif
-        
+
 		// establish the transitions' exit set
 		assert(_transitions[i]->element != NULL);
 
 #ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("exitset") != cachedTrans->compound.end()) {
-			_transitions[i]->exitSet = fromBase64(cachedTrans->compound["exitset"]);
-		} else {
+			boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet = fromBase64(cachedTrans->compound["exitset"]);
+			if (exitSet.size() != _states.size()) {
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition exit set has wrong size: Cache corrupted";
+			} else {
+				_transitions[i]->exitSet = exitSet;
+				goto EXIT_SET_ESTABLISHED;
+			}
+		}
 #endif
-            std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
+		{
+			std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
 
 			for (j = 0; j < _states.size(); j++) {
 				if (!exitList.empty() && _states[j]->element == exitList.front()) {
@@ -420,54 +474,67 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 				}
 			}
 			assert(exitList.size() == 0);
-
-#ifdef WITH_CACHE_FILES
-			if (withCache)
-				cachedTrans->compound["exitset"] = Data(toBase64(_transitions[i]->exitSet));
 		}
+#ifdef WITH_CACHE_FILES
+		if (withCache)
+			cachedTrans->compound["exitset"] = Data(toBase64(_transitions[i]->exitSet));
+EXIT_SET_ESTABLISHED:
 #endif
 
 		// establish the transitions' conflict set
 #ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("conflicts") != cachedTrans->compound.end()) {
-			_transitions[i]->conflicts = fromBase64(cachedTrans->compound["conflicts"]);
-		} else {
-#endif
-            for (j = i; j < _transitions.size(); j++) {
-				if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
-					_transitions[i]->conflicts[j] = true;
-				} else {
-					_transitions[i]->conflicts[j] = false;
-				}
-				//            std::cout << ".";
+			boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts = fromBase64(cachedTrans->compound["conflicts"]);
+			if (conflicts.size() != _transitions.size()) {
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition conflicts has wrong size: Cache corrupted";
+			} else {
+				_transitions[i]->conflicts = conflicts;
+				goto CONFLICTS_ESTABLISHED;
 			}
-
-			// conflicts matrix is symmetric
-			for (j = 0; j < i; j++) {
-				_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
-			}
-#ifdef WITH_CACHE_FILES
-			if (withCache)
-				cachedTrans->compound["conflicts"] = Data(toBase64(_transitions[i]->conflicts));
-
 		}
+#endif
+		for (j = i; j < _transitions.size(); j++) {
+			if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
+				_transitions[i]->conflicts[j] = true;
+			} else {
+				_transitions[i]->conflicts[j] = false;
+			}
+			//            std::cout << ".";
+		}
+
+		// conflicts matrix is symmetric
+		for (j = 0; j < i; j++) {
+			_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
+		}
+#ifdef WITH_CACHE_FILES
+		if (withCache)
+			cachedTrans->compound["conflicts"] = Data(toBase64(_transitions[i]->conflicts));
+CONFLICTS_ESTABLISHED:
 #endif
 		// establish the transitions' target set
 #ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("target") != cachedTrans->compound.end()) {
-			_transitions[i]->target = fromBase64(cachedTrans->compound["target"]);
-		} else {
+			boost::dynamic_bitset<BITSET_BLOCKTYPE> target = fromBase64(cachedTrans->compound["target"]);
+			if (target.size() != _states.size()) {
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition target set has wrong size: Cache corrupted";
+			} else {
+				_transitions[i]->target = target;
+				goto TARGET_SET_ESTABLISHED;
+			}
+		}
 #endif
-            std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
+		{
+			std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
 			for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
 				if (_stateIds.find(*tIter) != _stateIds.end()) {
 					_transitions[i]->target[_stateIds[*tIter]] = true;
 				}
 			}
-#ifdef WITH_CACHE_FILES
-			if (withCache)
-				cachedTrans->compound["target"] = Data(toBase64(_transitions[i]->target));
 		}
+#ifdef WITH_CACHE_FILES
+		if (withCache)
+			cachedTrans->compound["target"] = Data(toBase64(_transitions[i]->target));
+TARGET_SET_ESTABLISHED:
 #endif
 		// the transition's source
 		State* uscxmlState = (State*)(_transitions[i]->element->getParentNode()->getUserData(X("uscxmlState")));
@@ -656,6 +723,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), onStableConfiguration);
 		_microstepConfigurations.clear();
 		_flags |= USCXML_CTX_STABLE;
+		return USCXML_MACROSTEPPED;
 	}
 
 	if ((_event = _callbacks->dequeueExternal(blockMs))) {
@@ -726,9 +794,9 @@ SELECT_TRANSITIONS:
 		_flags |= USCXML_CTX_SPONTANEOUS;
 		_flags &= ~USCXML_CTX_TRANSITION_FOUND;
 	} else {
-		// spontaneuous transitions are exhausted
+		// spontaneuous transitions are exhausted and we will attempt to dequeue an internal event next round
 		_flags &= ~USCXML_CTX_SPONTANEOUS;
-		return USCXML_MACROSTEPPED;
+		return USCXML_MICROSTEPPED;
 	}
 
 	USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeMicroStep);

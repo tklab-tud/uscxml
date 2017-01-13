@@ -191,7 +191,8 @@ jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js, jsmntok_t *tokens,
 					}
 				}
 				/* Error if unmatched closing bracket */
-				if (i == -1) return JSMN_ERROR_INVAL;
+				if (i == -1)
+                    return JSMN_ERROR_INVAL;
 				for (; i >= 0; i--) {
 					token = &tokens[i];
 					if (token->start != -1 && token->end == -1) {

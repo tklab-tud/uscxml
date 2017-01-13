@@ -42,6 +42,14 @@ void EventQueue::reset() {
 	return _impl->reset();
 }
 
+Data EventQueue::serialize() {
+	return _impl->serialize();
+}
+
+void EventQueue::deserialize(const Data& data) {
+	return _impl->deserialize(data);
+}
+
 std::shared_ptr<EventQueueImpl> EventQueue::getImplBase() {
 	return _impl;
 }

@@ -61,8 +61,9 @@ public:
 	virtual Interpreter getInterpreter() = 0;
 	virtual Logger getLogger() = 0;
 
-	/** Saved State */
+	/** Cache Data */
 	virtual Data& getCache() = 0;
+
 };
 
 /**
@@ -86,6 +87,9 @@ public:
 
 	virtual void init(XERCESC_NS::DOMElement* scxml) = 0;
 	virtual void markAsCancelled() = 0;
+
+	virtual void deserialize(const Data& encodedState) = 0;
+	virtual Data serialize() = 0;
 
 protected:
 	MicroStepCallbacks* _callbacks;

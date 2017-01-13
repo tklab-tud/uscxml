@@ -64,29 +64,13 @@ public:
 	void cloneFrom(InterpreterImpl* other);
 	void cloneFrom(std::shared_ptr<InterpreterImpl> other);
 
-	virtual InterpreterState step(size_t blockMs) {
-		if (!_isInitialized) {
-			init();
-			_state = USCXML_INITIALIZED;
-		} else {
-			_state = _microStepper.step(blockMs);
-		}
-		return _state;
-	}
-
-	virtual void reset() {///< Reset state machine
-		if (_microStepper)
-			_microStepper.reset();
-
-		_isInitialized = false;
-		_state = USCXML_INSTANTIATED;
-//        _dataModel.reset();
-		if (_delayQueue)
-			_delayQueue.reset();
-//        _contentExecutor.reset();
-	}
+	virtual InterpreterState step(size_t blockMs);
+	virtual void reset();///< Reset state machine
 
 	virtual void cancel(); ///< Cancel and finalize state machine
+
+	virtual void deserialize(const std::string& encodedState);
+	virtual std::string serialize();
 
 	InterpreterState getState() {
 		return _state;
@@ -240,6 +224,18 @@ public:
 		_delayQueue = al.delayedQueue;
 	}
 
+	ActionLanguage getActionLanguage() {
+		ActionLanguage al;
+		al.logger = _logger;
+		al.execContent = _execContent;
+		al.microStepper = _microStepper;
+		al.dataModel = _dataModel;
+		al.internalQueue = _internalQueue;
+		al.externalQueue = _externalQueue;
+		al.delayedQueue = _delayQueue;
+		return al;
+	}
+
 	void setFactory(Factory* factory) {
 		_factory = factory;
 	}
@@ -274,6 +270,7 @@ protected:
 	static std::map<std::string, std::weak_ptr<InterpreterImpl> > _instances;
 	static std::recursive_mutex _instanceMutex;
 	std::recursive_mutex _delayMutex;
+	std::recursive_mutex _serializationMutex;
 
 	friend class Interpreter;
 	friend class InterpreterIssue;

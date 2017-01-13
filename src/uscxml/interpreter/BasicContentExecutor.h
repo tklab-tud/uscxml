@@ -52,7 +52,7 @@ public:
 	virtual void uninvoke(XERCESC_NS::DOMElement* invoke);
 	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData);
 
-	virtual Data elementAsData(XERCESC_NS::DOMElement* element);
+	virtual Data elementAsData(XERCESC_NS::DOMElement* element, bool asExpression = false);
 
 protected:
 	void processNameLists(std::map<std::string, Data>& nameMap, XERCESC_NS::DOMElement* element);

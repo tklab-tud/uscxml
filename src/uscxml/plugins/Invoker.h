@@ -56,6 +56,11 @@ public:
 	/// @copydoc InvokerImpl::getFinalize
 	virtual XERCESC_NS::DOMElement* getFinalize();
 
+	/// @copydoc InvokerImpl::deserialize
+	virtual void deserialize(const Data& encodedState);
+
+	/// @copydoc InvokerImpl::serialize
+	virtual Data serialize();
 protected:
 	std::shared_ptr<InvokerImpl> _impl;
 };

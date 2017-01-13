@@ -438,9 +438,10 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		// content
 		std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(element).str() + "content", element);
 		if (contents.size() > 0) {
-#if 1
+#if 0
 			invokeEvent.data.node = contents.front();
 #else
+			// test530
 			Data d = elementAsData(contents.front());
 			if (d.type == Data::INTERPRETED && d.atom.size() > 0) {
 				// immediately evaluate!
@@ -558,7 +559,7 @@ void BasicContentExecutor::processParams(std::multimap<std::string, Data>& param
 	}
 }
 
-Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
+Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool asExpression) {
 	if (HAS_ATTR(element, "expr")) {
 //        return _callbacks->evalAsData(ATTR(element, "expr"));
 #if 0
@@ -570,6 +571,8 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 			return Data(ATTR(element, "expr"), Data::INTERPRETED);
 		}
 #endif
+		if (asExpression) // test 453
+			return Data(ATTR(element, "expr"), Data::INTERPRETED);
 		return _callbacks->evalAsData(ATTR(element, "expr"));
 	}
 
@@ -587,6 +590,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 
 		// make an attempt to parse as XML
 		try {
+#if 0
 			XERCESC_NS::XercesDOMParser parser;
 			parser.setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Never);
 			parser.setDoNamespaces(true);
@@ -604,8 +608,46 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 			XERCESC_NS::DOMDocument* doc = parser.adoptDocument();
 			d.adoptedDoc = std::shared_ptr<XERCESC_NS::DOMDocument>(doc);
 			d.node = doc->getDocumentElement();
-
 			return d;
+#else
+			std::unique_ptr<XERCESC_NS::XercesDOMParser> parser(new XERCESC_NS::XercesDOMParser());
+			parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
+			parser->setDoNamespaces(true);
+			parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
+
+			std::unique_ptr<XERCESC_NS::ErrorHandler> errHandler(new XERCESC_NS::HandlerBase());
+			parser->setErrorHandler(errHandler.get());
+
+			try {
+				std::string tmp = url;
+				parser->parse(tmp.c_str());
+
+				XERCESC_NS::DOMNode* newNode = element->getOwnerDocument()->importNode(parser->getDocument()->getDocumentElement(), true);
+
+				// remove any old child elements
+				while(element->getFirstElementChild() != NULL) {
+					element->removeChild(element->getFirstElementChild());
+				}
+				// we need to save the DOM somewhere .. Data::adoptedDoc was not good enough
+				element->appendChild(newNode);
+
+				Data d;
+//                d.adoptedDoc = std::shared_ptr<XERCESC_NS::DOMDocument>(parser->adoptDocument());
+				d.node = newNode;
+				return d;
+			}
+
+			catch (const XERCESC_NS::SAXParseException& toCatch) {
+				ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
+			} catch (const XERCESC_NS::RuntimeException& toCatch) {
+				ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
+			} catch (const XERCESC_NS::XMLException& toCatch) {
+				ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
+			} catch (const XERCESC_NS::DOMException& toCatch) {
+				ERROR_PLATFORM_THROW(X(toCatch.getMessage()).str());
+			}
+
+#endif
 
 		} catch (...) {
 			// just ignore and return as an interpreted string below
@@ -622,10 +664,9 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 		// local content in document
 
 		std::list<DOMNode*> elementChildren = DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, element);
-		if (elementChildren.size() == 1) {
-			return Data(elementChildren.front());
-		} else if (elementChildren.size() > 1) {
-			return Data(element);
+		if (elementChildren.size() > 0) {
+			// always return parent element, even with a single child node
+			return Data(static_cast<DOMNode*>(element));
 		}
 
 		std::list<DOMNode*> textChildren = DOMUtils::filterChildType(DOMNode::TEXT_NODE, element);
@@ -634,14 +675,23 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 			for (auto textIter = textChildren.begin(); textIter != textChildren.end(); textIter++) {
 				contentSS << X((*textIter)->getNodeValue());
 			}
-#if 0
+
+			// test294, test562
+			if (LOCALNAME(element) == "content") {
+				return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
+			}
+
+			if (asExpression) // not actually used, but likely expected
+				return Data(contentSS.str(), Data::INTERPRETED);
+
+			// test153
 			try {
 				Data d = _callbacks->getAsData(contentSS.str());
 				if (!d.empty())
 					return d;
 			} catch(...) {}
-#endif
-			// test294, test562
+
+			// never actually occurs with the w3c tests
 			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
 		}
 	}

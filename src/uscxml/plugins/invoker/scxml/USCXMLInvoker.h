@@ -67,6 +67,9 @@ public:
 	virtual void invoke(const std::string& source, const Event& invokeEvent);
 	virtual void uninvoke();
 
+	virtual void deserialize(const Data& encodedState);
+	virtual Data serialize();
+
 protected:
 
 	void start();
@@ -78,6 +81,10 @@ protected:
 	std::thread* _thread;
 	EventQueue _parentQueue;
 	Interpreter _invokedInterpreter;
+
+	std::recursive_mutex _mutex;
+	std::condition_variable_any _cond;
+
 };
 
 #ifdef BUILD_AS_PLUGINS

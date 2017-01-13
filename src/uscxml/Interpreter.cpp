@@ -187,9 +187,24 @@ void Interpreter::reset() {
 	return _impl->reset();
 }
 
+void Interpreter::deserialize(const std::string& encodedState) {
+	return _impl->deserialize(encodedState);
+}
+
+std::string Interpreter::serialize() {
+	return _impl->serialize();
+}
+
 InterpreterState Interpreter::step(size_t blockMs) {
 	return _impl->step(blockMs);
 };
+
+void loadState(const std::string& encodedState);
+
+/**
+ * Save the interpreter's state.
+ */
+std::string saveState();
 
 void Interpreter::cancel() {
 	return _impl->cancel();
@@ -215,6 +230,10 @@ void Interpreter::setActionLanguage(ActionLanguage actionLanguage) {
 	return _impl->setActionLanguage(actionLanguage);
 }
 
+ActionLanguage Interpreter::getActionLanguage() {
+	return _impl->getActionLanguage();
+}
+
 void Interpreter::setFactory(Factory* factory) {
 	return _impl->setFactory(factory);
 }
@@ -235,9 +254,7 @@ std::list<InterpreterIssue> Interpreter::validate() {
 	return InterpreterIssue::forInterpreter(_impl.get());
 }
 
-std::recursive_mutex StateTransitionMonitor::_mutex;
-
-#if 0
+#if 1
 static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
@@ -247,6 +264,8 @@ static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
 }
 #endif
 
+std::recursive_mutex StateTransitionMonitor::_mutex;
+
 void StateTransitionMonitor::beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
@@ -255,7 +274,7 @@ void StateTransitionMonitor::beforeTakingTransition(Interpreter& interpreter, co
 void StateTransitionMonitor::onStableConfiguration(Interpreter& interpreter) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	std::cerr << "Stable Config: { ";
-//	printNodeSet(_interpreter.getConfiguration());
+	printNodeSet(interpreter.getConfiguration());
 	std::cerr << " }" << std::endl;
 }
 
@@ -292,8 +311,8 @@ void StateTransitionMonitor::beforeEnteringState(Interpreter& interpreter, const
 
 void StateTransitionMonitor::beforeMicroStep(Interpreter& interpreter) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Config: {";
-//	printNodeSet(_interpreter.getConfiguration());
+	std::cerr << "Microstep in config: {";
+	printNodeSet(interpreter.getConfiguration());
 	std::cerr << "}" << std::endl;
 }
 

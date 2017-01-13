@@ -90,6 +90,19 @@ public:
 		_invokeId = invokeId;
 	}
 
+	/**
+	 * Load a state from a Data object
+	 * @param encodedState The state we returned somewhen else via serialize.
+	 */
+	virtual void deserialize(const Data& encodedState) {}
+
+	/**
+	 * Save our state into a Data object
+	 */
+	virtual Data serialize() {
+		return Data();
+	}
+
 protected:
 	/**
 	 * Return an event to the SCXML Interpreter instance.

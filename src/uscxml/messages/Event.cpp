@@ -22,6 +22,62 @@
 
 namespace uscxml {
 
+Event Event::fromData(const Data& data) {
+	Event e;
+	if (data.hasKey("data"))
+		e.data = Data(data["data"]);
+	if (data.hasKey("raw"))
+		e.raw = data["raw"].atom;
+	if (data.hasKey("name"))
+		e.name = data["name"].atom;
+	if (data.hasKey("eventType"))
+		e.eventType = (Type)strTo<size_t>(data["eventType"].atom);
+	if (data.hasKey("origin"))
+		e.origin = data["origin"].atom;
+	if (data.hasKey("origintype"))
+		e.origintype = data["origintype"].atom;
+	if (data.hasKey("sendid"))
+		e.sendid = data["sendid"].atom;
+	if (data.hasKey("hideSendId"))
+		e.hideSendId = strTo<bool>(data["hideSendId"].atom);
+	if (data.hasKey("invokeid"))
+		e.invokeid = data["invokeid"].atom;
+	if (data.hasKey("uuid"))
+		e.uuid = data["uuid"].atom;
+	if (data.hasKey("namelist"))
+		e.namelist = data["namelist"].compound;
+
+	if (data.hasKey("params")) {
+		for (auto param : data["params"].array) {
+			e.params.insert(std::make_pair(param.compound.begin()->first, param.compound.begin()->second));
+		}
+	}
+	return e;
+}
+
+Event::operator Data() {
+	Data data;
+	data["data"] = data;
+	data["raw"] = Data(raw, Data::VERBATIM);
+	data["name"] = Data(name, Data::VERBATIM);
+	data["eventType"] = Data(eventType, Data::VERBATIM);
+	data["origin"] = Data(origin, Data::VERBATIM);
+	data["origintype"] = Data(origintype, Data::VERBATIM);
+	data["sendid"] = Data(sendid, Data::VERBATIM);
+	data["hideSendId"] = Data(hideSendId, Data::VERBATIM);
+	data["invokeid"] = Data(invokeid, Data::VERBATIM);
+	data["uuid"] = Data(uuid, Data::VERBATIM);
+	data["namelist"].compound = namelist;
+
+	for (auto param : params) {
+		Data entry;
+		entry.compound[param.first] = param.second;
+		data["params"].array.push_back(entry);
+	}
+
+	return data;
+}
+
 std::ostream& operator<< (std::ostream& os, const Event& event) {
 	std::string indent;
 	for (size_t i = 0; i < _dataIndentation; i++) {

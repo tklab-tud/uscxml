@@ -66,7 +66,7 @@ if (WITH_DM_PROMELA)
 		promela/*.c
 		promela/*.h
 	)
-	list (APPEND USCXML_FILES ${PROMELA_DATAMODEL})
+	list (APPEND USCXML_FILES ${PROMELA_DATAMODEL})	
 endif()
 
 if (NOT SWIG_FOUND)

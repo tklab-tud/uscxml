@@ -252,6 +252,8 @@ void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
 	}
 }
 
+//TODO: Unify recursive search in DOM
+
 std::list<DOMElement*> DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
         const DOMElement* root,
         const bool includeEmbeddedDoc) {

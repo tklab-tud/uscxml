@@ -26,6 +26,7 @@
 #include <string>
 
 #include "uscxml/Common.h"
+#include "uscxml/messages/Data.h"
 #include "uscxml/interpreter/InterpreterState.h"
 
 
@@ -54,6 +55,12 @@ public:
 
 	virtual void init(XERCESC_NS::DOMElement* scxml);
 	virtual void markAsCancelled();
+
+	/// @copydoc MicroStepImpl::deserialize
+	virtual void deserialize(const Data& encodedState);
+
+	/// @copydoc MicroStepImpl::serialize
+	virtual Data serialize();
 
 	std::shared_ptr<MicroStepImpl> getImpl() const;
 protected:

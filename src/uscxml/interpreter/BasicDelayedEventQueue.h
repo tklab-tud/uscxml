@@ -52,6 +52,9 @@ public:
 	}
 	virtual void reset();
 
+	virtual Data serialize();
+	virtual void deserialize(const Data& data);
+
 protected:
 	virtual std::shared_ptr<EventQueueImpl> create() {
 		ErrorEvent e("Cannot create a DelayedEventQueue without callbacks");

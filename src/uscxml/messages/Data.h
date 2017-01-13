@@ -71,14 +71,15 @@ public:
 	explicit Data(T value, Type type, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
 		: node(NULL), atom(toStr(value)), type(type) {}
 
-	~Data() {}
+	~Data() {
+	}
 
 	void clear() {
 		type = VERBATIM;
 		compound.clear();
 		array.clear();
 		atom.clear();
-		adoptedDoc.reset();
+//		adoptedDoc.reset();
 		binary = Blob();
 		node = NULL;
 	}
@@ -234,7 +235,7 @@ protected:
 #endif
 
 	XERCESC_NS::DOMNode* node;
-	std::shared_ptr<XERCESC_NS::DOMDocument> adoptedDoc;
+//	std::shared_ptr<XERCESC_NS::DOMDocument> adoptedDoc;
 	std::map<std::string, Data> compound;
 	std::list<Data> array;
 	std::string atom;
@@ -242,7 +243,10 @@ protected:
 	Type type;
 
 protected:
+	static std::string jsonEscape(const std::string& expr);
+	static std::string jsonUnescape(const std::string& expr);
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const Data& data);
+
 };
 
 USCXML_API std::ostream& operator<< (std::ostream& os, const Data& data);
