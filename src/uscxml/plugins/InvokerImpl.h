@@ -115,7 +115,7 @@ protected:
 
 	XERCESC_NS::DOMElement* _finalize;
 	std::string _invokeId;
-
+	InterpreterImpl* _callbacks;
 };
 
 }

@@ -83,7 +83,7 @@ public:
 	PromelaParserNode* ast;
 	Type type;
 
-	Event pendingException;
+	ErrorEvent pendingException;
 	operator bool() const {
 		return ast != NULL;
 	}

@@ -350,8 +350,8 @@ std::string Data::jsonEscape(const std::string& expr) {
 			os << "\\n";
 		} else if (expr[i] == '\r') {
 			os << "\\r";
-		} else if (expr[i] == '\'') {
-			os << "\\'";
+//		} else if (expr[i] == '\'') {
+//			os << "\\\'";
 		} else if (expr[i] == '\"') {
 			os << "\\\"";
 		} else if (expr[i] == '\\') {

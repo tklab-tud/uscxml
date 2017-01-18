@@ -182,8 +182,11 @@ public:
 	\endverbatim
 	 * @param location A variable or locatio to assign to.
 	 * @param data The Data object with the respective data.
+	 * @param attr Additional attributes of the XML assign element.
 	 */
-	virtual void assign(const std::string& location, const Data& data) = 0;
+	virtual void assign(const std::string& location,
+	                    const Data& data,
+	                    const std::map<std::string, std::string>& attr = std::map<std::string, std::string>()) = 0;
 
 	/**
 	 * Initialize a variable / location in the data-model with a given data object.
@@ -192,23 +195,17 @@ public:
 	 *
 	 * @param location A variable or locatio to assign to.
 	 * @param data The Data object with the respective data.
+	 * @param attr Additional attributes of the XML data element.
 	 */
-	virtual void init(const std::string& location, const Data& data) = 0;
+	virtual void init(const std::string& location,
+	                  const Data& data,
+	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>()) = 0;
 
 	/**
 	 * Register an extension to get data into and out of the data-model.
 	 * @todo This is currently unsupported
 	 */
 	virtual void addExtension(DataModelExtension* ext);
-
-	/**
-	 * Concat the given terms into a conjunctive form.
-	 * @todo This is required to automatically transform a state-chart into a
-	 * state-machine. Actual transformation is still only available in legacy though.
-	 */
-	virtual std::string andExpressions(std::list<std::string>) {
-		return "";
-	}
 
 protected:
 	DataModelCallbacks* _callbacks;

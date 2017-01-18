@@ -1,88 +1,100 @@
-
 <table>
+
 	<thead>
 		<tr>
 			<th colspan="3">Test (Req. / Man.)</th>
-			<th>NS</th>
-			<th>VHDL Promela</th>
-			<th>Java (JEXL)</th>
-			<th>Lua</th>
 			<th>ECMA</th>
-			<th>Promela</th>
-			<th>C (ECMA)</th>
 			<th>C (Lua)</th>
+			<th>NS</th>
+			<th>Java (JEXL)</th>
+			<th>Spin</th>
+			<th>C (ECMA)</th>
+			<th>Python (ECMA)</th>
+			<th>Lua</th>
+			<th>Promela</th>
+			<th>VHDL Promela</th>
 		</tr>
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="11"><b><big>Core Constructs</big></b></td>
+			<td colspan="13"><b><big>Core Constructs</big></b></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#history">&sect;3.10</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The History Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The History Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test387.txml" alt="Before the parent state has been visited for the first time, if a transition is executed that takes the history state as its target, the SCXML processor MUST behave as if the transition had taken the default stored state configuration as its target.">387</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test388.txml" alt="After the parent state has been visited for the first time, if a transition is executed that takes the history state as its target, the SCXML processor MUST behave as if the transition had taken the stored state configuration as its target.">388</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test579.txml" alt="Before the parent state has been visited for the first time, if a transition is executed that takes the history state as its target,       the SCXML processor MUST execute any executable content in the transition      after the parent state's onentry content and any content in a possible      initial transition.">579</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test580.txml" alt="It follows from the semantics of history states that they never end up in the state configuration">580</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#events">&sect;3.12</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>SCXML Events</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>SCXML Events</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test396.txml" alt="The SCXML processor MUST use this same name value (the one reflected in the event variable) to match against the `event` attribute of transitions.">396</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -95,21 +107,25 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test401.txml" alt="The processor MUST place these (error) events in the internal event queue.">401</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -121,50 +137,58 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#SelectingTransitions">&sect;3.13</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>Selecting and Executing Transitions</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>Selecting and Executing Transitions</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test403a.txml" alt="To execute a microstep, the SCXML Processor MUST execute the transitions in the corresponding optimal enabled transition set, where the optimal transition set enabled by event E in state configuration C is the largest set of transitions such that a) each transition in the set is optimally enabled by E in an atomic state in C b) no transition conflicts with another transition in the set c) there is no optimally enabled transition outside       the set that has a higher priority than some member of the set.">403a</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test403c.txml" alt="To execute a microstep, the SCXML Processor MUST execute the transitions in the corresponding optimal enabled transition set, where the optimal transition set enabled by event E in state configuration C is the largest set of transitions such that a) each transition in the set is optimally enabled by E in an atomic state in C b) no transition conflicts with another transition in the set c) there is no optimally enabled transition outside       the set that has a higher priority than some member of the set.">403c</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test403b.txml" alt="To execute a microstep, the SCXML Processor MUST execute the transitions in the corresponding optimal enabled transition set, where the optimal transition set enabled by event E in state configuration C is the largest set of transitions such that a) each transition in the set is optimally enabled by E in an atomic state in C b) no transition conflicts with another transition in the set c) there is no optimally enabled transition outside       the set that has a higher priority than some member of the set.">403b</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -177,46 +201,54 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test405.txml" alt="(the SCXML Processor executing a set of transitions) MUST then (after the onexits) execute the executable content contained in the transitions in document order.">405</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test406.txml" alt="(the SCXML Processor executing a set of transitions) MUST then (after the exits and the transitions) enter the states in the transitions' entry set in entry order.">406</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test407.txml" alt="To exit a state, the SCXML Processor MUST execute the executable content in the state's onexit handler.">407</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -229,7 +261,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -242,51 +276,59 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test412.txml" alt="If the state is a default entry state and has an initial child, the SCXML Processor MUST then (after doing the active state add and the onentry handlers) execute the executable content in the initial child's transition.">412</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test413.txml" alt="At startup, the SCXML Processor MUST place the state machine in the configuration specified by the `initial` attribute of the scxml element.">413</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test415.txml" alt="If it (the SCXML Processor) has entered a final state that is a child of scxml (during the last microstep), it MUST halt processing.">415</a></b></td>
 			<td>X</td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 		</tr>
 		<tr>
@@ -294,7 +336,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -307,7 +351,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -320,7 +366,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -333,46 +381,54 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test422.txml" alt="After completing a macrostep, the SCXML Processor MUST execute in document order the invoke handlers in all states that have been entered (and not exited) since the completion of the last macrostep.">422</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test423.txml" alt="Then (after invoking the new invoke handlers since the last macrostep) the Processor MUST remove events from the external event queue, waiting till events appear if necessary, until it finds one that enables a non-empty optimal transition set in the current configuration.      The Processor MUST then execute that set (the enabled non-empty optimal transition set in the current configuration triggered by an external event) as a microstep.">423</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test503.txml" alt="If the transition does not contain a `target`, its exit set is empty.">503</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -385,7 +441,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -398,7 +456,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -411,7 +471,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -424,7 +486,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -434,14 +498,16 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#scxml">&sect;3.2</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The SCXML Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The SCXML Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test355.txml" alt="At system initialization time, if the `initial` attribute is not present, the Processor MUST enter the first state in document order.">355</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -454,41 +520,47 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#state">&sect;3.3</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The State Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The State Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test364.txml" alt="Definition: The default initial state(s) of a compound state are those specified by the `initial` attribute or initial element, if either is present. Otherwise it is the state's first child state in document order. If a compound state is entered either as an initial state or as the target of a transition (i.e. and no descendent of it is specified), then the SCXML Processor MUST enter the default initial state(s) after it enters the parent state.">364</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#final">&sect;3.7</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Final Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Final Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test372.txml" alt="When the state machine enters the final child of a state element, the SCXML processor MUST generate the event done.state.id after completion of the onentry elements, where id is the id of the parent state.">372</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -501,24 +573,28 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#onentry">&sect;3.8</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Onentry Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Onentry Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test375.txml" alt="The SCXML processor MUST execute the onentry handlers of a state in document order when the state is entered.">375</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -531,7 +607,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -541,14 +619,16 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#onexit">&sect;3.9</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Onexit Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Onexit Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test377.txml" alt="The SCXML processor MUST execute the onexit handlers of a state in document order when the state is exited.">377</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -561,7 +641,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -570,18 +652,20 @@
 			<td><code>OK</code></td>
 		</tr>
 		<tr>
-			<td colspan="11"><b><big>Executable Content</big></b></td>
+			<td colspan="13"><b><big>Executable Content</big></b></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#raise">&sect;4.2</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Raise Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Raise Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test144.txml" alt="The SCXML processor MUST place the event that is generated by the raise element at the rear of the session's internal event queue.">144</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -591,96 +675,110 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#if">&sect;4.3</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The If Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The If Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test147.txml" alt="When the if element is executed, the SCXML processor MUST execute the first partition in document order that is defined by a tag whose `cond` attribute evaluates to true, if there is one.">147</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test148.txml" alt="When the if element is executed, if no `cond`attribute evaluates to true, the SCXML Processor must execute the partition defined by the else tag, if there is one.">148</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test149.txml" alt="When it executes an if element, if no `cond` attribute evaluates to true and there is no else element, the SCXML processor must not evaluate any executable content within the element.">149</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#foreach">&sect;4.6</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Foreach Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Foreach Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test150.txml" alt="In the foreach element, the SCXML processor MUST declare a new variable if the one specified by `item` is not already defined.">150</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test151.txml" alt="In the foreach element, if `index` is present, the SCXML processor MUST declare a new variable if the one specified by `index` is not already defined.">151</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test152.txml" alt="In the foreach element, if `array` does not evaluate to a legal iterable collection, or if `item` does not specify a legal variable name, the SCXML processor MUST terminate execution of the foreach element and the block that contains it, and place the error error.execution on the internal event queue.">152</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test153.txml" alt="When evaluating foreach, the SCXML processor MUST start with the first item in the collection and proceed to the last item in the iteration order that is defined for the collection. For each item in the collection in turn, the processor MUST assign it to the item variable.">153</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -693,7 +791,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -706,8 +806,10 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -719,8 +821,10 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -729,14 +833,16 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#EvaluationofExecutableContent">&sect;4.9</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>Evaluation of Executable Content</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>Evaluation of Executable Content</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test158.txml" alt="The SCXML processor MUST execute the elements of a block of executable contentin document order.">158</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -749,27 +855,31 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 		</tr>
 		<tr>
-			<td colspan="11"><b><big>Data Model and Manipulation</big></b></td>
+			<td colspan="13"><b><big>Data Model and Manipulation</big></b></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#SystemVariables">&sect;5.10</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>System Variables</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>System Variables</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test318.txml" alt="The SCXML Processor MUST bind the \_event variable when an event is pulled off the internal or external event queue to be processed, and MUST keep the variable bound to that event until another event is processed.">318</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -782,7 +892,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -795,47 +907,55 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test322.txml" alt="The Processor MUST keep the \_sessionid variable bound to the system-generated id until the session terminates.">322</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test323.txml" alt="The Processor MUST bind the variable \_name at load time to the value of the `name` attribute of the scxml element. 	a">323</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test324.txml" alt="The Processor MUST keep the \_name variable bound to the value of the `name` attribute of the scxml element until the session terminates.">324</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -847,25 +967,29 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test326.txml" alt="The Processor MUST keep the \_ioprocessors variable bound to its set of values until the session terminates.">326</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -873,20 +997,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test330.txml" alt="The SCXML Processor MUST insure that the following fields (name, type, sendid, origin, origintype, invokeid, data) are present in all events (\_event variable), whether internal or external.">330</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -899,11 +1027,13 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 		</tr>
@@ -912,8 +1042,10 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -925,7 +1057,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -938,7 +1072,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -951,12 +1087,14 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -964,7 +1102,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -977,20 +1117,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test339.txml" alt="If an event is not generated from an invoked child process, the Processor MUST leave the invokeid field blank.">339</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1003,63 +1147,73 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test346.txml" alt="The Processor MUST place the error error.execution on the internal event queue when any attempt to change the value of a system variable is made.">346</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#data">&sect;5.3</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Data Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Data Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test276.txml" alt="The SCXML Processor MUST allow the environment to provide values for top-level data elements at instantiation time. (Top-level data elements are those that are children of the datamodel element that is a child of scxml). Specifically, the Processor MUST use the values provided at instantiation time instead of those contained in these data elements.">276</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test277.txml" alt="If the value specified for a data element (by `src`, children, or the environment) is not a legal data value, the SCXML Processor MUST raise place error.execution in the internal event queue and MUST create an empty data element in the data model with the specified id.">277</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test279.txml" alt="When `binding` attribute on the scxml element is assigned the value &quot;early&quot; (the default), the SCXML Processor MUST create all data elements and assign their initial values at document initialization time.">279</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1072,8 +1226,10 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1085,7 +1241,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1098,7 +1256,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1111,7 +1271,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1121,27 +1283,31 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#assign">&sect;5.4</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Assign Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Assign Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test286.txml" alt="If the location expression of an assign does not denote a valid location in the datamodel the processor MUST place the error error.execution in the internal event queue.">286</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test287.txml" alt="If the location expression of an assign denotes a valid location in the datamodel and if the value specified by `expr` is a legal value for the location specified, the processor MUST place the specified value at the specified location.">287</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1154,7 +1320,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1167,47 +1335,53 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#donedata">&sect;5.5</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Donedata Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Donedata Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test294.txml" alt="In cases where the SCXML Processor generates a `done` event upon entry into the final state, it MUST evaluate the donedata elements param or content children and place the resulting data in the \_event.data field. The exact format of that data will be determined by the datamodel">294</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#content">&sect;5.6</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Content Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Content Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test527.txml" alt="When the SCXML Processor evaluates the content element, if the `expr` value expression is present, the Processor MUST evaluate it and use the result as the output of the content element.">527</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test528.txml" alt="f the evaluation of `expr` produces an error, the Processor MUST place error.execution in the internal event queue and use the empty string as the output of the content element.">528</a></b></td>
@@ -1217,17 +1391,21 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
-			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test529.txml" alt="If the `expr` attribute is not present, the Processor MUST use the children of content as the output.">529</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1237,111 +1415,127 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#param">&sect;5.7</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Param Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Param Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test298.txml" alt="If the `location` attribute on a param element does not refer to a valid location in the data model, the processor MUST place the error error.execution on the internal event queue.">298</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test343.txml" alt="If the `location` attribute on a param element does not refer to a valid location in the data model, or if the evaluation of the `expr` produces an error, the processor MUST ignore the name and value.">343</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test488.txml" alt="if the evaluation of the `expr` produces an error, the processor MUST place the error error.execution on the internal event queue.">488</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#script">&sect;5.8</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Script Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Script Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test301.txml" alt="If the script specified by the `src` attribute of a script element cannot be downloaded within a platform-specific timeout interval, the document is considered non-conformant, and the platform MUST reject it. N.B. This test is valid only for datamodels that support scripting.">301</a></b></td>
 			<td>X</td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test302.txml" alt="The SCXML Processor MUST evaluate any script element that is a child of scxml at document load time. N.B. This test is valid only for datamodels that support scripting.">302</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test303.txml" alt="The SCXML Processor MUST evaluate all script elements not children of scxml as part of normal executable content evaluation. N.B. This test is valid only for datamodels that support scripting.">303</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test304.txml" alt="In a conformant SCXML document, the name of any script variable MAY be used as a location expression. N.B. This test is valid only for datamodels that support scripting.">304</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#Expressions">&sect;5.9</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>Expressions</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>Expressions</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test307.txml" alt="When &quot;late&quot; data binding is used, accessing data substructure in expressions before the corresponding data element is loaded MUST yield the same execution-time behavior as accessing non-existent data substructure in a loaded data instance.">307</a></b></td>
 			<td>X</td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -1356,8 +1550,10 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1369,7 +1565,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1382,92 +1580,106 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test312.txml" alt="If a value expression does not return a legal data value, the SCXML processor MUST place the error error.execution in the internal event queue.">312</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test313.txml" alt="The SCXML processor MAY reject documents containing syntactically ill-formed expressions at document load time, or it MAY wait and place error.execution in the internal event queue at runtime when the expressions are evaluated.">313</a></b></td>
 			<td>X</td>
 			<td>X</td>
-			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test314.txml" alt="If the SCXML processor waits until it evaluates the expressions at runtime to raise errors, it MUST raise errors caused by expressions returning illegal values at the points at which Appendix A Algorithm for SCXML Interpretation indicates that the expressions are to be evaluated.">314</a></b></td>
 			<td>X</td>
 			<td>X</td>
-			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test344.txml" alt="If a conditional expression cannot be evaluated as a boolean value (`true` or `false`) or if its evaluation causes an error, the SCXML processor MUST place the error `error.execution` in the internal event queue.">344</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
-			<td colspan="11"><b><big>External Communications</big></b></td>
+			<td colspan="13"><b><big>External Communications</big></b></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#send">&sect;6.2</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Send Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Send Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test172.txml" alt="If `eventexpr` is present, the SCXML Processor MUST evaluate it when the parent send element is evaluated and treat the result as if it had been entered as the value of `event`.">172</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test173.txml" alt="If `targetexpr` is present, the SCXML Processor MUST evaluate it when the parent send element is evaluated and treat the result as if it had been entered as the value of `target`.">173</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1480,7 +1692,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1493,7 +1707,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1506,7 +1722,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1518,13 +1736,15 @@
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test178.txml" alt="The SCXML Processor MUST include all attributes and values provided by param and/or `namelist` even if duplicates occur.">178</a></b></td>
 			<td>X</td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 		</tr>
 		<tr>
@@ -1532,7 +1752,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1545,7 +1767,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1558,7 +1782,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1571,7 +1797,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1584,7 +1812,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1597,20 +1827,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test198.txml" alt="If neither the `type` nor the `typeexpr` is defined, the SCXML Processor MUST assume the default value of http://www.w3.org/TR/scxml/#SCXMLEventProcessor.">198</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1623,20 +1857,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test200.txml" alt="SCXML Processors MUST support the type http://www.w3.org/TR/scxml/#SCXMLEventProcessor">200</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1653,16 +1891,20 @@
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test205.txml" alt="The sending SCXML Interpreter MUST not alter the content of the send 	     and include it in the message that it sends to the destination specified in the target attribute of send.">205</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1675,21 +1917,25 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test553.txml" alt="If the evaluation of send's arguments produces an error, If the evaluation of send's arguments produces an error, the Processor MUST discard the message without attempting to deliver it.">553</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1698,27 +1944,31 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#cancel">&sect;6.3</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Cancel Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Cancel Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test207.txml" alt="The SCXML Processor MUST NOT allow cancel to affect events that were not raised in the same session.">207</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test208.txml" alt="The Processor SHOULD make its best attempt to cancel all delayed events with the specified id.">208</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1731,7 +1981,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1741,20 +1993,22 @@
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#invoke">&sect;6.4</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Invoke Element</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Invoke Element</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test215.txml" alt="If the typeexpr attribute is present, the SCXML Processor MUST evaluate it when the parent invoke element is evaluated and treat the result as if it had been entered as the value of `type`.">215</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test216.txml" alt="If the srcexpr attribute is present, the SCXML Processor MUST evaluate it when the parent invoke element is evaluated and treat the result as if it had been entered as the value of `src`.">216</a></b></td>
@@ -1764,9 +2018,11 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -1774,20 +2030,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test223.txml" alt="If the `idlocation` attribute is present, the SCXML Processor MUST generate an id automatically when the invoke element is evaluated and store it in the location specified by `idlocation`.">223</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1800,12 +2060,14 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
-			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 		</tr>
 		<tr>
@@ -1813,7 +2075,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1826,7 +2090,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1839,59 +2105,69 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test229.txml" alt="When the `autoforward` attribute is set to true, the SCXML Processor MUST send an exact copy of every external event it receives to the invoked process.">229</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test230.txml" alt="When the SCXML Processor autoforwards an event to the invoked process, all the fields specified in 5.11.1 The Internal Structure of Events MUST have the same values in the forwarded copy of the event">230</a></b></td>
 			<td>X</td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test232.txml" alt="he invoked external service MAY return multiple events while it is processing">232</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test233.txml" alt="If there is a finalize handler in the instance of invoke that created the service that generated the event, the SCXML Processor MUST execute the code in that finalize handler right before it removes the event from the event queue for processing.">233</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1904,7 +2180,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1917,7 +2195,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -1930,85 +2210,99 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test237.txml" alt="If the invoking session takes a transition out of the state containing the invoke before it receives the `done.invoke.id` event, the SCXML Processor MUST automatically cancel the invoked component and stop its processing.">237</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test239.txml" alt="Invoked services of type http://www.w3.org/TR/scxml/, http://www.w3.org/TR/ccxml/, http://www.w3.org/TR/voicexml30/, or http://www.w3.org/TR/voicexml21 MUST interpret values specified by the content element or `src` attribute as markup to be executed">239</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test240.txml" alt="Invoked services of type http://www.w3.org/TR/scxml/, http://www.w3.org/TR/ccxml/, http://www.w3.org/TR/voicexml30/, or http://www.w3.org/TR/voicexml21 MUST interpret values specified by param element or `namelist` attribute as values that are to be injected into their data models">240</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test241.txml" alt="Invoked services MUST treat values specified by param and namelist identically.">241</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test242.txml" alt="Invoked services MUST also treat values specified by `src` and content identically.">242</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test243.txml" alt="If the invoked process is of type http://www.w3.org/TR/scxml/ and `name` of a param element in the invoke matches the `id` of a data element in the top-level data declarations of the invoked session, the SCXML Processor MUST use the value of the param element as the initial value of the corresponding data element.">243</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2021,7 +2315,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2034,7 +2330,9 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2047,25 +2345,29 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test250.txml" alt="When an invoked process of type http://www.w3.org/TR/scxml/is cancelled by the invoking process, the Processor MUST execute the onexit handlers for all active states in the invoked session">250</a></b></td>
 			<td>X</td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 		</tr>
 		<tr>
@@ -2073,26 +2375,30 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test253.txml" alt="When the invoked session is of type http://www.w3.org/TR/scxml/, The SCXML Processor MUST support the use of SCXML Event/IO processor (E.1 SCXML Event I/O Processor) to communicate between the invoking and the invoked sessions.">253</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test530.txml" alt="The SCXML Processor MUST evaluate a child content element when the parent invoke element is evaluated and pass the resulting data to the invoked service.">530</a></b></td>
@@ -2102,9 +2408,11 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -2112,20 +2420,22 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
-			<td colspan="11"><b><big>Data Models</big></b></td>
+			<td colspan="13"><b><big>Data Models</big></b></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#minimal-profile">&sect;C.1</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The Null Data Model</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The Null Data Model</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test436.txml" alt="When the &quot;datamodel&quot; attribute of the scxml element has the value &quot;null&quot;, the In() predicate must return `true` if and only if that state is in the current state configuration.">436</a></b></td>
@@ -2139,17 +2449,21 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#ecma-profile">&sect;C.2</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The ECMAScript Data Model</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The ECMAScript Data Model</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test278.txml" alt="In the ECMAScript data model, the SCXML processor MUST allow any data element to be accessed from any state.">278</a></b></td>
 			<td></td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2163,11 +2477,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2176,11 +2492,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2189,11 +2507,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2202,11 +2522,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2215,11 +2537,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2228,11 +2552,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2241,11 +2567,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2254,11 +2582,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2267,11 +2597,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2280,11 +2612,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2293,11 +2627,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2306,17 +2642,21 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test557.txml" alt="In the ECMAScript data model, if either the `src` attribute or in-line content is provided in the data element, then if the content (whether fetched or provided in-line) is an XML document, the SCXML Processor MUST create the corresponding DOM structure and assign it as the value of the data element.">557</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2332,11 +2672,13 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
@@ -2345,17 +2687,21 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test561.txml" alt="In the ECMAScript data model, if the content provided to populate \_event.data can be interpreted as a valid XML document 	     (and cannot be interpreted as key-value pairs or JSON), the Processor MUST create the corresponding DOM structure and assign it as the value \_event.data.">561</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2371,17 +2717,21 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test569.txml" alt="For the \_ioprocessors system variable in the ECMAScript datamodel the Processor MUST create an array with an object for each Event I/O processor that it supports, where the name of the object is the same as that of the I/O processor. For the SCXML and BasicHTTP Event I/O processors, the Processor MUST create a location property under the object, assigning the access URI as its String value.">569</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2397,21 +2747,25 @@
 			<td></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#xpath-profile">&sect;C.3</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>The XPath Data Model</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>The XPath Data Model</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test463.txml" alt="In the XPath datamodel, for each data element in the document, the SCXML Processor MUST create a child of datamodel called &lt;data&gt; with an `id` attribute whose value is the same as that of the `id` attribute of the document data element. The Processor MUST bind an XPath variable of the same name to that datamodel data element.">463</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2433,11 +2787,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test465.txml" alt="In the XPath datamodel, the SCXML Processor must place all variables in a single global XPath scope, such that they are subsequently available to all expressions within the document.">465</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2459,11 +2817,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test467.txml" alt="In the XPath datamodel, the SCXML Processor must add an XPath function to the SCXML namespace that takes a stateID as its argument and returns `true` if and only if that state is in the current state configuration, as described in 5.10.1 Conditional Expressions.">467</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2485,11 +2847,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test469.txml" alt="In the XPath datamodel,the SCXML Processor must allow any XPath expression to be used as a value expression.">469</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2511,11 +2877,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test473.txml" alt="In the XPath datamodel,  if the `type` attribute of the assign element is specified with a value of `replacechildren`, the SCXML Processor must either replace all the children at `location` with the value specified by `expr` or place the error error.execution on the internal event queue.">473</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2537,11 +2907,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test475.txml" alt="In the XPath datamodel,if the `type` attribute of the assign element is specified with a value of `lastchild`, the SCXML Processor must either insert the value specified by `expr` after all of the children at `location` or place the error error.execution on the internal event queue.">475</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2563,11 +2937,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test477.txml" alt="In the XPath datamodel, if the `type` attribute of the assign element is specified with a value of `nextsibling`, the SCXML Processor must either insert the value specified by `expr` after the node specified by `location`, keeping the same parent, or place the error error.execution on the internal event queue.">477</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2589,11 +2967,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test479.txml" alt="In the XPath datamodel, if the `type` attribute of the assign element is specified with a value of `delete`, the SCXML Processor must either delete the node specified by `location` or place the error error.execution on the internal event queue.">479</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2615,11 +2997,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test481.txml" alt="In the XPath datamodel, if the evaluation of any of the expressions in an assign element causes an error to be raised, evaluation of the element terminates immediately and the assign has no effect. Similarly, if the processor is unable to place the specified value at the node specified by `location` it must terminate immediately, placing the error error.execution on the internal event queue, and the assign has no effect.">481</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2641,11 +3027,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test483.txml" alt="In the XPath datamodel, In the XPath data model, the legal iterable collections are Node-Sets, and 	      the legal values for the `item` attribute on foreach are legal XPath variable names. 	      	 The iteration order is the order of the underlying Node-set, and goes from an index of 1 by increments of one to an index of count(node-set).">483</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2667,11 +3057,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test539.txml" alt="In the XPath datamodel, for each data element, ff either the `src` attribute or in-line content is provided in the document data element, then if the content (whether fetched or provided in-line) is XML, the SCXML Processor MUST insert the XML as the child(ren) of the datamodel &lt;data&gt; element">539</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2693,11 +3087,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test542.txml" alt="In the XPath datamodel, when content is a child of donedata, the Processor MUST interpret its value as defined in D.3.7.1 \_event.data">542</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2719,11 +3117,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test544.txml" alt="In the XPath datamodel,  if the content provided to populate \_event.data can be interpreted as key-value pairs, then for each unique key, the SCXML Processor MUST create a &lt;data&gt; element as a child of \_event's data child with an `id` attribute whose value is the name of the key. The Processor MUST insert the value of the key-value pair as the content of this element.">544</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2745,11 +3147,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test546.txml" alt="In the XPath datamodel,  if the content provided to populate \_event.data cannot be interpreted as either key-value pairs or as a vaild XML document, the Processor MUST treat the content as a space-normalized string literal and insert it as the content of \_event's &lt;data&gt; child.">546</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2771,11 +3177,15 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test555.txml" alt="In the XPath datamodel, In contexts where a string is expected, the Processor MAY convert the expression result to a string using string().">555</a></b></td>
 			<td></td>
 			<td></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -2797,20 +3207,24 @@
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 		</tr>
 		<tr>
-			<td colspan="11"><b><big>Event I/O Processor</big></b></td>
+			<td colspan="13"><b><big>Event I/O Processor</big></b></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#SCXMLEventProcessor">&sect;D.1</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>SCXML Event I/O Processor</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>SCXML Event I/O Processor</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test189.txml" alt="When using the scxml event i/o processor) If the target is the special term `#\_internal`, the Processor MUST add the event to the internal event queue of the sending session">189</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2823,20 +3237,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test191.txml" alt="(When using the scxml event i/o processor) If the target is the special term `#\_parent`, the Processor MUST add the event to the external event queue of the SCXML session that invoked the sending session, if there is one.">191</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2849,46 +3267,54 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test193.txml" alt="(When using the scxml event i/o processor) If neither the `target` nor the `targetexpr` attribute is specified, the SCXML Processor MUST add the event to the external event queue of the sending session.">193</a></b></td>
 			<td></td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test347.txml" alt="SCXML Processors MUST support sending messages to and receiving messages from other SCXML sessions using the SCXML Event I/O Processor.">347</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test348.txml" alt="name'. The sending SCXML Processor MUST take the value of this attribute from the `event` attribute of the send element. The receiving SCXML Processor MUST use it as the value the `name` field in the event that it generates.">348</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2901,21 +3327,25 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test350.txml" alt="target'. The sending SCXML Processor MUST take the value of this attribute from the `target` attribute of the send element. The receiving SCXML Processor MUST use this value to determine which session to deliver the message to.">350</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2927,20 +3357,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test352.txml" alt="`sourcetype`. The sending SCXML Processor MUST assign this attribute the value &quot;scxml&quot;. (Note that other types of senders will assign different values.) The receiving Processor MUST use this value as the value of the `origintype` field of the event that it generates.">352</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2953,20 +3387,24 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test495.txml" alt="If no errors occur, the receiving Processor MUST convert the message into an SCXML event, using the mapping defined above and insert it into the appropriate queue, as defined in Send Targets.">495</a></b></td>
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
-			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
@@ -2979,13 +3417,15 @@
 			<td>X</td>
 			<td></td>
 			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
+			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test500.txml" alt="SCXML Processors that support the BasicHTTP Event I/O Processor MUST maintain a `scxml` entry in the \_ioprocessors system variable. The Processor MUST maintain a `location` field inside this entry whose value holds an address that external entities can use to communicate with this SCXML session using the SCXML Event I/O Processor.">500</a></b></td>
@@ -2996,9 +3436,11 @@
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test501.txml" alt="The `location` field inside the entry for the SCXML Event I/O Processor in the \_ioprocessors system variable MUST hold an address that external entities can use to communicate with this SCXML session using the SCXML Event I/O Processor.">501</a></b></td>
@@ -3009,13 +3451,15 @@
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td><b><a href="http://www.w3.org/TR/2015/REC-scxml-20150901/#BasicHTTPEventProcessor">&sect;D.2</a></b></td>
-			<td colspan="10"><sub>&nbsp;</sub><b>Basic HTTP Event I/O Processor</b><sup>&nbsp;</sup></td>
+			<td colspan="12"><sub>&nbsp;</sub><b>Basic HTTP Event I/O Processor</b><sup>&nbsp;</sup></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test509.txml" alt="An SCXML Processor that supports the Basic HTTP Event I/O Processor MUST accept messages at the access URI as HTTP POST requests">509</a></b></td>
@@ -3025,10 +3469,12 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test510.txml" alt="The SCXML Processor MUST validate the message it receives (via the Basic HTTP Event I/O Processor) and then MUST build the appropriate SCXML event and MUST add it to the external event queue">510</a></b></td>
@@ -3039,14 +3485,18 @@
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test513.txml" alt="After it adds the received message to the appropriate event queue, the SCXML Processor MUST then indicate the result to the external component via a success response code 2XX.">513</a></b></td>
 			<td></td>
 			<td>X</td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
 			<td><code>N/A</code></td>
@@ -3064,10 +3514,12 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test519.txml" alt="If one or more param children are present (in send), the SCXML Processor MUST map their names (i.e. name attributes) and values to HTTP POST parameters">519</a></b></td>
@@ -3077,10 +3529,12 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test520.txml" alt="If a content child is present, the SCXML Processor MUST use its value as the body of the message.">520</a></b></td>
@@ -3090,8 +3544,10 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>N/A</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
@@ -3104,8 +3560,10 @@
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -3116,9 +3574,11 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -3129,9 +3589,11 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 		<tr>
@@ -3142,10 +3604,12 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test567.txml" alt="The processor MUST use any message content other than `\_scxmleventname` to populate \_event.data.">567</a></b></td>
@@ -3156,9 +3620,11 @@
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
-			<td><code><mark><b>FAIL</b></mark></code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 		</tr>
 		<tr>
 			<td>&nbsp;&nbsp;&nbsp;<b><a href="https://github.com/tklab-tud/uscxml/tree/master/test/w3c/txml/test577.txml" alt="If neither the `target` nor the `targetexpr` attribute is specified, the SCXML Processor MUST add the event error.communication to the internal event queue of the sending session.">577</a></b></td>
@@ -3168,9 +3634,11 @@
 			<td><code>N/A</code></td>
 			<td><code>OK</code></td>
 			<td><code>OK</code></td>
-			<td><code>OK</code></td>
-			<td><code>OK</code></td>
 			<td><code>N/A</code></td>
+			<td><code>N/A</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
+			<td><code>OK</code></td>
 			<td><code><mark><b>FAIL</b></mark></code></td>
 		</tr>
 	</tbody>

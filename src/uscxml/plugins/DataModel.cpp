@@ -57,12 +57,12 @@ void DataModel::setForeach(const std::string& item,
 	return _impl->setForeach(item, array, index, iteration);
 }
 
-void DataModel::assign(const std::string& location, const Data& data) {
-	return _impl->assign(location, data);
+void DataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
+	return _impl->assign(location, data, attr);
 }
 
-void DataModel::init(const std::string& location, const Data& data) {
-	return _impl->init(location, data);
+void DataModel::init(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
+	return _impl->init(location, data, attr);
 }
 
 bool DataModel::isDeclared(const std::string& expr) {
@@ -71,10 +71,6 @@ bool DataModel::isDeclared(const std::string& expr) {
 
 size_t DataModel::replaceExpressions(std::string& content) {
 	return _impl->replaceExpressions(content);
-}
-
-std::string DataModel::andExpressions(std::list<std::string> expressions) {
-	return _impl->andExpressions(expressions);
 }
 
 void DataModel::addExtension(DataModelExtension* ext) {

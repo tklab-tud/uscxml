@@ -82,14 +82,14 @@ public:
 		return true;
 	}
 
-	virtual void assign(const std::string& location, const Data& data) {}
-	virtual void init(const std::string& location, const Data& data) {}
+	virtual void assign(const std::string& location,
+	                    const Data& data,
+	                    const std::map<std::string, std::string>& attr) {}
+	virtual void init(const std::string& location,
+	                  const Data& data,
+	                  const std::map<std::string, std::string>& attr) {}
 
 	virtual void addExtension(DataModelExtension* ext) {
-	}
-
-	virtual std::string andExpressions(std::list<std::string>) {
-		return "";
 	}
 
 protected:

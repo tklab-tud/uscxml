@@ -53,9 +53,6 @@ public:
 	 * @return An object to be represented at `_x['name']`
 	 */
 	virtual Data getDataModelVariables() = 0;
-
-protected:
-	InterpreterImpl* _interpreter;
 };
 
 /**

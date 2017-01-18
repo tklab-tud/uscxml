@@ -69,14 +69,22 @@ std::shared_ptr<DelayedEventQueueImpl> BasicDelayedEventQueue::create(DelayedEve
 
 void BasicDelayedEventQueue::timerCallback(evutil_socket_t fd, short what, void *arg) {
 	struct callbackData *data = (struct callbackData*)arg;
-	std::lock_guard<std::recursive_mutex> lock(data->eventQueue->_mutex);
+	{
+		std::lock_guard<std::recursive_mutex> lock(data->eventQueue->_mutex);
 
-	if (data->eventQueue->_callbackData.find(data->eventUUID) == data->eventQueue->_callbackData.end())
-		return;
+		if (data->eventQueue->_callbackData.find(data->eventUUID) == data->eventQueue->_callbackData.end())
+			return;
 
-	event_free(data->event);
+		event_free(data->event);
+	}
+
+	// we cannot hold the mutex as this may trigger a delayed send
 	data->eventQueue->_callbacks->eventReady(data->userData, data->eventUUID);
-	data->eventQueue->_callbackData.erase(data->eventUUID);
+
+	{
+		std::lock_guard<std::recursive_mutex> lock(data->eventQueue->_mutex);
+		data->eventQueue->_callbackData.erase(data->eventUUID);
+	}
 }
 
 void BasicDelayedEventQueue::enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID) {

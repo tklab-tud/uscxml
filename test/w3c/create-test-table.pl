@@ -30,7 +30,8 @@ my %testClasses = (
 'w3c/gen/c/ecma' => 'C (ECMA)',
 'w3c/gen/c/lua' => 'C (Lua)',
 'w3c/binding/java/jexl' => 'Java (JEXL)',
-# 'w3c/spin/promela' => 'Spin'
+'w3c/binding/python/ecma' => 'Python (ECMA)',
+'w3c/spin/promela' => 'Spin',
 'w3c/gen/vhdl/promela' => 'VHDL Promela',
 # 'w3c/gen/vhdl/ecma' => 'VHDL ECMA',
 );

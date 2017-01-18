@@ -141,7 +141,7 @@
 
 <!-- this should return a value that cannot be assigned to a var.  -->
 <xsl:template match="//@conf:illegalExpr">
-	<xsl:attribute name="expr">return</xsl:attribute>
+	<xsl:attribute name="expr">return#</xsl:attribute>
 </xsl:template>
 
 <!-- this should add 1 to the value of the specified variable -->

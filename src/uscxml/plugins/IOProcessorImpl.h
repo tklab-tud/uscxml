@@ -23,10 +23,28 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
+#include "uscxml/interpreter/Logging.h"
 #include "uscxml/messages/Event.h"
-#include "uscxml/interpreter/InterpreterImpl.h"
 
 namespace uscxml {
+
+/**
+ * @ingroup ioproc
+ * @ingroup callback
+ * Callbacks available for every IO processor.
+ */
+class USCXML_API IOProcessorCallbacks {
+public:
+	virtual ~IOProcessorCallbacks() {} ///< silence virtual destructor warning from swig
+	virtual const std::string& getName() = 0;
+	virtual const std::string& getSessionId() = 0;
+	virtual void enqueueInternal(const Event& event) = 0;
+	virtual void enqueueExternal(const Event& event) = 0;
+	virtual void enqueueAtInvoker(const std::string& invokeId, const Event& event) = 0;
+	virtual void enqueueAtParent(const Event& event) = 0;
+	virtual Logger getLogger() = 0;
+
+};
 
 /**
  * @ingroup ioproc
@@ -41,7 +59,7 @@ public:
 	 * @param interpreter The imlementation of the associated Interpreter
 	 * @todo We will eventually introduce callbacks and prevent complete access to the interpreter.
 	 */
-	virtual std::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual std::shared_ptr<IOProcessorImpl> create(IOProcessorCallbacks* callbacks) = 0;
 
 	/**
 	 * We received an event from the SCXML Interpreter we are associated with.
@@ -67,6 +85,7 @@ protected:
 	 */
 	void eventToSCXML(Event& event, const std::string& type, const std::string& origin, bool internal = false);
 
+	IOProcessorCallbacks* _callbacks;
 };
 
 }

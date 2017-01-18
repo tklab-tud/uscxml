@@ -21,8 +21,8 @@
 
 namespace uscxml {
 
-WrappedIOProcessor::WrappedIOProcessor(InterpreterImpl* interpreter) {
-	_interpreter = interpreter;
+WrappedIOProcessor::WrappedIOProcessor(IOProcessorCallbacks* callbacks) {
+	_callbacks = callbacks;
 }
 WrappedIOProcessor::~WrappedIOProcessor() {}
 

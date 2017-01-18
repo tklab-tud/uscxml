@@ -23,6 +23,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <type_traits>
 
 #include "uscxml/Common.h"
 #include "uscxml/util/Convenience.h"
@@ -49,27 +50,27 @@ public:
 
 	Data() : node(NULL), type(INTERPRETED) {}
 
-	Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
+	explicit Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
 
 	// convenience constructors
-	Data(bool atom) : node(NULL), type(VERBATIM) {
-		if (atom) {
-			this->atom = "true";
-		} else {
-			this->atom = "false";
-		}
-	}
+//	explicit Data(bool atom) : node(NULL), type(VERBATIM) {
+//		if (atom) {
+//			this->atom = "true";
+//		} else {
+//			this->atom = "false";
+//		}
+//	}
 
 	explicit Data(XERCESC_NS::DOMNode* node_) : node(node_) {}
-	//    template <typename T> Data(T value, Type type = INTERPRETED) : atom(toStr(value)), type(type) {}
 
-	// we will have to drop this constructor as it interferes with operator Data() and requires C++11
+	explicit Data(const std::string& value) : node(NULL), atom(toStr(value)), type(VERBATIM) {}
+
+	template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+	explicit Data(T value)
+		: node(NULL), atom(toStr(value)), type(INTERPRETED) {}
+
 	template <typename T>
-	explicit Data(T value, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
-		: node(NULL), atom(toStr(value)), type(VERBATIM) {}
-	template <typename T>
-	explicit Data(T value, Type type, typename std::enable_if<! std::is_base_of<Data, T>::value>::type* = nullptr)
-		: node(NULL), atom(toStr(value)), type(type) {}
+	explicit Data(T value, Type type) : node(NULL), atom(toStr(value)), type(type) {}
 
 	~Data() {
 	}
@@ -170,11 +171,11 @@ public:
 	}
 
 	bool operator==(const Data &other) const {
-		return (*this < other || other < *this);
+		return !(*this != other);
 	}
 
 	bool operator!=(const Data &other) const {
-		return !(*this == other);
+		return (*this < other || other < *this);
 	}
 
 	operator std::string() const {

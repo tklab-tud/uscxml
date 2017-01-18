@@ -134,7 +134,7 @@ void USCXMLInvoker::run(void* instance) {
 		e.eventType = Event::PLATFORM;
 		e.invokeid = INSTANCE->_invokedInterpreter.getImpl()->getInvokeId();
 		e.name = "done.invoke." + e.invokeid;
-		INSTANCE->_interpreter->enqueueExternal(e);
+		INSTANCE->_callbacks->enqueueExternal(e);
 	}
 
 	INSTANCE->_isActive = false;
@@ -142,7 +142,7 @@ void USCXMLInvoker::run(void* instance) {
 
 std::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
 	std::shared_ptr<USCXMLInvoker> invoker(new USCXMLInvoker());
-	invoker->_interpreter = interpreter;
+	invoker->_callbacks = interpreter;
 	return invoker;
 }
 
@@ -163,10 +163,10 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		document->appendChild(newNode);
 
 		// TODO: where do we get the namespace from?
-		_invokedInterpreter = Interpreter::fromDocument(document, _interpreter->getBaseURL(), false);
+		_invokedInterpreter = Interpreter::fromDocument(document, _callbacks->getBaseURL(), false);
 	} else if (invokeEvent.data.atom.size() > 0) {
 		// test530 when deserializing
-		_invokedInterpreter = Interpreter::fromXML(invokeEvent.data.atom, _interpreter->getBaseURL());
+		_invokedInterpreter = Interpreter::fromXML(invokeEvent.data.atom, _callbacks->getBaseURL());
 
 	} else {
 		_isActive = false;
@@ -181,17 +181,17 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		// create new instances from the parent's ActionLanguage
 #if 1
 		InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
-		invoked->_execContent = _interpreter->_execContent.getImpl()->create(invoked);
-		invoked->_delayQueue = _interpreter->_delayQueue.getImplDelayed()->create(invoked);
-		invoked->_internalQueue = _interpreter->_internalQueue.getImplBase()->create();
-		invoked->_externalQueue = _interpreter->_externalQueue.getImplBase()->create();
-		invoked->_microStepper = _interpreter->_microStepper.getImpl()->create(invoked);
+		invoked->_execContent = _callbacks->_execContent.getImpl()->create(invoked);
+		invoked->_delayQueue = _callbacks->_delayQueue.getImplDelayed()->create(invoked);
+		invoked->_internalQueue = _callbacks->_internalQueue.getImplBase()->create();
+		invoked->_externalQueue = _callbacks->_externalQueue.getImplBase()->create();
+		invoked->_microStepper = _callbacks->_microStepper.getImpl()->create(invoked);
 
 		// TODO: setup invokers dom, check datamodel attribute and create new instance from parent if matching?
 #endif
 		// copy monitors
-		std::set<InterpreterMonitor*>::const_iterator monIter = _interpreter->_monitors.begin();
-		while(monIter != _interpreter->_monitors.end()) {
+		std::set<InterpreterMonitor*>::const_iterator monIter = _callbacks->_monitors.begin();
+		while(monIter != _callbacks->_monitors.end()) {
 			if ((*monIter)->copyToInvokers()) {
 				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
 			}

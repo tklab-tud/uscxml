@@ -65,7 +65,7 @@ DirMonInvoker::~DirMonInvoker() {
 
 std::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interpreter) {
 	std::shared_ptr<DirMonInvoker> invoker(new DirMonInvoker());
-	invoker->_interpreter = interpreter;
+	invoker->_callbacks = interpreter;
 	return invoker;
 }
 
@@ -99,7 +99,7 @@ void DirMonInvoker::eventFromSCXML(const Event& event) {
 
 void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 	if (req.params.find("dir") == req.params.end()) {
-		LOG(_interpreter->getLogger(), USCXML_ERROR) << "No dir param given";
+		LOG(_callbacks->getLogger(), USCXML_ERROR) << "No dir param given";
 		return;
 	}
 
@@ -134,10 +134,10 @@ void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 	std::multimap<std::string, Data>::const_iterator dirIter = req.params.find("dir");
 	while(dirIter != req.params.upper_bound("dir")) {
 		// this is simplified - Data might be more elaborate than a simple string atom
-		URL url = URL::resolve(dirIter->second.atom, _interpreter->getBaseURL());
+		URL url = URL::resolve(dirIter->second.atom, _callbacks->getBaseURL());
 
 		if (!url.isAbsolute()) {
-			LOG(_interpreter->getLogger(), USCXML_ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
+			LOG(_callbacks->getLogger(), USCXML_ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
 		} else {
 			_dir = url.path();
 		}
@@ -145,7 +145,7 @@ void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 	}
 
 	_watcher = new DirectoryWatch(_dir, _recurse);
-	_watcher->setLogger(_interpreter->getLogger());
+	_watcher->setLogger(_callbacks->getLogger());
 	_watcher->addMonitor(this);
 	_watcher->updateEntries(true);
 

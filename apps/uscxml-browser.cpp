@@ -21,13 +21,6 @@ int main(int argc, char** argv) {
 
 	InterpreterOptions options = InterpreterOptions::fromCmdLine(argc, argv);
 
-	if (options.pluginPath.length() > 0) {
-		Factory::setDefaultPluginPath(options.pluginPath);
-	}
-
-	if (options.verbose) {
-		Factory::getInstance()->listComponents();
-	}
 	if (!options) {
 		InterpreterOptions::printUsageAndExit(argv[0]);
 	}
@@ -48,6 +41,14 @@ int main(int argc, char** argv) {
 
 	}
 	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
+
+    if (options.pluginPath.length() > 0) {
+        Factory::setDefaultPluginPath(options.pluginPath);
+    }
+    
+    if (options.verbose) {
+        Factory::getInstance()->listComponents();
+    }
 
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;

@@ -31,6 +31,7 @@
 #include "uscxml/util/URL.h"
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/plugins/DataModelImpl.h"
+#include "uscxml/plugins/IOProcessorImpl.h"
 #include "uscxml/interpreter/MicroStepImpl.h"
 #include "uscxml/interpreter/ContentExecutorImpl.h"
 #include "uscxml/interpreter/EventQueue.h"
@@ -49,6 +50,7 @@ class InterpreterIssue;
 class USCXML_API InterpreterImpl :
 	public MicroStepCallbacks,
 	public DataModelCallbacks,
+	public IOProcessorCallbacks,
 	public ContentExecutorCallbacks,
 	public DelayedEventQueueCallbacks,
 	public std::enable_shared_from_this<InterpreterImpl> {
@@ -187,7 +189,7 @@ public:
 		return _dataModel.getAsData(expr);
 	}
 
-	virtual void assign(const std::string& location, const Data& data);
+	virtual void assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attrs);
 
 	virtual std::string getInvokeId() {
 		return _invokeId;
@@ -204,6 +206,12 @@ public:
 	virtual const Event& getCurrentEvent() {
 		return _currEvent;
 	}
+
+	/**
+	 IOProcessorCallbacks
+	 */
+	virtual void enqueueAtInvoker(const std::string& invokeId, const Event& event);
+	virtual void enqueueAtParent(const Event& event);
 
 	/**
 	 DelayedEventQueueCallbacks

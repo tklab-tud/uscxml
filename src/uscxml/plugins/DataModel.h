@@ -66,17 +66,19 @@ public:
 	                        uint32_t iteration);
 
 	/// @copydoc DataModelImpl::assign()
-	virtual void assign(const std::string& location, const Data& data);
+	virtual void assign(const std::string& location,
+	                    const Data& data,
+	                    const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 	/// @copydoc DataModelImpl::init()
-	virtual void init(const std::string& location, const Data& data);
+	virtual void init(const std::string& location,
+	                  const Data& data,
+	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 	/// @copydoc DataModelImpl::isDeclared()
 	virtual bool isDeclared(const std::string& expr);
 
 	/// @copydoc DataModelImpl::replaceExpressions()
 	size_t replaceExpressions(std::string& content);
-	/// @copydoc DataModelImpl::andExpressions()
-	std::string andExpressions(std::list<std::string> expressions);
 
 	/// @copydoc DataModelImpl::addExtension()
 	virtual void addExtension(DataModelExtension* ext);

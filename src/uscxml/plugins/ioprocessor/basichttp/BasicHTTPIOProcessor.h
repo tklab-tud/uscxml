@@ -59,7 +59,7 @@ class USCXML_PLUGIN_API BasicHTTPIOProcessor : public IOProcessorImpl, public HT
 public:
 	BasicHTTPIOProcessor();
 	virtual ~BasicHTTPIOProcessor();
-	virtual std::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
+	virtual std::shared_ptr<IOProcessorImpl> create(uscxml::IOProcessorCallbacks* callbacks);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

@@ -420,7 +420,12 @@ Data JSCDataModel::getAsData(const std::string& content) {
 		            (trimmed[0] == '\'' && trimmed[trimmed.length() - 1] == '\''))) {
 			d = Data(trimmed.substr(1, trimmed.length() - 2), Data::VERBATIM);
 		} else {
-			d = Data(trimmed, Data::INTERPRETED);
+			// test558, test562
+			ERROR_EXECUTION(e, "Given content cannot be interpreted as data");
+			e.data.compound["literal"] = Data(trimmed, Data::VERBATIM);
+			throw e;
+
+//			d = Data(trimmed, Data::INTERPRETED);
 		}
 	}
 	return d;
@@ -684,7 +689,7 @@ JSValueRef JSCDataModel::getNodeAsValue(const DOMNode* node) {
 //    }
 }
 
-void JSCDataModel::assign(const std::string& location, const Data& data) {
+void JSCDataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 
 	// flags on attribute are ignored?
 	if (location.compare("_sessionid") == 0) // test 322
@@ -714,7 +719,7 @@ void JSCDataModel::assign(const std::string& location, const Data& data) {
 		handleException(exception);
 }
 
-void JSCDataModel::init(const std::string& location, const Data& data) {
+void JSCDataModel::init(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 	try {
 		if (data.empty()) {
 			assign(location, Data("null", Data::INTERPRETED));
@@ -726,26 +731,6 @@ void JSCDataModel::init(const std::string& location, const Data& data) {
 		evalAsValue(location + " = undefined", true);
 		throw e;
 	}
-}
-
-std::string JSCDataModel::andExpressions(std::list<std::string> expressions) {
-	if (expressions.size() == 0)
-		return "";
-
-	if (expressions.size() == 1)
-		return *(expressions.begin());
-
-	std::ostringstream exprSS;
-	exprSS << "(";
-	std::string conjunction = "";
-	for (std::list<std::string>::const_iterator exprIter = expressions.begin();
-	        exprIter != expressions.end();
-	        exprIter++) {
-		exprSS << conjunction << "(" << *exprIter << ")";
-		conjunction = " && ";
-	}
-	exprSS << ")";
-	return exprSS.str();
 }
 
 void JSCDataModel::handleException(JSValueRef exception) {

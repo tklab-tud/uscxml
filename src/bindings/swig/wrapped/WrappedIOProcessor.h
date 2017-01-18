@@ -36,15 +36,15 @@ namespace uscxml {
 
 class WrappedIOProcessor : public IOProcessorImpl {
 public:
-	WrappedIOProcessor(InterpreterImpl* interpreter);
+	WrappedIOProcessor(IOProcessorCallbacks* callbacks);
 	virtual ~WrappedIOProcessor();
 
 	virtual std::list<std::string> getNames() {
 		return std::list<std::string>();
 	};
 
-	virtual std::shared_ptr<IOProcessorImpl> create(InterpreterImpl* interpreter) {
-		std::shared_ptr<IOProcessorImpl> ioProc = std::shared_ptr<IOProcessorImpl>(new WrappedIOProcessor(interpreter));
+	virtual std::shared_ptr<IOProcessorImpl> create(IOProcessorCallbacks* callbacks) {
+		std::shared_ptr<IOProcessorImpl> ioProc = std::shared_ptr<IOProcessorImpl>(new WrappedIOProcessor(callbacks));
 		return ioProc;
 	}
 

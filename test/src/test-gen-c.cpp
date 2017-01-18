@@ -17,16 +17,20 @@
 #endif
 
 #ifndef AUTOINCLUDE_TEST
-#include "test-c-machine.scxml.c"
-//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test329.scxml.machine.c"
+//#include "test-c-machine.scxml.c"
+//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test562.scxml.machine.c"
+//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test558.scxml.machine.c"
+#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/lua/test530.scxml.machine.c"
 #endif
 
 #include "uscxml/util/URL.h"
 //#include "uscxml/concurrency/Timer.h"
 //#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/plugins/Factory.h"
+#include "uscxml/plugins/IOProcessorImpl.h"
 //#include "uscxml/Interpreter.h"
 #include "uscxml/util/UUID.h"
+//#include "uscxml/server/HTTPServer.h"
 
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/interpreter/BasicEventQueue.h"
@@ -40,7 +44,7 @@
 
 using namespace uscxml;
 
-class StateMachine : public DataModelCallbacks, public DelayedEventQueueCallbacks {
+class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, public DelayedEventQueueCallbacks {
 public:
 	StateMachine(const uscxml_machine* machine) : machine(machine), parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
 		allMachines[sessionId] = this;
@@ -68,6 +72,23 @@ public:
 	}
 	const std::map<std::string, IOProcessor>& getIOProcessors() {
 		return ioProcs;
+	}
+
+	void enqueueInternal(const Event& event) {
+		iq.push_back(event);
+	}
+	void enqueueExternal(const Event& event) {
+		eq.push_back(event);
+	}
+
+	void enqueueAtInvoker(const std::string& invokeId, const Event& event) {
+		if (invokers.find(invokeId) != invokers.end())
+			invokers[invokeId].eventFromSCXML(event);
+	}
+
+	void enqueueAtParent(const Event& event) {
+		if (parentMachine != NULL)
+			parentMachine->enqueueExternal(event);
 	}
 
 	bool isInState(const std::string& stateId) {
@@ -118,6 +139,16 @@ public:
 		ctx.exec_content_script = &execContentScript;
 
 		name = machine->name;
+
+		// register IO Procs
+		std::map<std::string, IOProcessorImpl*> allIOProcs = Factory::getInstance()->getIOProcessors();
+		for (auto ioProcImpl : allIOProcs) {
+			ioProcs[ioProcImpl.first] = Factory::getInstance()->createIOProcessor(ioProcImpl.first, this);
+			std::list<std::string> names = ioProcImpl.second->getNames();
+			for (auto name : names) {
+				ioProcs[name] = ioProcs[ioProcImpl.first];
+			}
+		}
 
 		delayQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(new BasicDelayedEventQueue(this)));
 		dataModel = Factory::getInstance()->createDataModel(machine->datamodel, this);
@@ -310,7 +341,12 @@ public:
 
 		if (donedata) {
 			if (donedata->content != NULL) {
-				e.data = Data(donedata->content, Data::VERBATIM);
+				if (isNumeric(donedata->content, 10)) {
+					// test 529
+					e.data = Data(strTo<double>(donedata->content), Data::INTERPRETED);
+				} else {
+					e.data = Data(donedata->content, Data::VERBATIM);
+				}
 			} else if (donedata->contentexpr != NULL) {
 				try {
 					e.data = USER_DATA(ctx)->dataModel.getAsData(donedata->contentexpr);
@@ -369,13 +405,13 @@ public:
 		}
 
 		if (target.size() > 0 && (target[0] != '#' || target[1] != '_')) {
+			std::cerr << "Target '" << target << "' is not supported yet" << std::endl;
 			e.name = "error.execution";
 			execContentRaise(ctx, e);
 			return USCXML_ERR_INVALID_TARGET;
 		}
 
 		e.origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
-//		e.origin = target;
 
 		std::string type;
 		try {
@@ -400,6 +436,7 @@ public:
 		}
 
 		e.origintype = type;
+		e.origin = "#_scxml_" + USER_DATA(ctx)->sessionId;
 		e.invokeid = USER_DATA(ctx)->invokeId;
 
 		if (send->eventexpr != NULL) {
@@ -446,11 +483,13 @@ public:
 		}
 
 		if (send->content != NULL) {
-			// will it parse as json?
-			Data d = USER_DATA(ctx)->dataModel.getAsData(send->content);
-			if (!d.empty()) {
-				e.data = d;
-			} else {
+			try {
+				// will it parse as json?
+				Data d = USER_DATA(ctx)->dataModel.getAsData(send->content);
+				if (!d.empty()) {
+					e.data = d;
+				}
+			} catch (Event err) {
 				e.data = Data(spaceNormalize(send->content), Data::VERBATIM);
 			}
 		}
@@ -560,8 +599,9 @@ public:
 		try {
 //			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
 			if (assign->expr != NULL) {
-				USER_DATA(ctx)->dataModel.assign(key,
-				                                 USER_DATA(ctx)->dataModel.evalAsData(assign->expr));
+//				USER_DATA(ctx)->dataModel.assign(key,
+//				                                 USER_DATA(ctx)->dataModel.evalAsData(assign->expr));
+				USER_DATA(ctx)->dataModel.assign(key, Data(assign->expr, Data::INTERPRETED));
 			} else if (assign->content != NULL) {
 				Data d = Data(assign->content, Data::INTERPRETED);
 				USER_DATA(ctx)->dataModel.assign(key, d);
@@ -628,7 +668,8 @@ public:
 
 				try {
 					if (data->expr != NULL) {
-						d = USER_DATA(ctx)->dataModel.evalAsData(data->expr);
+						d = Data(data->expr, Data::INTERPRETED);
+//						d = USER_DATA(ctx)->dataModel.evalAsData(data->expr);
 
 					} else if (data->content != NULL || data->src != NULL) {
 						if (data->content) {
@@ -647,7 +688,9 @@ public:
 						 * as space normalized string literals if this fails below
 						 */
 						d = USER_DATA(ctx)->dataModel.getAsData(content.str());
-
+						if (d.empty()) {
+							d = Data(escape(spaceNormalize(content.str())), Data::VERBATIM);
+						}
 					} else {
 						// leave d undefined
 					}
@@ -895,6 +938,8 @@ NEXT_DESC:
 	std::deque<Event> eq;
 
 	DataModel dataModel;
+	std::map<std::string, IOProcessor> ioProcs;
+	std::map<std::string, Invoker> invokers;
 
 protected:
 	struct scxml_foreach_info {
@@ -903,8 +948,6 @@ protected:
 	};
 
 	X xmlPrefix;
-	std::map<std::string, IOProcessor> ioProcs;
-	std::map<std::string, Invoker> invokers;
 	XERCESC_NS::DOMDocument* document;
 
 	DelayedEventQueue delayQueue;
@@ -924,6 +967,9 @@ int main(int argc, char** argv) {
 	if (envBenchmarkRuns != NULL) {
 		benchmarkRuns = strTo<size_t>(envBenchmarkRuns);
 	}
+
+	// start the webserver for the basichttp tests
+//    HTTPServer::getInstance(3453, 3454, NULL);
 
 	size_t remainingRuns = benchmarkRuns;
 

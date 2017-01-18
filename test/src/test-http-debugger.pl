@@ -26,16 +26,19 @@ my @breakpointSeq;
 my $pid = fork;
 
 if (!$pid) {
-	# exec("$scxmlBin -t4088 -d");
+	exec("$scxmlBin -t4088 -d");
 	exit;
 }
 
-# my $baseURL = 'http://localhost:4088/debug';
-my $baseURL = 'http://localhost:5080/debug';
+my $baseURL = 'http://localhost:4088/debug';
+# my $baseURL = 'http://localhost:5080/debug';
 
 sub assertSuccess {
 	my $response = shift;
 	my $message = shift;
+	print "-----\n";
+	print $response->content();
+	print "-----\n";
 	from_json($response->content())->{'status'} eq "success" or die($message);
 }
 

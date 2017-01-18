@@ -60,10 +60,12 @@ public:
 
 	virtual bool isDeclared(const std::string& expr);
 
-	virtual void assign(const std::string& location, const Data& data);
-	virtual void init(const std::string& location, const Data& data);
-
-	virtual std::string andExpressions(std::list<std::string>);
+	virtual void assign(const std::string& location,
+	                    const Data& data,
+	                    const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
+	virtual void init(const std::string& location,
+	                  const Data& data,
+	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 protected:
 

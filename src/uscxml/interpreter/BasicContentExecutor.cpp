@@ -118,7 +118,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			 */
 			sendEvent.sendid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
 			if (HAS_ATTR(element, "idlocation")) {
-				_callbacks->assign(ATTR(element, "idlocation"), Data(sendEvent.sendid, Data::VERBATIM));
+				_callbacks->assign(ATTR(element, "idlocation"), Data(sendEvent.sendid, Data::VERBATIM), std::map<std::string, std::string>());
 			} else {
 				sendEvent.hideSendId = true;
 			}
@@ -242,7 +242,16 @@ void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 
 void BasicContentExecutor::processAssign(XERCESC_NS::DOMElement* content) {
 	std::string location = ATTR(content, "location");
-	_callbacks->assign(location, elementAsData(content));
+
+	std::map<std::string, std::string> additionalAttr;
+	auto xmlAttrs = content->getAttributes();
+	size_t nrAttrs = xmlAttrs->getLength();
+	for (size_t i = 0; i < nrAttrs; i++) {
+		auto attr = xmlAttrs->item(i);
+		additionalAttr[X(attr->getNodeName()).str()] = X(attr->getNodeValue()).str();
+	}
+
+	_callbacks->assign(location, elementAsData(content, true), additionalAttr);
 }
 
 void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
@@ -321,10 +330,10 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 					for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
 						if (event.namelist.find(*nameIter) != event.namelist.end()) {
 							// scxml i/o proc keeps a dedicated namelist
-							_callbacks->assign(*nameIter, event.namelist.at(*nameIter));
+							_callbacks->assign(*nameIter, event.namelist.at(*nameIter), std::map<std::string, std::string>());
 						} else if (event.data.compound.find(*nameIter) != event.data.compound.end()) {
 							// this is where it would end up with non scxml i/o processors
-							_callbacks->assign(*nameIter, event.data.compound.at(*nameIter));
+							_callbacks->assign(*nameIter, event.data.compound.at(*nameIter), std::map<std::string, std::string>());
 						}
 					}
 				}
@@ -405,7 +414,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		} else {
 			invokeEvent.invokeid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
 			if (HAS_ATTR(element, "idlocation")) {
-				_callbacks->assign(ATTR(element, "idlocation"), Data(invokeEvent.invokeid, Data::VERBATIM));
+				_callbacks->assign(ATTR(element, "idlocation"), Data(invokeEvent.invokeid, Data::VERBATIM), std::map<std::string, std::string>());
 			}
 		}
 
@@ -684,12 +693,10 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool a
 			if (asExpression) // not actually used, but likely expected
 				return Data(contentSS.str(), Data::INTERPRETED);
 
-			// test153
-			try {
-				Data d = _callbacks->getAsData(contentSS.str());
-				if (!d.empty())
-					return d;
-			} catch(...) {}
+			// test153, we need to throw for test150 in promela
+			Data d = _callbacks->getAsData(contentSS.str());
+			if (!d.empty())
+				return d;
 
 			// never actually occurs with the w3c tests
 			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);

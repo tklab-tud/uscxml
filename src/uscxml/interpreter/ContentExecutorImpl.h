@@ -28,6 +28,7 @@
 
 #include <string>
 #include <set>
+#include <map>
 
 namespace XERCESC_NS {
 class DOMDocument;
@@ -59,7 +60,7 @@ public:
 
 	virtual Data evalAsData(const std::string& expr) = 0;
 	virtual Data getAsData(const std::string& expr) = 0;
-	virtual void assign(const std::string& location, const Data& data) = 0;
+	virtual void assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attrs) = 0;
 
 
 	virtual std::string getInvokeId() = 0;

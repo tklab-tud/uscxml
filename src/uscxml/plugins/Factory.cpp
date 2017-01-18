@@ -106,7 +106,6 @@ void Factory::registerPlugins() {
 	}
 #endif
 
-
 #ifdef WITH_DM_ECMA_V8
 	{
 		V8DataModel* dataModel = new V8DataModel();
@@ -352,12 +351,12 @@ bool Factory::hasIOProcessor(const std::string& type) {
 	return false;
 }
 
-std::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, InterpreterImpl* interpreter) {
+std::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& type, IOProcessorCallbacks* callbacks) {
 	// do we have this type ourself?
 	if (_ioProcessorAliases.find(type) != _ioProcessorAliases.end()) {
 		std::string canonicalName = _ioProcessorAliases[type];
 		if (_ioProcessors.find(canonicalName) != _ioProcessors.end()) {
-			std::shared_ptr<IOProcessorImpl> ioProc = _ioProcessors[canonicalName]->create(interpreter);
+			std::shared_ptr<IOProcessorImpl> ioProc = _ioProcessors[canonicalName]->create(callbacks);
 //			ioProc->setInterpreter(interpreter);
 			return ioProc;
 		}
@@ -365,7 +364,7 @@ std::shared_ptr<IOProcessorImpl> Factory::createIOProcessor(const std::string& t
 
 	// lookup in parent factory
 	if (_parentFactory) {
-		return _parentFactory->createIOProcessor(type, interpreter);
+		return _parentFactory->createIOProcessor(type, callbacks);
 	} else {
 		ERROR_EXECUTION_THROW("No IOProcessor named '" + type + "' known");
 	}
@@ -497,9 +496,9 @@ void IOProcessorImpl::eventToSCXML(Event& event,
 		event.origintype = type;
 
 	if (internal) {
-		_interpreter->enqueueInternal(event);
+		_callbacks->enqueueInternal(event);
 	} else {
-		_interpreter->enqueueExternal(event);
+		_callbacks->enqueueExternal(event);
 	}
 }
 
@@ -517,9 +516,9 @@ void InvokerImpl::eventToSCXML(Event& event,
 		event.origintype = type;
 
 	if (internal) {
-		_interpreter->enqueueInternal(event);
+		_callbacks->enqueueInternal(event);
 	} else {
-		_interpreter->enqueueExternal(event);
+		_callbacks->enqueueExternal(event);
 	}
 }
 

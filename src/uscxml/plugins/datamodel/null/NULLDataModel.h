@@ -90,24 +90,14 @@ public:
 		return true;
 	}
 
-	virtual void assign(const XERCESC_NS::DOMElement* assignElem,
-	                    const XERCESC_NS::DOMNode* node,
-	                    const std::string& content) {}
-	virtual void assign(const std::string& location, const Data& data) {}
-
-	virtual void init(const XERCESC_NS::DOMElement* dataElem,
-	                  const XERCESC_NS::DOMNode* node,
-	                  const std::string& content) {}
-	virtual void init(const std::string& location, const Data& data) {}
+	virtual void assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {}
+	virtual void init(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {}
 
 	virtual void setCallbacks(DataModelCallbacks* callbacks) {
 		_callbacks = callbacks;
 	}
 
 	virtual void addExtension(DataModelExtension* ext) {}
-	virtual std::string andExpressions(std::list<std::string>) {
-		return "";
-	}
 
 protected:
 

@@ -32,7 +32,7 @@ class SCXMLIOProcessor : public IOProcessorImpl {
 public:
 	SCXMLIOProcessor();
 	virtual ~SCXMLIOProcessor();
-	virtual std::shared_ptr<IOProcessorImpl> create(uscxml::InterpreterImpl* interpreter);
+	virtual std::shared_ptr<IOProcessorImpl> create(uscxml::IOProcessorCallbacks* callbacks);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;
@@ -46,7 +46,7 @@ public:
 
 	Data getDataModelVariables();
 protected:
-	InterpreterImpl* _interpreter;
+	IOProcessorCallbacks* _callbacks;
 };
 
 #ifdef BUILD_AS_PLUGINS

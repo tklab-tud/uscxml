@@ -388,18 +388,26 @@ void InterpreterImpl::init() {
 void InterpreterImpl::initData(XERCESC_NS::DOMElement* root) {
 	std::string id = ATTR(root, "id");
 	Data d;
+
+	std::map<std::string, std::string> additionalAttr;
+	auto xmlAttrs = root->getAttributes();
+	size_t nrAttrs = xmlAttrs->getLength();
+	for (size_t i = 0; i < nrAttrs; i++) {
+		auto attr = xmlAttrs->item(i);
+		additionalAttr[X(attr->getNodeName()).str()] = X(attr->getNodeValue()).str();
+	}
+
 	try {
 		if (Event::getParam(_invokeReq.params, id, d)) {
-			_dataModel.init(id, d);
+			_dataModel.init(id, d, additionalAttr);
 		} else if (_invokeReq.namelist.find(id) != _invokeReq.namelist.end()) {
-			_dataModel.init(id, _invokeReq.namelist[id]);
+			_dataModel.init(id, _invokeReq.namelist[id], additionalAttr);
 		} else {
 			try {
-				_dataModel.init(id, _execContent.elementAsData(root));
+				_dataModel.init(id, _execContent.elementAsData(root), additionalAttr);
 			} catch (ErrorEvent e) {
 				// test 453
-				_dataModel.init(id, _execContent.elementAsData(root, true));
-
+				_dataModel.init(id, _execContent.elementAsData(root, true), additionalAttr);
 			}
 		}
 	} catch(ErrorEvent e) {
@@ -408,8 +416,8 @@ void InterpreterImpl::initData(XERCESC_NS::DOMElement* root) {
 	}
 }
 
-void InterpreterImpl::assign(const std::string& location, const Data& data) {
-	_dataModel.assign(location, data);
+void InterpreterImpl::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attrs) {
+	_dataModel.assign(location, data, attrs);
 }
 
 bool InterpreterImpl::isMatched(const Event& event, const std::string& eventDesc) {
@@ -552,6 +560,31 @@ void InterpreterImpl::uninvoke(const std::string& invokeId) {
 		_invokers[invokeId].uninvoke();
 		_autoForwarders.erase(invokeId);
 		_invokers.erase(invokeId);
+	}
+
+}
+
+void InterpreterImpl::enqueueAtInvoker(const std::string& invokeId, const Event& event) {
+	if (_invokers.find(invokeId) != _invokers.end()) {
+		std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
+		try {
+			_invokers[invokeId].eventFromSCXML(event);
+		} catch (const std::exception &e) {
+			ERROR_COMMUNICATION_THROW("Exception caught while sending event to invoker '" + invokeId + "': " + e.what());
+		} catch(...) {
+			ERROR_COMMUNICATION_THROW("Exception caught while sending event to invoker '" + invokeId + "'");
+		}
+	} else {
+		ERROR_COMMUNICATION_THROW("Can not send to invoked component '" + invokeId + "', no such invokeId");
+	}
+
+}
+
+void InterpreterImpl::enqueueAtParent(const Event& event) {
+	if (_parentQueue) {
+		_parentQueue.enqueue(event);
+	} else {
+		ERROR_COMMUNICATION_THROW("Sending to parent invoker, but none is set");
 	}
 
 }

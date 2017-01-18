@@ -408,7 +408,7 @@ void V8DataModel::setEvent(const Event& event) {
 			}
 		}
 		if (!data.empty()) {
-//			std::cout << Data::toJSON(eventCopy.data);
+//			std::cout << Data::toJSON(data);
 			eventObj->Set(v8::String::NewSymbol("data"), getDataAsValue(data)); // set data part of _event
 		} else {
 			// test 343 / test 488
@@ -436,7 +436,10 @@ Data V8DataModel::getAsData(const std::string& content) {
 		            (trimmed[0] == '\'' && trimmed[trimmed.length() - 1] == '\''))) {
 			d = Data(trimmed.substr(1, trimmed.length() - 2), Data::VERBATIM);
 		} else {
-			d = Data(trimmed, Data::INTERPRETED);
+			// test558, test562
+			ERROR_EXECUTION(e, "Given content cannot be interpreted as data");
+			e.data.compound["literal"] = Data(trimmed, Data::VERBATIM);
+			throw e;
 		}
 	}
 	return d;
@@ -631,12 +634,22 @@ void V8DataModel::jsIn(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 bool V8DataModel::isValidSyntax(const std::string& expr) {
+	v8::Locker locker(_isolate);
+	v8::Isolate::Scope isoScope(_isolate);
+	v8::HandleScope scope(_isolate);
+
+	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
+	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
+
 	v8::TryCatch tryCatch;
 
 	v8::Local<v8::String> source = v8::String::New(expr.c_str());
-	v8::Local<v8::Script> script = v8::Script::Compile(source);
+	if (tryCatch.HasCaught() || source.IsEmpty()) {
+		return false;
+	}
 
-	if (script.IsEmpty() || tryCatch.HasCaught()) {
+	v8::Local<v8::Script> script = v8::Script::Compile(source);
+	if (tryCatch.HasCaught() || script.IsEmpty()) {
 		return false;
 	}
 
@@ -726,7 +739,7 @@ bool V8DataModel::evalAsBool(const std::string& expr) {
 }
 
 
-void V8DataModel::assign(const std::string& location, const Data& data) {
+void V8DataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 
 	v8::Locker locker(_isolate);
 	v8::Isolate::Scope isoScope(_isolate);
@@ -754,8 +767,7 @@ void V8DataModel::assign(const std::string& location, const Data& data) {
 	}
 }
 
-void V8DataModel::init(const std::string& location,
-                       const Data& data) {
+void V8DataModel::init(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 	v8::Locker locker(_isolate);
 	v8::Isolate::Scope isoScope(_isolate);
 	v8::HandleScope scope(_isolate);
@@ -772,26 +784,6 @@ void V8DataModel::init(const std::string& location,
 		// we need to get error.execution into the queue
 		throw e;
 	}
-}
-
-std::string V8DataModel::andExpressions(std::list<std::string> expressions) {
-	if (expressions.size() == 0)
-		return "";
-
-	if (expressions.size() == 1)
-		return *(expressions.begin());
-
-	std::ostringstream exprSS;
-	exprSS << "(";
-	std::string conjunction = "";
-	for (std::list<std::string>::const_iterator exprIter = expressions.begin();
-	        exprIter != expressions.end();
-	        exprIter++) {
-		exprSS << conjunction << "(" << *exprIter << ")";
-		conjunction = " && ";
-	}
-	exprSS << ")";
-	return exprSS.str();
 }
 
 v8::Local<v8::Value> V8DataModel::evalAsValue(const std::string& expr, bool dontThrow) {

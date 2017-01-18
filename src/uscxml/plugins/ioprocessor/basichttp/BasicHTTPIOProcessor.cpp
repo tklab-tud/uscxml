@@ -72,16 +72,16 @@ BasicHTTPIOProcessor::~BasicHTTPIOProcessor() {
 }
 
 
-std::shared_ptr<IOProcessorImpl> BasicHTTPIOProcessor::create(InterpreterImpl* interpreter) {
+std::shared_ptr<IOProcessorImpl> BasicHTTPIOProcessor::create(IOProcessorCallbacks* callbacks) {
 	std::shared_ptr<BasicHTTPIOProcessor> io(new BasicHTTPIOProcessor());
-	io->_interpreter = interpreter;
+	io->_callbacks = callbacks;
 
 	// register at http server
-	std::string path = interpreter->getName();
+	std::string path = callbacks->getName();
 	int i = 2;
 	while (!HTTPServer::registerServlet(path + "/basichttp", io.get())) {
 		std::stringstream ss;
-		ss << interpreter->getName() << i++;
+		ss << callbacks->getName() << i++;
 		path = ss.str();
 	}
 
@@ -184,7 +184,7 @@ void BasicHTTPIOProcessor::eventFromSCXML(const std::string& target, const Event
 
 	// TODO: is this still needed with isValidTarget()?
 	if (target.length() == 0) {
-		_interpreter->enqueueInternal(Event("error.communication", Event::PLATFORM));
+		_callbacks->enqueueInternal(Event("error.communication", Event::PLATFORM));
 		return;
 	}
 

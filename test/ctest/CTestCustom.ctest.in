@@ -35,33 +35,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"w3c/ecma/test436.scxml" # Tests NULL datamodel - PASSED
 
 
-  ### Ignore for flattened ECMAScript datamodel
-	"w3c/fsm/ecma/test178.scxml" # Manual - PASSED
-	"w3c/fsm/ecma/test230.scxml" # Manual - PASSED
-	"w3c/fsm/ecma/test250.scxml" # Manual - PASSED
-	"w3c/fsm/ecma/test307.scxml" # Manual - PASSED
-	"w3c/fsm/ecma/test313.scxml" # Manual - PASSED
-	"w3c/fsm/ecma/test314.scxml" # Manual - PASSED
-	"w3c/fsm/ecma/test415.scxml" # Manual - PASSED
-  # "w3c/fsm/ecma/test513.txt" # Manual - PASSED
-  
-	"w3c/fsm/ecma/test301.scxml" # Invalid script URL - PASSED
-	"w3c/fsm/ecma/test436.scxml" # Tests NULL datamodel - PASSED
-
-  ### Ignore for flattened, minimized ECMAScript datamodel
-	"w3c/fsm/minimized/ecma/test178.scxml" # Manual - PASSED
-	"w3c/fsm/minimized/ecma/test230.scxml" # Manual - PASSED
-	"w3c/fsm/minimized/ecma/test250.scxml" # Manual - PASSED
-	"w3c/fsm/minimized/ecma/test307.scxml" # Manual - PASSED
-	"w3c/fsm/minimized/ecma/test313.scxml" # Manual - PASSED
-	"w3c/fsm/minimized/ecma/test314.scxml" # Manual - PASSED
-	"w3c/fsm/minimized/ecma/test415.scxml" # Manual - PASSED
-  # "w3c/fsm/minimized/ecma/test513.txt" # Manual - PASSED
-  
-	"w3c/fsm/minimized/ecma/test301.scxml" # Invalid script URL - PASSED
-	"w3c/fsm/minimized/ecma/test436.scxml" # Tests NULL datamodel - PASSED
-
-
   ### Just ignore the XPath datamodel tests that hang, most of the rest fails as well
 	"w3c/xpath/test178.scxml" # Manual - PASSED
 	"w3c/xpath/test230.scxml" # Manual - PASSED
@@ -85,7 +58,6 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"w3c/lua/test314.scxml" # Manual - PASSED
 	"w3c/lua/test415.scxml" # Manual - PASSED
   # "w3c/lua/test513.txt" # Manual - PASSED
-  
 	"w3c/lua/test301.scxml" # Invalid script URL - PASSED
 	"w3c/lua/test436.scxml" # Tests NULL datamodel - PASSED
 
@@ -97,8 +69,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"w3c/prolog/test313.scxml" # Manual - PASSED
 	"w3c/prolog/test314.scxml" # Manual - PASSED
 	"w3c/prolog/test415.scxml" # Manual - PASSED
-  # "w3c/lua/test513.txt" # Manual - PASSED
-  
+  # "w3c/prolog/test513.txt" # Manual - PASSED
 	"w3c/prolog/test301.scxml" # Invalid script URL - PASSED
 	"w3c/prolog/test436.scxml" # Tests NULL datamodel - PASSED
   
@@ -119,16 +90,16 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   
   
   # "w3c/promela/test190.scxml" # string concatenation
-  # "w3c/promela/test224.scxml" # string operation startWith
+  "w3c/promela/test224.scxml" # string operation startWith
   # "w3c/promela/test280.scxml" # no runtime checks for undeclared variables
   # "w3c/promela/test350.scxml" # string concatenation
-  # "w3c/promela/test509.scxml" # string operation contains
-  # "w3c/promela/test518.scxml" # string operation contains
-  # "w3c/promela/test519.scxml" # string operation contains
-  # "w3c/promela/test520.scxml" # string operation contains
+  "w3c/promela/test509.scxml" # string operation contains
+  "w3c/promela/test518.scxml" # string operation contains
+  "w3c/promela/test519.scxml" # string operation contains
+  "w3c/promela/test520.scxml" # string operation contains
   # "w3c/promela/test525.scxml" # assumes unbound arrays
   # "w3c/promela/test530.scxml" # assigns DOM node to variable
-  # "w3c/promela/test534.scxml" # string operation contains
+  "w3c/promela/test534.scxml" # string operation contains
   
   
   ### Ignore for SPIN model checking
@@ -195,7 +166,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "w3c/spin/promela/test553.scxml" # error in namelist
   "w3c/spin/promela/test554.scxml" # evaluation of <invoke>'s args causes an error
   "w3c/spin/promela/test577.scxml" # send without target for basichttp
-  
+  	
   
   ### Ignore for generated C sources
   
@@ -203,6 +174,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   
   # we do not support io processors yet
   "w3c/gen/c/ecma/test201.scxml" # basichttp
+  "w3c/gen/c/ecma/test453.scxml" # functions as first-class objects
   "w3c/gen/c/ecma/test500.scxml" # _ioprocessors
   "w3c/gen/c/ecma/test501.scxml" # _ioprocessors
   "w3c/gen/c/ecma/test509.scxml" # _ioprocessors / basichttp
@@ -211,9 +183,11 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "w3c/gen/c/ecma/test519.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/ecma/test520.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/ecma/test522.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/ecma/test528.scxml" # runtime type information
   "w3c/gen/c/ecma/test531.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/ecma/test532.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/ecma/test534.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/ecma/test558.scxml" # content per url
   "w3c/gen/c/ecma/test567.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/ecma/test569.scxml" # _ioprocessors
   "w3c/gen/c/ecma/test577.scxml" # basichttp
@@ -229,6 +203,50 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "w3c/gen/c/ecma/test557.scxml"
   "w3c/gen/c/ecma/test561.scxml"
 
+
+  "w3c/gen/c/lua/test201.scxml" # basichttp
+  "w3c/gen/c/lua/test216.scxml" # invoke srcexpr
+  "w3c/gen/c/lua/test301.scxml" # failing is succeeding
+  "w3c/gen/c/lua/test453.scxml" # functions as first-class objects
+  "w3c/gen/c/lua/test500.scxml" # _ioprocessors
+  "w3c/gen/c/lua/test501.scxml" # _ioprocessors
+  "w3c/gen/c/lua/test509.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test510.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test518.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test519.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test520.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test522.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test528.scxml" # runtime type information
+  "w3c/gen/c/lua/test530.scxml" # DOM in data
+  "w3c/gen/c/lua/test531.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test532.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test534.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test558.scxml" # content per url
+  "w3c/gen/c/lua/test567.scxml" # _ioprocessors / basichttp
+  "w3c/gen/c/lua/test569.scxml" # _ioprocessors
+  "w3c/gen/c/lua/test577.scxml" # basichttp
+
+	# ignore for python bindings
+	"w3c/binding/python/ecma/test178.scxml"
+	"w3c/binding/python/ecma/test201.scxml"
+	"w3c/binding/python/ecma/test230.scxml"
+	"w3c/binding/python/ecma/test250.scxml"
+	"w3c/binding/python/ecma/test301.scxml"
+	"w3c/binding/python/ecma/test326.scxml"
+	"w3c/binding/python/ecma/test415.scxml"
+	"w3c/binding/python/ecma/test509.scxml"
+	"w3c/binding/python/ecma/test510.scxml"
+	"w3c/binding/python/ecma/test518.scxml"
+	"w3c/binding/python/ecma/test519.scxml"
+	"w3c/binding/python/ecma/test520.scxml"
+	"w3c/binding/python/ecma/test522.scxml"
+	"w3c/binding/python/ecma/test531.scxml"
+	"w3c/binding/python/ecma/test532.scxml"
+	"w3c/binding/python/ecma/test534.scxml"
+	"w3c/binding/python/ecma/test558.scxml"
+	"w3c/binding/python/ecma/test567.scxml"
+	"w3c/binding/python/ecma/test578.scxml"
+	
 
   ### Ignore for delay with performance
 

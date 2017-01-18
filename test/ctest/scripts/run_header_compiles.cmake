@@ -8,6 +8,7 @@ set(COMPILE_CMD_BIN
 # "-I${PROJECT_BINARY_DIR}/deps/libevent/include"
 # "-I${PROJECT_BINARY_DIR}/deps/uriparser/include"
 # "-I${PROJECT_SOURCE_DIR}/contrib/src/evws"
+"-std=c++11"
 "-I${CMAKE_BINARY_DIR}"
 "-I${PROJECT_BINARY_DIR}"
 "-I${PROJECT_SOURCE_DIR}/src"

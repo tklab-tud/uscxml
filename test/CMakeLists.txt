@@ -1,4 +1,5 @@
 set(TEST_TIMEOUT 30)
+set(CTEST_TEST_TIMEOUT 30)
 set(TEST_BENCHMARK_ITERATIONS 1000)
 
 find_program(SPIN_BIN spin)
@@ -37,6 +38,7 @@ function(USCXML_TEST_COMPILE)
 	if (NOT ${USCXML_TEST_BUILD_ONLY})
 		add_test(${USCXML_TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${USCXML_TEST_NAME} ${USCXML_TEST_ARGS})
 		set_property(TEST ${USCXML_TEST_NAME} PROPERTY LABELS ${USCXML_TEST_LABEL})
+		set_property(TEST ${USCXML_TEST_NAME} PROPERTY TIMEOUT ${TEST_TIMEOUT})
 	endif ()
 	set_target_properties(${USCXML_TEST_NAME} PROPERTIES FOLDER "Tests")
 endfunction()
@@ -47,7 +49,11 @@ USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
-USCXML_TEST_COMPILE(NAME test-serialization LABEL general/test-serialization FILES src/test-serialization.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp)
+USCXML_TEST_COMPILE(
+	NAME test-serialization 
+	LABEL general/test-serialization 
+	FILES src/test-serialization.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp
+	ARGS ${CMAKE_CURRENT_SOURCE_DIR}/w3c/ecma)
 # USCXML_TEST_COMPILE(NAME test-c89-parser LABEL general/test-c89-parser FILES src/test-c89-parser.cpp)
 
 # test-stress is not an automated test
@@ -156,7 +162,6 @@ if (NOT BUILD_MINIMAL)
 			# "xpath"
 			"null"
 			"lua"
-			"c89"
 			"promela"
 
 			# generated c source
@@ -187,6 +192,9 @@ if (NOT BUILD_MINIMAL)
 			# "perf/gen/c/ecma"
 			# "perf/ecma"
 			)
+	if (WITH_DM_C89)
+		LIST(APPEND TEST_CLASSES c89)
+	endif()
 
 	# prepare directories for test classes and copy resources over
 	foreach (W3C_RESOURCE ${W3C_RESOURCES})

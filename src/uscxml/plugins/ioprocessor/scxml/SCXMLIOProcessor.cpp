@@ -41,16 +41,16 @@ SCXMLIOProcessor::~SCXMLIOProcessor() {
 }
 
 
-std::shared_ptr<IOProcessorImpl> SCXMLIOProcessor::create(InterpreterImpl* interpreter) {
+std::shared_ptr<IOProcessorImpl> SCXMLIOProcessor::create(IOProcessorCallbacks* callbacks) {
 	std::shared_ptr<SCXMLIOProcessor> io(new SCXMLIOProcessor());
-	io->_interpreter = interpreter;
+	io->_callbacks = callbacks;
 	return io;
 }
 
 Data SCXMLIOProcessor::getDataModelVariables() {
 	Data data;
 
-	data.compound["location"] = Data("#_scxml_" + _interpreter->getSessionId(), Data::VERBATIM);
+	data.compound["location"] = Data("#_scxml_" + _callbacks->getSessionId(), Data::VERBATIM);
 
 	return data;
 }
@@ -71,7 +71,7 @@ void SCXMLIOProcessor::eventFromSCXML(const std::string& target, const Event& ev
 	eventCopy.origintype = "http://www.w3.org/TR/scxml/#SCXMLEventProcessor";
 
 	// test 336
-	eventCopy.origin = "#_scxml_" + _interpreter->getSessionId();
+	eventCopy.origin = "#_scxml_" + _callbacks->getSessionId();
 
 	if (false) {
 	} else if(target.length() == 0) {
@@ -85,14 +85,14 @@ void SCXMLIOProcessor::eventFromSCXML(const std::string& target, const Event& ev
 //		reqCopy.sendid = "";
 
 		// test 198
-		_interpreter->enqueueExternal(eventCopy);
+		_callbacks->enqueueExternal(eventCopy);
 
 	} else if (iequals(target, "#_internal")) {
 		/**
 		 * #_internal: If the target is the special term '#_internal', the Processor
 		 * must add the event to the internal event queue of the sending session.
 		 */
-		_interpreter->enqueueInternal(eventCopy);
+		_callbacks->enqueueInternal(eventCopy);
 
 	} else if (iequals(target, "#_parent")) {
 		/**
@@ -100,13 +100,7 @@ void SCXMLIOProcessor::eventFromSCXML(const std::string& target, const Event& ev
 		 * add the event to the external event queue of the SCXML session that invoked
 		 * the sending session, if there is one.
 		 */
-
-		if (_interpreter->_parentQueue) {
-			_interpreter->_parentQueue.enqueue(eventCopy);
-		} else {
-			ERROR_COMMUNICATION_THROW("Sending to parent invoker, but none is set");
-		}
-
+		_callbacks->enqueueAtParent(eventCopy);
 	} else if (target.length() > 8 && iequals(target.substr(0, 8), "#_scxml_")) {
 		/**
 		 * #_scxml_sessionid: If the target is the special term '#_scxml_sessionid',
@@ -117,7 +111,7 @@ void SCXMLIOProcessor::eventFromSCXML(const std::string& target, const Event& ev
 		 */
 		std::string sessionId = target.substr(8);
 
-		std::lock_guard<std::recursive_mutex> lock(_interpreter->_instanceMutex);
+		std::lock_guard<std::recursive_mutex> lock(InterpreterImpl::_instanceMutex);
 		std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
 		if (instances.find(sessionId) != instances.end()) {
 			std::shared_ptr<InterpreterImpl> otherSession = instances[sessionId].lock();
@@ -138,21 +132,7 @@ void SCXMLIOProcessor::eventFromSCXML(const std::string& target, const Event& ev
 		 * session.
 		 */
 		std::string invokeId = target.substr(2);
-		if (_interpreter->_invokers.find(invokeId) != _interpreter->_invokers.end()) {
-			std::lock_guard<std::recursive_mutex> lock(_interpreter->_instanceMutex);
-			try {
-				_interpreter->_invokers[invokeId].eventFromSCXML(eventCopy);
-			} catch(Event e) {
-				// Is this the right thing to do?
-//				_interpreter->enqueueExternal(eventCopy);
-			} catch (const std::exception &e) {
-				ERROR_COMMUNICATION_THROW("Exception caught while sending event to invoker '" + invokeId + "': " + e.what());
-			} catch(...) {
-				ERROR_COMMUNICATION_THROW("Exception caught while sending event to invoker '" + invokeId + "'");
-			}
-		} else {
-			ERROR_COMMUNICATION_THROW("Can not send to invoked component '" + invokeId + "', no such invokeId");
-		}
+		_callbacks->enqueueAtInvoker(invokeId, eventCopy);
 	} else {
 		ERROR_COMMUNICATION_THROW("Not sure what to make of the target '" + target + "' - raising error");
 	}

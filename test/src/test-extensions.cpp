@@ -75,10 +75,14 @@ bool testPausableEventQueue() {
 	interpreter.addMonitor(&mon);
 
 	size_t iterations = 10;
+	int now = time(NULL);
+	int startedAt = time(NULL);
 
 	InterpreterState state = InterpreterState::USCXML_UNDEF;
-	while (state != USCXML_FINISHED) {
-		state = interpreter.step();
+	while (state != USCXML_FINISHED && now - startedAt < 5) {
+		state = interpreter.step(200);
+		now = time(NULL);
+
 		if (nestedDelayQueue) {
 			/*
 			 * As soon as we have the nested event queue instantiated, we pause and resume it

@@ -25,6 +25,7 @@
 #include "uscxml/plugins/ExecutableContent.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/plugins/IOProcessor.h"
+#include "uscxml/plugins/IOProcessorImpl.h"
 #include "uscxml/plugins/Invoker.h"
 #include "uscxml/plugins/DataModelImpl.h"
 
@@ -53,7 +54,7 @@ public:
 	void registerExecutableContent(ExecutableContentImpl* executableContent);
 
 	std::shared_ptr<DataModelImpl> createDataModel(const std::string& type, DataModelCallbacks* callbacks);
-	std::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, InterpreterImpl* interpreter);
+	std::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, IOProcessorCallbacks* callbacks);
 	std::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
 	std::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
 

@@ -349,9 +349,12 @@ Data LuaDataModel::evalAsData(const std::string& content) {
 		throw originalError; // we will assume syntax error and throw
 	}
 
-	if (retVals == 0)
+#if 1
+	// Note: Empty result is not an error test302, but how to do test488?
+	if (retVals == 0 && !isValidSyntax(trimmedExpr)) {
 		throw originalError; // we will assume syntax error and throw
-
+	}
+#endif
 
 	try {
 		if (retVals == 1) {
@@ -446,7 +449,7 @@ bool LuaDataModel::isDeclared(const std::string& expr) {
 }
 
 
-void LuaDataModel::assign(const std::string& location, const Data& data) {
+void LuaDataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 	if (location.length() == 0) {
 		ERROR_EXECUTION_THROW("Assign element has neither id nor location");
 	}
@@ -539,7 +542,7 @@ void LuaDataModel::assign(const std::string& location, const Data& data) {
 	}
 }
 
-void LuaDataModel::init(const std::string& location, const Data& data) {
+void LuaDataModel::init(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 	luabridge::setGlobal(_luaState, luabridge::Nil(), location.c_str());
 	assign(location, data);
 }
@@ -581,18 +584,5 @@ Data LuaDataModel::getAsData(const std::string& content) {
 
 	return data;
 }
-
-
-std::string LuaDataModel::andExpressions(std::list<std::string> exprs) {
-	std::stringstream exprSS;
-	std::list<std::string>::const_iterator listIter;
-	std::string andExpr;
-	for (listIter = exprs.begin(); listIter != exprs.end(); listIter++) {
-		exprSS << andExpr << *listIter;
-		andExpr = " && ";
-	}
-	return exprSS.str();
-}
-
 
 }

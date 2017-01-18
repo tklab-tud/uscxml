@@ -22,11 +22,11 @@ execute_process(COMMAND
 	${ANT_BIN}
 	-Dtest.file=${W3C_TEST}
 	-Dgenerated.dir=${OUTDIR}
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test/bindings/java
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java/bindings
 	RESULT_VARIABLE CMD_RESULT
 	OUTPUT_VARIABLE CMD_OUTPUT
 )
 
 if (CMD_RESULT)
-    message(FATAL_ERROR "Error running ${ANT_BIN} : ${CMD_RESULT} ${CMAKE_PROJECT_DIR}/test/bindings/java ${CMD_OUTPUT}")
+    message(FATAL_ERROR "Error running ${ANT_BIN} : ${CMD_RESULT} ${PROJECT_SOURCE_DIR}/contrib/java/bindings ${CMD_OUTPUT}")
 endif ()
