@@ -33,6 +33,8 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+//#undef WITH_CACHE_FILES
+
 #ifdef _WIN32
 #define BITSET_BLOCKTYPE size_t
 #else

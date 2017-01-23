@@ -18,6 +18,7 @@
  */
 
 #undef USCXML_VERBOSE
+//#undef WITH_CACHE_FILES
 
 #include "FastMicroStep.h"
 #include "uscxml/util/DOM.h"
@@ -288,9 +289,11 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		_states[0]->data = DOMUtils::filterChildElements(_xmlPrefix.str() + "data", dataModels, false);
 	}
 
+#ifdef WITH_CACHE_FILES
 	auto currState = cache.compound["states"].array.begin();
 	auto endState = cache.compound["states"].array.end();
-
+#endif
+    
 	for (i = 0; i < _states.size(); i++) {
 #ifdef WITH_CACHE_FILES
 		Data* cachedState = NULL;
@@ -430,9 +433,11 @@ COMPLETION_STABLISHED:
 	}
 	assert(tmp.size() == 0);
 
+#ifdef WITH_CACHE_FILES
 	auto currTrans = cache.compound["transitions"].array.begin();
 	auto endTrans = cache.compound["transitions"].array.end();
-
+#endif
+    
 	for (i = 0; i < _transitions.size(); i++) {
 
 #ifdef WITH_CACHE_FILES
