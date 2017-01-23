@@ -4,6 +4,8 @@
 #include "uscxml/server/HTTPServer.h"
 
 #include "uscxml/interpreter/Logging.h"
+#include "uscxml/interpreter/InterpreterMonitor.h"
+#include "uscxml/interpreter/InterpreterImpl.h"
 
 #include "uscxml/plugins/invoker/dirmon/DirMonInvoker.h"
 #include <boost/algorithm/string.hpp>

@@ -54,7 +54,7 @@ class USCXML_API InterpreterImpl :
 	public IOProcessorCallbacks,
 	public ContentExecutorCallbacks,
 	public DelayedEventQueueCallbacks,
-    public InvokerCallbacks,
+	public InvokerCallbacks,
 	public std::enable_shared_from_this<InterpreterImpl> {
 public:
 	enum Binding {

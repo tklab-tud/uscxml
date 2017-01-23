@@ -56,7 +56,7 @@ protected:
  */
 class USCXML_API DelayedEventQueue : public EventQueue {
 public:
-	PIMPL_OPERATORS_INHERIT(DelayedEventQueue, EventQueue);
+	PIMPL_OPERATORS_INHERIT(DelayedEventQueue, EventQueue)
 
 	void enqueueDelayed(const Event& event, size_t delayMs, const std::string& eventUUID);
 	void cancelDelayed(const std::string& eventUUID);

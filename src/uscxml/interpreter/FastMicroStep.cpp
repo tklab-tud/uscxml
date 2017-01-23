@@ -293,7 +293,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	auto currState = cache.compound["states"].array.begin();
 	auto endState = cache.compound["states"].array.end();
 #endif
-    
+
 	for (i = 0; i < _states.size(); i++) {
 #ifdef WITH_CACHE_FILES
 		Data* cachedState = NULL;
@@ -437,7 +437,7 @@ COMPLETION_STABLISHED:
 	auto currTrans = cache.compound["transitions"].array.begin();
 	auto endTrans = cache.compound["transitions"].array.end();
 #endif
-    
+
 	for (i = 0; i < _transitions.size(); i++) {
 
 #ifdef WITH_CACHE_FILES

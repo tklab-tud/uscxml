@@ -42,7 +42,7 @@ class InvokerImpl;
  */
 class USCXML_API Invoker : public EventHandler {
 public:
-	PIMPL_OPERATORS_INHERIT(Invoker, EventHandler);
+	PIMPL_OPERATORS_INHERIT(Invoker, EventHandler)
 
 	/// @copydoc InvokerImpl::invoke
 	virtual void invoke(const std::string& source, const Event& invokeEvent);

@@ -66,7 +66,7 @@ bool testPausableEventQueue() {
 
 	PausableDelayedEventQueue* queue = new PausableDelayedEventQueue(interpreter.getImpl().get());
 	ActionLanguage lang;
-	lang.delayedQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(queue));
+	lang.delayQueue = DelayedEventQueue(std::shared_ptr<DelayedEventQueueImpl>(queue));
 
 	interpreter.setActionLanguage(lang);
 

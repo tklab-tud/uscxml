@@ -28,6 +28,8 @@
 #include "uscxml/util/DOM.h"
 #include "uscxml/interpreter/Logging.h"
 
+#include <vector>
+#include <string>
 #include <boost/algorithm/string.hpp>
 
 #define EVENT_STRING_OR_UNDEF(field, cond) \
@@ -451,14 +453,15 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 		return value;
 	}
 	if (data.array.size() > 0) {
-		JSValueRef elements[data.array.size()];
+		std::vector<JSValueRef> elements(data.array.size());
+//		JSValueRef elements[data.array.size()];
 		std::list<Data>::const_iterator arrayIter = data.array.begin();
 		uint32_t index = 0;
 		while(arrayIter != data.array.end()) {
 			elements[index++] = getDataAsValue(*arrayIter);
 			arrayIter++;
 		}
-		JSObjectRef value = JSObjectMakeArray(_ctx, data.array.size(), elements, &exception);
+		JSObjectRef value = JSObjectMakeArray(_ctx, data.array.size(), &elements[0], &exception);
 		if (exception)
 			handleException(exception);
 		return value;
@@ -736,8 +739,10 @@ void JSCDataModel::init(const std::string& location, const Data& data, const std
 void JSCDataModel::handleException(JSValueRef exception) {
 	JSStringRef exceptionStringRef = JSValueToStringCopy(_ctx, exception, NULL);
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(exceptionStringRef);
-	char buffer[maxSize];
-	JSStringGetUTF8CString(exceptionStringRef, buffer, maxSize);
+//	char buffer[maxSize];
+	std::string buffer;
+	buffer.resize(maxSize);
+	JSStringGetUTF8CString(exceptionStringRef, &buffer[0], maxSize);
 	JSStringRelease(exceptionStringRef);
 	std::string exceptionMsg(buffer);
 
@@ -799,8 +804,10 @@ bool JSCDataModel::jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JS
 	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_callbacks->getIOProcessors();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
-	char buffer[maxSize];
-	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+//	char buffer[maxSize];
+	std::string buffer;
+	buffer.resize(maxSize);
+	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
 	std::string prop(buffer);
 
 	return ioProcessors.find(prop) != ioProcessors.end();
@@ -811,8 +818,10 @@ JSValueRef JSCDataModel::jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef obje
 	std::map<std::string, IOProcessor> ioProcessors = INSTANCE->_callbacks->getIOProcessors();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
-	char buffer[maxSize];
-	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+//	char buffer[maxSize];
+	std::string buffer;
+	buffer.resize(maxSize);
+	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
 	std::string prop(buffer);
 
 	if (ioProcessors.find(prop) != ioProcessors.end()) {
@@ -839,8 +848,10 @@ bool JSCDataModel::jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStri
 	std::map<std::string, Invoker> invokers = INSTANCE->_callbacks->getInvokers();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
-	char buffer[maxSize];
-	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+//	char buffer[maxSize];
+	std::string buffer;
+	buffer.resize(maxSize);
+	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
 	std::string prop(buffer);
 
 	return invokers.find(prop) != invokers.end();
@@ -851,8 +862,10 @@ JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, 
 	std::map<std::string, Invoker> invokers = INSTANCE->_callbacks->getInvokers();
 
 	size_t maxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
-	char buffer[maxSize];
-	JSStringGetUTF8CString(propertyName, buffer, maxSize);
+//	char buffer[maxSize];
+	std::string buffer;
+	buffer.resize(maxSize);
+	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
 	std::string prop(buffer);
 
 	if (invokers.find(prop) != invokers.end()) {

@@ -69,13 +69,13 @@ public:
 #ifndef SWIGIMPORTED
 	// swig barfs on this one, have them explictly
 	template <
-		typename T, 
-		typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-	>
+	    typename T,
+	    typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+	    >
 	explicit Data(T value)
 		: node(NULL), atom(toStr(value)), type(INTERPRETED) {}
 #endif
-	
+
 	template <typename T>
 	explicit Data(T value, Type type) : node(NULL), atom(toStr(value)), type(type) {}
 

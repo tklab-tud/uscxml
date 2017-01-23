@@ -37,7 +37,7 @@ class InterpreterImpl;
 class USCXML_API IOProcessor : public EventHandler {
 public:
 
-	PIMPL_OPERATORS_INHERIT(IOProcessor, EventHandler);
+	PIMPL_OPERATORS_INHERIT(IOProcessor, EventHandler)
 
 	/// @copydoc IOProcessorImpl::eventFromSCXML
 	virtual void eventFromSCXML(const std::string& target, const Event& event);

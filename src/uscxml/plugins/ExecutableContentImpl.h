@@ -27,6 +27,7 @@
 #include <sstream>
 
 namespace XERCESC_NS {
+class DOMElement;
 class DOMDocument;
 class DOMNode;
 }

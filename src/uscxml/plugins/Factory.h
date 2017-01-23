@@ -44,7 +44,7 @@ class DataModelCallbacks;
 class InvokerImpl;
 class InvokerCallbacks;
 class ExecutableContentImpl;
-    
+
 class USCXML_API Factory {
 public:
 	Factory(Factory* parentFactory);
@@ -53,7 +53,7 @@ public:
 	void registerIOProcessor(IOProcessorImpl* ioProcessor);
 	void registerDataModel(DataModelImpl* dataModel);
 	void registerInvoker(InvokerImpl* invoker);
-    void registerExecutableContent(ExecutableContentImpl* executableContent);
+	void registerExecutableContent(ExecutableContentImpl* executableContent);
 
 	std::shared_ptr<DataModelImpl> createDataModel(const std::string& type, DataModelCallbacks* callbacks);
 	std::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, IOProcessorCallbacks* callbacks);
@@ -83,7 +83,7 @@ protected:
 	std::map<std::string, std::string> _invokerAliases;
 	std::map<std::pair<std::string, std::string>, ExecutableContentImpl*> _executableContent;
 
-    
+
 #ifdef BUILD_AS_PLUGINS
 	pluma::Pluma pluma;
 #endif

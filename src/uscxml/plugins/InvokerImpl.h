@@ -29,9 +29,9 @@
 #include <set>
 
 namespace XERCESC_NS {
-    class DOMElement;
-    class DOMDocument;
-    class DOMNode;
+class DOMElement;
+class DOMDocument;
+class DOMNode;
 }
 
 namespace uscxml {
@@ -40,7 +40,7 @@ class Interpreter;
 class InterpreterMonitor;
 class ActionLanguage;
 class Logger;
-    
+
 /**
  * @ingroup invoker
  * @ingroup callback
@@ -48,13 +48,13 @@ class Logger;
  */
 class USCXML_API InvokerCallbacks {
 public:
-    virtual ~InvokerCallbacks() {} ///< silence virtual destructor warning from swig
-    virtual void enqueueInternal(const Event& event) = 0;
-    virtual void enqueueExternal(const Event& event) = 0;
-    virtual ActionLanguage getActionLanguage() = 0;
-    virtual std::set<InterpreterMonitor*> getMonitors() = 0;
-    virtual std::string getBaseURL() = 0;
-    virtual Logger getLogger() = 0;
+	virtual ~InvokerCallbacks() {} ///< silence virtual destructor warning from swig
+	virtual void enqueueInternal(const Event& event) = 0;
+	virtual void enqueueExternal(const Event& event) = 0;
+	virtual ActionLanguage getActionLanguage() = 0;
+	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
+	virtual std::string getBaseURL() = 0;
+	virtual Logger getLogger() = 0;
 };
 
 /**
