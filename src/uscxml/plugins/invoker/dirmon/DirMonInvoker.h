@@ -26,6 +26,7 @@
 #include <map>
 #include <set>
 #include <thread>
+#include <mutex>
 #include <sys/stat.h>
 
 #ifdef BUILD_AS_PLUGINS
