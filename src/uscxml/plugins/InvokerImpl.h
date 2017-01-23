@@ -25,11 +25,37 @@
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/messages/Event.h"
-#include "uscxml/interpreter/InterpreterImpl.h"
+
+#include <set>
+
+namespace XERCESC_NS {
+    class DOMElement;
+    class DOMDocument;
+    class DOMNode;
+}
 
 namespace uscxml {
 
 class Interpreter;
+class InterpreterMonitor;
+class ActionLanguage;
+class Logger;
+    
+/**
+ * @ingroup invoker
+ * @ingroup callback
+ * Callbacks available for every invoker.
+ */
+class USCXML_API InvokerCallbacks {
+public:
+    virtual ~InvokerCallbacks() {} ///< silence virtual destructor warning from swig
+    virtual void enqueueInternal(const Event& event) = 0;
+    virtual void enqueueExternal(const Event& event) = 0;
+    virtual ActionLanguage getActionLanguage() = 0;
+    virtual std::set<InterpreterMonitor*> getMonitors() = 0;
+    virtual std::string getBaseURL() = 0;
+    virtual Logger getLogger() = 0;
+};
 
 /**
  * @ingroup invoker
@@ -48,7 +74,7 @@ public:
 	 * @param interpreter The imlementation of the associated Interpreter
 	 * @todo We will eventually introduce callbacks and prevent complete access to the interpreter.
 	 */
-	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) = 0;
+	virtual std::shared_ptr<InvokerImpl> create(InvokerCallbacks* callbacks) = 0;
 
 	/**
 	 * Invoker's parent state became active at the end of a macro-step.
@@ -115,7 +141,7 @@ protected:
 
 	XERCESC_NS::DOMElement* _finalize;
 	std::string _invokeId;
-	InterpreterImpl* _callbacks;
+	InvokerCallbacks* _callbacks;
 };
 
 }

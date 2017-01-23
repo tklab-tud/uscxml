@@ -50,7 +50,7 @@ public:
 
 	USCXMLInvoker();
 	virtual ~USCXMLInvoker();
-	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
+	virtual std::shared_ptr<InvokerImpl> create(InvokerCallbacks* callbacks);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

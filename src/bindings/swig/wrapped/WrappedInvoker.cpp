@@ -21,8 +21,8 @@
 
 namespace uscxml {
 
-WrappedInvoker::WrappedInvoker(InterpreterImpl* interpreter) {
-	_interpreter = interpreter;
+WrappedInvoker::WrappedInvoker(InvokerCallbacks* callbacks) {
+	_callbacks = callbacks;
 }
 WrappedInvoker::~WrappedInvoker() {}
 

@@ -58,7 +58,7 @@ public:
 	ContentExecutor execContent; ///< To process executable content elements
 	EventQueue internalQueue; ///< The queue where internal events will be enqueued
 	EventQueue externalQueue; ///< The queue for external events
-	DelayedEventQueue delayedQueue; ///< The queue for delayed events
+	DelayedEventQueue delayQueue; ///< The queue for delayed events
 };
 
 /**

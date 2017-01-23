@@ -40,15 +40,15 @@ namespace uscxml {
 
 class WrappedInvoker : public InvokerImpl {
 public:
-	WrappedInvoker(InterpreterImpl* interpreter);
+	WrappedInvoker(InvokerCallbacks* callbacks);
 	virtual ~WrappedInvoker();
 
 	virtual std::list<std::string> getNames() {
 		return std::list<std::string>();
 	};
 
-	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter) {
-		std::shared_ptr<InvokerImpl> inv = std::shared_ptr<InvokerImpl>(new WrappedInvoker(interpreter));
+	virtual std::shared_ptr<InvokerImpl> create(InvokerCallbacks* callbacks) {
+		std::shared_ptr<InvokerImpl> inv = std::shared_ptr<InvokerImpl>(new WrappedInvoker(callbacks));
 		return inv;
 	}
 	virtual void invoke(const std::string& source, const Event& invokeEvent) {}
@@ -75,7 +75,7 @@ public:
 	}
 
 private:
-	InterpreterImpl* _interpreter;
+	InvokerCallbacks* _callbacks;
 
 };
 

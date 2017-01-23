@@ -140,9 +140,9 @@ void USCXMLInvoker::run(void* instance) {
 	INSTANCE->_isActive = false;
 }
 
-std::shared_ptr<InvokerImpl> USCXMLInvoker::create(InterpreterImpl* interpreter) {
+std::shared_ptr<InvokerImpl> USCXMLInvoker::create(InvokerCallbacks* callbacks) {
 	std::shared_ptr<USCXMLInvoker> invoker(new USCXMLInvoker());
-	invoker->_callbacks = interpreter;
+	invoker->_callbacks = callbacks;
 	return invoker;
 }
 
@@ -176,33 +176,31 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 	if (_invokedInterpreter) {
 		_invokedInterpreter.getImpl()->_parentQueue = _parentQueue;
 		_invokedInterpreter.getImpl()->_invokeId = invokeEvent.invokeid;
+        
+        // test240 assumes that invoke request params will carry over to the datamodel
 		_invokedInterpreter.getImpl()->_invokeReq = invokeEvent;
 
 		// create new instances from the parent's ActionLanguage
-#if 1
 		InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
-		invoked->_execContent = _callbacks->_execContent.getImpl()->create(invoked);
-		invoked->_delayQueue = _callbacks->_delayQueue.getImplDelayed()->create(invoked);
-		invoked->_internalQueue = _callbacks->_internalQueue.getImplBase()->create();
-		invoked->_externalQueue = _callbacks->_externalQueue.getImplBase()->create();
-		invoked->_microStepper = _callbacks->_microStepper.getImpl()->create(invoked);
+        ActionLanguage al = _callbacks->getActionLanguage();
 
-		// TODO: setup invokers dom, check datamodel attribute and create new instance from parent if matching?
-#endif
-		// copy monitors
-		std::set<InterpreterMonitor*>::const_iterator monIter = _callbacks->_monitors.begin();
-		while(monIter != _callbacks->_monitors.end()) {
-			if ((*monIter)->copyToInvokers()) {
-				_invokedInterpreter.getImpl()->_monitors.insert(*monIter);
-			}
-			monIter++;
-		}
+        al.execContent = al.execContent.getImpl()->create(invoked);
+        al.delayQueue = al.delayQueue.getImplDelayed()->create(invoked);
+        al.internalQueue = al.internalQueue.getImplBase()->create();
+        al.externalQueue = al.externalQueue.getImplBase()->create();
+        al.microStepper = al.microStepper.getImpl()->create(invoked);
+        
+        _invokedInterpreter.setActionLanguage(al);
+        // TODO: setup invokers dom, check datamodel attribute and create new instance from parent if matching?
 
-		/**
-		 * test240 assumes that invoke request params will carry over to the datamodel
-		 * This is solved by passing the invoke request above
-		 */
-//		_invokedInterpreter.getImpl()->setInvokeRequest(req);
+        // copy monitors
+        std::set<InterpreterMonitor*> monitors = _callbacks->getMonitors();
+        for (auto monitor : monitors) {
+            if (monitor->copyToInvokers()) {
+                _invokedInterpreter.getImpl()->_monitors.insert(monitor);
+            }
+        }
+
 		_isActive = true;
 
 		// we need to make sure it is at least setup to receive data!

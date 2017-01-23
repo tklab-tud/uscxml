@@ -21,9 +21,11 @@
 #define DIRMONINVOKER_H_W09J90F0
 
 #include "uscxml/plugins/InvokerImpl.h"
+#include "uscxml/interpreter/Logging.h"
 
 #include <map>
 #include <set>
+#include <thread>
 #include <sys/stat.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -101,7 +103,7 @@ class DirMonInvoker : public InvokerImpl, public DirectoryWatchMonitor {
 public:
 	DirMonInvoker();
 	virtual ~DirMonInvoker();
-	virtual std::shared_ptr<InvokerImpl> create(InterpreterImpl* interpreter);
+	virtual std::shared_ptr<InvokerImpl> create(InvokerCallbacks* callbacks);
 
 	virtual std::list<std::string> getNames() {
 		std::list<std::string> names;

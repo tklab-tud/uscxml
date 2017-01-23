@@ -34,6 +34,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include "uscxml/interpreter/Logging.h"
+#include "uscxml/util/URL.h"
 
 namespace uscxml {
 
@@ -63,9 +64,9 @@ DirMonInvoker::~DirMonInvoker() {
 		delete(_watcher);
 };
 
-std::shared_ptr<InvokerImpl> DirMonInvoker::create(InterpreterImpl* interpreter) {
+std::shared_ptr<InvokerImpl> DirMonInvoker::create(InvokerCallbacks* callbacks) {
 	std::shared_ptr<DirMonInvoker> invoker(new DirMonInvoker());
-	invoker->_callbacks = interpreter;
+	invoker->_callbacks = callbacks;
 	return invoker;
 }
 

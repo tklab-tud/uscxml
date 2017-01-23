@@ -32,6 +32,7 @@
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/plugins/DataModelImpl.h"
 #include "uscxml/plugins/IOProcessorImpl.h"
+#include "uscxml/plugins/InvokerImpl.h"
 #include "uscxml/interpreter/MicroStepImpl.h"
 #include "uscxml/interpreter/ContentExecutorImpl.h"
 #include "uscxml/interpreter/EventQueue.h"
@@ -53,6 +54,7 @@ class USCXML_API InterpreterImpl :
 	public IOProcessorCallbacks,
 	public ContentExecutorCallbacks,
 	public DelayedEventQueueCallbacks,
+    public InvokerCallbacks,
 	public std::enable_shared_from_this<InterpreterImpl> {
 public:
 	enum Binding {
@@ -229,7 +231,7 @@ public:
 		_dataModel = al.dataModel;
 		_internalQueue = al.internalQueue;
 		_externalQueue = al.externalQueue;
-		_delayQueue = al.delayedQueue;
+		_delayQueue = al.delayQueue;
 	}
 
 	ActionLanguage getActionLanguage() {
@@ -240,7 +242,7 @@ public:
 		al.dataModel = _dataModel;
 		al.internalQueue = _internalQueue;
 		al.externalQueue = _externalQueue;
-		al.delayedQueue = _delayQueue;
+		al.delayQueue = _delayQueue;
 		return al;
 	}
 

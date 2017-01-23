@@ -24,6 +24,17 @@
 #include "uscxml/Interpreter.h"
 #include "uscxml/interpreter/Logging.h"
 
+#include "uscxml/plugins/ExecutableContent.h"
+#include "uscxml/plugins/EventHandler.h"
+#include "uscxml/plugins/IOProcessor.h"
+#include "uscxml/plugins/IOProcessorImpl.h"
+#include "uscxml/plugins/Invoker.h"
+#include "uscxml/plugins/DataModelImpl.h"
+
+#include "uscxml/interpreter/ContentExecutorImpl.h"
+#include "uscxml/interpreter/EventQueueImpl.h"
+#include "uscxml/interpreter/MicrostepImpl.h"
+
 #include "uscxml/plugins/ExecutableContentImpl.h"
 
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
@@ -289,20 +300,20 @@ bool Factory::hasInvoker(const std::string& type) {
 	return false;
 }
 
-std::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InterpreterImpl* interpreter) {
+std::shared_ptr<InvokerImpl> Factory::createInvoker(const std::string& type, InvokerCallbacks* callbacks) {
 
 	// do we have this type ourself?
 	if (_invokerAliases.find(type) != _invokerAliases.end()) {
 		std::string canonicalName = _invokerAliases[type];
 		if (_invokers.find(canonicalName) != _invokers.end()) {
-			std::shared_ptr<InvokerImpl> invoker = _invokers[canonicalName]->create(interpreter);
+			std::shared_ptr<InvokerImpl> invoker = _invokers[canonicalName]->create(callbacks);
 			return invoker;
 		}
 	}
 
 	// lookup in parent factory
 	if (_parentFactory) {
-		return _parentFactory->createInvoker(type, interpreter);
+		return _parentFactory->createInvoker(type, callbacks);
 	} else {
 		ERROR_EXECUTION_THROW("No Invoker named '" + type + "' known");
 	}

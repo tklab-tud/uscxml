@@ -71,6 +71,7 @@ typedef uscxml::InterpreterIssue InterpreterIssue;
 
 #include "../../../uscxml/plugins/Factory.h"
 #include "../../../uscxml/plugins/DataModelImpl.h"
+#include "../../../uscxml/plugins/ExecutableContent.h"
 
 #include "../wrapped/WrappedInvoker.h"
 #include "../wrapped/WrappedDataModel.h"

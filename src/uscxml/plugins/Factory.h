@@ -22,13 +22,6 @@
 
 #include "uscxml/Common.h"
 
-#include "uscxml/plugins/ExecutableContent.h"
-#include "uscxml/plugins/EventHandler.h"
-#include "uscxml/plugins/IOProcessor.h"
-#include "uscxml/plugins/IOProcessorImpl.h"
-#include "uscxml/plugins/Invoker.h"
-#include "uscxml/plugins/DataModelImpl.h"
-
 #include <string.h>
 
 #ifdef BUILD_AS_PLUGINS
@@ -37,12 +30,21 @@
 
 #include <memory>
 #include <set>
+#include <map>
+#include <string>
 #include <limits>
 
 namespace uscxml {
 
 class InterpreterImpl;
-
+class IOProcessorImpl;
+class IOProcessorCallbacks;
+class DataModelImpl;
+class DataModelCallbacks;
+class InvokerImpl;
+class InvokerCallbacks;
+class ExecutableContentImpl;
+    
 class USCXML_API Factory {
 public:
 	Factory(Factory* parentFactory);
@@ -51,11 +53,11 @@ public:
 	void registerIOProcessor(IOProcessorImpl* ioProcessor);
 	void registerDataModel(DataModelImpl* dataModel);
 	void registerInvoker(InvokerImpl* invoker);
-	void registerExecutableContent(ExecutableContentImpl* executableContent);
+    void registerExecutableContent(ExecutableContentImpl* executableContent);
 
 	std::shared_ptr<DataModelImpl> createDataModel(const std::string& type, DataModelCallbacks* callbacks);
 	std::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, IOProcessorCallbacks* callbacks);
-	std::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InterpreterImpl* interpreter);
+	std::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InvokerCallbacks* interpreter);
 	std::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
 
 	bool hasDataModel(const std::string& type);
@@ -81,6 +83,7 @@ protected:
 	std::map<std::string, std::string> _invokerAliases;
 	std::map<std::pair<std::string, std::string>, ExecutableContentImpl*> _executableContent;
 
+    
 #ifdef BUILD_AS_PLUGINS
 	pluma::Pluma pluma;
 #endif
