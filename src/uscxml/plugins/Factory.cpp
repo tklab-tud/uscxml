@@ -25,17 +25,14 @@
 #include "uscxml/interpreter/Logging.h"
 
 #include "uscxml/plugins/ExecutableContent.h"
+#include "uscxml/plugins/ExecutableContentImpl.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/plugins/IOProcessor.h"
 #include "uscxml/plugins/IOProcessorImpl.h"
 #include "uscxml/plugins/Invoker.h"
+#include "uscxml/plugins/InvokerImpl.h"
 #include "uscxml/plugins/DataModelImpl.h"
 
-#include "uscxml/interpreter/ContentExecutorImpl.h"
-#include "uscxml/interpreter/EventQueueImpl.h"
-#include "uscxml/interpreter/MicrostepImpl.h"
-
-#include "uscxml/plugins/ExecutableContentImpl.h"
 
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
