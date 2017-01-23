@@ -69,6 +69,9 @@ public:
 	virtual Data serialize() = 0;
 	virtual void deserialize(const Data& data) = 0;
 
+private:
+	// this will silence the warning about the hidden overloaded virtual function
+	using EventQueueImpl::create;
 };
 
 }

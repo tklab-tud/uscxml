@@ -24,10 +24,16 @@
 #include "LuaDataModel.h"
 
 // disable forcing to bool performance warning
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4800)
+#endif
+
 #include "LuaBridge.h"
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"

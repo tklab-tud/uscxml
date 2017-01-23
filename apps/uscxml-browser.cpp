@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 	std::list<Interpreter> interpreters;
 	for(int i = 0; i < options.interpreters.size(); i++) {
 
-		InterpreterOptions* currOptions = options.interpreters[0].second;
+//		InterpreterOptions* currOptions = options.interpreters[0].second;
 		std::string documentURL = options.interpreters[0].first;
 
 		LOGD(USCXML_INFO) << "Processing " << documentURL;

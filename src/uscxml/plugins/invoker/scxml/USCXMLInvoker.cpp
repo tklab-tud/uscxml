@@ -184,6 +184,7 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
 		ActionLanguage al = _callbacks->getActionLanguage();
 
+        // create new instances
 		al.execContent = al.execContent.getImpl()->create(invoked);
 		al.delayQueue = al.delayQueue.getImplDelayed()->create(invoked);
 		al.internalQueue = al.internalQueue.getImplBase()->create();
