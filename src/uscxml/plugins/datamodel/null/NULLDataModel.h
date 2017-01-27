@@ -20,6 +20,7 @@
 #ifndef NULLDATAMODEL_H_KN8TWG0V
 #define NULLDATAMODEL_H_KN8TWG0V
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
@@ -38,10 +39,10 @@ namespace uscxml {
  * @ingroup datamodel
  * NULL data-model.
  */
-class NULLDataModel : public DataModelImpl {
+class NullDataModel : public DataModelImpl {
 public:
-	NULLDataModel();
-	virtual ~NULLDataModel();
+	NullDataModel();
+	virtual ~NullDataModel();
 	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks);
 
 	virtual std::list<std::string> getNames() {
@@ -104,7 +105,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(NULLDataModel, DataModelImpl);
+PLUMA_INHERIT_PROVIDER(NullDataModel, DataModelImpl)
 #endif
 
 }

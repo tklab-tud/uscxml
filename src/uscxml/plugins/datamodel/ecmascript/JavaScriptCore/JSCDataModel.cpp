@@ -22,7 +22,6 @@
 #include "uscxml/util/String.h"
 
 #include "JSCDataModel.h"
-//#include "JSCSCXMLEvent.h"
 
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"
@@ -31,6 +30,10 @@
 #include <vector>
 #include <string>
 #include <boost/algorithm/string.hpp>
+
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
 
 #define EVENT_STRING_OR_UNDEF(field, cond) \
 JSStringRef field##Name = JSStringCreateWithUTF8CString( #field ); \
@@ -193,7 +196,7 @@ bool JSCNodeListHasPropertyCallback(JSContextRef ctx, JSObjectRef object, JSStri
 		return false;
 	}
 
-	int index = strTo<int>(propName);
+	size_t index = strTo<size_t>(propName);
 	SwigPrivData* t = (SwigPrivData*) JSObjectGetPrivate(object);
 	DOMNodeList* nodeList = (DOMNodeList*)t->swigCObject;
 
@@ -216,7 +219,7 @@ JSValueRef JSCNodeListGetPropertyCallback(JSContextRef context, JSObjectRef obje
 		return JSValueMakeUndefined(context);
 	}
 
-	int index = strTo<int>(propName);
+	size_t index = strTo<size_t>(propName);
 	SwigPrivData* t = (SwigPrivData*) JSObjectGetPrivate(object);
 	DOMNodeList* nodeList = (DOMNodeList*)t->swigCObject;
 
@@ -316,7 +319,7 @@ void JSCDataModel::setEvent(const Event& event) {
 	case Event::INTERNAL:
 		eventTypeVal = JSStringCreateWithUTF8CString("internal");
 		break;
-	case Event::PLATFORM:
+	default:
 		eventTypeVal = JSStringCreateWithUTF8CString("platform");
 		break;
 	}

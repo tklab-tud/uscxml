@@ -309,7 +309,18 @@ void ChartToC::prepare() {
 	}
 
 	// set transitions' postfix order attribute
-	tmp = DOMUtils::inPostFixOrder({ XML_PREFIX(_scxml).str() + "transition" }, _scxml);
+//	tmp = DOMUtils::inPostFixOrder({ XML_PREFIX(_scxml).str() + "transition" }, _scxml);
+
+	tmp = DOMUtils::inPostFixOrder({
+		XML_PREFIX(_scxml).str() + "scxml",
+		XML_PREFIX(_scxml).str() + "state",
+		XML_PREFIX(_scxml).str() + "final",
+		XML_PREFIX(_scxml).str() + "history",
+		XML_PREFIX(_scxml).str() + "initial",
+		XML_PREFIX(_scxml).str() + "parallel"
+	}, _scxml);
+	tmp = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "transition", tmp);
+
 	_transitions.insert(_transitions.end(), tmp.begin(), tmp.end());
 
 	for (size_t i = 0; i < _transitions.size(); i++) {

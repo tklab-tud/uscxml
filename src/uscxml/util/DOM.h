@@ -57,9 +57,6 @@ public:
 	                                const std::string& ns = "");
 	static std::string idForNode(const XERCESC_NS::DOMNode* node);
 
-	static std::list<XERCESC_NS::DOMNode*> getElementsByType(const XERCESC_NS::DOMNode* root,
-	        XERCESC_NS::DOMNode::NodeType type);
-
 	static std::list<XERCESC_NS::DOMElement*> inPostFixOrder(const std::set<std::string>& elements,
 	        const XERCESC_NS::DOMElement* root,
 	        const bool includeEmbeddedDoc = false);
@@ -83,8 +80,28 @@ public:
 	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
 	        const std::list<XERCESC_NS::DOMNode*>& nodeSet,
 	        bool recurse = false);
-
 protected:
+	enum Order {
+		POSTFIX,
+		DOCUMENT,
+		NO_RECURSE
+	};
+
+	static void filterElementGeneric(const std::set<std::string>& elements,
+	                                 std::list<XERCESC_NS::DOMElement*>& result,
+	                                 const XERCESC_NS::DOMElement* root,
+	                                 const Order order,
+	                                 const bool includeEmbeddedDoc,
+	                                 const bool includeRoot);
+
+	static void filterTypeGeneric(const std::set<XERCESC_NS::DOMNode::NodeType>& types,
+	                              std::list<XERCESC_NS::DOMNode*>& result,
+	                              const XERCESC_NS::DOMElement* root,
+	                              const Order order,
+	                              const bool includeEmbeddedDoc,
+	                              const bool includeRoot);
+
+#if 0
 	static void inPostFixOrder(const std::set<std::string>& elements,
 	                           const XERCESC_NS::DOMElement* root,
 	                           const bool includeEmbeddedDoc,
@@ -94,7 +111,7 @@ protected:
 	                            const XERCESC_NS::DOMElement* root,
 	                            const bool includeEmbeddedDoc,
 	                            std::list<XERCESC_NS::DOMElement*>& nodes);
-
+#endif
 
 };
 

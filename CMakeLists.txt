@@ -86,6 +86,11 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# additional system library directories
+# if (EXISTS "/usr/lib/x86_64-linux-gnu")
+# 	LIST(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib/x86_64-linux-gnu")
+# endif()
+
 # setup header include paths
 include_directories(src)
 include_directories(contrib/src)
@@ -249,10 +254,11 @@ else()
 	# make a quick attempt to find xerces
 	INCLUDE(FindPackageHandleStandardArgs)
 	find_path(XercesC_INCLUDE_DIR NAMES "xercesc/util/PlatformUtils.hpp")
-  find_library(XercesC_LIBRARY NAMES "xerces-c" "xerces-c_3")
+  find_library(XercesC_LIBRARIES NAMES "xerces-c" "xerces-c_3")
   mark_as_advanced(XercesC_LIBRARIES)
 	mark_as_advanced(XercesC_INCLUDE_DIR)
 	if (XercesC_INCLUDE_DIR AND XercesC_LIBRARIES)
+		message(STATUS "Found XercesC: ${XercesC_LIBRARIES}")
 		set(XercesC_FOUND ON)
 	else()
 		message(STATUS "Could NOT find XercesC (your CMake distribution does not include the FindXercesC module)")
@@ -409,14 +415,30 @@ endif()
 add_subdirectory(src/uscxml)
 add_subdirectory(src/bindings)
 
-add_library(uscxml ${USCXML_FILES})
+if (BUILD_AS_PLUGINS)
+	file(GLOB USCXML_PLUGINS
+	  ${CMAKE_SOURCE_DIR}/contrib/src/Pluma/*.cpp
+	)
+	include_directories(${CMAKE_SOURCE_DIR}/contrib/src)
+	source_group("Plugins" FILES ${USCXML_PLUGINS})
+	list (APPEND USCXML_FILES ${USCXML_PLUGINS})
+	
+	add_library(uscxml ${USCXML_FILES})
+	target_link_libraries(uscxml ${USCXML_CORE_LIBS})
+	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DUSCXML_EXPORT")
+#	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+	add_definitions(-DPLUMA_EXPORTS)
+else()	
+	add_library(uscxml ${USCXML_FILES})
+	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
+endif()
+
 set_property(TARGET uscxml PROPERTY CXX_STANDARD 11)
 set_property(TARGET uscxml PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET uscxml PROPERTY SOVERSION ${USCXML_VERSION})
+add_dependencies(uscxml ${USCXML_PREREQS})
 install_library(TARGETS uscxml)
 
-add_dependencies(uscxml ${USCXML_PREREQS})
-target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 
 add_library(uscxml_transform ${USCXML_TRANSFORM_FILES})
 set_property(TARGET uscxml_transform PROPERTY CXX_STANDARD 11)

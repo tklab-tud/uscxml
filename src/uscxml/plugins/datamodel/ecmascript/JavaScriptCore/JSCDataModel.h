@@ -126,7 +126,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(JSCDataModel, DataModelImpl);
+PLUMA_INHERIT_PROVIDER(JSCDataModel, DataModelImpl)
 #endif
 
 }

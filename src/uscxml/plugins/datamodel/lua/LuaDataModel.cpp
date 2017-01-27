@@ -42,7 +42,19 @@
 
 //#include "LuaDOM.cpp.inc"
 
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
+
 namespace uscxml {
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool pluginConnect(pluma::Host& host) {
+	host.add( new LuaDataModelProvider() );
+	return true;
+}
+#endif
 
 //static int luaInspect(lua_State * l) {
 //	return 0;
@@ -194,20 +206,23 @@ int LuaDataModel::luaInFunction(lua_State * l) {
 
 std::shared_ptr<DataModelImpl> LuaDataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<LuaDataModel> dm(new LuaDataModel());
+
 	dm->_callbacks = callbacks;
 	dm->_luaState = luaL_newstate();
 	luaL_openlibs(dm->_luaState);
 
 	try {
 		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(dm->_luaState, "require");
-		const luabridge::LuaRef& resultLxp = requireFunc("lxp");
-		const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
+		if (requireFunc.isFunction()) {
+			const luabridge::LuaRef& resultLxp = requireFunc("lxp");
+			const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
 
-		// MSVC compiler bug with implicit cast operators, see comments in LuaRef class
-		if ((bool)resultLxp && (bool)resultLxpLOM) {
-			_luaHasXMLParser = true;
-			luabridge::setGlobal(dm->_luaState, resultLxp, "lxp");
-			luabridge::setGlobal(dm->_luaState, resultLxpLOM, "lxp.lom");
+			// MSVC compiler bug with implicit cast operators, see comments in LuaRef class
+			if ((bool)resultLxp && (bool)resultLxpLOM) {
+				_luaHasXMLParser = true;
+				luabridge::setGlobal(dm->_luaState, resultLxp, "lxp");
+				luabridge::setGlobal(dm->_luaState, resultLxpLOM, "lxp.lom");
+			}
 		}
 	} catch (luabridge::LuaException e) {
 		LOG(_callbacks->getLogger(), USCXML_INFO) << e.what();

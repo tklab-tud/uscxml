@@ -38,8 +38,8 @@ public:
 		std::string name;
 		std::string type;
 		size_t arraySize = 0;
-		size_t minValue = 0;
-		size_t maxValue = 0;
+		int minValue = 0;
+		int maxValue = 0;
 		std::map<std::string, PromelaTypedef> types;
 		std::set<ChartToPromela*> occurrences;
 

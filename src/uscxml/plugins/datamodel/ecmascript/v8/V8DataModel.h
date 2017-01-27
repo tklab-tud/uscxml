@@ -20,6 +20,7 @@
 #ifndef V8DATAMODEL_H_KN8TWG0V
 #define V8DATAMODEL_H_KN8TWG0V
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/DataModelImpl.h"
 
 #include <list>

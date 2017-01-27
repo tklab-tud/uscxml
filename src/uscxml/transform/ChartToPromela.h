@@ -72,13 +72,13 @@ protected:
 
 	void writeStrings(std::ostream& stream);
 
-	void writeCancelEvents(std::ostream& stream, int indent = 0);
-	void writeScheduleMachines(std::ostream& stream, int indent = 0);
-	void writeDetermineShortestDelay(std::ostream& stream, int indent = 0);
-	void writeRescheduleProcess(std::ostream& stream, int indent = 0);
-	void writeInsertWithDelay(std::ostream& stream, int indent = 0);
-	void writeAdvanceTime(std::ostream& stream, int indent = 0);
-	void writeRemovePendingEventsFromInvoker(std::ostream& stream, int indent = 0);
+	void writeCancelEvents(std::ostream& stream, size_t indent = 0);
+	void writeScheduleMachines(std::ostream& stream, size_t indent = 0);
+	void writeDetermineShortestDelay(std::ostream& stream, size_t indent = 0);
+	void writeRescheduleProcess(std::ostream& stream, size_t indent = 0);
+	void writeInsertWithDelay(std::ostream& stream, size_t indent = 0);
+	void writeAdvanceTime(std::ostream& stream, size_t indent = 0);
+	void writeRemovePendingEventsFromInvoker(std::ostream& stream, size_t indent = 0);
 
 	void prepare();
 

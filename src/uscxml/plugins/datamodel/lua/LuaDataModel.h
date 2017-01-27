@@ -20,6 +20,7 @@
 #ifndef LUADATAMODEL_H_113E014C
 #define LUADATAMODEL_H_113E014C
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
@@ -92,7 +93,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(LuaDataModel, DataModelImpl);
+PLUMA_INHERIT_PROVIDER(LuaDataModel, DataModelImpl)
 #endif
 
 }

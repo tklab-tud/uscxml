@@ -20,7 +20,12 @@
 #ifndef SCXMLIOProcessor_H_2CUY93KU
 #define SCXMLIOProcessor_H_2CUY93KU
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/IOProcessorImpl.h"
+
+#ifdef BUILD_AS_PLUGINS
+#include "uscxml/plugins/Plugins.h"
+#endif
 
 namespace uscxml {
 
@@ -45,12 +50,10 @@ public:
 	virtual bool isValidTarget(const std::string& target);
 
 	Data getDataModelVariables();
-protected:
-	IOProcessorCallbacks* _callbacks;
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(SCXMLIOProcessor, IOProcessorImpl);
+PLUMA_INHERIT_PROVIDER(SCXMLIOProcessor, IOProcessorImpl)
 #endif
 
 }

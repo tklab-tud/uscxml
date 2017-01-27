@@ -816,7 +816,7 @@ void ChartToPromela::writeTransitions(std::ostream& stream) {
 
 		if (HAS_ATTR(transition, "conflictBools")) {
 			std::string conflicts = ATTR(transition, "conflictBools");
-			for (auto j = 0; j < conflicts.size(); j++) {
+			for (size_t j = 0; j < conflicts.size(); j++) {
 				if (conflicts[j] == '1')
 					stream << "  " << _prefix << "transitions[" << toStr(i) << "].conflicts[" << toStr(j) << "] = 1;" << std::endl;
 			}
@@ -824,7 +824,7 @@ void ChartToPromela::writeTransitions(std::ostream& stream) {
 
 		if (HAS_ATTR(transition, "exitSetBools")) {
 			std::string exitSet = ATTR(transition, "exitSetBools");
-			for (auto j = 0; j < exitSet.size(); j++) {
+			for (size_t j = 0; j < exitSet.size(); j++) {
 				if (exitSet[j] == '1')
 					stream << "  " << _prefix << "transitions[" << toStr(i) << "].exit_set[" << toStr(j) << "] = 1;" << std::endl;
 			}
@@ -848,7 +848,7 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 
 		if (HAS_ATTR(state, "childBools")) {
 			std::string childs = ATTR(state, "childBools");
-			for (auto j = 0; j < childs.size(); j++) {
+			for (size_t j = 0; j < childs.size(); j++) {
 				if (childs[j] == '1')
 					stream << "  " << _prefix << "states[" << toStr(i) << "].children[" << toStr(j) << "] = 1;" << std::endl;
 			}
@@ -856,7 +856,7 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 
 		if (HAS_ATTR(state, "completionBools")) {
 			std::string completions = ATTR(state, "completionBools");
-			for (auto j = 0; j < completions.size(); j++) {
+			for (size_t j = 0; j < completions.size(); j++) {
 				if (completions[j] == '1')
 					stream << "  " << _prefix << "states[" << toStr(i) << "].completion[" << toStr(j) << "] = 1;" << std::endl;
 			}
@@ -864,7 +864,7 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 
 		if (HAS_ATTR(state, "ancBools")) {
 			std::string ancestors = ATTR(state, "ancBools");
-			for (auto j = 0; j < ancestors.size(); j++) {
+			for (size_t j = 0; j < ancestors.size(); j++) {
 				if (ancestors[j] == '1')
 					stream << "  " << _prefix << "states[" << toStr(i) << "].ancestors[" << toStr(j) << "] = 1;" << std::endl;
 			}
@@ -1849,7 +1849,7 @@ void ChartToPromela::writeFSMSelectTransitions(std::ostream& stream) {
 		stream << "         (false " << std::endl;
 
 
-		for (auto i = 0; i < _transitions.size(); i++) {
+		for (size_t i = 0; i < _transitions.size(); i++) {
 			stream << "          || (i == " << toStr(i);
 			if (HAS_ATTR(_transitions[i], "event") && ATTR(_transitions[i], "event") != "*") {
 				stream << " && (false";
@@ -2333,7 +2333,7 @@ void ChartToPromela::writeFSMExitStates(std::ostream& stream) {
 	TRACE_EXECUTION_V("Exiting state %d", "i");
 
 	stream << "      if" << std::endl;
-	for (auto i = 0; i < _states.size(); i++) {
+	for (size_t i = 0; i < _states.size(); i++) {
 		std::list<DOMElement*> onexits = DOMUtils::filterChildElements(XML_PREFIX(_states[i]).str() + "onexit" , _states[i]);
 		if (onexits.size() > 0) {
 			stream << "      :: i == " << toStr(i) << " -> {" << std::endl;
@@ -2374,7 +2374,7 @@ void ChartToPromela::writeFSMTakeTransitions(std::ostream& stream) {
 		TRACE_EXECUTION_V("Taking transition %d", "i");
 
 		stream << "      if" << std::endl;
-		for (auto i = 0; i < _transitions.size(); i++) {
+		for (size_t i = 0; i < _transitions.size(); i++) {
 			stream << "      :: i == " << toStr(i) << " -> {" << std::endl;
 			TRACE_EXECUTION_V("Processing executable content for transition %d", "i");
 			writeExecContent(stream, _transitions[i], 4);
@@ -2428,7 +2428,7 @@ void ChartToPromela::writeFSMEnterStates(std::ostream& stream) {
 
 	stream << "         /* Process executable content for entering a state */" << std::endl;
 	stream << "         if" << std::endl;
-	for (auto i = 0; i < _states.size(); i++) {
+	for (size_t i = 0; i < _states.size(); i++) {
 		std::list<DOMElement*> onentries = DOMUtils::filterChildElements(XML_PREFIX(_states[i]).str() + "onentry" , _states[i]);
 		if (onentries.size() > 0) {
 			stream << "         :: i == " << toStr(i) << " -> {" << std::endl;
@@ -2454,7 +2454,7 @@ void ChartToPromela::writeFSMEnterStates(std::ostream& stream) {
 		stream << "               " << _prefix << "states[" << _prefix << "transitions[j].source].parent == i) -> {" << std::endl;
 		stream << "              /* Call executable content in history or initial transition */" << std::endl;
 		stream << "              if" << std::endl;
-		for (auto i = 0; i < _transitions.size(); i++) {
+		for (size_t i = 0; i < _transitions.size(); i++) {
 			stream << "              :: j == " << toStr(i) << " -> {" << std::endl;
 			TRACE_EXECUTION_V("Processing executable content for transition %d", "j");
 
@@ -2642,7 +2642,7 @@ void ChartToPromela::writeFSMTerminateMachine(std::ostream& stream) {
 	stream << "  :: " << _prefix << "config[i] && " << _prefix << "flags[USCXML_CTX_TOP_LEVEL_FINAL] -> {" << std::endl;
 	stream << "    /* call all on exit handlers */" << std::endl;
 	stream << "   if" << std::endl;
-	for (auto i = 0; i < _states.size(); i++) {
+	for (size_t i = 0; i < _states.size(); i++) {
 		std::list<DOMElement*> onentries = DOMUtils::filterChildElements(XML_PREFIX(_states[i]).str() + "onexit" , _states[i]);
 		if (onentries.size() > 0) {
 			stream << "    :: i == " << toStr(i) << " -> {" << std::endl;
@@ -2884,7 +2884,7 @@ std::string ChartToPromela::declForRange(const std::string& identifier, long min
 	}
 }
 
-void ChartToPromela::writeDetermineShortestDelay(std::ostream& stream, int indent) {
+void ChartToPromela::writeDetermineShortestDelay(std::ostream& stream, size_t indent) {
 	std::string padding;
 	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
@@ -2905,7 +2905,7 @@ void ChartToPromela::writeDetermineShortestDelay(std::ostream& stream, int inden
 	stream << padding << "}" << std::endl;
 }
 
-void ChartToPromela::writeScheduleMachines(std::ostream& stream, int indent) {
+void ChartToPromela::writeScheduleMachines(std::ostream& stream, size_t indent) {
 	std::string padding;
 	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
@@ -2963,7 +2963,7 @@ void ChartToPromela::writeScheduleMachines(std::ostream& stream, int indent) {
 	stream << padding << "}" << std::endl;
 }
 
-void ChartToPromela::writeAdvanceTime(std::ostream& stream, int indent) {
+void ChartToPromela::writeAdvanceTime(std::ostream& stream, size_t indent) {
 	std::string padding;
 	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
@@ -2986,7 +2986,7 @@ void ChartToPromela::writeAdvanceTime(std::ostream& stream, int indent) {
 	stream << padding << "}" << std::endl;
 }
 
-void ChartToPromela::writeInsertWithDelay(std::ostream& stream, int indent) {
+void ChartToPromela::writeInsertWithDelay(std::ostream& stream, size_t indent) {
 	std::string padding;
 	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
@@ -3089,7 +3089,7 @@ void ChartToPromela::writeInsertWithDelay(std::ostream& stream, int indent) {
 	stream << padding << "}" << std::endl;
 }
 
-void ChartToPromela::writeRescheduleProcess(std::ostream& stream, int indent) {
+void ChartToPromela::writeRescheduleProcess(std::ostream& stream, size_t indent) {
 	std::string padding;
 	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
@@ -3133,7 +3133,7 @@ void ChartToPromela::writeRescheduleProcess(std::ostream& stream, int indent) {
 	stream << padding << "}" << std::endl;
 }
 
-void ChartToPromela::writeCancelEvents(std::ostream& stream, int indent) {
+void ChartToPromela::writeCancelEvents(std::ostream& stream, size_t indent) {
 	std::list<std::string> queues;
 	queues.push_back("eQ");
 	if (_allowEventInterleaving)
@@ -3166,7 +3166,7 @@ void ChartToPromela::writeCancelEvents(std::ostream& stream, int indent) {
 	stream << "}" << std::endl;
 }
 
-void ChartToPromela::writeRemovePendingEventsFromInvoker(std::ostream& stream, int indent) {
+void ChartToPromela::writeRemovePendingEventsFromInvoker(std::ostream& stream, size_t indent) {
 	std::list<std::string> queues;
 	queues.push_back("eQ");
 	if (_allowEventInterleaving)

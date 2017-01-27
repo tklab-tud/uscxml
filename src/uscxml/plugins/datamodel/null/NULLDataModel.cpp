@@ -20,7 +20,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "uscxml/Common.h"
-#include "NULLDataModel.h"
+#include "NullDataModel.h"
 #include "uscxml/util/DOM.h"
 
 #ifdef BUILD_AS_PLUGINS
@@ -32,24 +32,24 @@ namespace uscxml {
 #ifdef BUILD_AS_PLUGINS
 PLUMA_CONNECTOR
 bool pluginConnect(pluma::Host& host) {
-	host.add( new NULLDataModelProvider() );
+	host.add( new NullDataModelProvider() );
 	return true;
 }
 #endif
 
-NULLDataModel::NULLDataModel() {
+NullDataModel::NullDataModel() {
 }
 
-std::shared_ptr<DataModelImpl> NULLDataModel::create(DataModelCallbacks* callbacks) {
-	std::shared_ptr<NULLDataModel> dm(new NULLDataModel());
+std::shared_ptr<DataModelImpl> NullDataModel::create(DataModelCallbacks* callbacks) {
+	std::shared_ptr<NullDataModel> dm(new NullDataModel());
 	dm->_callbacks = callbacks;
 	return dm;
 }
 
-NULLDataModel::~NULLDataModel() {
+NullDataModel::~NullDataModel() {
 }
 
-Data NULLDataModel::getAsData(const std::string& content) {
+Data NullDataModel::getAsData(const std::string& content) {
 	Data data = Data::fromJSON(content);
 	if (data.empty()) {
 		data = Data(content, Data::VERBATIM);
@@ -63,7 +63,7 @@ Data NULLDataModel::getAsData(const std::string& content) {
  * The predicate must return 'true' if and only if that state is in the current
  * state configuration.
  */
-bool NULLDataModel::evalAsBool(const XERCESC_NS::DOMElement* scriptNode, const std::string& expr) {
+bool NullDataModel::evalAsBool(const XERCESC_NS::DOMElement* scriptNode, const std::string& expr) {
 	std::string trimmedExpr = expr;
 	boost::trim(trimmedExpr);
 	if (!boost::istarts_with(trimmedExpr, "in"))

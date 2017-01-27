@@ -92,10 +92,10 @@ protected:
 
 	Factory(const std::string&);
 	~Factory();
-	Factory* _parentFactory;
+	Factory* _parentFactory = NULL;
 	std::string _pluginPath;
-	static Factory* _instance;
 	static std::string _defaultPluginPath;
+	static Factory* _instance;
 
 };
 

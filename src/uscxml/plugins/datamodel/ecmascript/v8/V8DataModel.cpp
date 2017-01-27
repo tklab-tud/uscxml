@@ -35,6 +35,10 @@
 
 #include <boost/algorithm/string.hpp>
 
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
+
 using namespace XERCESC_NS;
 
 static v8::Local<v8::Value> XMLString2JS(const XMLCh* input) {
@@ -55,6 +59,14 @@ static XMLCh* JS2XMLString(const v8::Local<v8::Value>& value) {
 #include "V8DOM.cpp.inc"
 
 namespace uscxml {
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool pluginConnect(pluma::Host& host) {
+	host.add( new V8DataModelProvider() );
+	return true;
+}
+#endif
 
 V8DataModel::V8DataModel() {
 //  _contexts.push_back(v8::Context::New());

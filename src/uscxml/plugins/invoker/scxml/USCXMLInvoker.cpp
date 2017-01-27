@@ -19,8 +19,6 @@
 
 #include "USCXMLInvoker.h"
 
-#include "uscxml/config.h"
-
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
@@ -52,7 +50,7 @@ USCXMLInvoker::USCXMLInvoker() {
 
 USCXMLInvoker::~USCXMLInvoker() {
 	stop();
-};
+}
 
 void USCXMLInvoker::start() {
 	_isStarted = true;
@@ -184,7 +182,7 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 		InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
 		ActionLanguage al = _callbacks->getActionLanguage();
 
-        // create new instances
+		// create new instances
 		al.execContent = al.execContent.getImpl()->create(invoked);
 		al.delayQueue = al.delayQueue.getImplDelayed()->create(invoked);
 		al.internalQueue = al.internalQueue.getImplBase()->create();

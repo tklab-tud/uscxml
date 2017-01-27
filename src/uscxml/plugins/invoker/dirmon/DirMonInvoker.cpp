@@ -19,8 +19,6 @@
 
 #include "DirMonInvoker.h"
 
-#include "uscxml/config.h"
-
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
 #endif
@@ -62,7 +60,7 @@ DirMonInvoker::~DirMonInvoker() {
 	}
 	if (_watcher)
 		delete(_watcher);
-};
+}
 
 std::shared_ptr<InvokerImpl> DirMonInvoker::create(InvokerCallbacks* callbacks) {
 	std::shared_ptr<DirMonInvoker> invoker(new DirMonInvoker());

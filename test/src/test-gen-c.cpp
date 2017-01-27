@@ -18,9 +18,7 @@
 
 #ifndef AUTOINCLUDE_TEST
 #include "test-c-machine.scxml.c"
-//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test562.scxml.machine.c"
-//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test558.scxml.machine.c"
-// #include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/lua/test530.scxml.machine.c"
+//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
 #endif
 
 #include "uscxml/util/URL.h"

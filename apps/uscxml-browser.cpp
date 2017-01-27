@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 
 	// instantiate and configure interpreters
 	std::list<Interpreter> interpreters;
-	for(int i = 0; i < options.interpreters.size(); i++) {
+	for(size_t i = 0; i < options.interpreters.size(); i++) {
 
 //		InterpreterOptions* currOptions = options.interpreters[0].second;
 		std::string documentURL = options.interpreters[0].first;

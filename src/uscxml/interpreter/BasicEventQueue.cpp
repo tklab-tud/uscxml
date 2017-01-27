@@ -42,7 +42,7 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 		system_clock::time_point endTime = now + milliseconds(blockMs);
 
 		// now + milliseconds(blockMs) may not have fitted into a duration type - limit to maximum duration
-		if (blockMs > system_clock::duration::max().count() - duration_cast<milliseconds>(now.time_since_epoch()).count()) {
+		if (blockMs > (size_t)(system_clock::duration::max().count() - duration_cast<milliseconds>(now.time_since_epoch()).count())) {
 			endTime = system_clock::time_point::max();
 		}
 

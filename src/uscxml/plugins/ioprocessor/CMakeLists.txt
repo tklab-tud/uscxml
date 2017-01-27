@@ -7,7 +7,18 @@ if (WITH_IOPROC_SCXML)
 		scxml/*.cpp
 		scxml/*.h
 	)
-	list (APPEND USCXML_FILES ${SCXML_IOPROCESSOR})
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${SCXML_IOPROCESSOR})
+		add_library(ioproc_scxml SHARED ${SCXML_IOPROCESSOR} "../Plugins.cpp")
+		target_link_libraries(ioproc_scxml 
+			uscxml
+		)
+		set_target_properties(ioproc_scxml PROPERTIES FOLDER "Plugins//IO Processors")
+		set_target_properties(ioproc_scxml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(ioproc_scxml PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${SCXML_IOPROCESSOR})
+	endif()
 endif()
 
 OPTION(WITH_IOPROC_BASICHTTP "Build the basichttp i/o processor" ON)
@@ -17,8 +28,18 @@ if (WITH_IOPROC_BASICHTTP)
 		basichttp/*.cpp
 		basichttp/*.h
 	)
-	list (APPEND BASICHTTP_IOPROCESSOR "")
-	list (APPEND USCXML_FILES ${BASICHTTP_IOPROCESSOR})
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${BASICHTTP_IOPROCESSOR})
+		add_library(ioproc_basichttp SHARED ${BASICHTTP_IOPROCESSOR} "../Plugins.cpp")
+		target_link_libraries(ioproc_basichttp 
+			uscxml
+		)
+		set_target_properties(ioproc_basichttp PROPERTIES FOLDER "Plugins//IO Processors")
+		set_target_properties(ioproc_basichttp PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(ioproc_basichttp PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${BASICHTTP_IOPROCESSOR})
+	endif()
 endif()
 
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)

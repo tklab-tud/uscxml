@@ -17,15 +17,13 @@
  *  @endcond
  */
 
-#include <boost/algorithm/string.hpp>
-
 #include "uscxml/Common.h"
-#include "uscxml/config.h"
 #include "uscxml/util/String.h"
 #include "PromelaDataModel.h"
 #include "uscxml/util/DOM.h"
 
 #include <cctype>
+#include <boost/algorithm/string.hpp>
 
 #include "PromelaParser.h"
 #include "parser/promela.tab.hpp"
@@ -337,7 +335,7 @@ void PromelaDataModel::setEvent(const Event& event) {
 					int size = dataToInt(evaluateExpr(*opIterAsgn++));
 
 					variable.compound["size"] = Data(size);
-					for (size_t i = 0; i < size; i++) {
+					for (int i = 0; i < size; i++) {
 						variable.compound["value"].array.push_back(Data(0, Data::INTERPRETED));
 					}
 

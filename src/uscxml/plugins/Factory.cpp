@@ -33,9 +33,20 @@
 #include "uscxml/plugins/InvokerImpl.h"
 #include "uscxml/plugins/DataModelImpl.h"
 
+#include <xercesc/dom/DOM.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include "uscxml/util/DOM.h"
+
+#include <iostream>
 
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
+
+/*** BEGIN PLUGINS ***/
+
+#ifdef BUILD_AS_PLUGINS
+# include "uscxml/plugins/Plugins.h"
+#else
 
 #ifdef WITH_IOPROC_SCXML
 #   include "uscxml/plugins/ioprocessor/scxml/SCXMLIOProcessor.h"
@@ -45,10 +56,9 @@
 #   include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 #endif
 
+#include "uscxml/plugins/datamodel/null/NullDataModel.h"
 
-#include "uscxml/plugins/datamodel/null/NULLDataModel.h"
-
-#ifdef WITH_DM_ECMA_V8
+#if defined WITH_DM_ECMA_V8
 #   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
 #endif
 
@@ -77,6 +87,9 @@
 #   include "uscxml/plugins/invoker/dirmon/DirMonInvoker.h"
 #endif
 
+#endif
+/*** END PLUGINS ***/
+
 
 namespace uscxml {
 
@@ -98,7 +111,61 @@ std::string Factory::getDefaultPluginPath() {
 	return _defaultPluginPath;
 }
 
+Factory::~Factory() {
+#ifdef BUILD_AS_PLUGINS
+	pluma.unloadAll();
+#endif
+}
+
 void Factory::registerPlugins() {
+
+	/*** PLUGINS ***/
+#ifdef BUILD_AS_PLUGINS
+
+	if (_pluginPath.length() == 0) {
+		// try to read USCXML_PLUGIN_PATH environment variable
+		_pluginPath = (getenv("USCXML_PLUGIN_PATH") != NULL ? getenv("USCXML_PLUGIN_PATH") : "");
+	}
+	if (_pluginPath.length() > 0) {
+		pluma.acceptProviderType<InvokerImplProvider>();
+		pluma.acceptProviderType<IOProcessorImplProvider>();
+		pluma.acceptProviderType<DataModelImplProvider>();
+		pluma.acceptProviderType<ExecutableContentImplProvider>();
+		pluma.loadFromFolder(_pluginPath, true);
+
+		std::vector<InvokerImplProvider*> invokerProviders;
+		pluma.getProviders(invokerProviders);
+		for (auto provider : invokerProviders) {
+			InvokerImpl* invoker = provider->create();
+			registerInvoker(invoker);
+		}
+
+		std::vector<IOProcessorImplProvider*> ioProcessorProviders;
+		pluma.getProviders(ioProcessorProviders);
+		for (auto provider : ioProcessorProviders) {
+			IOProcessorImpl* ioProcessor = provider->create();
+			registerIOProcessor(ioProcessor);
+		}
+
+		std::vector<DataModelImplProvider*> dataModelProviders;
+		pluma.getProviders(dataModelProviders);
+		for (auto provider : dataModelProviders) {
+			DataModelImpl* dataModel = provider->create();
+			registerDataModel(dataModel);
+		}
+
+		std::vector<ExecutableContentImplProvider*> execContentProviders;
+		pluma.getProviders(execContentProviders);
+		for (auto provider : execContentProviders) {
+			ExecutableContentImpl* execContent = provider->create();
+			registerExecutableContent(execContent);
+		}
+
+	} else {
+		ERROR_EXECUTION_THROW("No path to plugins known, export USCXML_PLUGIN_PATH or pass path as parameter");
+	}
+
+#else
 
 #ifdef WITH_IOPROC_SCXML
 	{
@@ -150,10 +217,9 @@ void Factory::registerPlugins() {
 #endif
 
 	{
-		NULLDataModel* dataModel = new NULLDataModel();
+		NullDataModel* dataModel = new NullDataModel();
 		registerDataModel(dataModel);
 	}
-
 
 #ifdef WITH_INV_SCXML
 	{
@@ -169,12 +235,9 @@ void Factory::registerPlugins() {
 	}
 #endif
 
-}
-
-Factory::~Factory() {
-#ifdef BUILD_AS_PLUGINS
-	pluma.unloadAll();
 #endif
+	/*** PLUGINS ***/
+
 }
 
 #define LIST_COMPONENTS(type, name) \
@@ -476,6 +539,13 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 
 
 Factory* Factory::getInstance() {
+	// this needs to be here as some plugins use xercesc
+	try {
+		::xercesc_3_1::XMLPlatformUtils::Initialize();
+	} catch (const XERCESC_NS::XMLException& toCatch) {
+		ERROR_PLATFORM_THROW("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
+	}
+
 	if (_instance == NULL) {
 		_instance = new Factory(Factory::_defaultPluginPath);
 	}
@@ -530,6 +600,6 @@ void InvokerImpl::eventToSCXML(Event& event,
 	}
 }
 
-Factory* Factory::_instance = NULL;
 std::string Factory::_defaultPluginPath;
+Factory* Factory::_instance = NULL;
 }

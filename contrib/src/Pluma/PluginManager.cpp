@@ -53,10 +53,10 @@ bool PluginManager::load(const std::string& path){
     if (!lib) return false;
 
     fnRegisterPlugin* registerFunction;
-    registerFunction = reinterpret_cast<fnRegisterPlugin*>(lib->getSymbol("connect"));
+    registerFunction = reinterpret_cast<fnRegisterPlugin*>(lib->getSymbol("pluginConnect"));
 
     if(!registerFunction){
-        fprintf(stderr, "Failed to initialize plugin \"%s\": connect function not found\n", plugName.c_str());
+        fprintf(stderr, "Failed to initialize plugin \"%s\": pluginConnect function not found\n", plugName.c_str());
         delete lib;
         return false;
     }
@@ -68,6 +68,7 @@ bool PluginManager::load(const std::string& path){
         delete lib;
         return false;
     }
+
     // Store the library if addictions are confirmed
     if (host.confirmAddictions())
         libraries[plugName] = lib;

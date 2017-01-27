@@ -20,6 +20,7 @@
 #ifndef USCXMLINVOKER_H_OQFA21IO
 #define USCXMLINVOKER_H_OQFA21IO
 
+#include "uscxml/config.h"
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/interpreter/BasicEventQueue.h"
 
@@ -88,7 +89,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(USCXMLInvoker, InvokerImpl);
+PLUMA_INHERIT_PROVIDER(USCXMLInvoker, InvokerImpl)
 #endif
 
 }

@@ -36,7 +36,7 @@ struct USCXML_API TrieNode {
 	std::string identifier;
 	std::string value;
 	std::map<std::string, TrieNode*> childs;
-	void dump(int indent = 0);
+	void dump(size_t indent = 0);
 };
 
 struct USCXML_API Trie {

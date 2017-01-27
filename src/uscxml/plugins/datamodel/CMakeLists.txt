@@ -5,8 +5,19 @@ file(GLOB NULL_DATAMODEL
 	null/*.cpp
 	null/*.h
 )
-list (APPEND USCXML_FILES ${NULL_DATAMODEL})
-
+if (BUILD_AS_PLUGINS)
+	source_group("Null" FILES ${NULL_DATAMODEL})
+	add_library(
+		datamodel_null SHARED 
+		${NULL_DATAMODEL}
+	"../Plugins.cpp")
+	target_link_libraries(datamodel_null uscxml)
+	set_target_properties(datamodel_null PROPERTIES FOLDER "Plugins//DataModel")
+	set_target_properties(datamodel_null PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+	set_target_properties(datamodel_null PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+else()		
+	list (APPEND USCXML_FILES ${NULL_DATAMODEL})
+endif()
 
 if (JSC_FOUND)
 	set(USCXML_DATAMODELS "ecmascript(JSC) ${USCXML_DATAMODELS}")
@@ -17,8 +28,20 @@ if (JSC_FOUND)
 		ecmascript/*.cpp
 		ecmascript/*.h
 	)
-	list (APPEND USCXML_FILES ${JSC_DATAMODEL})
-	list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+	if (BUILD_AS_PLUGINS)
+		source_group("JavaScriptCore" FILES ${JSC_DATAMODEL})
+		add_library(
+			datamodel_jsc SHARED 
+			${JSC_DATAMODEL}
+		"../Plugins.cpp")
+		target_link_libraries(datamodel_jsc uscxml ${JSC_LIBRARY})
+		set_target_properties(datamodel_jsc PROPERTIES FOLDER "Plugins//DataModel")
+		set_target_properties(datamodel_jsc PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(datamodel_jsc PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()		
+		list (APPEND USCXML_FILES ${JSC_DATAMODEL})
+		list (APPEND USCXML_OPT_LIBS ${JSC_LIBRARY})
+	endif()
 endif()
 
 
@@ -31,8 +54,21 @@ if (V8_FOUND)
 		ecmascript/*.cpp
 		ecmascript/*.h
 	)
-	list (APPEND USCXML_FILES ${V8_DATAMODEL})
-	list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	if (BUILD_AS_PLUGINS)
+		source_group("V8" FILES ${V8_DATAMODEL})
+
+		add_library(
+			datamodel_v8 SHARED 
+			${V8_DATAMODEL}
+		"../Plugins.cpp")
+		target_link_libraries(datamodel_v8 uscxml ${V8_LIBRARY})
+		set_target_properties(datamodel_v8 PROPERTIES FOLDER "Plugins//DataModel")
+		set_target_properties(datamodel_v8 PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(datamodel_v8 PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${V8_DATAMODEL})
+		list (APPEND USCXML_OPT_LIBS ${V8_LIBRARY})
+	endif()
 endif()
 
 
@@ -43,8 +79,20 @@ if (LUA51_FOUND AND WITH_DM_LUA)
 		lua/*.cpp
 		lua/*.h
 	)
-	list (APPEND USCXML_FILES ${LUA_DATAMODEL})
-	list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARY})
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${LUA_DATAMODEL})
+		add_library(datamodel_lua SHARED ${LUA_DATAMODEL} "../Plugins.cpp")
+		target_link_libraries(datamodel_lua 
+			uscxml
+			${LUA_LIBRARIES}
+		)
+		set_target_properties(datamodel_lua PROPERTIES FOLDER "Plugins//DataModel")
+		set_target_properties(datamodel_lua PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(datamodel_lua PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${LUA_DATAMODEL})
+		list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARY})
+	endif()
 endif()
 
 if (WITH_DM_C89)
@@ -55,7 +103,18 @@ if (WITH_DM_C89)
 		c89/*.c
 		c89/*.h
 	)
-	list (APPEND USCXML_FILES ${C89_DATAMODEL})
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${C89_DATAMODEL})
+		add_library(datamodel_c89 SHARED ${C89_DATAMODEL} "../Plugins.cpp")
+		target_link_libraries(datamodel_c89 
+			uscxml
+		)
+		set_target_properties(datamodel_c89 PROPERTIES FOLDER "Plugins//DataModel")
+		set_target_properties(datamodel_c89 PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(datamodel_c89 PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${C89_DATAMODEL})
+	endif()
 endif()
 
 if (WITH_DM_PROMELA)
@@ -66,7 +125,22 @@ if (WITH_DM_PROMELA)
 		promela/*.c
 		promela/*.h
 	)
-	list (APPEND USCXML_FILES ${PROMELA_DATAMODEL})	
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${PROMELA_DATAMODEL})
+		add_library(datamodel_promela SHARED ${PROMELA_DATAMODEL} "../Plugins.cpp")
+		target_link_libraries(datamodel_promela 
+			uscxml
+		)
+		# SET_SOURCE_FILES_PROPERTIES is directory scope
+		if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+			SET_SOURCE_FILES_PROPERTIES(promela/parser/promela.lex.yy.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated-register )
+		endif()
+		set_target_properties(datamodel_promela PROPERTIES FOLDER "Plugins//DataModel")
+		set_target_properties(datamodel_promela PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(datamodel_promela PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${PROMELA_DATAMODEL})	
+	endif()
 endif()
 
 if (NOT SWIG_FOUND)

@@ -30,7 +30,19 @@
 #include <arpa/inet.h>
 #endif
 
+#ifdef BUILD_AS_PLUGINS
+#include <Pluma/Connector.hpp>
+#endif
+
 namespace uscxml {
+
+#ifdef BUILD_AS_PLUGINS
+PLUMA_CONNECTOR
+bool pluginConnect(pluma::Host& host) {
+	host.add( new SCXMLIOProcessorProvider() );
+	return true;
+}
+#endif
 
 // see http://www.w3.org/TR/scxml/#SCXMLEventProcessor
 

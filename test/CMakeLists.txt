@@ -39,25 +39,32 @@ function(USCXML_TEST_COMPILE)
 		add_test(${USCXML_TEST_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${USCXML_TEST_NAME} ${USCXML_TEST_ARGS})
 		set_property(TEST ${USCXML_TEST_NAME} PROPERTY LABELS ${USCXML_TEST_LABEL})
 		set_property(TEST ${USCXML_TEST_NAME} PROPERTY TIMEOUT ${TEST_TIMEOUT})
+		set_property(TEST ${USCXML_TEST_NAME} PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
 	endif ()
 	set_target_properties(${USCXML_TEST_NAME} PROPERTIES FOLDER "Tests")
 endfunction()
 
 # simple one file tests
+USCXML_TEST_COMPILE(NAME test-utils LABEL general/test-utils FILES src/test-utils.cpp)
 USCXML_TEST_COMPILE(NAME test-extensions LABEL general/test-extensions FILES src/test-extensions.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp)
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
-USCXML_TEST_COMPILE(
-	NAME test-serialization 
-	LABEL general/test-serialization 
-	FILES src/test-serialization.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp
-	ARGS ${CMAKE_CURRENT_SOURCE_DIR}/w3c/ecma)
+
+if (NOT BUILD_AS_PLUGINS)
+	USCXML_TEST_COMPILE(
+		NAME test-serialization 
+		LABEL general/test-serialization 
+		FILES src/test-serialization.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp
+		ARGS ${CMAKE_CURRENT_SOURCE_DIR}/w3c/ecma)
+endif()
 # USCXML_TEST_COMPILE(NAME test-c89-parser LABEL general/test-c89-parser FILES src/test-c89-parser.cpp)
 
 # test-stress is not an automated test
-USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
+if (NOT BUILD_AS_PLUGINS)
+	USCXML_TEST_COMPILE(BUILD_ONLY NAME test-stress LABEL general/test-stress FILES src/test-stress.cpp)
+endif()
 
 file(GLOB_RECURSE USCXML_WRAPPERS
 		${PROJECT_SOURCE_DIR}/src/bindings/swig/wrapped/*.cpp
@@ -91,6 +98,7 @@ foreach (USCXML_ISSUE ${USCXML_ISSUES})
 	if (ISSUE_TYPE STREQUAL ".scxml")
 		add_test(issue/${ISSUE_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-state-pass ${USCXML_ISSUE})
 		set_property(TEST issue/${ISSUE_NAME} PROPERTY LABELS issue/${ISSUE_NAME})
+		set_property(TEST issue/${ISSUE_NAME} PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
 	else ()
 		USCXML_TEST_COMPILE(NAME ${ISSUE_NAME} LABEL issues/${ISSUE_NAME} FILES ${USCXML_ISSUE})
 	endif ()
@@ -130,6 +138,7 @@ foreach (USCXML_HEADER ${USCXML_PUBLIC_HEADERS})
 			-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 			-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_header_compiles.cmake)
 	set_property(TEST "header/${USCXML_REL_HEADER}" PROPERTY LABELS "header/${USCXML_REL_HEADER}")
+	set_property(TEST "header/${USCXML_REL_HEADER}" PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
 
 endforeach ()
 
@@ -142,7 +151,8 @@ if (PERL_BIN)
 			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test/src
 			)
 	set_property(TEST "general/test-debug-api" PROPERTY LABELS "general/test-debug-api")
-	set_tests_properties("general/test-debug-api" PROPERTIES DEPENDS uscxml-browser)
+	set_property(TEST "general/test-debug-api" PROPERTY DEPENDS uscxml-browser)
+	set_property(TEST "general/test-debug-api" PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
 
 endif ()
 
@@ -299,7 +309,7 @@ if (NOT BUILD_MINIMAL)
 								-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 								-DSCAFFOLDING_FOR_GENERATED_C:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/src/test-gen-c.cpp
 								-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/test_generated_${TEST_TARGET}.cmake)
-						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS uscxml-transform)
+						set_property(TEST ${TEST_NAME} PROPERTY DEPENDS uscxml-transform)
 						set(TEST_ADDED ON)
 					endif()
 
@@ -313,7 +323,7 @@ if (NOT BUILD_MINIMAL)
 								-Dtest.file=${W3C_TEST}
 								-Duscxml.jar=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxml.jar
 								WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/java/bindings)
-						set_tests_properties("${TEST_NAME}" PROPERTIES DEPENDS jar)
+						set_property(TEST ${TEST_NAME} PROPERTY DEPENDS jar)
 						set(TEST_ADDED ON)
 					endif ()
 
@@ -325,7 +335,8 @@ if (NOT BUILD_MINIMAL)
 								${W3C_TEST}
 								WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/contrib/python/bindings)
 						
-						set_tests_properties("${TEST_NAME}" PROPERTIES ENVIRONMENT "USCXML_PYTHON_PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+						set_property(TEST ${TEST_NAME} PROPERTY ENVIRONMENT "USCXML_PYTHON_PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+						set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
 						set(TEST_ADDED ON)
 					endif ()
 
@@ -343,8 +354,8 @@ if (NOT BUILD_MINIMAL)
 							-DSPIN_BIN:FILEPATH=${SPIN_BIN}
 							-DCC_BIN:FILEPATH=${CC_BIN}
 							-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest/scripts/run_promela_test.cmake)
-					set_tests_properties("${TEST_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
-					set_tests_properties("${TEST_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
+					set_property(TEST ${TEST_NAME} PROPERTY PASS_REGULAR_EXPRESSION "depth reached [0-9]+, errors: 0")
+					set_property(TEST ${TEST_NAME} PROPERTY FAIL_REGULAR_EXPRESSION "depth reached [0-9]+, errors: [1-9]+")
 					set(TEST_ADDED ON)
 
 				elseif (TEST_TYPE MATCHES "^fsm.*")
@@ -356,9 +367,10 @@ if (NOT BUILD_MINIMAL)
 
 				if (TEST_ADDED)
 					set_property(TEST ${TEST_NAME} PROPERTY LABELS ${TEST_NAME})
-					set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT})
+					set_property(TEST ${TEST_NAME} PROPERTY TIMEOUT ${TEST_TIMEOUT})
+					set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
 					if (IS_PERFORMANCE_TEST)
-						set_tests_properties("${TEST_NAME}" PROPERTIES ENVIRONMENT USCXML_BENCHMARK_ITERATIONS=${TEST_BENCHMARK_ITERATIONS})
+						set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT USCXML_BENCHMARK_ITERATIONS=${TEST_BENCHMARK_ITERATIONS})
 					endif ()
 				endif ()
 

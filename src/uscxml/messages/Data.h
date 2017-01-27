@@ -39,7 +39,7 @@ class DOMNode;
 
 namespace uscxml {
 
-static int _dataIndentation = 1;
+static unsigned int _dataIndentation = 1;
 
 class USCXML_API Data {
 public:
@@ -48,7 +48,10 @@ public:
 		INTERPRETED,
 	};
 
-	Data() : node(NULL), type(INTERPRETED) {}
+	Data() : node(NULL), type(INTERPRETED) {
+		// silence stupid not used error for statics in gcc
+		(void)_dataIndentation;
+	}
 
 	explicit Data(const char* data, size_t size, const std::string& mimeType, bool adopt = false);
 
@@ -87,7 +90,6 @@ public:
 		compound.clear();
 		array.clear();
 		atom.clear();
-//		adoptedDoc.reset();
 		binary = Blob();
 		node = NULL;
 	}

@@ -766,13 +766,13 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 	stream << "signal event_bus : std_logic_vector( " << _eventBitSize << " downto 0);" << std::endl;
 	stream << "signal event_we  : std_logic;" << std::endl;
 
-	for (int i = 0; i < _execContent.size(); i++) {
+	for (size_t i = 0; i < _execContent.size(); i++) {
 		stream << "signal done_" << toStr(i) << "_sig : std_logic;" << std::endl;
 		stream << "signal start_" << toStr(i) << "_sig : std_logic;" << std::endl;
 	}
 
 	stream << "-- sequence input line" << std::endl;
-	for (int i = 0; i < _execContent.size(); i++) {
+	for (size_t i = 0; i < _execContent.size(); i++) {
 		stream << "signal seq_" << toStr(i) << "_sig : std_logic;" << std::endl;
 	}
 	stream << std::endl;
@@ -838,7 +838,7 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 		stream << "ex_content_block : process (clk, rst) " << std::endl;
 		stream << "begin" << std::endl;
 		stream << "  if rst = '1' then" << std::endl;
-		for (int i = 0; i < _execContent.size(); i++) {
+		for (size_t i = 0; i < _execContent.size(); i++) {
 			stream << "    done_" << toStr(i) << "_sig <= '0';" << std::endl;
 		}
 		stream << "    event_bus <= (others => '0');" << std::endl;
@@ -981,7 +981,7 @@ void ChartToVHDL::writeConditionSolver(std::ostream &stream) {
 	stream << "signal rst : std_logic;" << std::endl;
 	stream << "signal micro_stepper_en : std_logic;" << std::endl;
 
-	for (int i = 0; i < _execContent.size(); i++) {
+	for (size_t i = 0; i < _execContent.size(); i++) {
 		stream << "signal done_" << toStr(i) << "_sig : std_logic;" << std::endl;
 		stream << "signal start_" << toStr(i) << "_sig : std_logic;" << std::endl;
 	}

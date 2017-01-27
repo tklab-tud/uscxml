@@ -61,6 +61,7 @@ static URL normalizeURL(const std::string url) {
 }
 
 Interpreter Interpreter::fromXML(const std::string& xml, const std::string& baseURL) {
+
 	URL absUrl = normalizeURL(baseURL);
 
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
@@ -197,7 +198,7 @@ std::string Interpreter::serialize() {
 
 InterpreterState Interpreter::step(size_t blockMs) {
 	return _impl->step(blockMs);
-};
+}
 
 void loadState(const std::string& encodedState);
 

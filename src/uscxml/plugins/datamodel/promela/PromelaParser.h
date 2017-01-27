@@ -48,7 +48,7 @@ public:
 
 	void merge(PromelaParserNode* node);
 	void push(PromelaParserNode* node);
-	void dump(int indent = 0);
+	void dump(size_t indent = 0);
 
 	static std::string typeToDesc(int type);
 

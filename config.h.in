@@ -73,6 +73,7 @@
 #cmakedefine WITH_DM_C89
 #cmakedefine WITH_DM_PROMELA
 
+#cmakedefine BUILD_AS_PLUGINS
 
 /** Optional libraries we found */
 #cmakedefine UMUNDO_FOUND

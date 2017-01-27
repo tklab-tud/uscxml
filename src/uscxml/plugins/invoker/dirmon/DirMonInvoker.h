@@ -20,6 +20,7 @@
 #ifndef DIRMONINVOKER_H_W09J90F0
 #define DIRMONINVOKER_H_W09J90F0
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/InvokerImpl.h"
 #include "uscxml/interpreter/Logging.h"
 
@@ -139,7 +140,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(DirMonInvoker, InvokerImpl);
+PLUMA_INHERIT_PROVIDER(DirMonInvoker, InvokerImpl)
 #endif
 
 }

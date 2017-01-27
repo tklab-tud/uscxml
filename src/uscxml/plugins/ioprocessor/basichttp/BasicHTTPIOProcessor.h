@@ -20,6 +20,8 @@
 #ifndef BASICHTTPIOPROCESSOR_H_2CUY93KU
 #define BASICHTTPIOPROCESSOR_H_2CUY93KU
 
+#include "uscxml/config.h"
+
 extern "C" {
 #include <event2/http.h>
 #include <event2/http_struct.h>
@@ -93,11 +95,8 @@ protected:
 	std::map<std::string, std::pair<URL, Event> > _sendRequests;
 };
 
-// do not implement pluma plugins if we build an inherited plugin
-#ifdef ioprocessor_basichttp_EXPORTS
-#	ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(BasicHTTPIOProcessor, IOProcessorImpl);
-#	endif
+#ifdef BUILD_AS_PLUGINS
+PLUMA_INHERIT_PROVIDER(BasicHTTPIOProcessor, IOProcessorImpl)
 #endif
 
 }

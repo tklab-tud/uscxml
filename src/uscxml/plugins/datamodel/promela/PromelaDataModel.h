@@ -20,6 +20,7 @@
 #ifndef PROMELADATAMODEL_H_4VG0TDMU
 #define PROMELADATAMODEL_H_4VG0TDMU
 
+#include "uscxml/config.h"
 #include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
@@ -96,7 +97,7 @@ protected:
 };
 
 #ifdef BUILD_AS_PLUGINS
-PLUMA_INHERIT_PROVIDER(PromelaDataModel, DataModelImpl);
+PLUMA_INHERIT_PROVIDER(PromelaDataModel, DataModelImpl)
 #endif
 
 }

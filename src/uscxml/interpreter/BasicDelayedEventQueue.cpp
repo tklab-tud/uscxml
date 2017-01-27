@@ -196,7 +196,8 @@ Data BasicDelayedEventQueue::serialize() {
 	for (auto event : _queue) {
 		struct callbackData cb = _callbackData[event.uuid];
 
-		struct timeval delay, now;
+		struct timeval delay = {0, 0};
+		struct timeval now = {0, 0};
 		uint64_t delayMs = 0;
 		evutil_gettimeofday(&now, NULL);
 

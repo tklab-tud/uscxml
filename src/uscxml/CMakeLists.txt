@@ -62,7 +62,6 @@ file(GLOB USCXML_CORE
 source_group("Interpreter" FILES ${USCXML_CORE})
 list (APPEND USCXML_FILES ${USCXML_CORE})
 
-
 file(GLOB USCXML_PLUGINS
 	plugins/*.cpp
 	plugins/*.h
@@ -77,6 +76,15 @@ file(GLOB_RECURSE USCXML_TRANSFORM
 )
 source_group("Interpreter" FILES ${USCXML_TRANSFORM})
 list (APPEND USCXML_TRANSFORM_FILES ${USCXML_TRANSFORM})
+
+if (BUILD_AS_PLUGINS)
+	file(GLOB_RECURSE PROMELA_PARSER
+		plugins/datamodel/promela/parser/*.cpp
+		plugins/datamodel/promela/PromelaParser.cpp
+	)
+	list (APPEND USCXML_TRANSFORM_FILES ${PROMELA_PARSER})
+	
+endif()
 
 add_subdirectory(plugins/datamodel)
 # add_subdirectory(plugins/element)

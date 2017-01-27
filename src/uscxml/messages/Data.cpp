@@ -73,6 +73,7 @@ void Data::merge(const Data& other) {
 }
 
 Data Data::fromJSON(const std::string& jsonString) {
+
 	Data data;
 
 	std::string trimmed = boost::trim_copy(jsonString);
@@ -129,7 +130,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 		return data;
 	}
 
-	if (t[0].end != trimmed.length())
+	if ((size_t)t[0].end != trimmed.length())
 		return data;
 
 //	jsmntok_t* token = t;
@@ -218,7 +219,7 @@ std::string Data::toJSON(const Data& data) {
 	}
 	if (false) {
 	} else if (data.compound.size() > 0) {
-		int longestKey = 0;
+		size_t longestKey = 0;
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
 			if (compoundIter->first.size() > longestKey)
@@ -226,7 +227,7 @@ std::string Data::toJSON(const Data& data) {
 			compoundIter++;
 		}
 		std::string keyPadding;
-		for (unsigned int i = 0; i < longestKey; i++)
+		for (size_t i = 0; i < longestKey; i++)
 			keyPadding += " ";
 
 		std::string seperator;
