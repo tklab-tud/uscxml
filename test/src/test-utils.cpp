@@ -4,7 +4,7 @@
  * It is not actually a test as such, but makes sure that the snippets will
  * actually compile and do what we claim they do.
  */
-#define protected public
+//#define protected public
 
 #include "uscxml/config.h"
 #include "uscxml/Common.h"
@@ -35,7 +35,7 @@ void testDOMUtils() {
 
 	Interpreter interpreter = Interpreter::fromXML(xml, "");
 	interpreter.step();
-	XERCESC_NS::DOMElement* scxml = interpreter.getImpl()->_scxml;
+	XERCESC_NS::DOMElement* scxml = interpreter.getImpl()->getDocument()->getDocumentElement();
 
 	{
 		// postfix

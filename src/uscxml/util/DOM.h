@@ -80,7 +80,7 @@ public:
 	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
 	        const std::list<XERCESC_NS::DOMNode*>& nodeSet,
 	        bool recurse = false);
-protected:
+
 	enum Order {
 		POSTFIX,
 		DOCUMENT,
