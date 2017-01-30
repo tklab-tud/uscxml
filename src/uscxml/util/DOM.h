@@ -201,7 +201,7 @@ public :
 		return _localForm;
 	}
 
-	const operator const XMLCh* () const {
+    operator XMLCh* () const {
 		assert(_unicodeForm != NULL); // constructor with XMLCh
 		return _unicodeForm;
 	}
@@ -221,7 +221,7 @@ public :
 	}
 
 	bool operator<(const X& other) const {
-		return XERCESC_NS::XMLString::compareString(_unicodeForm, other._unicodeForm);
+		return XERCESC_NS::XMLString::compareString(_unicodeForm, other._unicodeForm) < 0;
 	}
 
 	operator bool () {
