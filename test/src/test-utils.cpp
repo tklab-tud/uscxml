@@ -45,9 +45,9 @@ void testDOMUtils() {
 		DOMUtils::filterElementGeneric({ "state" }, result, scxml, DOMUtils::POSTFIX, true, true);
 		index = 1;
 		for (auto trans : result) {
-			assert(HAS_ATTR(trans, "post"));
-			std::cout << "post: " << ATTR(trans, "post") << std::endl;
-			assert(ATTR(trans, "post") == toStr(index));
+			assert(HAS_ATTR(trans, X("post")));
+			std::cout << "post: " << ATTR(trans, X("post")) << std::endl;
+			assert(ATTR(trans, X("post")) == toStr(index));
 			index++;
 		}
 	}
@@ -58,9 +58,9 @@ void testDOMUtils() {
 		DOMUtils::filterElementGeneric({ "state" }, result, scxml, DOMUtils::DOCUMENT, true, true);
 		index = 1;
 		for (auto trans : result) {
-			assert(HAS_ATTR(trans, "doc"));
-			std::cout << "doc: " << ATTR(trans, "doc") << std::endl;
-			assert(ATTR(trans, "doc") == toStr(index));
+			assert(HAS_ATTR(trans, X("doc")));
+			std::cout << "doc: " << ATTR(trans, X("doc")) << std::endl;
+			assert(ATTR(trans, X("doc")) == toStr(index));
 			index++;
 		}
 	}

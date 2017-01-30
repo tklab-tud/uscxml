@@ -40,7 +40,7 @@ std::shared_ptr<ContentExecutorImpl> BasicContentExecutor::create(ContentExecuto
 }
 
 void BasicContentExecutor::processRaise(XERCESC_NS::DOMElement* content) {
-	Event raised(ATTR(content, "event"));
+	Event raised(ATTR(content, kXMLCharEvent));
 	_callbacks->enqueueInternal(raised);
 }
 
@@ -61,10 +61,10 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 
 	try {
 		// event
-		if (HAS_ATTR(element, "eventexpr")) {
-			sendEvent.name = _callbacks->evalAsData(ATTR(element, "eventexpr")).atom;
-		} else if (HAS_ATTR(element, "event")) {
-			sendEvent.name = ATTR(element, "event");
+		if (HAS_ATTR(element, kXMLCharEventExpr)) {
+			sendEvent.name = _callbacks->evalAsData(ATTR(element, kXMLCharEventExpr)).atom;
+		} else if (HAS_ATTR(element, kXMLCharEvent)) {
+			sendEvent.name = ATTR(element, kXMLCharEvent);
 		}
 	} catch (Event e) {
 		ERROR_EXECUTION_THROW2("Syntax error in send element eventexpr", element);
@@ -72,10 +72,10 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 
 	try {
 		// target
-		if (HAS_ATTR(element, "targetexpr")) {
-			target = _callbacks->evalAsData(ATTR(element, "targetexpr")).atom;
-		} else if (HAS_ATTR(element, "target")) {
-			target = ATTR(element, "target");
+		if (HAS_ATTR(element, kXMLCharTargetExpr)) {
+			target = _callbacks->evalAsData(ATTR(element, kXMLCharTargetExpr)).atom;
+		} else if (HAS_ATTR(element, kXMLCharTarget)) {
+			target = ATTR(element, kXMLCharTarget);
 		}
 	} catch (Event e) {
 		ERROR_EXECUTION_THROW2("Syntax error in send element targetexpr", element);
@@ -83,10 +83,10 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 
 	try {
 		// type
-		if (HAS_ATTR(element, "typeexpr")) {
-			type = _callbacks->evalAsData(ATTR(element, "typeexpr")).atom;
-		} else if (HAS_ATTR(element, "type")) {
-			type = ATTR(element, "type");
+		if (HAS_ATTR(element, kXMLCharTypeExpr)) {
+			type = _callbacks->evalAsData(ATTR(element, kXMLCharTypeExpr)).atom;
+		} else if (HAS_ATTR(element, kXMLCharType)) {
+			type = ATTR(element, kXMLCharType);
 		}
 	} catch (Event e) {
 		ERROR_EXECUTION_THROW2("Syntax error in send element typeexpr", element);
@@ -94,8 +94,8 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 
 	try {
 		// id
-		if (HAS_ATTR(element, "id")) {
-			sendEvent.sendid = ATTR(element, "id");
+		if (HAS_ATTR(element, kXMLCharId)) {
+			sendEvent.sendid = ATTR(element, kXMLCharId);
 		} else {
 			/*
 			 * The ids for <send> and <invoke> are subtly different. In a conformant
@@ -116,9 +116,9 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			 * See 3.14 IDs for details.
 			 *
 			 */
-			sendEvent.sendid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
-			if (HAS_ATTR(element, "idlocation")) {
-				_callbacks->assign(ATTR(element, "idlocation"), Data(sendEvent.sendid, Data::VERBATIM), std::map<std::string, std::string>());
+			sendEvent.sendid = ATTR(getParentState(element), kXMLCharId) + "." + UUID::getUUID();
+			if (HAS_ATTR(element, kXMLCharIdLocation)) {
+				_callbacks->assign(ATTR(element, kXMLCharIdLocation), Data(sendEvent.sendid, Data::VERBATIM), std::map<std::string, std::string>());
 			} else {
 				sendEvent.hideSendId = true;
 			}
@@ -130,10 +130,10 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 	try {
 		// delay
 		std::string delay;
-		if (HAS_ATTR(element, "delayexpr")) {
-			delay = _callbacks->evalAsData(ATTR(element, "delayexpr"));
-		} else if (HAS_ATTR(element, "delay")) {
-			delay = ATTR(element, "delay");
+		if (HAS_ATTR(element, kXMLCharDelayExpr)) {
+			delay = _callbacks->evalAsData(ATTR(element, kXMLCharDelayExpr));
+		} else if (HAS_ATTR(element, kXMLCharDelay)) {
+			delay = ATTR(element, kXMLCharDelay);
 		}
 		if (delay.size() > 0) {
 			NumAttr delayAttr(delay);
@@ -200,10 +200,10 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 
 void BasicContentExecutor::processCancel(XERCESC_NS::DOMElement* content) {
 	std::string sendid;
-	if (HAS_ATTR(content, "sendid")) {
-		sendid = ATTR(content, "sendid");
-	} else if (HAS_ATTR(content, "sendidexpr")) {
-		sendid = _callbacks->evalAsData(ATTR(content, "sendidexpr")).atom;
+	if (HAS_ATTR(content, kXMLCharSendId)) {
+		sendid = ATTR(content, kXMLCharSendId);
+	} else if (HAS_ATTR(content, kXMLCharSendIdExpr)) {
+		sendid = _callbacks->evalAsData(ATTR(content, kXMLCharSendIdExpr)).atom;
 	} else {
 		ERROR_EXECUTION_THROW2("Cancel element has neither sendid nor sendidexpr attribute", content);
 
@@ -212,7 +212,7 @@ void BasicContentExecutor::processCancel(XERCESC_NS::DOMElement* content) {
 }
 
 void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
-	bool blockIsTrue = _callbacks->isTrue(ATTR(content, "cond"));
+	bool blockIsTrue = _callbacks->isTrue(ATTR(content, kXMLCharCond));
 
 	for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 		if (iequals(TAGNAME(childElem), XML_PREFIX(content).str() + "elseif")) {
@@ -220,7 +220,7 @@ void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 				// last block was true, break here
 				break;
 			}
-			blockIsTrue = _callbacks->isTrue(ATTR(childElem, "cond"));
+			blockIsTrue = _callbacks->isTrue(ATTR(childElem, kXMLCharCond));
 			continue;
 		}
 		if (iequals(TAGNAME(childElem), XML_PREFIX(content).str() + "else")) {
@@ -241,7 +241,7 @@ void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 }
 
 void BasicContentExecutor::processAssign(XERCESC_NS::DOMElement* content) {
-	std::string location = ATTR(content, "location");
+	std::string location = ATTR(content, kXMLCharLocation);
 
 	std::map<std::string, std::string> additionalAttr;
 	auto xmlAttrs = content->getAttributes();
@@ -255,9 +255,9 @@ void BasicContentExecutor::processAssign(XERCESC_NS::DOMElement* content) {
 }
 
 void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
-	std::string array = ATTR(content, "array");
-	std::string item = ATTR(content, "item");
-	std::string index = (HAS_ATTR(content, "index") ? ATTR(content, "index") : "");
+	std::string array = ATTR(content, kXMLCharArray);
+	std::string item = ATTR(content, kXMLCharItem);
+	std::string index = (HAS_ATTR(content, kXMLCharIndex) ? ATTR(content, kXMLCharIndex) : "");
 
 	uint32_t iterations = 0;
 	iterations = _callbacks->getLength(array);
@@ -272,8 +272,8 @@ void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
 }
 
 void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
-	std::string label = ATTR(content, "label");
-	std::string expr = ATTR(content, "expr");
+	std::string label = ATTR(content, kXMLCharLabel);
+	std::string expr = ATTR(content, kXMLCharExpr);
 
 	Data d = _callbacks->evalAsData(expr);
 	if (label.size() > 0) {
@@ -326,7 +326,7 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 					// Specification 6.5.2: http://www.w3.org/TR/scxml/#N110EF
 
 					const Event& event = _callbacks->getCurrentEvent();
-					std::list<std::string> names = tokenize(ATTR(invokeElem, "namelist"));
+					std::list<std::string> names = tokenize(ATTR(invokeElem, kXMLCharNameList));
 					for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
 						if (event.namelist.find(*nameIter) != event.namelist.end()) {
 							// scxml i/o proc keeps a dedicated namelist
@@ -388,20 +388,20 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 	Event invokeEvent;
 
 	// type
-	if (HAS_ATTR(element, "typeexpr")) {
-		type = _callbacks->evalAsData(ATTR(element, "typeexpr")).atom;
-	} else if (HAS_ATTR(element, "type")) {
-		type = ATTR(element, "type");
+	if (HAS_ATTR(element, kXMLCharTypeExpr)) {
+		type = _callbacks->evalAsData(ATTR(element, kXMLCharTypeExpr)).atom;
+	} else if (HAS_ATTR(element, kXMLCharType)) {
+		type = ATTR(element, kXMLCharType);
 	} else {
 		// test 422
 		type = "http://www.w3.org/TR/scxml/";
 	}
 
 	// src
-	if (HAS_ATTR(element, "srcexpr")) {
-		source = _callbacks->evalAsData(ATTR(element, "srcexpr")).atom;
-	} else if (HAS_ATTR(element, "src")) {
-		source = ATTR(element, "src");
+	if (HAS_ATTR(element, kXMLCharSourceExpr)) {
+		source = _callbacks->evalAsData(ATTR(element, kXMLCharSourceExpr)).atom;
+	} else if (HAS_ATTR(element, kXMLCharSource)) {
+		source = ATTR(element, kXMLCharSource);
 	}
 	if (source.length() > 0) {
 		// absolutize url
@@ -409,12 +409,12 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 
 	// id
 	try {
-		if (HAS_ATTR(element, "id")) {
-			invokeEvent.invokeid = ATTR(element, "id");
+		if (HAS_ATTR(element, kXMLCharId)) {
+			invokeEvent.invokeid = ATTR(element, kXMLCharId);
 		} else {
-			invokeEvent.invokeid = ATTR(getParentState(element), "id") + "." + UUID::getUUID();
-			if (HAS_ATTR(element, "idlocation")) {
-				_callbacks->assign(ATTR(element, "idlocation"), Data(invokeEvent.invokeid, Data::VERBATIM), std::map<std::string, std::string>());
+			invokeEvent.invokeid = ATTR(getParentState(element), kXMLCharId) + "." + UUID::getUUID();
+			if (HAS_ATTR(element, kXMLCharIdLocation)) {
+				_callbacks->assign(ATTR(element, kXMLCharIdLocation), Data(invokeEvent.invokeid, Data::VERBATIM), std::map<std::string, std::string>());
 			}
 		}
 
@@ -423,7 +423,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		memcpy(invokeId, invokeEvent.invokeid.c_str(), invokeEvent.invokeid.size());
 		invokeId[invokeEvent.invokeid.size()] = 0;
 
-		element->setUserData(X("invokeid"), (void*)invokeId, NULL);
+		element->setUserData(kXMLCharInvokeId, (void*)invokeId, NULL);
 	} catch (Event e) {
 		ERROR_EXECUTION_THROW2("Syntax error in invoke element idlocation", element);
 	}
@@ -465,8 +465,8 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 	}
 
 	// autoforward
-	if (HAS_ATTR(element, "autoforward")) {
-		if (iequals(ATTR(element, "autoforward"), "true")) {
+	if (HAS_ATTR(element, kXMLCharAutoForward)) {
+		if (iequals(ATTR(element, kXMLCharAutoForward), "true")) {
 			autoForward = true;
 		}
 	}
@@ -484,14 +484,14 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 }
 
 void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
-	char* invokeId = (char*)invoke->getUserData(X("invokeid"));
+	char* invokeId = (char*)invoke->getUserData(X(kXMLCharInvokeId));
 	assert(invokeId != NULL);
 
 	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), beforeUninvoking, invoke, invokeId);
 	_callbacks->uninvoke(invokeId);
 	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), afterUninvoking, invoke, invokeId);
 
-	invoke->setUserData(X("invokeid"), NULL, NULL);
+	invoke->setUserData(kXMLCharInvokeId, NULL, NULL);
 	free(invokeId);
 }
 
@@ -499,7 +499,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 
 	Event doneEvent;
 	doneEvent.name = "done.state.";
-	doneEvent.name += HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::idForNode(state);
+	doneEvent.name += HAS_ATTR(state, kXMLCharId) ? ATTR(state, kXMLCharId) : DOMUtils::idForNode(state);
 
 	if (doneData != NULL) {
 		try {
@@ -544,8 +544,8 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 }
 
 void BasicContentExecutor::processNameLists(std::map<std::string, Data>& nameMap, DOMElement* element) {
-	if (HAS_ATTR(element, "namelist")) {
-		std::list<std::string> names = tokenize(ATTR(element, "namelist"));
+	if (HAS_ATTR(element, kXMLCharNameList)) {
+		std::list<std::string> names = tokenize(ATTR(element, kXMLCharNameList));
 		for (std::list<std::string>::const_iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
 			nameMap[*nameIter] = _callbacks->evalAsData(*nameIter);
 		}
@@ -555,12 +555,12 @@ void BasicContentExecutor::processNameLists(std::map<std::string, Data>& nameMap
 void BasicContentExecutor::processParams(std::multimap<std::string, Data>& paramMap, DOMElement* element) {
 	std::list<DOMElement*> params = DOMUtils::filterChildElements(XML_PREFIX(element).str() + "param", element);
 	for (auto paramIter = params.begin(); paramIter != params.end(); paramIter++) {
-		std::string name = ATTR(*paramIter, "name");
+		std::string name = ATTR(*paramIter, kXMLCharName);
 		Data d;
-		if (HAS_ATTR(*paramIter, "expr")) {
-			d = _callbacks->evalAsData(ATTR(*paramIter, "expr"));
-		} else if (HAS_ATTR(*paramIter, "location")) {
-			d = _callbacks->evalAsData(ATTR(*paramIter, "location"));
+		if (HAS_ATTR(*paramIter, kXMLCharExpr)) {
+			d = _callbacks->evalAsData(ATTR(*paramIter, kXMLCharExpr));
+		} else if (HAS_ATTR(*paramIter, kXMLCharLocation)) {
+			d = _callbacks->evalAsData(ATTR(*paramIter, kXMLCharLocation));
 		} else {
 			d = elementAsData(*paramIter);
 		}
@@ -569,28 +569,28 @@ void BasicContentExecutor::processParams(std::multimap<std::string, Data>& param
 }
 
 Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool asExpression) {
-	if (HAS_ATTR(element, "expr")) {
+	if (HAS_ATTR(element, kXMLCharExpr)) {
 //        return _callbacks->evalAsData(ATTR(element, "expr"));
 #if 0
 		if (LOCALNAME(element) == "content") {
 			// test 528
-			return _callbacks->evalAsData(ATTR(element, "expr"));
+			return _callbacks->evalAsData(ATTR(element, kXMLCharExpr));
 		} else {
 			// test 326
-			return Data(ATTR(element, "expr"), Data::INTERPRETED);
+			return Data(ATTR(element, kXMLCharExpr), Data::INTERPRETED);
 		}
 #endif
 		if (asExpression) // test 453
-			return Data(ATTR(element, "expr"), Data::INTERPRETED);
-		return _callbacks->evalAsData(ATTR(element, "expr"));
+			return Data(ATTR(element, kXMLCharExpr), Data::INTERPRETED);
+		return _callbacks->evalAsData(ATTR(element, kXMLCharExpr));
 	}
 
-	if (HAS_ATTR(element, "src")) {
+	if (HAS_ATTR(element, kXMLCharSource)) {
 		// remote content from URL
 
 		// test 446, test 552, test 558
-		std::string src = ATTR(element, "src");
-		URL url(ATTR(element, "src"));
+		std::string src = ATTR(element, kXMLCharSource);
+		URL url(ATTR(element, kXMLCharSource));
 		if (!url.isAbsolute()) {
 			url = URL::resolve(url, _callbacks->getBaseURL());
 		}

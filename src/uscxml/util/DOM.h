@@ -28,9 +28,9 @@
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOM.hpp>
 
-#define HAS_ATTR(elem, attr) (elem)->hasAttribute(X(attr))
+#define HAS_ATTR(elem, attr) (elem)->hasAttribute(attr)
 #define HAS_ATTR_CAST(elem, attr) HAS_ATTR(static_cast<const DOMElement*>(elem), attr)
-#define ATTR(elem, attr) std::string(X((elem)->getAttribute(X(attr))))
+#define ATTR(elem, attr) std::string(X((elem)->getAttribute(attr)))
 #define ATTR_CAST(elem, attr) ATTR(static_cast<const DOMElement*>(elem), attr)
 #define TAGNAME(elem) std::string(X((elem)->getTagName()))
 #define TAGNAME_CAST(elem) TAGNAME(static_cast<const DOMElement*>(elem))
@@ -139,12 +139,6 @@ public :
 		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
 		_deallocOther = true;
 	}
-	void operator=(X const &other) { // did we maybe leak before?
-
-		_localForm = other._localForm;
-		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
-		_deallocOther = true;
-	}
 
 	X(const XMLCh* const toTranscode) {
 
@@ -167,6 +161,15 @@ public :
 	}
 
 	X(const char* const fromTranscode) {
+		// this is most unfortunate but needed with static XMLChars :(
+		if (!_xercesIsInit) {
+			try {
+				::xercesc_3_1::XMLPlatformUtils::Initialize();
+				_xercesIsInit = true;
+			} catch (const XERCESC_NS::XMLException& toCatch) {
+				throw ("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
+			}
+		}
 
 		// Call the private transcoding method
 		_localForm = fromTranscode;
@@ -198,9 +201,27 @@ public :
 		return _localForm;
 	}
 
-	operator const XMLCh* () {
+	const operator const XMLCh* () const {
 		assert(_unicodeForm != NULL); // constructor with XMLCh
 		return _unicodeForm;
+	}
+
+	void operator=(X const &other) {
+		_localForm = other._localForm;
+		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
+		_deallocOther = true;
+	}
+
+	bool operator==(const X& other) const {
+		return (_unicodeForm == other._unicodeForm) != 0;
+	}
+
+	bool operator!=(const X& other) const {
+		return !(_unicodeForm == other._unicodeForm);
+	}
+
+	bool operator<(const X& other) const {
+		return XERCESC_NS::XMLString::compareString(_unicodeForm, other._unicodeForm);
 	}
 
 	operator bool () {
@@ -218,6 +239,7 @@ private:
 	bool _deallocOther;
 	std::string _localForm;
 	XMLCh* _unicodeForm;
+	bool _xercesIsInit = false;
 };
 
 #else
@@ -293,31 +315,56 @@ private:
 
 #endif
 
-#if 0
-static const X kElementScxmlName = X("scxml");
-static const X kElementStateName = X("state");
-static const X kElementParallelName = X("parallel");
-static const X kElementTransitionName = X("transition");
-static const X kElementInitialName = X("initial");
-static const X kElementFinalName = X("final");
-static const X kElementOnEntryName = X("onentry");
-static const X kElementOnExitName = X("onexit");
-static const X kElementHistoryName = X("history");
+static const X kXMLCharScxml = X("scxml");
+static const X kXMLCharState = X("state");
+static const X kXMLCharParallel = X("parallel");
+static const X kXMLCharTransition = X("transition");
+static const X kXMLCharInitial = X("initial");
+static const X kXMLCharFinal = X("final");
+static const X kXMLCharOnEntry = X("onentry");
+static const X kXMLCharOnExit = X("onexit");
+static const X kXMLCharHistory = X("history");
 
-static const X kElementRaiseName = X("raise");
-static const X kElementIfName = X("if");
-static const X kElementElseIfName = X("elseif");
-static const X kElementElseName = X("else");
-static const X kElementForEachName = X("foreach");
-static const X kElementLogName = X("log");
+static const X kXMLCharRaise = X("raise");
+static const X kXMLCharIf = X("if");
+static const X kXMLCharElseIf = X("elseif");
+static const X kXMLCharElse = X("else");
+static const X kXMLCharForEach = X("foreach");
+static const X kXMLCharLog = X("log");
 
-static const X kElementDataModelName = X("datamodel");
-static const X kElementDataName = X("data");
-static const X kElementAssignName = X("assign");
-static const X kElementContentName = X("content");
-static const X kElementParamName = X("param");
-static const X kElementScriptName = X("script");
-#endif
+static const X kXMLCharDataModel = X("datamodel");
+static const X kXMLCharData = X("data");
+static const X kXMLCharAssign = X("assign");
+static const X kXMLCharContent = X("content");
+static const X kXMLCharParam = X("param");
+static const X kXMLCharScript = X("script");
+
+static const X kXMLCharInvokeId = X("invokeid");
+static const X kXMLCharId = X("id");
+static const X kXMLCharIdLocation = X("idlocation");
+static const X kXMLCharEvent = X("event");
+static const X kXMLCharEventExpr = X("eventexpr");
+static const X kXMLCharTarget = X("target");
+static const X kXMLCharTargetExpr = X("targetexpr");
+static const X kXMLCharSource = X("src");
+static const X kXMLCharSourceExpr = X("srcexpr");
+static const X kXMLCharType = X("type");
+static const X kXMLCharTypeExpr = X("typeexpr");
+static const X kXMLCharDelay = X("delay");
+static const X kXMLCharDelayExpr = X("delayexpr");
+static const X kXMLCharSendId = X("sendid");
+static const X kXMLCharSendIdExpr = X("sendidexpr");
+static const X kXMLCharCond = X("cond");
+static const X kXMLCharLocation = X("location");
+static const X kXMLCharArray = X("array");
+static const X kXMLCharItem = X("item");
+static const X kXMLCharIndex = X("index");
+static const X kXMLCharLabel = X("label");
+static const X kXMLCharExpr = X("expr");
+static const X kXMLCharNameList = X("namelist");
+static const X kXMLCharAutoForward = X("autoforward");
+static const X kXMLCharName = X("name");
+static const X kXMLCharBinding = X("binding");
 
 USCXML_API std::ostream& operator<< (std::ostream& os, const X& xmlString);
 USCXML_API std::ostream& operator<< (std::ostream& os, const XERCESC_NS::DOMNode& node);

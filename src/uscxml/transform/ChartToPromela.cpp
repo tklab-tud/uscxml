@@ -95,25 +95,25 @@ void ChartToPromela::prepare() {
 	std::list<DOMElement*> invokes = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "invoke" }, _scxml);
 	for (auto invoke : invokes) {
 
-		if (!HAS_ATTR(invoke, "id")) {
+		if (!HAS_ATTR(invoke, kXMLCharId)) {
 			invoke->setAttribute(X("id"), X("INV_" + UUID::getUUID().substr(0,5)));
-		} else if (HAS_ATTR(invoke, "id") && UUID::isUUID(ATTR(invoke, "id"))) {
+		} else if (HAS_ATTR(invoke, kXMLCharId) && UUID::isUUID(ATTR(invoke, kXMLCharId))) {
 			// shorten UUIDs
-			invoke->setAttribute(X("id"), X("INV_" + ATTR(invoke, "id").substr(0,5)));
+			invoke->setAttribute(X("id"), X("INV_" + ATTR(invoke, kXMLCharId).substr(0,5)));
 		}
 
-		if (HAS_ATTR(invoke, "type") &&
-		        ATTR(invoke, "type") != "scxml" &&
-		        ATTR(invoke, "type") != "http://www.w3.org/TR/scxml/" &&
-		        ATTR(invoke, "type") != "http://www.w3.org/TR/scxml/#SCXMLEventProcessor")
+		if (HAS_ATTR(invoke, kXMLCharType) &&
+		        ATTR(invoke, kXMLCharType) != "scxml" &&
+		        ATTR(invoke, kXMLCharType) != "http://www.w3.org/TR/scxml/" &&
+		        ATTR(invoke, kXMLCharType) != "http://www.w3.org/TR/scxml/#SCXMLEventProcessor")
 			continue;
 
-		assert(HAS_ATTR(invoke, "id"));
+		assert(HAS_ATTR(invoke, kXMLCharId));
 		invoke->setAttribute(X("name"), invoke->getAttribute(X("id")));
 
 		Interpreter nested;
-		if (HAS_ATTR(invoke, "src")) {
-			nested = Interpreter::fromURL(URL::resolve(ATTR(invoke, "src"), _baseURL));
+		if (HAS_ATTR(invoke, kXMLCharSource)) {
+			nested = Interpreter::fromURL(URL::resolve(ATTR(invoke, kXMLCharSource), _baseURL));
 		} else {
 			std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "content", invoke);
 			std::list<DOMElement*> scxmls = DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "scxml", contents.front());
@@ -131,15 +131,15 @@ void ChartToPromela::prepare() {
 		_machinesNested[invoke]->_machinesAll = _machinesAll;
 		(*_machinesAll)[invoke] = _machinesNested[invoke];
 
-		_machinesNested[invoke]->_invokerid = ATTR(invoke, "id");
+		_machinesNested[invoke]->_invokerid = ATTR(invoke, kXMLCharId);
 		_analyzer->createMacroName(_machinesNested[invoke]->_invokerid);
 		_analyzer->addEvent("done.invoke." + _machinesNested[invoke]->_invokerid);
 
-		_machinesNested[invoke]->_prefix = _analyzer->macroForLiteral(ATTR(invoke, "id")) + "_";
+		_machinesNested[invoke]->_prefix = _analyzer->macroForLiteral(ATTR(invoke, kXMLCharId)) + "_";
 
 
-		_machinesPerId[ATTR_CAST(invoke, "id")] = invoke;
-		(*_machinesAllPerId)[ATTR(invoke, "id")] = invoke;
+		_machinesPerId[ATTR_CAST(invoke, kXMLCharId)] = invoke;
+		(*_machinesAllPerId)[ATTR(invoke, kXMLCharId)] = invoke;
 
 	}
 
@@ -155,20 +155,20 @@ void ChartToPromela::prepare() {
 
 	for (auto element : values) {
 		std::string key;
-		if (HAS_ATTR(element, "id")) {
-			key = ATTR(element, "id");
-		} else if (HAS_ATTR(element, "location")) {
-			key = ATTR(element, "location");
+		if (HAS_ATTR(element, kXMLCharId)) {
+			key = ATTR(element, kXMLCharId);
+		} else if (HAS_ATTR(element, kXMLCharLocation)) {
+			key = ATTR(element, kXMLCharLocation);
 		}
 
 		if (key.length() == 0)
 			continue;
 
 		std::string value;
-		if (HAS_ATTR(element, "expr")) {
-			value = ATTR(element, "expr");
-		} else if (HAS_ATTR(element, "src")) {
-			URL absUrl = URL::resolve(ATTR_CAST(element, "src"), _baseURL);
+		if (HAS_ATTR(element, kXMLCharExpr)) {
+			value = ATTR(element, kXMLCharExpr);
+		} else if (HAS_ATTR(element, kXMLCharSource)) {
+			URL absUrl = URL::resolve(ATTR_CAST(element, kXMLCharSource), _baseURL);
 			value = absUrl.getInContent();
 		} else {
 			std::list<DOMNode*> assignTexts = DOMUtils::filterChildType(DOMNode::TEXT_NODE, element, true);
@@ -677,8 +677,8 @@ void ChartToPromela::writeVariables(std::ostream& stream) {
 	PromelaCodeAnalyzer::PromelaTypedef allTypes = _analyzer->getTypes();
 
 	for (auto data : datas) {
-		std::string identifier = (HAS_ATTR_CAST(data, "id") ? ATTR_CAST(data, "id") : "");
-		std::string type = boost::trim_copy(HAS_ATTR_CAST(data, "type") ? ATTR_CAST(data, "type") : "");
+		std::string identifier = (HAS_ATTR_CAST(data, kXMLCharId) ? ATTR_CAST(data, kXMLCharId) : "");
+		std::string type = boost::trim_copy(HAS_ATTR_CAST(data, kXMLCharType) ? ATTR_CAST(data, kXMLCharType) : "");
 
 		_dataModelVars.insert(identifier);
 		if (processedIdentifiers.find(identifier) != processedIdentifiers.end())
@@ -760,9 +760,9 @@ void ChartToPromela::writeStrings(std::ostream& stream) {
 
 	{
 		for (size_t i = 0; i < _states.size(); i++) {
-			if (HAS_ATTR(_states[i], "id")) {
-				stream << "#define " << _prefix << _analyzer->macroForLiteral(ATTR(_states[i], "id")) << " " << toStr(i);
-				stream << " /* index for state " << ATTR(_states[i], "id") << " */" << std::endl;
+			if (HAS_ATTR(_states[i], kXMLCharId)) {
+				stream << "#define " << _prefix << _analyzer->macroForLiteral(ATTR(_states[i], kXMLCharId)) << " " << toStr(i);
+				stream << " /* index for state " << ATTR(_states[i], kXMLCharId) << " */" << std::endl;
 			}
 		}
 	}
@@ -787,25 +787,25 @@ void ChartToPromela::writeTransitions(std::ostream& stream) {
 
 		/** source */
 		stream << "  " << _prefix << "transitions[" << toStr(i) << "].source = ";
-		stream << ATTR_CAST(transition->getParentNode(), "documentOrder") ;
+		stream << ATTR_CAST(transition->getParentNode(), X("documentOrder")) ;
 		stream << ";" << std::endl;
 
 		/** target */
-		if (HAS_ATTR(transition, "targetBools")) {
-			std::string targetBools = ATTR(transition, "targetBools");
+		if (HAS_ATTR(transition, X("targetBools"))) {
+			std::string targetBools = ATTR(transition, X("targetBools"));
 			for (size_t j = 0; j < _states.size(); j++) {
 				if (targetBools[j] == '1')
 					stream << "  " << _prefix << "transitions[" << toStr(i) << "].target[" << toStr(j) << "] = 1;" << std::endl;
 			}
 		}
 
-		if (!HAS_ATTR(transition, "event"))
+		if (!HAS_ATTR(transition, kXMLCharEvent))
 			stream << "  " << _prefix << "transitions[" << toStr(i) << "].type[USCXML_TRANS_SPONTANEOUS] = 1;" << std::endl;
 
-		if (!HAS_ATTR(transition, "target"))
+		if (!HAS_ATTR(transition, kXMLCharTarget))
 			stream << "  " << _prefix << "transitions[" << toStr(i) << "].type[USCXML_TRANS_TARGETLESS] = 1;" << std::endl;
 
-		if (HAS_ATTR(transition, "type") && ATTR(transition, "type") == "internal")
+		if (HAS_ATTR(transition, kXMLCharType) && ATTR(transition, kXMLCharType) == "internal")
 			stream << "  " << _prefix << "transitions[" << toStr(i) << "].type[USCXML_TRANS_INTERNAL] = 1;" << std::endl;
 
 		if (TAGNAME_CAST(transition->getParentNode()) == XML_PREFIX(transition).str() + "history")
@@ -814,16 +814,16 @@ void ChartToPromela::writeTransitions(std::ostream& stream) {
 		if (TAGNAME_CAST(transition->getParentNode()) == XML_PREFIX(transition).str() + "initial")
 			stream << "  " << _prefix << "transitions[" << toStr(i) << "].type[USCXML_TRANS_INITIAL] = 1;" << std::endl;
 
-		if (HAS_ATTR(transition, "conflictBools")) {
-			std::string conflicts = ATTR(transition, "conflictBools");
+		if (HAS_ATTR(transition, X("conflictBools"))) {
+			std::string conflicts = ATTR(transition, X("conflictBools"));
 			for (size_t j = 0; j < conflicts.size(); j++) {
 				if (conflicts[j] == '1')
 					stream << "  " << _prefix << "transitions[" << toStr(i) << "].conflicts[" << toStr(j) << "] = 1;" << std::endl;
 			}
 		}
 
-		if (HAS_ATTR(transition, "exitSetBools")) {
-			std::string exitSet = ATTR(transition, "exitSetBools");
+		if (HAS_ATTR(transition, X("exitSetBools"))) {
+			std::string exitSet = ATTR(transition, X("exitSetBools"));
 			for (size_t j = 0; j < exitSet.size(); j++) {
 				if (exitSet[j] == '1')
 					stream << "  " << _prefix << "transitions[" << toStr(i) << "].exit_set[" << toStr(j) << "] = 1;" << std::endl;
@@ -842,28 +842,28 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 		DOMElement* state(_states[i]);
 
 		stream << "  " << _prefix << "states[" << toStr(i) << "].parent = ";
-		stream << (i == 0 ? "0" : ATTR_CAST(state->getParentNode(), "documentOrder"));
+		stream << (i == 0 ? "0" : ATTR_CAST(state->getParentNode(), X("documentOrder")));
 		stream << ";" << std::endl;
 
 
-		if (HAS_ATTR(state, "childBools")) {
-			std::string childs = ATTR(state, "childBools");
+		if (HAS_ATTR(state, X("childBools"))) {
+			std::string childs = ATTR(state, X("childBools"));
 			for (size_t j = 0; j < childs.size(); j++) {
 				if (childs[j] == '1')
 					stream << "  " << _prefix << "states[" << toStr(i) << "].children[" << toStr(j) << "] = 1;" << std::endl;
 			}
 		}
 
-		if (HAS_ATTR(state, "completionBools")) {
-			std::string completions = ATTR(state, "completionBools");
+		if (HAS_ATTR(state, X("completionBools"))) {
+			std::string completions = ATTR(state, X("completionBools"));
 			for (size_t j = 0; j < completions.size(); j++) {
 				if (completions[j] == '1')
 					stream << "  " << _prefix << "states[" << toStr(i) << "].completion[" << toStr(j) << "] = 1;" << std::endl;
 			}
 		}
 
-		if (HAS_ATTR(state, "ancBools")) {
-			std::string ancestors = ATTR(state, "ancBools");
+		if (HAS_ATTR(state, X("ancBools"))) {
+			std::string ancestors = ATTR(state, X("ancBools"));
 			for (size_t j = 0; j < ancestors.size(); j++) {
 				if (ancestors[j] == '1')
 					stream << "  " << _prefix << "states[" << toStr(i) << "].ancestors[" << toStr(j) << "] = 1;" << std::endl;
@@ -875,7 +875,7 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 		} else if (isFinal(state)) {
 			stream << "  " << _prefix << "states[" << toStr(i) << "].type[USCXML_STATE_FINAL] = 1;" << std::endl;
 		} else if (isHistory(state)) {
-			if (HAS_ATTR(state, "type") && iequals(ATTR(state, "type"), "deep")) {
+			if (HAS_ATTR(state, kXMLCharType) && iequals(ATTR(state, kXMLCharType), "deep")) {
 				stream << "  " << _prefix << "states[" << toStr(i) << "].type[USCXML_STATE_HISTORY_DEEP] = 1;" << std::endl;
 			} else {
 				stream << "  " << _prefix << "states[" << toStr(i) << "].type[USCXML_STATE_HISTORY_SHALLOW] = 1;" << std::endl;
@@ -889,7 +889,7 @@ void ChartToPromela::writeStates(std::ostream& stream) {
 		} else { // <scxml>
 			stream << "  " << _prefix << "states[" << toStr(i) << "].type[USCXML_STATE_COMPOUND] = 1;" << std::endl;
 		}
-		if (HAS_ATTR(state, "hasHistoryChild")) {
+		if (HAS_ATTR(state, X("hasHistoryChild"))) {
 			stream << "  " << _prefix << "states[" << toStr(i) << "].type[USCXML_STATE_HAS_HISTORY] = 1;" << std::endl;
 		}
 
@@ -909,8 +909,8 @@ void ChartToPromela::writeRaiseDoneDate(std::ostream& stream, const DOMElement* 
 		auto& content = contents.front();
 
 		// an expression
-		if (HAS_ATTR(content, "expr")) {
-			stream << dataToAssignments(_prefix + "_tmpE.data", Data(ADAPT_SRC(ATTR(content, "expr")), Data::INTERPRETED));
+		if (HAS_ATTR(content, kXMLCharExpr)) {
+			stream << dataToAssignments(_prefix + "_tmpE.data", Data(ADAPT_SRC(ATTR(content, kXMLCharExpr)), Data::INTERPRETED));
 			return;
 		}
 
@@ -941,14 +941,14 @@ void ChartToPromela::writeRaiseDoneDate(std::ostream& stream, const DOMElement* 
 	if (params.size() > 0) {
 		Data d;
 		for (auto& param : params) {
-			if (!HAS_ATTR(param, "name"))
+			if (!HAS_ATTR(param, kXMLCharName))
 				continue;
-			std::string name = ATTR(param, "name");
+			std::string name = ATTR(param, kXMLCharName);
 			std::string expr;
-			if (HAS_ATTR(param, "expr")) {
-				expr = ATTR(param, "expr");
-			} else if (HAS_ATTR(param, "location")) {
-				expr = ATTR(param, "location");
+			if (HAS_ATTR(param, kXMLCharExpr)) {
+				expr = ATTR(param, kXMLCharExpr);
+			} else if (HAS_ATTR(param, kXMLCharLocation)) {
+				expr = ATTR(param, kXMLCharLocation);
 			}
 
 			d[name] = Data(expr, Data::INTERPRETED);
@@ -996,8 +996,8 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 		}
 
 	} else if(TAGNAME(element) == "log") {
-		std::string label = (HAS_ATTR(element, "label") ? ATTR(element, "label") : "");
-		std::string expr = (HAS_ATTR(element, "expr") ? ADAPT_SRC(ATTR(element, "expr")) : "");
+		std::string label = (HAS_ATTR(element, kXMLCharLabel) ? ATTR(element, kXMLCharLabel) : "");
+		std::string expr = (HAS_ATTR(element, kXMLCharExpr) ? ADAPT_SRC(ATTR(element, kXMLCharExpr)) : "");
 		std::string trimmedExpr = boost::trim_copy(expr);
 		bool isStringLiteral = (boost::starts_with(trimmedExpr, "\"") || boost::starts_with(trimmedExpr, "'"));
 
@@ -1027,17 +1027,17 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 		}
 
 	} else if(TAGNAME(element) == "foreach") {
-		stream << padding << "for (" << (HAS_ATTR(element, "index") ? _prefix + ATTR(element, "index") : "_index") << " in " << _prefix << ATTR(element, "array") << ") {" << std::endl;
-		if (HAS_ATTR(element, "item")) {
-			stream << padding << "  " << _prefix << ATTR(element, "item") << " = " << _prefix << ATTR(element, "array") << "[" << (HAS_ATTR(element, "index") ? _prefix + ATTR(element, "index") : "_index") << "];" << std::endl;
+		stream << padding << "for (" << (HAS_ATTR(element, kXMLCharIndex) ? _prefix + ATTR(element, kXMLCharIndex) : "_index") << " in " << _prefix << ATTR(element, kXMLCharArray) << ") {" << std::endl;
+		if (HAS_ATTR(element, kXMLCharItem)) {
+			stream << padding << "  " << _prefix << ATTR(element, kXMLCharItem) << " = " << _prefix << ATTR(element, kXMLCharArray) << "[" << (HAS_ATTR(element, kXMLCharIndex) ? _prefix + ATTR(element, kXMLCharIndex) : "_index") << "];" << std::endl;
 		}
 		const XERCESC_NS::DOMNode* child = element->getFirstChild();
 		while(child) {
 			writeExecContent(stream, child, indent + 1);
 			child = child->getNextSibling();
 		}
-		//		if (HAS_ATTR(nodeElem, "index"))
-		//			stream << padding << "  " << _prefix << ATTR(nodeElem, "index") << "++;" << std::endl;
+		//		if (HAS_ATTR(nodeElem, kXMLCharIndex))
+		//			stream << padding << "  " << _prefix << ATTR(nodeElem, kXMLCharIndex) << "++;" << std::endl;
 		stream << padding << "}" << std::endl;
 
 	} else if(TAGNAME(element) == "if") {
@@ -1065,27 +1065,27 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 		std::string insertOp = "!";
 		if (TAGNAME(element) == "raise") {
 			targetQueue = _prefix + "iQ";
-		} else if (!HAS_ATTR(element, "target")) {
+		} else if (!HAS_ATTR(element, kXMLCharTarget)) {
 //      if (_allowEventInterleaving) {
 //        targetQueue = _prefix + "tmpQ";
 //      } else {
 			targetQueue = _prefix + "eQ";
 //      }
-		} else if (ATTR(element, "target").compare("#_internal") == 0) {
+		} else if (ATTR(element, kXMLCharTarget).compare("#_internal") == 0) {
 			targetQueue = _prefix + "iQ";
-		} else if (ATTR(element, "target").compare("#_parent") == 0) {
+		} else if (ATTR(element, kXMLCharTarget).compare("#_parent") == 0) {
 			targetQueue = _parent->_prefix + "eQ";
-		} else if (boost::starts_with(ATTR(element, "target"), "#_") && _machinesAllPerId->find(ATTR(element, "target").substr(2)) != _machinesAllPerId->end()) {
-			targetQueue = (*_machinesAll)[(*_machinesAllPerId)[ATTR(element, "target").substr(2)]]->_prefix + "eQ";
+		} else if (boost::starts_with(ATTR(element, kXMLCharTarget), "#_") && _machinesAllPerId->find(ATTR(element, kXMLCharTarget).substr(2)) != _machinesAllPerId->end()) {
+			targetQueue = (*_machinesAll)[(*_machinesAllPerId)[ATTR(element, kXMLCharTarget).substr(2)]]->_prefix + "eQ";
 		}
 		if (targetQueue.length() > 0) {
 			// this is for our external queue
 			std::string event;
 
-			if (HAS_ATTR(element, "event")) {
-				event = _analyzer->macroForLiteral(ATTR(element, "event"));
-			} else if (HAS_ATTR(element, "eventexpr")) {
-				event = ADAPT_SRC(ATTR(element, "eventexpr"));
+			if (HAS_ATTR(element, kXMLCharEvent)) {
+				event = _analyzer->macroForLiteral(ATTR(element, kXMLCharEvent));
+			} else if (HAS_ATTR(element, kXMLCharEventExpr)) {
+				event = ADAPT_SRC(ATTR(element, kXMLCharEventExpr));
 			}
 			if (_analyzer->usesComplexEventStruct()) {
 				stream << padding << "{" << std::endl;
@@ -1093,17 +1093,17 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 				std::stringstream typeAssignSS;
 				typeAssignSS << padding << "  " << _prefix << "_tmpE.name = " << event << ";" << std::endl;
 
-				if (HAS_ATTR(element, "idlocation")) {
+				if (HAS_ATTR(element, kXMLCharIdLocation)) {
 					typeAssignSS << padding << "  /* idlocation */" << std::endl;
 					typeAssignSS << padding << "  _lastSendId = _lastSendId + 1;" << std::endl;
-					typeAssignSS << padding << "  " << _prefix << ATTR(element, "idlocation") << " = _lastSendId;" << std::endl;
+					typeAssignSS << padding << "  " << _prefix << ATTR(element, kXMLCharIdLocation) << " = _lastSendId;" << std::endl;
 					typeAssignSS << padding << "  " << _prefix << "_tmpE.sendid = _lastSendId;" << std::endl;
 					typeAssignSS << padding << "  if" << std::endl;
 					typeAssignSS << padding << "  :: _lastSendId == 2147483647 -> _lastSendId = 0;" << std::endl;
 					typeAssignSS << padding << "  :: else -> skip;" << std::endl;
 					typeAssignSS << padding << "  fi;" << std::endl;
-				} else if (HAS_ATTR(element, "id")) {
-					typeAssignSS << padding << "  " << _prefix << "_tmpE.sendid = " << _analyzer->macroForLiteral(ATTR(element, "id")) << ";" << std::endl;
+				} else if (HAS_ATTR(element, kXMLCharId)) {
+					typeAssignSS << padding << "  " << _prefix << "_tmpE.sendid = " << _analyzer->macroForLiteral(ATTR(element, kXMLCharId)) << ";" << std::endl;
 				}
 
 				if (_analyzer->usesEventField("invokeid") && _parent != NULL) { // do not send invokeid if we send / raise to ourself
@@ -1124,10 +1124,10 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 //					insertOp += "!";
 					typeAssignSS << padding << "  _lastSeqId = _lastSeqId + 1;" << std::endl;
 #endif
-					if (HAS_ATTR_CAST(element, "delay")) {
-						typeAssignSS << padding << "  " << _prefix << "_tmpE.delay = " << ATTR_CAST(element, "delay") << ";" << std::endl;
-					} else if (HAS_ATTR_CAST(element, "delayexpr")) {
-						typeAssignSS << padding << "  " << _prefix << "_tmpE.delay = " << ADAPT_SRC(ATTR_CAST(element, "delayexpr")) << ";" << std::endl;
+					if (HAS_ATTR_CAST(element, kXMLCharDelay)) {
+						typeAssignSS << padding << "  " << _prefix << "_tmpE.delay = " << ATTR_CAST(element, kXMLCharDelay) << ";" << std::endl;
+					} else if (HAS_ATTR_CAST(element, kXMLCharDelayExpr)) {
+						typeAssignSS << padding << "  " << _prefix << "_tmpE.delay = " << ADAPT_SRC(ATTR_CAST(element, kXMLCharDelayExpr)) << ";" << std::endl;
 					} else {
 						typeAssignSS << padding << "  " << _prefix << "_tmpE.delay = 0;" << std::endl;
 					}
@@ -1144,10 +1144,10 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 
 				std::list<DOMElement*> sendParams = DOMUtils::filterChildElements(XML_PREFIX(element).str() + "param", element);
 				std::list<DOMElement*> sendContents = DOMUtils::filterChildElements(XML_PREFIX(element).str() + "content", element);
-				std::string sendNameList = ATTR(element, "namelist");
+				std::string sendNameList = ATTR(element, kXMLCharNameList);
 				if (sendParams.size() > 0) {
 					for (auto sendParam : sendParams) {
-						typeAssignSS << padding << "  " << _prefix << "_tmpE.data." << ATTR(sendParam, "name") << " = " << ADAPT_SRC(ATTR(sendParam, "expr"))  << ";" << std::endl;
+						typeAssignSS << padding << "  " << _prefix << "_tmpE.data." << ATTR(sendParam, kXMLCharName) << " = " << ADAPT_SRC(ATTR(sendParam, kXMLCharExpr))  << ";" << std::endl;
 					}
 				}
 				if (sendNameList.size() > 0) {
@@ -1168,8 +1168,8 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 						} else {
 							typeAssignSS << padding << "  " << _prefix << "_tmpE.data = " << content << ";" << std::endl;
 						}
-					} else if (HAS_ATTR(contentElem, "expr")) {
-						typeAssignSS << padding << "  " << _prefix << "_tmpE.data = " << ADAPT_SRC(ATTR(contentElem, "expr")) << ";" << std::endl;
+					} else if (HAS_ATTR(contentElem, kXMLCharExpr)) {
+						typeAssignSS << padding << "  " << _prefix << "_tmpE.data = " << ADAPT_SRC(ATTR(contentElem, kXMLCharExpr)) << ";" << std::endl;
 					}
 				}
 
@@ -1227,10 +1227,10 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 		stream << padding << "fi" << std::endl;
 
 	} else if(TAGNAME(element) == "cancel") {
-		if (HAS_ATTR(element, "sendid")) {
-			stream << "  " << padding << "cancelSendId(" << _analyzer->macroForLiteral(ATTR(element, "sendid")) << "," << _analyzer->macroForLiteral(_invokerid) << ");" << std::endl;
-		} else if (HAS_ATTR(element, "sendidexpr")) {
-			stream << "  " << padding << "cancelSendId(" << ADAPT_SRC(ATTR(element, "sendidexpr")) << "," << _analyzer->macroForLiteral(_invokerid) << ");" << std::endl;
+		if (HAS_ATTR(element, kXMLCharSendId)) {
+			stream << "  " << padding << "cancelSendId(" << _analyzer->macroForLiteral(ATTR(element, kXMLCharSendId)) << "," << _analyzer->macroForLiteral(_invokerid) << ");" << std::endl;
+		} else if (HAS_ATTR(element, kXMLCharSendIdExpr)) {
+			stream << "  " << padding << "cancelSendId(" << ADAPT_SRC(ATTR(element, kXMLCharSendIdExpr)) << "," << _analyzer->macroForLiteral(_invokerid) << ");" << std::endl;
 		}
 	} else {
 		LOGD(USCXML_VERBATIM) << "'" << TAGNAME(element) << "' not supported" << std::endl << element << std::endl;
@@ -1419,8 +1419,8 @@ void ChartToPromela::writeFSMMacrostep(std::ostream& stream) {
 				ChartToPromela* invoker = _machinesNested[invokeElem];
 
 				// pass variables via namelist
-				if (HAS_ATTR(invokeElem, "namelist")) {
-					std::list<std::string> namelist = tokenize(ATTR_CAST(invokeElem, "namelist"));
+				if (HAS_ATTR(invokeElem, kXMLCharNameList)) {
+					std::list<std::string> namelist = tokenize(ATTR_CAST(invokeElem, kXMLCharNameList));
 					for (auto name : namelist) {
 						if (invoker->_dataModelVars.find(name) != invoker->_dataModelVars.end()) {
 							stream << "          " << invoker->_prefix << name << " = " << _prefix << name << ";" << std::endl;
@@ -1431,8 +1431,8 @@ void ChartToPromela::writeFSMMacrostep(std::ostream& stream) {
 				// pass variables via params
 				std::list<DOMElement*> invokeParams = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + + "param", invokeElem);
 				for (auto param : invokeParams) {
-					std::string name = ATTR(param, "name");
-					std::string expression = ATTR(param, "expr");
+					std::string name = ATTR(param, kXMLCharName);
+					std::string expression = ATTR(param, kXMLCharExpr);
 					if (invoker->_dataModelVars.find(name) != invoker->_dataModelVars.end()) {
 						stream << "          " << invoker->_prefix << name << " = " << ADAPT_SRC(expression) << ";" << std::endl;
 					}
@@ -1441,8 +1441,8 @@ void ChartToPromela::writeFSMMacrostep(std::ostream& stream) {
 				TRACE_EXECUTION_V("Invoking in state %d", "i");
 
 				stream << "          run " << invoker->_prefix << "step() priority 20;" << std::endl;
-				if (HAS_ATTR(invokeElem, "idlocation")) {
-					stream << "          " << ADAPT_SRC(ATTR(invokeElem, "idlocation")) << " = ";
+				if (HAS_ATTR(invokeElem, kXMLCharIdLocation)) {
+					stream << "          " << ADAPT_SRC(ATTR(invokeElem, kXMLCharIdLocation)) << " = ";
 					stream << _analyzer->macroForLiteral(invoker->_invokerid) << ";" << std::endl;
 				}
 
@@ -1486,10 +1486,10 @@ void ChartToPromela::writeFSMMacrostep(std::ostream& stream) {
 		for (auto state : _states) {
 			std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "invoke", state, false);
 			if (invokers.size() > 0) {
-				stream << "        :: i == " << ATTR(state, "documentOrder") << " && " << _prefix << "invocations[i] -> { " << std::endl;
+				stream << "        :: i == " << ATTR(state, X("documentOrder")) << " && " << _prefix << "invocations[i] -> { " << std::endl;
 				for (auto invoker : invokers) {
 					assert(_machinesNested.find(invoker) != _machinesNested.end());
-					if (HAS_ATTR(invoker, "autoforward") && stringIsTrue(ATTR(invoker, "autoforward"))) {
+					if (HAS_ATTR(invoker, kXMLCharAutoForward) && stringIsTrue(ATTR(invoker, kXMLCharAutoForward))) {
 						stream << "          " << _machinesNested[invoker]->_prefix << "eQ " << insertOp << " " << _prefix << "_event;" << std::endl;
 						if (_analyzer->usesEventField("delay")) {
 							stream << "          insertWithDelay(" << _machinesNested[invoker]->_prefix << "eQ);" << std::endl;
@@ -1654,8 +1654,8 @@ void ChartToPromela::writeFSMDequeueEvent(std::ostream& stream) {
 				ChartToPromela* invoker = _machinesNested[invokeElem];
 
 				// pass variables via namelist
-				if (HAS_ATTR(invokeElem, "namelist")) {
-					std::list<std::string> namelist = tokenize(ATTR_CAST(invokeElem, "namelist"));
+				if (HAS_ATTR(invokeElem, kXMLCharNameList)) {
+					std::list<std::string> namelist = tokenize(ATTR_CAST(invokeElem, kXMLCharNameList));
 					for (auto name : namelist) {
 						if (invoker->_dataModelVars.find(name) != invoker->_dataModelVars.end()) {
 							stream << "          " << invoker->_prefix << name << " = " << _prefix << name << ";" << std::endl;
@@ -1666,8 +1666,8 @@ void ChartToPromela::writeFSMDequeueEvent(std::ostream& stream) {
 				// pass variables via params
 				std::list<DOMElement*> invokeParams = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + + "param", invokeElem);
 				for (auto param : invokeParams) {
-					std::string name = ATTR(param, "name");
-					std::string expression = ATTR(param, "expr");
+					std::string name = ATTR(param, kXMLCharName);
+					std::string expression = ATTR(param, kXMLCharExpr);
 					if (invoker->_dataModelVars.find(name) != invoker->_dataModelVars.end()) {
 						stream << "          " << invoker->_prefix << name << " = " << ADAPT_SRC(expression) << ";" << std::endl;
 					}
@@ -1676,8 +1676,8 @@ void ChartToPromela::writeFSMDequeueEvent(std::ostream& stream) {
 				TRACE_EXECUTION_V("Invoking in state %d", "i");
 
 				stream << "          run " << invoker->_prefix << "step() priority 20;" << std::endl;
-				if (HAS_ATTR(invokeElem, "idlocation")) {
-					stream << "          " << ADAPT_SRC(ATTR(invokeElem, "idlocation")) << " = ";
+				if (HAS_ATTR(invokeElem, kXMLCharIdLocation)) {
+					stream << "          " << ADAPT_SRC(ATTR(invokeElem, kXMLCharIdLocation)) << " = ";
 					stream << _analyzer->macroForLiteral(invoker->_invokerid) << ";" << std::endl;
 				}
 
@@ -1737,10 +1737,10 @@ void ChartToPromela::writeFSMDequeueEvent(std::ostream& stream) {
 		for (auto state : _states) {
 			std::list<DOMElement*> invokers = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "invoke", state, false);
 			if (invokers.size() > 0) {
-				stream << "        :: i == " << ATTR(state, "documentOrder") << " && " << _prefix << "invocations[i] -> { " << std::endl;
+				stream << "        :: i == " << ATTR(state, X("documentOrder")) << " && " << _prefix << "invocations[i] -> { " << std::endl;
 				for (auto invoker : invokers) {
 					assert(_machinesNested.find(invoker) != _machinesNested.end());
-					if (HAS_ATTR(invoker, "autoforward") && stringIsTrue(ATTR(invoker, "autoforward"))) {
+					if (HAS_ATTR(invoker, kXMLCharAutoForward) && stringIsTrue(ATTR(invoker, kXMLCharAutoForward))) {
 						stream << "          " << _machinesNested[invoker]->_prefix << "eQ " << insertOp << " " << _prefix << "_event;" << std::endl;
 						if (_analyzer->usesEventField("delay")) {
 							stream << "          insertWithDelay(" << _machinesNested[invoker]->_prefix << "eQ);" << std::endl;
@@ -1851,9 +1851,9 @@ void ChartToPromela::writeFSMSelectTransitions(std::ostream& stream) {
 
 		for (size_t i = 0; i < _transitions.size(); i++) {
 			stream << "          || (i == " << toStr(i);
-			if (HAS_ATTR(_transitions[i], "event") && ATTR(_transitions[i], "event") != "*") {
+			if (HAS_ATTR(_transitions[i], kXMLCharEvent) && ATTR(_transitions[i], kXMLCharEvent) != "*") {
 				stream << " && (false";
-				std::list<std::string> eventLiterals = tokenize(ATTR(_transitions[i], "event"));
+				std::list<std::string> eventLiterals = tokenize(ATTR(_transitions[i], kXMLCharEvent));
 				for (auto eventLiteral : eventLiterals) {
 					if (boost::ends_with(eventLiteral, ".*")) {
 						eventLiteral = eventLiteral.substr(0, eventLiteral.size() - 2);
@@ -1868,8 +1868,8 @@ void ChartToPromela::writeFSMSelectTransitions(std::ostream& stream) {
 				}
 				stream << ")";
 			}
-			if (HAS_ATTR(_transitions[i], "cond")) {
-				stream << " && " << ADAPT_SRC(ATTR(_transitions[i], "cond"));
+			if (HAS_ATTR(_transitions[i], kXMLCharCond)) {
+				stream << " && " << ADAPT_SRC(ATTR(_transitions[i], kXMLCharCond));
 			}
 			stream << ")" << std::endl;
 		}
@@ -2501,12 +2501,12 @@ void ChartToPromela::writeFSMEnterStates(std::ostream& stream) {
 			continue;
 
 		DOMElement* parent = static_cast<DOMElement*>(state->getParentNode());
-		if (!HAS_ATTR(parent, "id"))
+		if (!HAS_ATTR(parent, kXMLCharId))
 			continue;
 
-		std::string doneEvent = _analyzer->macroForLiteral("done.state." + ATTR_CAST(state->getParentNode(), "id"));
+		std::string doneEvent = _analyzer->macroForLiteral("done.state." + ATTR_CAST(state->getParentNode(), kXMLCharId));
 
-		stream << "             :: (i == " << ATTR(state, "documentOrder") << ") -> {" << std::endl;
+		stream << "             :: (i == " << ATTR(state, X("documentOrder")) << ") -> {" << std::endl;
 
 		if (_analyzer->usesComplexEventStruct()) {
 			std::string typeReset = _analyzer->getTypeReset(_prefix + "_tmpE", _analyzer->getType("_event"), 7);
@@ -2573,10 +2573,10 @@ void ChartToPromela::writeFSMEnterStates(std::ostream& stream) {
 	stream << "                  if" << std::endl;
 
 	for (auto state : _states) {
-		if (isParallel(state) && HAS_ATTR(state, "id")) {
-			stream << "                  :: j == " << toStr(ATTR(state, "documentOrder")) << " -> {" << std::endl;
+		if (isParallel(state) && HAS_ATTR(state, kXMLCharId)) {
+			stream << "                  :: j == " << toStr(ATTR(state, X("documentOrder"))) << " -> {" << std::endl;
 
-			std::string doneEvent = _analyzer->macroForLiteral("done.state." + ATTR(state, "id"));
+			std::string doneEvent = _analyzer->macroForLiteral("done.state." + ATTR(state, kXMLCharId));
 
 			if (_analyzer->usesComplexEventStruct()) {
 				std::string typeReset = _analyzer->getTypeReset(_prefix + "_tmpE", _analyzer->getType("_event"), 10);
@@ -2669,7 +2669,7 @@ void ChartToPromela::writeFSMTerminateMachine(std::ostream& stream) {
 	stream << "    if" << std::endl;
 
 	for (auto machine : _machinesNested) {
-		stream << "    :: i == " << ATTR_CAST(machine.first->getParentNode(), "documentOrder") << " -> {" << std::endl;
+		stream << "    :: i == " << ATTR_CAST(machine.first->getParentNode(), X("documentOrder")) << " -> {" << std::endl;
 		stream << "      " << machine.second->_prefix << "flags[USCXML_CTX_FINISHED] = true;" << std::endl;
 		stream << "    }" << std::endl;
 	}
@@ -2752,7 +2752,7 @@ void ChartToPromela::writeIfBlock(std::ostream& stream, std::list<DOMElement*>& 
 
 	stream << padding << "if" << std::endl;
 	// we need to nest the elseifs to resolve promela if semantics
-	stream << padding << ":: (" << ADAPT_SRC(ATTR(ifNode, "cond")) << ") -> {" << std::endl;
+	stream << padding << ":: (" << ADAPT_SRC(ATTR(ifNode, kXMLCharCond)) << ") -> {" << std::endl;
 
 	DOMNode* child;
 	if (TAGNAME(ifNode) == "if") {

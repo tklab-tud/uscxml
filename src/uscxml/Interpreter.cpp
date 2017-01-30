@@ -258,7 +258,7 @@ std::list<InterpreterIssue> Interpreter::validate() {
 static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
-		LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, "id") ? ATTR(*nIter, "id") : DOMUtils::xPathForNode(*nIter));
+		LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, kXMLCharId) ? ATTR(*nIter, kXMLCharId) : DOMUtils::xPathForNode(*nIter));
 		seperator = ", ";
 	}
 }
@@ -300,12 +300,12 @@ void StateTransitionMonitor::beforeExecutingContent(Interpreter& interpreter, co
 
 void StateTransitionMonitor::beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	LOG(_logger, USCXML_VERBATIM) << "Exiting: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Exiting: " << (HAS_ATTR(state, kXMLCharId) ? ATTR(state, kXMLCharId) : DOMUtils::xPathForNode(state)) << std::endl;
 }
 
 void StateTransitionMonitor::beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	LOG(_logger, USCXML_VERBATIM) << "Entering: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Entering: " << (HAS_ATTR(state, kXMLCharId) ? ATTR(state, kXMLCharId) : DOMUtils::xPathForNode(state)) << std::endl;
 
 }
 

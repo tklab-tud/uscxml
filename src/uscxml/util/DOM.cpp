@@ -63,8 +63,8 @@ std::string DOMUtils::idForNode(const DOMNode* node) {
 		switch (curr->getNodeType()) {
 		case DOMNode::ELEMENT_NODE: {
 			const DOMElement* elem = dynamic_cast<const DOMElement*>(curr);
-			if (HAS_ATTR(elem, "id")) {
-				std::string elementId = ATTR(elem, "id");
+			if (HAS_ATTR(elem, kXMLCharId)) {
+				std::string elementId = ATTR(elem, kXMLCharId);
 				std::replace( elementId.begin(), elementId.end(), '.', '_');
 				std::replace( elementId.begin(), elementId.end(), ',', '_');
 
@@ -114,12 +114,12 @@ std::string DOMUtils::xPathForNode(const DOMNode* node, const std::string& ns) {
 		switch (curr->getNodeType()) {
 		case DOMNode::ELEMENT_NODE: {
 			const DOMElement* elem = dynamic_cast<const DOMElement*>(curr);
-			if (HAS_ATTR(elem, "id")) {
+			if (HAS_ATTR(elem, kXMLCharId)) {
 				// we assume ids to be unique and return immediately
 				if (ns == "*") {
-					xPath.insert(0, "//*[local-name() = \"" + TAGNAME(elem) + "\"][@id=\"" + ATTR(elem, "id") + "\"]");
+					xPath.insert(0, "//*[local-name() = \"" + TAGNAME(elem) + "\"][@id=\"" + ATTR(elem, kXMLCharId) + "\"]");
 				} else {
-					xPath.insert(0, "//" + nsPrefix + TAGNAME(elem) + "[@id=\"" + ATTR(elem, "id") + "\"]");
+					xPath.insert(0, "//" + nsPrefix + TAGNAME(elem) + "[@id=\"" + ATTR(elem, kXMLCharId) + "\"]");
 				}
 				return xPath;
 			} else {

@@ -190,8 +190,8 @@ void InterpreterImpl::deserialize(const std::string& encodedState) {
 
 	std::list<XERCESC_NS::DOMElement*> datas = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "data" }, _scxml);
 	for (auto data : datas) {
-		if (HAS_ATTR(data, "id") && state["datamodel"].hasKey(ATTR(data, "id")))
-			_dataModel.init(ATTR(data, "id"), state["datamodel"][ATTR(data, "id")]);
+		if (HAS_ATTR(data, kXMLCharId) && state["datamodel"].hasKey(ATTR(data, kXMLCharId)))
+			_dataModel.init(ATTR(data, kXMLCharId), state["datamodel"][ATTR(data, kXMLCharId)]);
 	}
 
 	_microStepper.deserialize(state["microstepper"]);
@@ -232,8 +232,8 @@ std::string InterpreterImpl::serialize() {
 	// SCXML Rec: "the values of all attributes of type "id" must be unique within the session"
 	std::list<XERCESC_NS::DOMElement*> datas = DOMUtils::inDocumentOrder({ XML_PREFIX(_scxml).str() + "data" }, _scxml);
 	for (auto data : datas) {
-		if (HAS_ATTR(data, "id")) {
-			serialized["datamodel"][ATTR(data, "id")] = _dataModel.evalAsData(ATTR(data, "id"));
+		if (HAS_ATTR(data, kXMLCharId)) {
+			serialized["datamodel"][ATTR(data, kXMLCharId)] = _dataModel.evalAsData(ATTR(data, kXMLCharId));
 		}
 	}
 
@@ -289,13 +289,13 @@ SCXML_STOP_SEARCH:
 		if (_xmlPrefix) {
 			_xmlPrefix = std::string(_xmlPrefix) + ":";
 		}
-		if (HAS_ATTR(_scxml, "name")) {
-			_name = ATTR(_scxml, "name");
+		if (HAS_ATTR(_scxml, kXMLCharName)) {
+			_name = ATTR(_scxml, kXMLCharName);
 		} else {
 			_name = _baseURL.pathComponents().back();
 		}
 
-		_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+		_binding = (HAS_ATTR(_scxml, kXMLCharBinding) && iequals(ATTR(_scxml, kXMLCharBinding), "late") ? LATE : EARLY);
 
 	}
 }
@@ -365,7 +365,7 @@ void InterpreterImpl::init() {
 	_microStepper.init(_scxml);
 
 	if (!_dataModel) {
-		_dataModel = _factory->createDataModel(HAS_ATTR(_scxml, "datamodel") ? ATTR(_scxml, "datamodel") : "null", this);
+		_dataModel = _factory->createDataModel(HAS_ATTR(_scxml, kXMLCharDataModel) ? ATTR(_scxml, kXMLCharDataModel) : "null", this);
 	}
 	if (!_execContent) {
 		_execContent = ContentExecutor(std::shared_ptr<ContentExecutorImpl>(new BasicContentExecutor(this)));
@@ -385,7 +385,7 @@ void InterpreterImpl::init() {
 }
 
 void InterpreterImpl::initData(XERCESC_NS::DOMElement* root) {
-	std::string id = ATTR(root, "id");
+	std::string id = ATTR(root, kXMLCharId);
 	Data d;
 
 	std::map<std::string, std::string> additionalAttr;

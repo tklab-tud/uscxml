@@ -40,8 +40,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 	{
 		for (size_t i = 0; i < interpreter->_states.size(); i++) {
 			DOMElement* state = interpreter->_states[i];
-			if (HAS_ATTR(state, "id")) {
-				createMacroName(ATTR(state, "id"));
+			if (HAS_ATTR(state, kXMLCharId)) {
+				createMacroName(ATTR(state, kXMLCharId));
 			}
 		}
 	}
@@ -56,8 +56,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto internalEventName : internalEventNames) {
-			if (HAS_ATTR_CAST(internalEventName, "event")) {
-				std::string eventNames = ATTR_CAST(internalEventName, "event");
+			if (HAS_ATTR_CAST(internalEventName, kXMLCharEvent)) {
+				std::string eventNames = ATTR_CAST(internalEventName, kXMLCharEvent);
 				std::list<std::string> events = tokenize(eventNames);
 				for (std::list<std::string>::iterator eventIter = events.begin();
 				        eventIter != events.end(); eventIter++) {
@@ -73,8 +73,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}
 
 		for (auto state : interpreter->_states) {
-			if (HAS_ATTR(state, "id") && (isCompound(state) || isParallel(state))) {
-				addEvent("done.state." + ATTR(state, "id"));
+			if (HAS_ATTR(state, kXMLCharId) && (isCompound(state) || isParallel(state))) {
+				addEvent("done.state." + ATTR(state, kXMLCharId));
 			}
 		}
 
@@ -82,8 +82,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		for (auto invoker : invokers) {
 			addCode("_event.invokeid", interpreter);
 
-			if (HAS_ATTR(invoker, "id")) {
-				addEvent("done.state." + ATTR(invoker, "id"));
+			if (HAS_ATTR(invoker, kXMLCharId)) {
+				addEvent("done.state." + ATTR(invoker, kXMLCharId));
 			}
 		}
 	}
@@ -126,8 +126,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto cond : withCond) {
-			if (HAS_ATTR(cond, "cond")) {
-				std::string code = ATTR_CAST(cond, "cond");
+			if (HAS_ATTR(cond, kXMLCharCond)) {
+				std::string code = ATTR_CAST(cond, kXMLCharCond);
 				code = sanitizeCode(code);
 				addCode(code, interpreter);
 				cond->setAttribute(X("cond"), X(code));
@@ -143,8 +143,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto expr : withExpr) {
-			if (HAS_ATTR(expr, "expr")) {
-				std::string code = ATTR_CAST(expr, "expr");
+			if (HAS_ATTR(expr, kXMLCharExpr)) {
+				std::string code = ATTR_CAST(expr, kXMLCharExpr);
 				code = sanitizeCode(code);
 				addCode(code, interpreter);
 				expr->setAttribute(X("expr"), X(code));
@@ -156,8 +156,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto location : withLocation) {
-			if (HAS_ATTR(location, "location")) {
-				std::string code = ATTR_CAST(location, "location");
+			if (HAS_ATTR(location, kXMLCharLocation)) {
+				std::string code = ATTR_CAST(location, kXMLCharLocation);
 				code = sanitizeCode(code);
 				addCode(code, interpreter);
 				location->setAttribute(X("location"), X(code));
@@ -186,13 +186,13 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 		}, interpreter->_scxml);
 
 		for (auto foreach : foreachs) {
-				if (HAS_ATTR(foreach, "index")) {
-					addCode(ATTR(foreach, "index"), interpreter);
+				if (HAS_ATTR(foreach, kXMLCharIndex)) {
+					addCode(ATTR(foreach, kXMLCharIndex), interpreter);
 				} else {
 					_hasIndexLessLoops = true;
 				}
-				if (HAS_ATTR(foreach, "item")) {
-					addCode(ATTR(foreach, "item"), interpreter);
+				if (HAS_ATTR(foreach, kXMLCharItem)) {
+					addCode(ATTR(foreach, kXMLCharItem), interpreter);
 				}
 			}
 
@@ -208,17 +208,17 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 			}
 
 			for (auto send : sends) {
-				if (HAS_ATTR(send, "idlocation")) {
+				if (HAS_ATTR(send, kXMLCharIdLocation)) {
 					addCode("_event.sendid", interpreter);
 				}
-				if (HAS_ATTR(send, "id")) {
-					addLiteral(ATTR(send, "id"));
+				if (HAS_ATTR(send, kXMLCharId)) {
+					addLiteral(ATTR(send, kXMLCharId));
 					addCode("_event.sendid", interpreter);
 				}
 
 				// do we need delays?
-				if (HAS_ATTR(send, "delay") || HAS_ATTR(send, "delayexpr")) {
-					size_t delay = strTo<size_t>(ATTR(send, "delay"));
+				if (HAS_ATTR(send, kXMLCharDelay) || HAS_ATTR(send, kXMLCharDelayExpr)) {
+					size_t delay = strTo<size_t>(ATTR(send, kXMLCharDelay));
 					if (delay > largestDelay)
 						largestDelay = delay;
 					addCode("_event.delay", interpreter);
@@ -236,8 +236,8 @@ void PromelaCodeAnalyzer::analyze(ChartToPromela* interpreter) {
 			withNamelists.splice(withNamelists.end(), DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "send"}, interpreter->_scxml));
 			withNamelists.splice(withNamelists.end(), DOMUtils::inDocumentOrder({XML_PREFIX(interpreter->_scxml).str() + "invoke"}, interpreter->_scxml));
 			for (auto withNamelist : withNamelists) {
-				if (HAS_ATTR(withNamelist, "namelist")) {
-					std::string namelist = ATTR(withNamelist, "namelist");
+				if (HAS_ATTR(withNamelist, kXMLCharNameList)) {
+					std::string namelist = ATTR(withNamelist, kXMLCharNameList);
 					std::list<std::string> names = tokenize(namelist);
 					for (std::list<std::string>::iterator nameIter = names.begin(); nameIter != names.end(); nameIter++) {
 						addCode("_event.data." + *nameIter + " = 0;", interpreter); // introduce for _event_t typedef

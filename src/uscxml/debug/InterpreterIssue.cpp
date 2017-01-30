@@ -332,21 +332,21 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	for (auto stateIter = allStates.begin(); stateIter != allStates.end(); stateIter++) {
 		DOMElement* state = static_cast<DOMElement*>(*stateIter);
 
-		if (DOMUtils::isMember(state, finals) && !HAS_ATTR(state, "id")) // id is not required for finals
+		if (DOMUtils::isMember(state, finals) && !HAS_ATTR(state, kXMLCharId)) // id is not required for finals
 			continue;
 
 		// check for existance of id attribute - this not actually required!
-		if (!HAS_ATTR(state, "id")) {
+		if (!HAS_ATTR(state, kXMLCharId)) {
 			issues.push_back(InterpreterIssue("State has no 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
 		}
 
-		if (ATTR(state, "id").size() == 0) {
+		if (ATTR(state, kXMLCharId).size() == 0) {
 			issues.push_back(InterpreterIssue("State has empty 'id' attribute", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
 		}
 
-		std::string stateId = ATTR(state, "id");
+		std::string stateId = ATTR(state, kXMLCharId);
 
 		// check for valid transition with history states
 		if (LOCALNAME(state) == "history") {
@@ -357,25 +357,25 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 				issues.push_back(InterpreterIssue("History pseudo-state with id '" + stateId + "' has no default transition", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			} else {
 				DOMElement* transition = static_cast<DOMElement*>(transitions.front());
-				if (HAS_ATTR(transition, "cond")) {
+				if (HAS_ATTR(transition, kXMLCharCond)) {
 					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' must not have a condition", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 				}
-				if (HAS_ATTR(transition, "event")) {
+				if (HAS_ATTR(transition, kXMLCharEvent)) {
 					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' must not have an event attribute", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 				}
-				if (!HAS_ATTR(transition, "target")) {
+				if (!HAS_ATTR(transition, kXMLCharTarget)) {
 					issues.push_back(InterpreterIssue("Transition in history pseudo-state '" + stateId + "' has no target", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 				} else {
 					std::list<DOMElement*> targetStates = getTargetStates(transition, _scxml);
 					for (auto tIter = targetStates.begin(); tIter != targetStates.end(); tIter++) {
 						DOMElement* target = *tIter;
-						if (HAS_ATTR(state, "type") && ATTR(state, "type") == "deep") {
+						if (HAS_ATTR(state, kXMLCharType) && ATTR(state, kXMLCharType) == "deep") {
 							if (!DOMUtils::isDescendant(target, state->getParentNode())) {
-								issues.push_back(InterpreterIssue("Transition in deep history pseudo-state '" + stateId + "' has illegal target state '" + ATTR(target, "id") + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+								issues.push_back(InterpreterIssue("Transition in deep history pseudo-state '" + stateId + "' has illegal target state '" + ATTR(target, kXMLCharId) + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 							}
 						} else {
 							if (target->getParentNode() != state->getParentNode()) {
-								issues.push_back(InterpreterIssue("Transition in shallow history pseudo-state '" + stateId + "' has illegal target state '" + ATTR(target, "id") + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
+								issues.push_back(InterpreterIssue("Transition in shallow history pseudo-state '" + stateId + "' has illegal target state '" + ATTR(target, kXMLCharId) + "'", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 							}
 						}
 					}
@@ -393,15 +393,15 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 			issues.push_back(InterpreterIssue("Duplicate state with id '" + stateId + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
 			continue;
 		}
-		seenStates[ATTR(state, "id")] = state;
+		seenStates[ATTR(state, kXMLCharId)] = state;
 	}
 
 	for (auto tIter = transitions.begin(); tIter != transitions.end(); tIter++) {
 		DOMElement* transition = *tIter;
 
 		// check for valid target
-		if (HAS_ATTR(transition, "target")) {
-			std::list<std::string> targetIds = tokenize(ATTR(transition, "target"));
+		if (HAS_ATTR(transition, kXMLCharTarget)) {
+			std::list<std::string> targetIds = tokenize(ATTR(transition, kXMLCharTarget));
 			if (targetIds.size() == 0) {
 				issues.push_back(InterpreterIssue("Transition has empty target state list", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 			}
@@ -426,20 +426,20 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 				DOMElement* earlierTransition = *t2Iter;
 
 				// will the earlier transition always be enabled when the later is?
-				if (!HAS_ATTR(earlierTransition, "cond")) {
+				if (!HAS_ATTR(earlierTransition, kXMLCharCond)) {
 					// earlier transition has no condition -> check event descriptor
-					if (!HAS_ATTR(earlierTransition, "event")) {
+					if (!HAS_ATTR(earlierTransition, kXMLCharEvent)) {
 						// earlier transition is eventless
 						issues.push_back(InterpreterIssue("Transition can never be optimally enabled", transition, InterpreterIssue::USCXML_ISSUE_INFO));
 						goto NEXT_TRANSITION;
 
-					} else if (HAS_ATTR(transition, "event")) {
+					} else if (HAS_ATTR(transition, kXMLCharEvent)) {
 						// does the earlier transition match all our events?
-						std::list<std::string> events = tokenize(ATTR(transition, "event"));
+						std::list<std::string> events = tokenize(ATTR(transition, kXMLCharEvent));
 
 						bool allMatched = true;
 						for (std::list<std::string>::iterator eventIter = events.begin(); eventIter != events.end(); eventIter++) {
-							if (!nameMatch(ATTR(earlierTransition, "event"), *eventIter)) {
+							if (!nameMatch(ATTR(earlierTransition, kXMLCharEvent), *eventIter)) {
 								allMatched = false;
 								break;
 							}
@@ -467,12 +467,12 @@ NEXT_TRANSITION:
 
 			DOMElement* parent = static_cast<DOMElement*>(history->getParentNode());
 			if (isAtomic(parent)) {
-				issues.push_back(InterpreterIssue("Useless history '" + ATTR(history, "id") + "' in atomic state", history, InterpreterIssue::USCXML_ISSUE_INFO));
+				issues.push_back(InterpreterIssue("Useless history '" + ATTR(history, kXMLCharId) + "' in atomic state", history, InterpreterIssue::USCXML_ISSUE_INFO));
 				continue;
 			}
 			std::list<std::set<const DOMElement* > > configs = getAllConfigurations(parent);
 			if (configs.size() <= 1) {
-				issues.push_back(InterpreterIssue("Useless history '" + ATTR(history, "id") + "' in state with single legal configuration", history, InterpreterIssue::USCXML_ISSUE_INFO));
+				issues.push_back(InterpreterIssue("Useless history '" + ATTR(history, kXMLCharId) + "' in state with single legal configuration", history, InterpreterIssue::USCXML_ISSUE_INFO));
 				continue;
 			}
 		}
@@ -487,7 +487,7 @@ NEXT_TRANSITION:
 		for (auto stateIter = withInitialAttr.begin(); stateIter != withInitialAttr.end(); stateIter++) {
 			DOMElement* state = *stateIter;
 
-			if (HAS_ATTR(state, "initial")) {
+			if (HAS_ATTR(state, kXMLCharInitial)) {
 				std::list<DOMElement*> childs;
 				std::list<DOMElement*> tmp;
 				tmp = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "state", state, true);
@@ -499,7 +499,7 @@ NEXT_TRANSITION:
 				tmp = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "history", state, true);
 				childs.insert(childs.end(), tmp.begin(), tmp.end());
 
-				std::list<std::string> intials = tokenize(ATTR(state, "initial"));
+				std::list<std::string> intials = tokenize(ATTR(state, kXMLCharInitial));
 				for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
 					if (seenStates.find(*initIter) == seenStates.end()) {
 						issues.push_back(InterpreterIssue("Initial attribute has invalid target state with id '" + *initIter + "'", state, InterpreterIssue::USCXML_ISSUE_FATAL));
@@ -520,24 +520,24 @@ NEXT_TRANSITION:
 		for (auto iter = transitions.begin(); iter != transitions.end(); iter++) {
 			DOMElement* transition = *iter;
 
-			if (HAS_ATTR(transition, "target")) {
-				targetIdSets[transition] = ATTR(transition, "target");
+			if (HAS_ATTR(transition, kXMLCharTarget)) {
+				targetIdSets[transition] = ATTR(transition, kXMLCharTarget);
 			}
 		}
 
 		for (auto iter = initials.begin(); iter != initials.end(); iter++) {
 			DOMElement* initial = *iter;
 
-			if (HAS_ATTR(initial, "target")) {
-				targetIdSets[initial] = ATTR(initial, "target");
+			if (HAS_ATTR(initial, kXMLCharTarget)) {
+				targetIdSets[initial] = ATTR(initial, kXMLCharTarget);
 			}
 		}
 
 		for (auto iter = allStates.begin(); iter != allStates.end(); iter++) {
 			DOMElement* state = *iter;
 
-			if (HAS_ATTR(state, "initial")) {
-				targetIdSets[state] = ATTR(state, "initial");
+			if (HAS_ATTR(state, kXMLCharInitial)) {
+				targetIdSets[state] = ATTR(state, kXMLCharInitial);
 			}
 		}
 
@@ -581,10 +581,10 @@ NEXT_SET:
 			 * whose value is a valid state specification consisting solely of descendants of the containing state
 			 */
 
-			if (HAS_ATTR(transition, "cond")) {
+			if (HAS_ATTR(transition, kXMLCharCond)) {
 				issues.push_back(InterpreterIssue("Initial transition cannot have a condition", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 			}
-			if (HAS_ATTR(transition, "event")) {
+			if (HAS_ATTR(transition, kXMLCharEvent)) {
 				issues.push_back(InterpreterIssue("Initial transition cannot be eventful", transition, InterpreterIssue::USCXML_ISSUE_FATAL));
 			}
 
@@ -607,7 +607,7 @@ NEXT_SET:
 			tmp = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "history", state, true);
 			childs.insert(childs.end(), tmp.begin(), tmp.end());
 
-			std::list<std::string> intials = tokenize(ATTR(transition, "target"));
+			std::list<std::string> intials = tokenize(ATTR(transition, kXMLCharTarget));
 			for (std::list<std::string>::iterator initIter = intials.begin(); initIter != intials.end(); initIter++) {
 				// the 'target' of a <transition> inside an <initial> or <history> element: all the states must be descendants of the containing <state> or <parallel> element
 				if (!DOMUtils::isMember(seenStates[*initIter], childs)) {
@@ -622,20 +622,20 @@ NEXT_SET:
 	{
 		for (auto iter = invokes.begin(); iter != invokes.end(); iter++) {
 			DOMElement* invoke = *iter;
-			if (HAS_ATTR(invoke, "type") && !_factory->hasInvoker(ATTR(invoke, "type"))) {
+			if (HAS_ATTR(invoke, kXMLCharType) && !_factory->hasInvoker(ATTR(invoke, kXMLCharType))) {
 				// unknown at factory - adhoc extension?
-				if (HAS_ATTR(invoke, "id") && interpreter->_invokers.find(ATTR(invoke, "id")) != interpreter->_invokers.end())
+				if (HAS_ATTR(invoke, kXMLCharId) && interpreter->_invokers.find(ATTR(invoke, kXMLCharId)) != interpreter->_invokers.end())
 					continue; // not an issue
 
 				IssueSeverity severity;
-				if (HAS_ATTR(invoke, "idlocation")) {
+				if (HAS_ATTR(invoke, kXMLCharIdLocation)) {
 					// we might still resolve at runtime
 					severity = InterpreterIssue::USCXML_ISSUE_WARNING;
 				} else {
 					// fatality!
 					severity = InterpreterIssue::USCXML_ISSUE_FATAL;
 				}
-				issues.push_back(InterpreterIssue("Invoke with unknown type '" + ATTR(invoke, "type") + "'", invoke, severity));
+				issues.push_back(InterpreterIssue("Invoke with unknown type '" + ATTR(invoke, kXMLCharType) + "'", invoke, severity));
 				continue;
 			}
 		}
@@ -645,11 +645,11 @@ NEXT_SET:
 	{
 		for (auto iter = sends.begin(); iter != sends.end(); iter++) {
 			DOMElement* send = *iter;
-			if (HAS_ATTR(send, "type") && !_factory->hasIOProcessor(ATTR(send, "type"))) {
-				if (interpreter->_ioProcs.find(ATTR(send, "type")) != interpreter->_ioProcs.end())
+			if (HAS_ATTR(send, kXMLCharType) && !_factory->hasIOProcessor(ATTR(send, kXMLCharType))) {
+				if (interpreter->_ioProcs.find(ATTR(send, kXMLCharType)) != interpreter->_ioProcs.end())
 					continue; // not an issue, available ad-hoc
 
-				issues.push_back(InterpreterIssue("Send to unknown IO Processor '" + ATTR(send, "type") + "'", send, InterpreterIssue::USCXML_ISSUE_FATAL));
+				issues.push_back(InterpreterIssue("Send to unknown IO Processor '" + ATTR(send, kXMLCharType) + "'", send, InterpreterIssue::USCXML_ISSUE_FATAL));
 				continue;
 			}
 		}
@@ -690,10 +690,10 @@ NEXT_SET:
 			if (reqAttr.find(localName) != reqAttr.end()) {
 				for (std::set<std::string>::const_iterator reqIter = reqAttr[localName].begin();
 				        reqIter != reqAttr[localName].end(); reqIter++) {
-					if (!HAS_ATTR(element, *reqIter)) {
+					if (!HAS_ATTR(element, X(*reqIter))) {
 						issues.push_back(InterpreterIssue("Element " + localName + " is missing required attribute '" + *reqIter + "'", element, InterpreterIssue::USCXML_ISSUE_WARNING));
 					}
-					if (HAS_ATTR(element, *reqIter) && ATTR(element, *reqIter).size() == 0) {
+					if (HAS_ATTR(element, X(*reqIter)) && ATTR(element, X(*reqIter)).size() == 0) {
 						issues.push_back(InterpreterIssue("Required attribute '" + *reqIter + "' of element " + localName + " is empty", element, InterpreterIssue::USCXML_ISSUE_WARNING));
 					}
 				}
@@ -723,7 +723,7 @@ NEXT_SET:
 			DOMElement* initial = *iter;
 			if (initial->getParentNode() && initial->getParentNode()->getNodeType() == DOMNode::ELEMENT_NODE) {
 				DOMElement* state = static_cast<DOMElement*>(initial->getParentNode());
-				if (HAS_ATTR(state, "initial")) {
+				if (HAS_ATTR(state, kXMLCharInitial)) {
 					issues.push_back(InterpreterIssue("State with initial attribute cannot have <initial> child ", state, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 				if (isAtomic(state)) {
@@ -733,64 +733,64 @@ NEXT_SET:
 		}
 		for (auto iter = allStates.begin(); iter != allStates.end(); iter++) {
 			DOMElement* state = *iter;
-			if (isAtomic(state) && HAS_ATTR(state, "initial")) {
+			if (isAtomic(state) && HAS_ATTR(state, kXMLCharInitial)) {
 				issues.push_back(InterpreterIssue("Atomic state cannot have initial attribute ", state, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
 		for (auto iter = assigns.begin(); iter != assigns.end(); iter++) {
 			DOMElement* assign = *iter;
-			if (HAS_ATTR(assign, "expr") && assign->getChildNodes()->getLength() > 0) {
+			if (HAS_ATTR(assign, kXMLCharExpr) && assign->getChildNodes()->getLength() > 0) {
 				issues.push_back(InterpreterIssue("Assign element cannot have expr attribute and children", assign, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
 		for (auto iter = contents.begin(); iter != contents.end(); iter++) {
 			DOMElement* content = *iter;
-			if (HAS_ATTR(content, "expr") && content->getChildNodes()->getLength() > 0) {
+			if (HAS_ATTR(content, kXMLCharExpr) && content->getChildNodes()->getLength() > 0) {
 				issues.push_back(InterpreterIssue("Content element cannot have expr attribute and children", content, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
 		for (auto iter = params.begin(); iter != params.end(); iter++) {
 			DOMElement* param = *iter;
-			if (HAS_ATTR(param, "expr") && HAS_ATTR(param, "location")) {
+			if (HAS_ATTR(param, kXMLCharExpr) && HAS_ATTR(param, kXMLCharLocation)) {
 				issues.push_back(InterpreterIssue("Param element cannot have both expr and location attribute", param, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
 		for (auto iter = scripts.begin(); iter != scripts.end(); iter++) {
 			DOMElement* script = *iter;
-			if (HAS_ATTR(script, "src") && script->getChildNodes()->getLength() > 0) {
+			if (HAS_ATTR(script, kXMLCharSource) && script->getChildNodes()->getLength() > 0) {
 				issues.push_back(InterpreterIssue("Script element cannot have src attribute and children", script, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
 		for (auto iter = sends.begin(); iter != sends.end(); iter++) {
 			DOMElement* send = *iter;
-			if (HAS_ATTR(send, "event") && HAS_ATTR(send, "eventexpr")) {
+			if (HAS_ATTR(send, kXMLCharEvent) && HAS_ATTR(send, kXMLCharEventExpr)) {
 				issues.push_back(InterpreterIssue("Send element cannot have both event and eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(send, "target") && HAS_ATTR(send, "targetexpr")) {
+			if (HAS_ATTR(send, kXMLCharTarget) && HAS_ATTR(send, kXMLCharTargetExpr)) {
 				issues.push_back(InterpreterIssue("Send element cannot have both target and targetexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(send, "type") && HAS_ATTR(send, "typeexpr")) {
+			if (HAS_ATTR(send, kXMLCharType) && HAS_ATTR(send, kXMLCharTypeExpr)) {
 				issues.push_back(InterpreterIssue("Send element cannot have both type and typeexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(send, "id") && HAS_ATTR(send, "idlocation")) {
+			if (HAS_ATTR(send, kXMLCharId) && HAS_ATTR(send, kXMLCharIdLocation)) {
 				issues.push_back(InterpreterIssue("Send element cannot have both id and idlocation attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(send, "delay") && HAS_ATTR(send, "delayexpr")) {
+			if (HAS_ATTR(send, kXMLCharDelay) && HAS_ATTR(send, kXMLCharDelayExpr)) {
 				issues.push_back(InterpreterIssue("Send element cannot have both delay and delayexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(send, "delay") && HAS_ATTR(send, "target") && ATTR(send, "target")== "_internal") {
+			if (HAS_ATTR(send, kXMLCharDelay) && HAS_ATTR(send, kXMLCharTarget) && ATTR(send, kXMLCharTarget)== "_internal") {
 				issues.push_back(InterpreterIssue("Send element cannot have delay with target _internal", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 
 			std::list<DOMElement*> contentChilds = DOMUtils::filterChildElements(XML_PREFIX(send).str() + "content", send, false);
 			std::list<DOMElement*> paramChilds = DOMUtils::filterChildElements(XML_PREFIX(send).str() + "param", send, false);
 
-			if (HAS_ATTR(send, "namelist") && contentChilds.size() > 0) {
+			if (HAS_ATTR(send, kXMLCharNameList) && contentChilds.size() > 0) {
 				issues.push_back(InterpreterIssue("Send element cannot have namelist attribute and content child", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 
@@ -801,26 +801,26 @@ NEXT_SET:
 		}
 		for (auto iter = cancels.begin(); iter != cancels.end(); iter++) {
 			DOMElement* cancel = *iter;
-			if (HAS_ATTR(cancel, "sendid") && HAS_ATTR(cancel, "sendidexpr")) {
+			if (HAS_ATTR(cancel, kXMLCharSendId) && HAS_ATTR(cancel, kXMLCharSendIdExpr)) {
 				issues.push_back(InterpreterIssue("Cancel element cannot have both sendid and eventexpr sendidexpr", cancel, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
 
 		for (auto iter = invokes.begin(); iter != invokes.end(); iter++) {
 			DOMElement* invoke = *iter;
-			if (HAS_ATTR(invoke, "type") && HAS_ATTR(invoke, "typeexpr")) {
+			if (HAS_ATTR(invoke, kXMLCharType) && HAS_ATTR(invoke, kXMLCharTypeExpr)) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have both type and typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(invoke, "src") && HAS_ATTR(invoke, "srcexpr")) {
+			if (HAS_ATTR(invoke, kXMLCharSource) && HAS_ATTR(invoke, kXMLCharSourceExpr)) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have both src and srcexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(invoke, "id") && HAS_ATTR(invoke, "idlocation")) {
+			if (HAS_ATTR(invoke, kXMLCharId) && HAS_ATTR(invoke, kXMLCharIdLocation)) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have both id and idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(invoke, "namelist") && DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "param", invoke, false).size() > 0) {
+			if (HAS_ATTR(invoke, kXMLCharNameList) && DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "param", invoke, false).size() > 0) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have namelist attribute and param child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
-			if (HAS_ATTR(invoke, "src") && DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "content", invoke, false).size() > 0) {
+			if (HAS_ATTR(invoke, kXMLCharSource) && DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "content", invoke, false).size() > 0) {
 				issues.push_back(InterpreterIssue("Invoke element cannot have src attribute and content child", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 
 			}
@@ -837,9 +837,9 @@ NEXT_SET:
 
 	// check that the datamodel is known if not already instantiated
 	if (!interpreter->_dataModel) {
-		if (HAS_ATTR(_scxml, "datamodel")) {
-			if (!_factory->hasDataModel(ATTR(_scxml, "datamodel"))) {
-				issues.push_back(InterpreterIssue("SCXML document requires unknown datamodel '" + ATTR(_scxml, "datamodel") + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL));
+		if (HAS_ATTR(_scxml, kXMLCharDataModel)) {
+			if (!_factory->hasDataModel(ATTR(_scxml, kXMLCharDataModel))) {
+				issues.push_back(InterpreterIssue("SCXML document requires unknown datamodel '" + ATTR(_scxml, kXMLCharDataModel) + "'", _scxml, InterpreterIssue::USCXML_ISSUE_FATAL));
 
 				// we cannot even check the rest as we require a datamodel
 				return issues;
@@ -850,9 +850,9 @@ NEXT_SET:
 	bool instantiatedDataModel = false;
 	// instantiate datamodel if not explicitly set
 	if (!_dataModel) {
-		if (HAS_ATTR(_scxml, "datamodel")) {
+		if (HAS_ATTR(_scxml, kXMLCharDataModel)) {
 			// might throw
-			_dataModel = _factory->createDataModel(ATTR(_scxml, "datamodel"), interpreter);
+			_dataModel = _factory->createDataModel(ATTR(_scxml, kXMLCharDataModel), interpreter);
 			instantiatedDataModel = true;
 		} else {
 			_dataModel = _factory->createDataModel("null", interpreter);
@@ -889,8 +889,8 @@ NEXT_SET:
 
 		for (auto iter = withCondAttrs.begin(); iter != withCondAttrs.end(); iter++) {
 			DOMElement* condAttr = *iter;
-			if (HAS_ATTR(condAttr, "cond")) {
-				if (!_dataModel.isValidSyntax(ATTR(condAttr, "cond"))) {
+			if (HAS_ATTR(condAttr, kXMLCharCond)) {
+				if (!_dataModel.isValidSyntax(ATTR(condAttr, kXMLCharCond))) {
 					issues.push_back(InterpreterIssue("Syntax error in cond attribute", condAttr, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
@@ -908,14 +908,14 @@ NEXT_SET:
 
 		for (auto iter = withExprAttrs.begin(); iter != withExprAttrs.end(); iter++) {
 			DOMElement* withExprAttr = *iter;
-			if (HAS_ATTR(withExprAttr, "expr")) {
+			if (HAS_ATTR(withExprAttr, kXMLCharExpr)) {
 				if (DOMUtils::isMember(withExprAttr, datas) || DOMUtils::isMember(withExprAttr, assigns)) {
-					if (!_dataModel.isValidSyntax("foo = " + ATTR(withExprAttr, "expr"))) { // TODO: this is ECMAScripty!
+					if (!_dataModel.isValidSyntax("foo = " + ATTR(withExprAttr, kXMLCharExpr))) { // TODO: this is ECMAScripty!
 						issues.push_back(InterpreterIssue("Syntax error in expr attribute", withExprAttr, InterpreterIssue::USCXML_ISSUE_WARNING));
 						continue;
 					}
 				} else {
-					if (!_dataModel.isValidSyntax(ATTR(withExprAttr, "expr"))) {
+					if (!_dataModel.isValidSyntax(ATTR(withExprAttr, kXMLCharExpr))) {
 						issues.push_back(InterpreterIssue("Syntax error in expr attribute", withExprAttr, InterpreterIssue::USCXML_ISSUE_WARNING));
 						continue;
 					}
@@ -927,18 +927,18 @@ NEXT_SET:
 	{
 		for (auto iter = foreachs.begin(); iter != foreachs.end(); iter++) {
 			DOMElement* foreach = *iter;
-			if (HAS_ATTR(foreach, "array")) {
-				if (!_dataModel.isValidSyntax(ATTR(foreach, "array"))) {
+			if (HAS_ATTR(foreach, kXMLCharArray)) {
+				if (!_dataModel.isValidSyntax(ATTR(foreach, kXMLCharArray))) {
 					issues.push_back(InterpreterIssue("Syntax error in array attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
-			if (HAS_ATTR(foreach, "item")) {
-				if (!_dataModel.isValidSyntax(ATTR(foreach, "item"))) {
+			if (HAS_ATTR(foreach, kXMLCharItem)) {
+				if (!_dataModel.isValidSyntax(ATTR(foreach, kXMLCharItem))) {
 					issues.push_back(InterpreterIssue("Syntax error in item attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
-			if (HAS_ATTR(foreach, "index")) {
-				if (!_dataModel.isValidSyntax(ATTR(foreach, "index"))) {
+			if (HAS_ATTR(foreach, kXMLCharIndex)) {
+				if (!_dataModel.isValidSyntax(ATTR(foreach, kXMLCharIndex))) {
 					issues.push_back(InterpreterIssue("Syntax error in index attribute", foreach, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
@@ -948,28 +948,28 @@ NEXT_SET:
 	{
 		for (auto iter = sends.begin(); iter != sends.end(); iter++) {
 			DOMElement* send = *iter;
-			if (HAS_ATTR(send, "eventexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(send, "eventexpr"))) {
+			if (HAS_ATTR(send, kXMLCharEventExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(send, kXMLCharEventExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in eventexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
-			if (HAS_ATTR(send, "targetexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(send, "targetexpr"))) {
+			if (HAS_ATTR(send, kXMLCharTargetExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(send, kXMLCharTargetExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in targetexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
-			if (HAS_ATTR(send, "typeexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(send, "typeexpr"))) {
+			if (HAS_ATTR(send, kXMLCharTypeExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(send, kXMLCharTypeExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in typeexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
-			if (HAS_ATTR(send, "idlocation")) {
-				if (!_dataModel.isValidSyntax(ATTR(send, "idlocation"))) {
+			if (HAS_ATTR(send, kXMLCharIdLocation)) {
+				if (!_dataModel.isValidSyntax(ATTR(send, kXMLCharIdLocation))) {
 					issues.push_back(InterpreterIssue("Syntax error in idlocation attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
-			if (HAS_ATTR(send, "delayexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(send, "delayexpr"))) {
+			if (HAS_ATTR(send, kXMLCharDelayExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(send, kXMLCharDelayExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in delayexpr attribute", send, InterpreterIssue::USCXML_ISSUE_WARNING));
 				}
 			}
@@ -980,20 +980,20 @@ NEXT_SET:
 	{
 		for (auto iter = invokes.begin(); iter != invokes.end(); iter++) {
 			DOMElement* invoke = *iter;
-			if (HAS_ATTR(invoke, "typeexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(invoke, "typeexpr"))) {
+			if (HAS_ATTR(invoke, kXMLCharTypeExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(invoke, kXMLCharTypeExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in typeexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
-			if (HAS_ATTR(invoke, "srcexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(invoke, "srcexpr"))) {
+			if (HAS_ATTR(invoke, kXMLCharSourceExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(invoke, kXMLCharSourceExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in srcexpr attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
 			}
-			if (HAS_ATTR(invoke, "idlocation")) {
-				if (!_dataModel.isValidSyntax(ATTR(invoke, "idlocation"))) {
+			if (HAS_ATTR(invoke, kXMLCharIdLocation)) {
+				if (!_dataModel.isValidSyntax(ATTR(invoke, kXMLCharIdLocation))) {
 					issues.push_back(InterpreterIssue("Syntax error in idlocation attribute", invoke, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}
@@ -1004,8 +1004,8 @@ NEXT_SET:
 	{
 		for (auto iter = cancels.begin(); iter != cancels.end(); iter++) {
 			DOMElement* cancel = *iter;
-			if (HAS_ATTR(cancel, "sendidexpr")) {
-				if (!_dataModel.isValidSyntax(ATTR(cancel, "sendidexpr"))) {
+			if (HAS_ATTR(cancel, kXMLCharSendIdExpr)) {
+				if (!_dataModel.isValidSyntax(ATTR(cancel, kXMLCharSendIdExpr))) {
 					issues.push_back(InterpreterIssue("Syntax error in sendidexpr attribute", cancel, InterpreterIssue::USCXML_ISSUE_WARNING));
 					continue;
 				}

@@ -146,7 +146,7 @@ std::list<DOMElement*> getProperAncestors(const DOMElement* s1, const DOMElement
 
 std::list<DOMElement*> getExitSet(const DOMElement* transition, const DOMElement* root) {
 	std::list<DOMElement*> statesToExit;
-	if (HAS_ATTR(transition, "target")) {
+	if (HAS_ATTR(transition, kXMLCharTarget)) {
 		DOMElement* domain = getTransitionDomain(transition, root);
 		if (domain == NULL)
 			return statesToExit;
@@ -207,7 +207,7 @@ bool isFinal(const DOMElement* state) {
 	std::string localName = LOCALNAME(state);
 	if (iequals("final", localName))
 		return true;
-	if (HAS_ATTR(state, "final") && iequals("true", ATTR(state, "final")))
+	if (HAS_ATTR(state, kXMLCharFinal) && iequals("true", ATTR(state, kXMLCharFinal)))
 		return true;
 	return false;
 }
@@ -259,8 +259,8 @@ bool isCompound(const DOMElement* state) {
 std::list<DOMElement*> getTargetStates(const DOMElement* transition, const DOMElement* root) {
 	std::list<DOMElement*> targetStates;
 
-	std::string targetId = ATTR(transition, "target");
-	std::list<std::string> targetIds = tokenize(ATTR(transition, "target"));
+//	std::string targetId = ATTR(transition, kXMLCharTarget);
+	std::list<std::string> targetIds = tokenize(ATTR(transition, kXMLCharTarget));
 
 	for (auto targetIter = targetIds.begin(); targetIter != targetIds.end(); targetIter++) {
 		DOMElement* state = getState(*targetIter, root);
@@ -277,7 +277,7 @@ DOMElement* getTransitionDomain(const DOMElement* transition, const DOMElement* 
 	if (tStates.size() == 0) {
 		return NULL;
 	}
-	std::string transitionType = (HAS_ATTR(transition, "type") ? ATTR(transition, "type") : "external");
+	std::string transitionType = (HAS_ATTR(transition, kXMLCharType) ? ATTR(transition, kXMLCharType) : "external");
 	DOMElement* source = getSourceState(transition);
 
 	if (iequals(transitionType, "internal") && isCompound(source)) {
@@ -318,7 +318,7 @@ DOMElement* getState(const std::string& stateId, const DOMElement* root) {
 
 //        std::cout << *curr;
 
-		if (HAS_ATTR(curr, "id") && ATTR(curr, "id") == stateId)
+		if (HAS_ATTR(curr, kXMLCharId) && ATTR(curr, kXMLCharId) == stateId)
 			return (DOMElement*)curr;
 
 		std::list<DOMElement*> children = getChildStates(curr, false);
@@ -354,15 +354,15 @@ std::list<DOMElement*> getInitialStates(const DOMElement* state, const DOMElemen
 
 	if (isCompound(state)) {
 		// initial attribute at element
-		if (HAS_ATTR(state, "initial")) {
-			return getStates(tokenize(ATTR(state, "initial")), root);
+		if (HAS_ATTR(state, kXMLCharInitial)) {
+			return getStates(tokenize(ATTR(state, kXMLCharInitial)), root);
 		}
 
 		// initial element as child
 		std::list<DOMElement*> initElems = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "initial", state);
 		if(initElems.size() > 0 ) {
 			std::list<DOMElement*> initTrans = DOMUtils::filterChildElements(XML_PREFIX(initElems.front()).str() + "transition", initElems.front());
-			if (initTrans.size() > 0 && HAS_ATTR(initTrans.front(),"target")) {
+			if (initTrans.size() > 0 && HAS_ATTR(initTrans.front(), kXMLCharTarget)) {
 				return getTargetStates(initTrans.front(), root);
 			}
 			return std::list<DOMElement*>();

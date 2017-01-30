@@ -30,8 +30,8 @@
 		std::list<XERCESC_NS::DOMElement*> nativeConfig = self->getConfiguration();
 		std::vector<std::string> config;
 		for (auto state : nativeConfig) {
-			if (HAS_ATTR(state, "id"))
-				config.push_back(ATTR(state, "id"));
+			if (HAS_ATTR(state, kXMLCharId))
+				config.push_back(ATTR(state, kXMLCharId));
 		}
 		return config;
 	}

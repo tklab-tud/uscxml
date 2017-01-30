@@ -76,10 +76,10 @@ void DebugSession::breakExecution(Data replyData) {
 
 	std::list<XERCESC_NS::DOMElement*> configuration = _interpreter.getConfiguration();
 	for (auto state : configuration) {
-		if (HAS_ATTR(state, "id")) {
-			replyData.compound["activeStates"].array.push_back(Data(ATTR(state, "id"), Data::VERBATIM));
+		if (HAS_ATTR(state, kXMLCharId)) {
+			replyData.compound["activeStates"].array.push_back(Data(ATTR(state, kXMLCharId), Data::VERBATIM));
 			if (isAtomic(state)) {
-				replyData.compound["basicStates"].array.push_back(Data(ATTR(state, "id"), Data::VERBATIM));
+				replyData.compound["basicStates"].array.push_back(Data(ATTR(state, kXMLCharId), Data::VERBATIM));
 			}
 		}
 	}

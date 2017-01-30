@@ -155,7 +155,7 @@ void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 	child = element->getFirstElementChild();
 	while(child) {
 		if (TAGNAME_CAST(child) == xmlPrefix.str() + "history" &&
-		        (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
+		        (!HAS_ATTR(element, kXMLCharType) || iequals(ATTR(element, kXMLCharType), "shallow"))) {
 
 			DOMElement* tmp = child->getNextElementSibling();
 			if (child != element->getFirstChild()) {
@@ -172,8 +172,8 @@ void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 	while(child) {
 		if (child->getNodeType() == DOMNode::ELEMENT_NODE &&
 		        TAGNAME_CAST(child) == xmlPrefix.str() + "history" &&
-		        HAS_ATTR(element, "type") &&
-		        iequals(ATTR(element, "type"), "deep")) {
+		        HAS_ATTR(element, kXMLCharType) &&
+		        iequals(ATTR(element, kXMLCharType), "deep")) {
 
 			DOMElement* tmp = child->getNextElementSibling();
 			if (child != element->getFirstChild()) {
@@ -230,7 +230,7 @@ bool FastMicroStep::conflictsCached(const DOMElement* t1, const DOMElement* t2, 
 void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
 	_scxml = scxml;
-	_binding = (HAS_ATTR(_scxml, "binding") && iequals(ATTR(_scxml, "binding"), "late") ? LATE : EARLY);
+	_binding = (HAS_ATTR(_scxml, kXMLCharBinding) && iequals(ATTR(_scxml, kXMLCharBinding), "late") ? LATE : EARLY);
 	_xmlPrefix = _scxml->getPrefix();
 	_xmlNS = _scxml->getNamespaceURI();
 	if (_xmlPrefix) {
@@ -308,8 +308,8 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		}
 #endif
 		// collect states with an id attribute
-		if (HAS_ATTR(_states[i]->element, "id")) {
-			_stateIds[ATTR(_states[i]->element, "id")] = i;
+		if (HAS_ATTR(_states[i]->element, kXMLCharId)) {
+			_stateIds[ATTR(_states[i]->element, kXMLCharId)] = i;
 		}
 
 		// check for executable content and datamodels
@@ -343,7 +343,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		} else if (isFinal(_states[i]->element)) {
 			_states[i]->type =  USCXML_STATE_FINAL;
 		} else if (isHistory(_states[i]->element)) {
-			if (HAS_ATTR(_states[i]->element, "type") && iequals(ATTR(_states[i]->element, "type"), "deep")) {
+			if (HAS_ATTR(_states[i]->element, kXMLCharType) && iequals(ATTR(_states[i]->element, kXMLCharType), "deep")) {
 				_states[i]->type = USCXML_STATE_HISTORY_DEEP;
 			} else {
 				_states[i]->type = USCXML_STATE_HISTORY_SHALLOW;
@@ -539,7 +539,7 @@ CONFLICTS_ESTABLISHED:
 		}
 #endif
 		{
-			std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, "target"));
+			std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, kXMLCharTarget));
 			for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
 				if (_stateIds.find(*tIter) != _stateIds.end()) {
 					_transitions[i]->target[_stateIds[*tIter]] = true;
@@ -557,15 +557,15 @@ TARGET_SET_ESTABLISHED:
 
 
 		// the transition's type
-		if (!HAS_ATTR(_transitions[i]->element, "target")) {
+		if (!HAS_ATTR(_transitions[i]->element, kXMLCharTarget)) {
 			_transitions[i]->type |= USCXML_TRANS_TARGETLESS;
 		}
 
-		if (HAS_ATTR(_transitions[i]->element, "type") && iequals(ATTR(_transitions[i]->element, "type"), "internal")) {
+		if (HAS_ATTR(_transitions[i]->element, kXMLCharType) && iequals(ATTR(_transitions[i]->element, kXMLCharType), "internal")) {
 			_transitions[i]->type |= USCXML_TRANS_INTERNAL;
 		}
 
-		if (!HAS_ATTR(_transitions[i]->element, "event")) {
+		if (!HAS_ATTR(_transitions[i]->element, kXMLCharEvent)) {
 			_transitions[i]->type |= USCXML_TRANS_SPONTANEOUS;
 		}
 
@@ -578,10 +578,10 @@ TARGET_SET_ESTABLISHED:
 		}
 
 		// the transitions event and condition
-		_transitions[i]->event = (HAS_ATTR(_transitions[i]->element, "event") ?
-		                          ATTR(_transitions[i]->element, "event") : "");
-		_transitions[i]->cond = (HAS_ATTR(_transitions[i]->element, "cond") ?
-		                         ATTR(_transitions[i]->element, "cond") : "");
+		_transitions[i]->event = (HAS_ATTR(_transitions[i]->element, kXMLCharEvent) ?
+		                          ATTR(_transitions[i]->element, kXMLCharEvent) : "");
+		_transitions[i]->cond = (HAS_ATTR(_transitions[i]->element, kXMLCharCond) ?
+		                         ATTR(_transitions[i]->element, kXMLCharCond) : "");
 
 		// is there executable content?
 		if (_transitions[i]->element->getChildElementCount() > 0) {
@@ -1191,7 +1191,7 @@ std::list<DOMElement*> FastMicroStep::getHistoryCompletion(const DOMElement* his
 		parent = history->getParentNode();
 	}
 
-	bool deep = (HAS_ATTR(history, "type") && iequals(ATTR(history, "type"), "deep"));
+	bool deep = (HAS_ATTR(history, kXMLCharType) && iequals(ATTR(history, kXMLCharType), "deep"));
 
 	for (size_t j = 0; j < _states.size(); j++) {
 		if (_states[j]->element == history)
@@ -1244,8 +1244,8 @@ std::list<DOMElement*> FastMicroStep::getCompletion(const DOMElement* state) {
 	} else if (isParallel(state)) {
 		return getChildStates(state);
 
-	} else if (HAS_ATTR(state, "initial")) {
-		return getStates(tokenize(ATTR(state, "initial")), _scxml);
+	} else if (HAS_ATTR(state, kXMLCharInitial)) {
+		return getStates(tokenize(ATTR(state, kXMLCharInitial)), _scxml);
 
 	} else {
 		std::list<DOMElement*> completion;

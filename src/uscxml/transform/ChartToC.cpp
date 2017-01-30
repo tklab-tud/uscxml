@@ -84,7 +84,7 @@ void ChartToC::setHistoryCompletion() {
 			parent = history->getParentNode();
 		}
 
-		bool deep = (HAS_ATTR(history, "type") && iequals(ATTR(history, "type"), "deep"));
+		bool deep = (HAS_ATTR(history, kXMLCharType) && iequals(ATTR(history, kXMLCharType), "deep"));
 		for (auto stateIter = _states.begin(); stateIter != _states.end(); stateIter++) {
 			DOMElement* state = *stateIter;
 			if (state == history)
@@ -140,7 +140,7 @@ void ChartToC::resortStates(DOMNode* node) {
 		resortStates(child);
 		if (child->getNodeType() == DOMNode::ELEMENT_NODE &&
 		        TAGNAME_CAST(child) == XML_PREFIX(node).str() + "history" &&
-		        (!HAS_ATTR(element, "type") || iequals(ATTR(element, "type"), "shallow"))) {
+		        (!HAS_ATTR(element, kXMLCharType) || iequals(ATTR(element, kXMLCharType), "shallow"))) {
 			DOMNode* tmp = child->getNextSibling();
 			if (child != element->getFirstChild()) {
 				element->insertBefore(child, element->getFirstChild());
@@ -157,8 +157,8 @@ void ChartToC::resortStates(DOMNode* node) {
 		resortStates(child);
 		if (child->getNodeType() == DOMNode::ELEMENT_NODE &&
 		        TAGNAME_CAST(child) == XML_PREFIX(node).str() + "history" &&
-		        HAS_ATTR(element, "type") &&
-		        iequals(ATTR(element, "type"), "deep")) {
+		        HAS_ATTR(element, kXMLCharType) &&
+		        iequals(ATTR(element, kXMLCharType), "deep")) {
 
 			DOMNode* tmp = child->getNextSibling();
 			if (child != element->getFirstChild()) {
@@ -203,8 +203,8 @@ void ChartToC::setStateCompletion() {
 		if (isParallel(state)) {
 			completion = getChildStates(state);
 
-		} else if (HAS_ATTR(state, "initial")) {
-			completion = getStates(tokenize(ATTR(state, "initial")), _scxml);
+		} else if (HAS_ATTR(state, kXMLCharInitial)) {
+			completion = getStates(tokenize(ATTR(state, kXMLCharInitial)), _scxml);
 
 		} else {
 			std::list<DOMElement*> initElems = DOMUtils::filterChildElements(XML_PREFIX(state).str() + "initial", state);
@@ -259,8 +259,8 @@ void ChartToC::prepare() {
 		DOMElement* state(_states[i]);
 		state->setAttribute(X("documentOrder"), X(toStr(i)));
 		if (state->getParentNode()->getNodeType() == DOMNode::ELEMENT_NODE &&
-		        HAS_ATTR_CAST(state->getParentNode(), "documentOrder")) {
-			state->setAttribute(X("parent"), X(ATTR_CAST(state->getParentNode(), "documentOrder")));
+		        HAS_ATTR_CAST(state->getParentNode(), X("documentOrder"))) {
+			state->setAttribute(X("parent"), X(ATTR_CAST(state->getParentNode(), X("documentOrder"))));
 		}
 
 		// set the states' children and whether it has a history
@@ -302,8 +302,8 @@ void ChartToC::prepare() {
 		DOMElement* transition = *transIter;
 		transition->setAttribute(X("documentOrder"), X(toStr(index)));
 		if (transition->getParentNode()->getNodeType() == DOMNode::ELEMENT_NODE &&
-		        HAS_ATTR_CAST(transition->getParentNode(), "documentOrder")) {
-			transition->setAttribute(X("source"), X(ATTR_CAST(transition->getParentNode(), "documentOrder")));
+		        HAS_ATTR_CAST(transition->getParentNode(), X("documentOrder"))) {
+			transition->setAttribute(X("source"), X(ATTR_CAST(transition->getParentNode(), X("documentOrder"))));
 		}
 	}
 
@@ -355,15 +355,15 @@ void ChartToC::prepare() {
 		transition->setAttribute(X("conflictBools"), X(conflictBools));
 
 		// and target
-		if (HAS_ATTR(transition, "target")) {
-			std::list<std::string> targets = tokenize(ATTR(transition, "target"));
+		if (HAS_ATTR(transition, kXMLCharTarget)) {
+			std::list<std::string> targets = tokenize(ATTR(transition, kXMLCharTarget));
 
 			std::string targetBools;
 			for (size_t j = 0; j < _states.size(); j++) {
 				DOMElement* state(_states[j]);
 
-				if (HAS_ATTR(state, "id") &&
-				        std::find(targets.begin(), targets.end(), escape(ATTR(state, "id"))) != targets.end()) {
+				if (HAS_ATTR(state, kXMLCharId) &&
+				        std::find(targets.begin(), targets.end(), escape(ATTR(state, kXMLCharId))) != targets.end()) {
 					targetBools += "1";
 				} else {
 					targetBools += "0";
@@ -469,15 +469,15 @@ void ChartToC::findNestedMachines() {
 		if(!areFromSameMachine(invoke, _scxml))
 			continue;
 
-		if (HAS_ATTR(invoke, "type") &&
-		        ATTR(invoke, "type") != "scxml" &&
-		        ATTR(invoke, "type") != "http://www.w3.org/TR/scxml/")
+		if (HAS_ATTR(invoke, kXMLCharType) &&
+		        ATTR(invoke, kXMLCharType) != "scxml" &&
+		        ATTR(invoke, kXMLCharType) != "http://www.w3.org/TR/scxml/")
 			continue;
 
 		ChartToC* c2c = NULL;
-		if (HAS_ATTR(invoke, "src")) {
+		if (HAS_ATTR(invoke, kXMLCharSource)) {
 
-			URL srcURL(ATTR(invoke, "src"));
+			URL srcURL(ATTR(invoke, kXMLCharSource));
 			if (!srcURL.isAbsolute()) {
 				srcURL = URL::resolve(srcURL, _baseURL);
 			}
@@ -1156,7 +1156,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 				size_t j = 0;
 				for (auto iter = invokes.begin(); iter != invokes.end(); iter++, j++) {
 					DOMElement* invoke = *iter;
-					stream << "    ctx->invoke(ctx, s, &" << _prefix << "_elem_invokes[" << ATTR(invoke, "documentOrder") << "], uninvoke);" << std::endl;
+					stream << "    ctx->invoke(ctx, s, &" << _prefix << "_elem_invokes[" << ATTR(invoke, X("documentOrder")) << "], uninvoke);" << std::endl;
 					stream << std::endl;
 				}
 				stream << "    return USCXML_ERR_OK;" << std::endl;
@@ -1169,13 +1169,13 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 		DOMElement* transition(_transitions[i]);
 		std::list<DOMNode*> execContent = DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition);
 
-		if (HAS_ATTR(transition, "cond")) {
+		if (HAS_ATTR(transition, kXMLCharCond)) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(transition) << "_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {" << std::endl;
-			if (HAS_ATTR(_scxml, "datamodel") && ATTR(_scxml, "datamodel") == "native") {
-				stream << "    return (" << ATTR(transition, "cond") << ");" << std::endl;
+			if (HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native") {
+				stream << "    return (" << ATTR(transition, kXMLCharCond) << ");" << std::endl;
 			} else {
 				stream << "    if likely(ctx->is_true != NULL) {" << std::endl;
-				stream << "        return (ctx->is_true(ctx, \"" << escape(ATTR(transition, "cond")) << "\"));" << std::endl;
+				stream << "        return (ctx->is_true(ctx, \"" << escape(ATTR(transition, kXMLCharCond)) << "\"));" << std::endl;
 				stream << "    }" << std::endl;
 				stream << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
 			}
@@ -1205,7 +1205,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 
 	if (node->getNodeType() == DOMNode::TEXT_NODE) {
 		if (boost::trim_copy(X(node->getNodeValue()).str()).length() > 0) {
-			if (HAS_ATTR(_scxml, "datamodel") && ATTR(_scxml, "datamodel") == "native") {
+			if (HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native") {
 				stream << node->getNodeValue();
 			} else {
 				std::string escaped = escape(X(node->getNodeValue()).str());
@@ -1242,7 +1242,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << "if likely(ctx->exec_content_script != NULL) {" << std::endl;
 		stream << padding;
 		stream << "    if unlikely((err = ctx->exec_content_script(ctx, ";
-		stream << (HAS_ATTR(elem, "src") ? "\"" + escape(ATTR(elem, "src")) + "\"" : "NULL") << ", ";
+		stream << (HAS_ATTR(elem, kXMLCharSource) ? "\"" + escape(ATTR(elem, kXMLCharSource)) + "\"" : "NULL") << ", ";
 
 		std::list<DOMNode*> scriptTexts = DOMUtils::filterChildType(DOMNode::TEXT_NODE, elem);
 		if (scriptTexts.size() > 0) {
@@ -1263,8 +1263,8 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << "if likely(ctx->exec_content_log != NULL) {" << std::endl;
 		stream << padding;
 		stream << "    if unlikely((ctx->exec_content_log(ctx, ";
-		stream << (HAS_ATTR(elem, "label") ? "\"" + escape(ATTR(elem, "label")) + "\"" : "NULL") << ", ";
-		stream << (HAS_ATTR(elem, "expr") ? "\"" + escape(ATTR(elem, "expr")) + "\"" : "NULL");
+		stream << (HAS_ATTR(elem, kXMLCharLabel) ? "\"" + escape(ATTR(elem, kXMLCharLabel)) + "\"" : "NULL") << ", ";
+		stream << (HAS_ATTR(elem, kXMLCharExpr) ? "\"" + escape(ATTR(elem, kXMLCharExpr)) + "\"" : "NULL");
 		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
@@ -1276,15 +1276,15 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << padding << "          ctx->exec_content_foreach_done != NULL) {" << std::endl;
 		stream << std::endl;
 
-		stream << padding << "    if unlikely((ctx->exec_content_foreach_init(ctx, &" << _prefix << "_elem_foreachs[" << ATTR(elem, "documentOrder") << "])) != USCXML_ERR_OK) return err;" << std::endl;
-		stream << padding << "    while (ctx->exec_content_foreach_next(ctx, &" << _prefix << "_elem_foreachs[" << ATTR(elem, "documentOrder") << "]) == USCXML_ERR_OK) {" << std::endl;
+		stream << padding << "    if unlikely((ctx->exec_content_foreach_init(ctx, &" << _prefix << "_elem_foreachs[" << ATTR(elem, X("documentOrder")) << "])) != USCXML_ERR_OK) return err;" << std::endl;
+		stream << padding << "    while (ctx->exec_content_foreach_next(ctx, &" << _prefix << "_elem_foreachs[" << ATTR(elem, X("documentOrder")) << "]) == USCXML_ERR_OK) {" << std::endl;
 		DOMNode* child = node->getFirstChild();
 		while(child) {
 			writeExecContent(stream, child, indent + 2);
 			child = child->getNextSibling();
 		}
 		stream << padding << "    }" << std::endl;
-		stream << padding << "    if ((ctx->exec_content_foreach_done(ctx, &" << _prefix << "_elem_foreachs[" << ATTR(elem, "documentOrder") << "])) != USCXML_ERR_OK) return err;" << std::endl;
+		stream << padding << "    if ((ctx->exec_content_foreach_done(ctx, &" << _prefix << "_elem_foreachs[" << ATTR(elem, X("documentOrder")) << "])) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
 		stream << padding << "}" << std::endl;
@@ -1293,12 +1293,12 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << padding;
 		stream << "if likely(ctx->is_true != NULL) {" << std::endl;
 		stream << padding;
-		stream << "    if (ctx->is_true(ctx, " << (HAS_ATTR(elem, "cond") ? "\"" + escape(ATTR(elem, "cond")) + "\"" : "NULL") << ")) {" << std::endl;
+		stream << "    if (ctx->is_true(ctx, " << (HAS_ATTR(elem, kXMLCharCond) ? "\"" + escape(ATTR(elem, kXMLCharCond)) + "\"" : "NULL") << ")) {" << std::endl;
 		DOMNode* child = elem->getFirstChild();
 		while(child) {
 			if (child->getNodeType() == DOMNode::ELEMENT_NODE && TAGNAME_CAST(child) == "elseif") {
 				stream << padding;
-				stream << "    } else if (ctx->is_true(ctx, " << (HAS_ATTR_CAST(child, "cond") ? "\"" + escape(ATTR_CAST(child, "cond")) + "\"" : "NULL") << ")) {" << std::endl;
+				stream << "    } else if (ctx->is_true(ctx, " << (HAS_ATTR_CAST(child, kXMLCharCond) ? "\"" + escape(ATTR_CAST(child, kXMLCharCond)) + "\"" : "NULL") << ")) {" << std::endl;
 			} else if (child->getNodeType() == DOMNode::ELEMENT_NODE && TAGNAME_CAST(child) == "else") {
 				stream << padding;
 				stream << "    } else {" << std::endl;
@@ -1316,7 +1316,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << padding;
 		stream << "if likely(ctx->exec_content_assign != NULL) {" << std::endl;
 		stream << padding;
-		stream << "    if ((ctx->exec_content_assign(ctx, &" << _prefix << "_elem_assigns[" << ATTR(elem, "documentOrder") << "]";
+		stream << "    if ((ctx->exec_content_assign(ctx, &" << _prefix << "_elem_assigns[" << ATTR(elem, X("documentOrder")) << "]";
 		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
@@ -1328,7 +1328,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << "if likely(ctx->exec_content_raise != NULL) {" << std::endl;
 		stream << padding;
 		stream << "    if unlikely((ctx->exec_content_raise(ctx, ";
-		stream << (HAS_ATTR(elem, "event") ? "\"" + escape(ATTR(elem, "event")) + "\"" : "NULL");
+		stream << (HAS_ATTR(elem, kXMLCharEvent) ? "\"" + escape(ATTR(elem, kXMLCharEvent)) + "\"" : "NULL");
 		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
@@ -1338,7 +1338,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << padding;
 		stream << "if likely(ctx->exec_content_send != NULL) {" << std::endl;
 		stream << padding;
-		stream << "    if ((ctx->exec_content_send(ctx, &" << _prefix << "_elem_sends[" << ATTR(elem, "documentOrder") << "]";
+		stream << "    if ((ctx->exec_content_send(ctx, &" << _prefix << "_elem_sends[" << ATTR(elem, X("documentOrder")) << "]";
 		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
@@ -1349,8 +1349,8 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << "if likely(ctx->exec_content_cancel != NULL) {" << std::endl;
 		stream << padding;
 		stream << "    if ((ctx->exec_content_cancel(ctx, ";
-		stream << (HAS_ATTR(elem, "sendid") ? "\"" + escape(ATTR(elem, "sendid")) + "\"" : "NULL") << ", ";
-		stream << (HAS_ATTR(elem, "sendidexpr") ? "\"" + escape(ATTR(elem, "sendidexpr")) + "\"" : "NULL");
+		stream << (HAS_ATTR(elem, kXMLCharSendId) ? "\"" + escape(ATTR(elem, kXMLCharSendId)) + "\"" : "NULL") << ", ";
+		stream << (HAS_ATTR(elem, kXMLCharSendIdExpr) ? "\"" + escape(ATTR(elem, kXMLCharSendIdExpr)) + "\"" : "NULL");
 		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
 		stream << padding << "} else {" << std::endl;
 		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
@@ -1398,11 +1398,11 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			stream << "    { " << std::endl;
 
 			stream << "        /* machine     */ ";
-			if (HAS_ATTR(invoke, "md5sum")) {
+			if (HAS_ATTR(invoke, X("md5sum"))) {
 #if 1
 				size_t machIdx = 0;
 				for (std::list<ChartToC*>::iterator machIter = _allMachines.begin(); machIter != _allMachines.end(); machIter++, machIdx++) {
-					if ((*machIter)->_md5 == ATTR(invoke, "md5sum")) {
+					if ((*machIter)->_md5 == ATTR(invoke, X("md5sum"))) {
 						stream << "&" << (*machIter)->_prefix << "_machine";
 						break;
 					}
@@ -1422,44 +1422,44 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			stream << ", " << std::endl;
 
 			stream << "        /* type        */ ";
-			stream << (HAS_ATTR(invoke, "type") ? "\"" +  escape(ATTR(invoke, "type")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharType) ? "\"" +  escape(ATTR(invoke, kXMLCharType)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* typeexpr    */ ";
-			stream << (HAS_ATTR(invoke, "typeexpr") ? "\"" +  escape(ATTR(invoke, "typeexpr")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharTypeExpr) ? "\"" +  escape(ATTR(invoke, kXMLCharTypeExpr)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* src         */ ";
-			stream << (HAS_ATTR(invoke, "src") ? "\"" + escape(ATTR(invoke, "src")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharSource) ? "\"" + escape(ATTR(invoke, kXMLCharSource)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* srcexpr     */ ";
-			stream << (HAS_ATTR(invoke, "srcexpr") ? "\"" +  escape(ATTR(invoke, "srcexpr")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharSourceExpr) ? "\"" +  escape(ATTR(invoke, kXMLCharSourceExpr)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* id          */ ";
-			stream << (HAS_ATTR(invoke, "id") ? "\"" +  escape(ATTR(invoke, "id")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharId) ? "\"" +  escape(ATTR(invoke, kXMLCharId)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* idlocation  */ ";
-			stream << (HAS_ATTR(invoke, "idlocation") ? "\"" +  escape(ATTR(invoke, "idlocation")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharIdLocation) ? "\"" +  escape(ATTR(invoke, kXMLCharIdLocation)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* sourcename  */ ";
-			stream << (HAS_ATTR_CAST(invoke->getParentNode(), "id") ? "\"" +  escape(ATTR_CAST(invoke->getParentNode(), "id")) + "\"" : "NULL");
+			stream << (HAS_ATTR_CAST(invoke->getParentNode(), kXMLCharId) ? "\"" +  escape(ATTR_CAST(invoke->getParentNode(), kXMLCharId)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* namelist    */ ";
-			stream << (HAS_ATTR(invoke, "namelist") ? "\"" +  escape(ATTR(invoke, "namelist")) + "\"" : "NULL");
+			stream << (HAS_ATTR(invoke, kXMLCharNameList) ? "\"" +  escape(ATTR(invoke, kXMLCharNameList)) + "\"" : "NULL");
 			stream << ", " << std::endl;
 
 			stream << "        /* autoforward */ ";
-			stream << (HAS_ATTR(invoke, "autoforward") && stringIsTrue(ATTR(invoke, "autoforward")) ? "1" : "0");
+			stream << (HAS_ATTR(invoke, kXMLCharAutoForward) && stringIsTrue(ATTR(invoke, kXMLCharAutoForward)) ? "1" : "0");
 			stream << ", " << std::endl;
 
 			stream << "        /* params      */ ";
-			if (HAS_ATTR(invoke, "paramIndex")) {
-				stream << "&" << _prefix << "_elem_params[" << escape(ATTR(invoke, "paramIndex")) << "]";
+			if (HAS_ATTR(invoke, X("paramIndex"))) {
+				stream << "&" << _prefix << "_elem_params[" << escape(ATTR(invoke, X("paramIndex"))) << "]";
 			} else {
 				stream << "NULL";
 			}
@@ -1475,7 +1475,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 			stream << ", " << std::endl;
 
 			std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(invoke).str() + "content", invoke);
-			if (contents.size() > 0 && !HAS_ATTR(invoke, "md5sum")) {
+			if (contents.size() > 0 && !HAS_ATTR(invoke, X("md5sum"))) {
 				std::stringstream ss;
 				DOMNodeList* cChilds = contents.front()->getChildNodes();
 				for (size_t j = 0; j < cChilds->getLength(); j++) {
@@ -1484,7 +1484,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 				stream << "        /* content      */ ";
 				stream << (ss.str().size() > 0 ? "\"" + escape(ss.str()) + "\", " : "NULL, ") << std::endl;
 				stream << "        /* contentexpr  */ ";
-				stream << (HAS_ATTR_CAST(contents.front(), "expr") ? "\"" + ATTR_CAST(contents.front(), "expr") + "\", " : "NULL, ") << std::endl;
+				stream << (HAS_ATTR_CAST(contents.front(), kXMLCharExpr) ? "\"" + ATTR_CAST(contents.front(), kXMLCharExpr) + "\", " : "NULL, ") << std::endl;
 			} else {
 				stream << "        /* content     */ NULL," << std::endl;
 				stream << "        /* contentexpr */ NULL," << std::endl;
@@ -1516,9 +1516,9 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		for (auto iter = foreachs.begin(); iter != foreachs.end(); iter++, i++) {
 			DOMElement* foreach = *iter;
 			stream << "    { ";
-			stream << (HAS_ATTR(foreach, "array") ? "\"" + escape(ATTR(foreach, "array")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(foreach, "item") ? "\"" + escape(ATTR(foreach, "item")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(foreach, "index") ? "\"" + escape(ATTR(foreach, "index")) + "\"" : "NULL");
+			stream << (HAS_ATTR(foreach, kXMLCharArray) ? "\"" + escape(ATTR(foreach, kXMLCharArray)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(foreach, kXMLCharItem) ? "\"" + escape(ATTR(foreach, kXMLCharItem)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(foreach, kXMLCharIndex) ? "\"" + escape(ATTR(foreach, kXMLCharIndex)) + "\"" : "NULL");
 			stream << " }" << (i + 1 < foreachs.size() ? ",": "") << std::endl;
 			foreach->setAttribute(X("documentOrder"), X(toStr(i)));
 		}
@@ -1537,8 +1537,8 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			DOMElement* assign = *iter;
 
 			stream << "    { ";
-			stream << (HAS_ATTR(assign, "location") ? "\"" + escape(ATTR(assign, "location")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(assign, "expr") ? "\"" + escape(ATTR(assign, "expr")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(assign, kXMLCharLocation) ? "\"" + escape(ATTR(assign, kXMLCharLocation)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(assign, kXMLCharExpr) ? "\"" + escape(ATTR(assign, kXMLCharExpr)) + "\"" : "NULL") << ", ";
 
 			std::list<DOMNode*> assignTexts = DOMUtils::filterChildType(DOMNode::TEXT_NODE, assign);
 			if (assignTexts.size() > 0) {
@@ -1596,9 +1596,9 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 				parent = data->getParentNode()->getParentNode();
 			}
 			stream << "    { ";
-			stream << (HAS_ATTR(data, "id") ? "\"" + escape(ATTR(data, "id")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(data, "src") ? "\"" + escape(ATTR(data, "src")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(data, "expr") ? "\"" + escape(ATTR(data, "expr")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(data, kXMLCharId) ? "\"" + escape(ATTR(data, kXMLCharId)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(data, kXMLCharSource) ? "\"" + escape(ATTR(data, kXMLCharSource)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(data, kXMLCharExpr) ? "\"" + escape(ATTR(data, kXMLCharExpr)) + "\"" : "NULL") << ", ";
 
 			std::list<DOMNode*> dataTexts = DOMUtils::filterChildType(DOMNode::TEXT_NODE, data);
 			if (dataTexts.size() > 0) {
@@ -1643,9 +1643,9 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 				parent = param->getParentNode();
 			}
 			stream << "    { ";
-			stream << (HAS_ATTR(param, "name") ? "\"" + escape(ATTR(param, "name")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(param, "expr") ? "\"" + escape(ATTR(param, "expr")) + "\"" : "NULL") << ", ";
-			stream << (HAS_ATTR(param, "location") ? "\"" + escape(ATTR(param, "location")) + "\"" : "NULL");
+			stream << (HAS_ATTR(param, kXMLCharName) ? "\"" + escape(ATTR(param, kXMLCharName)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(param, kXMLCharExpr) ? "\"" + escape(ATTR(param, kXMLCharExpr)) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(param, kXMLCharLocation) ? "\"" + escape(ATTR(param, kXMLCharLocation)) + "\"" : "NULL");
 			stream << " }," << std::endl;
 
 		}
@@ -1663,27 +1663,27 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			DOMElement* send = *iter;
 			stream << "    { ";
 			stream << std::endl << "        /* event       */ ";
-			stream << (HAS_ATTR(send, "event") ? "\"" + escape(ATTR(send, "event")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharEvent) ? "\"" + escape(ATTR(send, kXMLCharEvent)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* eventexpr   */ ";
-			stream << (HAS_ATTR(send, "eventexpr") ? "\"" + escape(ATTR(send, "eventexpr")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharEventExpr) ? "\"" + escape(ATTR(send, kXMLCharEventExpr)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* target      */ ";
-			stream << (HAS_ATTR(send, "target") ? "\"" + escape(ATTR(send, "target")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharTarget) ? "\"" + escape(ATTR(send, kXMLCharTarget)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* targetexpr  */ ";
-			stream << (HAS_ATTR(send, "targetexpr") ? "\"" + escape(ATTR(send, "targetexpr")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharTargetExpr) ? "\"" + escape(ATTR(send, kXMLCharTargetExpr)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* type        */ ";
-			stream << (HAS_ATTR(send, "type") ? "\"" + escape(ATTR(send, "type")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharType) ? "\"" + escape(ATTR(send, kXMLCharType)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* typeexpr    */ ";
-			stream << (HAS_ATTR(send, "typeexpr") ? "\"" + escape(ATTR(send, "typeexpr")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharTypeExpr) ? "\"" + escape(ATTR(send, kXMLCharTypeExpr)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* id          */ ";
-			stream << (HAS_ATTR(send, "id") ? "\"" + escape(ATTR(send, "id")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharId) ? "\"" + escape(ATTR(send, kXMLCharId)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* idlocation  */ ";
-			stream << (HAS_ATTR(send, "idlocation") ? "\"" + escape(ATTR(send, "idlocation")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharIdLocation) ? "\"" + escape(ATTR(send, kXMLCharIdLocation)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* delay       */ ";
-			stream << (HAS_ATTR(send, "delay") ? "\"" + escape(ATTR(send, "delay")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharDelay) ? "\"" + escape(ATTR(send, kXMLCharDelay)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* delayexpr   */ ";
-			stream << (HAS_ATTR(send, "delayexpr") ? "\"" + escape(ATTR(send, "delayexpr")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharDelayExpr) ? "\"" + escape(ATTR(send, kXMLCharDelayExpr)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* namelist    */ ";
-			stream << (HAS_ATTR(send, "namelist") ? "\"" + escape(ATTR(send, "namelist")) + "\"" : "NULL") << ", ";
+			stream << (HAS_ATTR(send, kXMLCharNameList) ? "\"" + escape(ATTR(send, kXMLCharNameList)) + "\"" : "NULL") << ", ";
 
 			std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(send).str() + "content", send);
 			if (contents.size() > 0) {
@@ -1695,7 +1695,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 				stream << std::endl << "        /* content     */ ";
 				stream << (ss.str().size() > 0 ? "\"" + escape(ss.str()) + "\", " : "NULL, ");
 				stream << std::endl << "        /* contentexpr  */ ";
-				stream << (HAS_ATTR_CAST(contents.front(), "expr") ? "\"" + ATTR_CAST(contents.front(), "expr") + "\", " : "NULL, ");
+				stream << (HAS_ATTR_CAST(contents.front(), kXMLCharExpr) ? "\"" + ATTR_CAST(contents.front(), kXMLCharExpr) + "\", " : "NULL, ");
 			} else {
 				stream << std::endl << "        /* content     */ ";
 				stream << "NULL,";
@@ -1705,8 +1705,8 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 
 
 			stream << std::endl << "        /* params      */ ";
-			if (HAS_ATTR(send, "paramIndex")) {
-				stream << "&" << _prefix << "_elem_params[" << escape(ATTR(send, "paramIndex")) << "] ";
+			if (HAS_ATTR(send, X("paramIndex"))) {
+				stream << "&" << _prefix << "_elem_params[" << escape(ATTR(send, X("paramIndex"))) << "] ";
 			} else {
 				stream << "NULL ";
 			}
@@ -1729,7 +1729,7 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		stream << "    { ";
 
 		// parent
-		stream << ATTR_CAST(donedata->getParentNode(), "documentOrder") << ", ";
+		stream << ATTR_CAST(donedata->getParentNode(), X("documentOrder")) << ", ";
 
 		std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(donedata).str() + "content", donedata);
 		if (contents.size() > 0) {
@@ -1739,13 +1739,13 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 				ss << *(cChilds->item(j));
 			}
 			stream << (ss.str().size() > 0 ? "\"" + escape(ss.str()) + "\", " : "NULL, ");
-			stream << (HAS_ATTR_CAST(contents.front(), "expr") ? "\"" + ATTR_CAST(contents.front(), "expr") + "\", " : "NULL, ");
+			stream << (HAS_ATTR_CAST(contents.front(), kXMLCharExpr) ? "\"" + ATTR_CAST(contents.front(), kXMLCharExpr) + "\", " : "NULL, ");
 		} else {
 			stream << "NULL, NULL, ";
 		}
 
-		if (HAS_ATTR(donedata, "paramIndex")) {
-			stream << "&" << _prefix << "_elem_params[" << escape(ATTR(donedata, "paramIndex")) << "]";
+		if (HAS_ATTR(donedata, X("paramIndex"))) {
+			stream << "&" << _prefix << "_elem_params[" << escape(ATTR(donedata, X("paramIndex"))) << "]";
 		} else {
 			stream << "NULL";
 		}
@@ -1796,7 +1796,7 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 	stream << "        /* nr_states      */ " << _states.size() << "," << std::endl;
 	stream << "        /* nr_transitions */ " << _transitions.size() << "," << std::endl;
 	stream << "        /* name           */ \"" << escape(_name) << "\"," << std::endl;
-	stream << "        /* datamodel      */ \"" << (HAS_ATTR(_scxml, "datamodel") ? ATTR(_scxml, "datamodel") : "null") << "\"," << std::endl;
+	stream << "        /* datamodel      */ \"" << (HAS_ATTR(_scxml, kXMLCharDataModel) ? ATTR(_scxml, kXMLCharDataModel) : "null") << "\"," << std::endl;
 	stream << "        /* uuid           */ \"" << _md5 << "\"," << std::endl;
 	stream << "        /* states         */ " << "&" << _prefix << "_states[0], " << std::endl;
 	if (_transitions.size() > 0) {
@@ -1843,7 +1843,7 @@ void ChartToC::writeMachineInfo(std::ostream& stream) {
 		stream << "        /* nr_states      */ " << m->_states.size() << "," << std::endl;
 		stream << "        /* nr_transitions */ " << m->_transitions.size() << "," << std::endl;
 		stream << "        /* name           */ \"" << escape(m->_name) << "\"," << std::endl;
-		stream << "        /* datamodel      */ \"" << (HAS_ATTR(m->_scxml, "datamodel") ? ATTR(m->_scxml, "datamodel") : "null") << "\"," << std::endl;
+		stream << "        /* datamodel      */ \"" << (HAS_ATTR(m->_scxml, kXMLCharDataModel) ? ATTR(m->_scxml, kXMLCharDataModel) : "null") << "\"," << std::endl;
 		stream << "        /* uuid           */ \"" << m->_md5 << "\"," << std::endl;
 		stream << "        /* states         */ " << "&" << m->_prefix << "_states[0], " << std::endl;
 		stream << "        /* transitions    */ " << "&" << m->_prefix << "_transitions[0], " << std::endl;
@@ -1894,12 +1894,12 @@ void ChartToC::writeStates(std::ostream& stream) {
 
 		// name
 		stream << "        /* name       */ ";
-		stream << (HAS_ATTR(state, "id") ? "\"" + escape(ATTR(state, "id")) + "\"" : "NULL");
+		stream << (HAS_ATTR(state, kXMLCharId) ? "\"" + escape(ATTR(state, kXMLCharId)) + "\"" : "NULL");
 		stream << "," << std::endl;
 
 		// parent
 		stream << "        /* parent     */ ";
-		stream << (i == 0 ? "0" : ATTR_CAST(state->getParentNode(), "documentOrder"));
+		stream << (i == 0 ? "0" : ATTR_CAST(state->getParentNode(), X("documentOrder")));
 		stream << "," << std::endl;
 
 		// onentry
@@ -1919,20 +1919,20 @@ void ChartToC::writeStates(std::ostream& stream) {
 
 		// children
 		stream << "        /* children   */ { ";
-		writeCharArrayInitList(stream, ATTR(state, "childBools"));
-		stream << " /* " << ATTR(state, "childBools") << " */ }," << std::endl;
+		writeCharArrayInitList(stream, ATTR(state, X("childBools")));
+		stream << " /* " << ATTR(state, X("childBools")) << " */ }," << std::endl;
 
 		// default completion
 		stream << "        /* completion */ { ";
-		writeCharArrayInitList(stream, ATTR(state, "completionBools"));
-		stream << " /* " << ATTR(state, "completionBools") << " */ }, \t" << std::endl;
+		writeCharArrayInitList(stream, ATTR(state, X("completionBools")));
+		stream << " /* " << ATTR(state, X("completionBools")) << " */ }, \t" << std::endl;
 
 		stream << "        /* ancestors  */ { ";
-		writeCharArrayInitList(stream, ATTR(state, "ancBools"));
-		stream << " /* " << ATTR(state, "ancBools") << " */ }," << std::endl;
+		writeCharArrayInitList(stream, ATTR(state, X("ancBools")));
+		stream << " /* " << ATTR(state, X("ancBools")) << " */ }," << std::endl;
 
 		stream << "        /* data       */ ";
-		stream << (HAS_ATTR(state, "dataIndex") ? "&" + _prefix + "_elem_datas[" + escape(ATTR(state, "dataIndex")) + "]" : "NULL");
+		stream << (HAS_ATTR(state, X("dataIndex")) ? "&" + _prefix + "_elem_datas[" + escape(ATTR(state, X("dataIndex"))) + "]" : "NULL");
 		stream << "," << std::endl;
 
 		stream << "        /* type       */ ";
@@ -1943,7 +1943,7 @@ void ChartToC::writeStates(std::ostream& stream) {
 		} else if (isFinal(state)) {
 			stream << "USCXML_STATE_FINAL";
 		} else if (isHistory(state)) {
-			if (HAS_ATTR(state, "type") && iequals(ATTR(state, "type"), "deep")) {
+			if (HAS_ATTR(state, kXMLCharType) && iequals(ATTR(state, kXMLCharType), "deep")) {
 				stream << "USCXML_STATE_HISTORY_DEEP";
 			} else {
 				stream << "USCXML_STATE_HISTORY_SHALLOW";
@@ -1957,7 +1957,7 @@ void ChartToC::writeStates(std::ostream& stream) {
 		} else { // <scxml>
 			stream << "USCXML_STATE_COMPOUND";
 		}
-		if (HAS_ATTR(state, "hasHistoryChild")) {
+		if (HAS_ATTR(state, X("hasHistoryChild"))) {
 			stream << " | USCXML_STATE_HAS_HISTORY";
 		}
 
@@ -1987,21 +1987,21 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 		for (size_t i = 0; i < _transitions.size(); i++) {
 			DOMElement* transition(_transitions[i]);
 
-			stream << "    {   /* transition number " << ATTR(transition, "documentOrder") << " with priority " << toStr(i) << std::endl;
-			stream << "           target: " << ATTR(transition, "target") << std::endl;
+			stream << "    {   /* transition number " << ATTR(transition, X("documentOrder")) << " with priority " << toStr(i) << std::endl;
+			stream << "           target: " << ATTR(transition, kXMLCharTarget) << std::endl;
 			stream << "         */" << std::endl;
 
 			// source
 			stream << "        /* source     */ ";
-			stream << ATTR_CAST(transition->getParentNode(), "documentOrder");
+			stream << ATTR_CAST(transition->getParentNode(), X("documentOrder"));
 			stream << "," << std::endl;
 
 			// targets
 			stream << "        /* target     */ ";
-			if (HAS_ATTR(transition, "targetBools")) {
+			if (HAS_ATTR(transition, X("targetBools"))) {
 				stream << "{ ";
-				writeCharArrayInitList(stream, ATTR(transition, "targetBools"));
-				stream << " /* " << ATTR(transition, "targetBools") << " */ }";
+				writeCharArrayInitList(stream, ATTR(transition, X("targetBools")));
+				stream << " /* " << ATTR(transition, X("targetBools")) << " */ }";
 
 			} else {
 				stream << "{ 0x00 }";
@@ -2009,17 +2009,17 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 			stream << "," << std::endl;
 
 			stream << "        /* event      */ ";
-			stream << (HAS_ATTR(transition, "event") ? "\"" + escape(ATTR(transition, "event")) + "\"" : "NULL");
+			stream << (HAS_ATTR(transition, kXMLCharEvent) ? "\"" + escape(ATTR(transition, kXMLCharEvent)) + "\"" : "NULL");
 			stream << "," << std::endl;
 
 			stream << "        /* condition  */ ";
-			stream << (HAS_ATTR(transition, "cond") ? "\"" + escape(ATTR(transition, "cond")) + "\"" : "NULL");
+			stream << (HAS_ATTR(transition, kXMLCharCond) ? "\"" + escape(ATTR(transition, kXMLCharCond)) + "\"" : "NULL");
 			stream << "," << std::endl;
 
 
 			// is enabled
 			stream << "        /* is_enabled */ ";
-			if (HAS_ATTR(transition, "cond")) {
+			if (HAS_ATTR(transition, kXMLCharCond)) {
 				stream << _prefix << "_" << DOMUtils::idForNode(transition) << "_is_enabled";
 			} else {
 				stream << "NULL";
@@ -2038,17 +2038,17 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 			// type
 			stream << "        /* type       */ ";
 			std::string seperator = "";
-			if (!HAS_ATTR(transition, "target")) {
+			if (!HAS_ATTR(transition, kXMLCharTarget)) {
 				stream << seperator << "USCXML_TRANS_TARGETLESS";
 				seperator = " | ";
 			}
 
-			if (HAS_ATTR(transition, "type") && iequals(ATTR(transition, "type"), "internal")) {
+			if (HAS_ATTR(transition, kXMLCharType) && iequals(ATTR(transition, kXMLCharType), "internal")) {
 				stream << seperator << "USCXML_TRANS_INTERNAL";
 				seperator = " | ";
 			}
 
-			if (!HAS_ATTR(transition, "event")) {
+			if (!HAS_ATTR(transition, kXMLCharEvent)) {
 				stream << seperator << "USCXML_TRANS_SPONTANEOUS";
 				seperator = " | ";
 			}
@@ -2070,13 +2070,13 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 
 			// conflicts
 			stream << "        /* conflicts  */ { ";
-			writeCharArrayInitList(stream, ATTR(transition, "conflictBools"));
-			stream << " /* " << ATTR(transition, "conflictBools") << " */ }, " << std::endl;
+			writeCharArrayInitList(stream, ATTR(transition, X("conflictBools")));
+			stream << " /* " << ATTR(transition, X("conflictBools")) << " */ }, " << std::endl;
 
 			// exit set
 			stream << "        /* exit set   */ { ";
-			writeCharArrayInitList(stream, ATTR(transition, "exitSetBools"));
-			stream << " /* " << ATTR(transition, "exitSetBools") << " */ }" << std::endl;
+			writeCharArrayInitList(stream, ATTR(transition, X("exitSetBools")));
+			stream << " /* " << ATTR(transition, X("exitSetBools")) << " */ }" << std::endl;
 
 			stream << "    }" << (i + 1 < _transitions.size() ? ",": "") << std::endl;
 		}

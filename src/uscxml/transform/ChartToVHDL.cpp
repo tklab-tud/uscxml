@@ -56,14 +56,14 @@ void ChartToVHDL::findEvents() {
 	}, _scxml);
 
 	for (auto withEvent : withEvents) {
-//            if (HAS_ATTR_CAST(withEvent, "event")) {
-//                if (ATTR_CAST(withEvent, "event") != "*")
-//                    _eventTrie.addWord(ATTR_CAST(withEvent, "event"));
+//            if (HAS_ATTR_CAST(withEvent, kXMLCharEvent)) {
+//                if (ATTR_CAST(withEvent, kXMLCharEvent) != "*")
+//                    _eventTrie.addWord(ATTR_CAST(withEvent, kXMLCharEvent));
 //            }
 		// Tokenized version below
 
-		if (HAS_ATTR_CAST(withEvent, "event")) {
-			std::string eventNames = ATTR_CAST(withEvent, "event");
+		if (HAS_ATTR_CAST(withEvent, kXMLCharEvent)) {
+			std::string eventNames = ATTR_CAST(withEvent, kXMLCharEvent);
 			std::list<std::string> events = tokenize(eventNames);
 			for (std::list<std::string>::iterator eventIter = events.begin();
 			        eventIter != events.end(); eventIter++) {
@@ -159,8 +159,8 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "    next_event_we_i :in  std_logic;" << std::endl;
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) { // create enable line if transition has conditions
-			stream << "    transition_condition_fulfilled_" << ATTR(transition, "postFixOrder") <<
+		if (HAS_ATTR(transition, kXMLCharCond)) { // create enable line if transition has conditions
+			stream << "    transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder")) <<
 			       "_i : std_logic;"
 			       << std::endl;
 		}
@@ -170,20 +170,20 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "    error_o     :out std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+		stream << "    state_active_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+			stream << "    entry_set_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+			stream << "    exit_set_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
+			stream << "    transition_set_" << ATTR(transition, X("postFixOrder")) << "_o :out std_logic;"
 			       << std::endl;
 		}
 	}
@@ -201,23 +201,23 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "    rst_i  :in    std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder")
+		stream << "    state_active_" << ATTR(state, X("documentOrder"))
 		       << "_i :in std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "    entry_set_" << ATTR(state, "documentOrder")
+			stream << "    entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "    exit_set_" << ATTR(state, "documentOrder")
+			stream << "    exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "    transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 	}
@@ -238,15 +238,15 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "    rst_i  :in    std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder")
+		stream << "    state_active_" << ATTR(state, X("documentOrder"))
 		       << "_i :in std_logic;" << std::endl;
 	}
 
 	stream << "    --outputs" << std::endl;
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) {
-			stream << "    transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
+		if (HAS_ATTR(transition, kXMLCharCond)) {
+			stream << "    transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
 			       << "_o :out std_logic;" << std::endl;
 		}
 	}
@@ -272,30 +272,30 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 
 	stream << "  -- wiring" << std::endl;
 	for (auto state : _states) {
-		stream << "  signal state_active_" << ATTR(state, "documentOrder")
+		stream << "  signal state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig : std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "  signal entry_set_" << ATTR(state, "documentOrder")
+			stream << "  signal entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "  signal exit_set_" << ATTR(state, "documentOrder")
+			stream << "  signal exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "  signal transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "  signal transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) { // create enable line if transition has conditions
-			stream << "  signal transition_condition_fulfilled_" << ATTR(transition, "postFixOrder") <<
+		if (HAS_ATTR(transition, kXMLCharCond)) { // create enable line if transition has conditions
+			stream << "  signal transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder")) <<
 			       "_sig : std_logic;"
 			       << std::endl;
 		}
@@ -323,35 +323,35 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "      error_o  => error_o," << std::endl;
 
 	for (auto state : _states) {
-		stream << "      state_active_" << ATTR(state, "documentOrder")
-		       << "_o => state_active_" << ATTR(state, "documentOrder")
+		stream << "      state_active_" << ATTR(state, X("documentOrder"))
+		       << "_o => state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig," << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "      entry_set_" << ATTR(state, "documentOrder")
-			       << "_o => entry_set_" << ATTR(state, "documentOrder")
+			stream << "      entry_set_" << ATTR(state, X("documentOrder"))
+			       << "_o => entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "      exit_set_" << ATTR(state, "documentOrder")
-			       << "_o => exit_set_" << ATTR(state, "documentOrder")
+			stream << "      exit_set_" << ATTR(state, X("documentOrder"))
+			       << "_o => exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "      transition_set_" << ATTR(transition, "postFixOrder")
-			       << "_o => transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "      transition_set_" << ATTR(transition, X("postFixOrder"))
+			       << "_o => transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) { // create enable line if transition has conditions
-			stream << "      transition_condition_fulfilled_" << ATTR(transition, "postFixOrder") <<
-			       "_i => transition_condition_fulfilled_" << ATTR(transition, "postFixOrder") <<
+		if (HAS_ATTR(transition, kXMLCharCond)) { // create enable line if transition has conditions
+			stream << "      transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder")) <<
+			       "_i => transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder")) <<
 			       "_sig," << std::endl;
 		}
 	}
@@ -370,27 +370,27 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "      event_we_o => next_event_we_i," << std::endl;
 
 	for (auto state : _states) {
-		stream << "      state_active_" << ATTR(state, "documentOrder")
-		       << "_i => state_active_" << ATTR(state, "documentOrder")
+		stream << "      state_active_" << ATTR(state, X("documentOrder"))
+		       << "_i => state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig," << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "      entry_set_" << ATTR(state, "documentOrder")
-			       << "_i => entry_set_" << ATTR(state, "documentOrder")
+			stream << "      entry_set_" << ATTR(state, X("documentOrder"))
+			       << "_i => entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "      exit_set_" << ATTR(state, "documentOrder")
-			       << "_i => exit_set_" << ATTR(state, "documentOrder")
+			stream << "      exit_set_" << ATTR(state, X("documentOrder"))
+			       << "_i => exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "      transition_set_" << ATTR(transition, "postFixOrder")
-			       << "_i => transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "      transition_set_" << ATTR(transition, X("postFixOrder"))
+			       << "_i => transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
@@ -407,17 +407,17 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 	stream << "      rst_i  => reset," << std::endl;
 
 	for (auto state : _states) {
-		stream << "      state_active_" << ATTR(state, "documentOrder")
-		       << "_i => state_active_" << ATTR(state, "documentOrder")
+		stream << "      state_active_" << ATTR(state, X("documentOrder"))
+		       << "_i => state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig," << std::endl;
 	}
 
 	stream << "      --outputs" << std::endl;
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) {
-			stream << "      transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
-			       << "_o => transition_condition_fulfilled_" << ATTR(transition, "postFixOrder") <<
+		if (HAS_ATTR(transition, kXMLCharCond)) {
+			stream << "      transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
+			       << "_o => transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder")) <<
 			       "_sig," << std::endl;
 		}
 	}
@@ -432,8 +432,8 @@ void ChartToVHDL::writeTestbench(std::ostream &stream) {
 
 	std::string passStateNo = "";
 	for (auto final : topLevelFinal) {
-		if (ATTR(final, "id") == "pass") {
-			passStateNo = ATTR(final, "documentOrder");
+		if (ATTR(final, kXMLCharId) == "pass") {
+			passStateNo = ATTR(final, X("documentOrder"));
 		}
 	}
 
@@ -486,7 +486,7 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 	stream << "    rst  :in    std_logic;" << std::endl;
 	stream << "    --outputs" << std::endl;
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder")
+		stream << "    state_active_" << ATTR(state, X("documentOrder"))
 		       << "_o :out std_logic;" << std::endl;
 	}
 	stream << "    completed_o :out std_logic" << std::endl;
@@ -511,20 +511,20 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 	stream << "    error_o     :out std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+		stream << "    state_active_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+			stream << "    entry_set_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+			stream << "    exit_set_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
+			stream << "    transition_set_" << ATTR(transition, X("postFixOrder")) << "_o :out std_logic;"
 			       << std::endl;
 		}
 	}
@@ -541,23 +541,23 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 	stream << "    rst_i  :in    std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder")
+		stream << "    state_active_" << ATTR(state, X("documentOrder"))
 		       << "_i :in std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "    entry_set_" << ATTR(state, "documentOrder")
+			stream << "    entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "    exit_set_" << ATTR(state, "documentOrder")
+			stream << "    exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "    transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 	}
@@ -583,23 +583,23 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 
 	stream << "  -- wiring" << std::endl;
 	for (auto state : _states) {
-		stream << "  signal state_active_" << ATTR(state, "documentOrder")
+		stream << "  signal state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig : std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "  signal entry_set_" << ATTR(state, "documentOrder")
+			stream << "  signal entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "  signal exit_set_" << ATTR(state, "documentOrder")
+			stream << "  signal exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "  signal transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "  signal transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 	}
@@ -610,8 +610,8 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 	stream << std::endl;
 
 	for (auto state : _states) {
-		stream << "state_active_" << ATTR(state, "documentOrder")
-		       << "_o <= state_active_" << ATTR(state, "documentOrder")
+		stream << "state_active_" << ATTR(state, X("documentOrder"))
+		       << "_o <= state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig;" << std::endl;
 	}
 	stream << std::endl;
@@ -629,27 +629,27 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 	stream << "      error_o  => error_o," << std::endl;
 
 	for (auto state : _states) {
-		stream << "      state_active_" << ATTR(state, "documentOrder")
-		       << "_o => state_active_" << ATTR(state, "documentOrder")
+		stream << "      state_active_" << ATTR(state, X("documentOrder"))
+		       << "_o => state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig," << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "      entry_set_" << ATTR(state, "documentOrder")
-			       << "_o => entry_set_" << ATTR(state, "documentOrder")
+			stream << "      entry_set_" << ATTR(state, X("documentOrder"))
+			       << "_o => entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "      exit_set_" << ATTR(state, "documentOrder")
-			       << "_o => exit_set_" << ATTR(state, "documentOrder")
+			stream << "      exit_set_" << ATTR(state, X("documentOrder"))
+			       << "_o => exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "      transition_set_" << ATTR(transition, "postFixOrder")
-			       << "_o => transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "      transition_set_" << ATTR(transition, X("postFixOrder"))
+			       << "_o => transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
@@ -668,27 +668,27 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 	stream << "      event_we_o => next_event_we_i," << std::endl;
 
 	for (auto state : _states) {
-		stream << "      state_active_" << ATTR(state, "documentOrder")
-		       << "_i => state_active_" << ATTR(state, "documentOrder")
+		stream << "      state_active_" << ATTR(state, X("documentOrder"))
+		       << "_i => state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig," << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "      entry_set_" << ATTR(state, "documentOrder")
-			       << "_i => entry_set_" << ATTR(state, "documentOrder")
+			stream << "      entry_set_" << ATTR(state, X("documentOrder"))
+			       << "_i => entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "      exit_set_" << ATTR(state, "documentOrder")
-			       << "_i => exit_set_" << ATTR(state, "documentOrder")
+			stream << "      exit_set_" << ATTR(state, X("documentOrder"))
+			       << "_i => exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "      transition_set_" << ATTR(transition, "postFixOrder")
-			       << "_i => transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "      transition_set_" << ATTR(transition, X("postFixOrder"))
+			       << "_i => transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig," << std::endl;
 		}
 	}
@@ -704,8 +704,8 @@ void ChartToVHDL::writeTopLevel(std::ostream &stream) {
 
 	std::string passStateNo = "";
 	for (auto final : topLevelFinal) {
-		if (ATTR(final, "id") == "pass") {
-			passStateNo = ATTR(final, "documentOrder");
+		if (ATTR(final, kXMLCharId) == "pass") {
+			passStateNo = ATTR(final, X("documentOrder"));
 		}
 	}
 	stream << "end architecture;" << std::endl;
@@ -724,23 +724,23 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 	stream << "    rst_i  :in    std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder")
+		stream << "    state_active_" << ATTR(state, X("documentOrder"))
 		       << "_i :in std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "    entry_set_" << ATTR(state, "documentOrder")
+			stream << "    entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "    exit_set_" << ATTR(state, "documentOrder")
+			stream << "    exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "    transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "    transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_i :in std_logic;" << std::endl;
 		}
 	}
@@ -814,18 +814,18 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 		for (auto state : _states) {
 
 			if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-				stream << std::endl << "      or entry_set_" << ATTR(state, "documentOrder")
+				stream << std::endl << "      or entry_set_" << ATTR(state, X("documentOrder"))
 				       << "_i";
 			}
 
 			if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-				stream << std::endl << "      or exit_set_" << ATTR(state, "documentOrder")
+				stream << std::endl << "      or exit_set_" << ATTR(state, X("documentOrder"))
 				       << "_i";
 			}
 		}
 		for (auto transition : _transitions) {
 			if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-				stream << std::endl << "      or transition_set_" << ATTR(transition, "postFixOrder")
+				stream << std::endl << "      or transition_set_" << ATTR(transition, X("postFixOrder"))
 				       << "_i";
 			}
 		}
@@ -866,7 +866,7 @@ void ChartToVHDL::writeEventController(std::ostream &stream) {
 
 				size_t jj = 0;
 				for (auto eventIter = _eventNames.begin(); eventIter != _eventNames.end(); eventIter++, jj++) {
-					if (((*eventIter)->value) == ATTR(exContentElem, "event")) {
+					if (((*eventIter)->value) == ATTR(exContentElem, kXMLCharEvent)) {
 						break;
 					}
 				}
@@ -954,15 +954,15 @@ void ChartToVHDL::writeConditionSolver(std::ostream &stream) {
 	stream << "    rst_i  :in    std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder")
+		stream << "    state_active_" << ATTR(state, X("documentOrder"))
 		       << "_i :in std_logic;" << std::endl;
 	}
 
 	stream << "    --outputs" << std::endl;
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) {
-			stream << "    transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
+		if (HAS_ATTR(transition, kXMLCharCond)) {
+			stream << "    transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
 			       << "_o :out std_logic;" << std::endl;
 		}
 	}
@@ -986,8 +986,8 @@ void ChartToVHDL::writeConditionSolver(std::ostream &stream) {
 	}
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) {
-			stream << "signal transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
+		if (HAS_ATTR(transition, kXMLCharCond)) {
+			stream << "signal transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig : std_logic;" << std::endl;
 		}
 	}
@@ -1002,9 +1002,9 @@ void ChartToVHDL::writeConditionSolver(std::ostream &stream) {
 	stream << std::endl;
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) {
-			stream << "transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
-			       << "_o <= transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
+		if (HAS_ATTR(transition, kXMLCharCond)) {
+			stream << "transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
+			       << "_o <= transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig;" << std::endl;
 		}
 	}
@@ -1017,10 +1017,10 @@ void ChartToVHDL::writeConditionSolver(std::ostream &stream) {
 	// solve conditions
 	stream << "-- solve conditions" << std::endl;
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) {
-			stream << "-- cond:"<< ATTR(transition, "cond") << std::endl;
+		if (HAS_ATTR(transition, kXMLCharCond)) {
+			stream << "-- cond:"<< ATTR(transition, kXMLCharCond) << std::endl;
 			// TODO parse code here and generate hardware from AST
-			stream << "transition_condition_fulfilled_" << ATTR(transition, "postFixOrder")
+			stream << "transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig <= '0';" << std::endl;
 		}
 	}
@@ -1041,15 +1041,15 @@ std::string ChartToVHDL::getLineForExecContent(const DOMNode *elem) {
 		if (ecBlock->getNodeType() == DOMNode::ELEMENT_NODE) {
 			std::string localName = LOCALNAME_CAST(ecBlock);
 			if (localName == XML_PREFIX(_scxml).str() + "transition") {
-				return "transition_set_" + ATTR_CAST(ecBlock, "postFixOrder") + "_i";
+				return "transition_set_" + ATTR_CAST(ecBlock, X("postFixOrder")) + "_i";
 			}
 
 			if (localName == XML_PREFIX(_scxml).str() + "onentry") {
-				return "entry_set_" + ATTR_CAST(ecBlock->getParentNode(), "documentOrder") + "_i";
+				return "entry_set_" + ATTR_CAST(ecBlock->getParentNode(), X("documentOrder")) + "_i";
 			}
 
 			if (localName == XML_PREFIX(_scxml).str() + "onexit") {
-				return "exit_set_" + ATTR_CAST(ecBlock->getParentNode(), "documentOrder") + "_i";
+				return "exit_set_" + ATTR_CAST(ecBlock->getParentNode(), X("documentOrder")) + "_i";
 			}
 
 		}
@@ -1073,8 +1073,8 @@ void ChartToVHDL::writeMicroStepper(std::ostream &stream) {
 	stream << "    next_event_we_i :in  std_logic;" << std::endl;
 
 	for (auto transition : _transitions) {
-		if (HAS_ATTR(transition, "cond")) { // create enable line if transition has conditions
-			stream << "signal transition_condition_fulfilled_" << ATTR(transition, "postFixOrder") <<
+		if (HAS_ATTR(transition, kXMLCharCond)) { // create enable line if transition has conditions
+			stream << "signal transition_condition_fulfilled_" << ATTR(transition, X("postFixOrder")) <<
 			       "_i : std_logic;"
 			       << std::endl;
 		}
@@ -1084,20 +1084,20 @@ void ChartToVHDL::writeMicroStepper(std::ostream &stream) {
 	stream << "    error_o     :out std_logic;" << std::endl;
 
 	for (auto state : _states) {
-		stream << "    state_active_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+		stream << "    state_active_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "    entry_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+			stream << "    entry_set_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "    exit_set_" << ATTR(state, "documentOrder") << "_o :out std_logic;" << std::endl;
+			stream << "    exit_set_" << ATTR(state, X("documentOrder")) << "_o :out std_logic;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "    transition_set_" << ATTR(transition, "postFixOrder") << "_o :out std_logic;"
+			stream << "    transition_set_" << ATTR(transition, X("postFixOrder")) << "_o :out std_logic;"
 			       << std::endl;
 		}
 	}
@@ -1254,18 +1254,18 @@ void ChartToVHDL::writeSignalsAndComponents(std::ostream &stream) {
 	std::list<std::string> signalDecls;
 
 	for (auto state : _states) {
-		std::string parent = ATTR(state, "parent");
+		std::string parent = ATTR(state, X("parent"));
 
-		signalDecls.push_back("signal state_active_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-		signalDecls.push_back("signal state_next_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-		signalDecls.push_back("signal in_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-		signalDecls.push_back("signal in_exit_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
-		signalDecls.push_back("signal in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+		signalDecls.push_back("signal state_active_" + ATTR(state, X("documentOrder")) + "_sig : std_logic;");
+		signalDecls.push_back("signal state_next_" + ATTR(state, X("documentOrder")) + "_sig : std_logic;");
+		signalDecls.push_back("signal in_entry_set_" + ATTR(state, X("documentOrder")) + "_sig : std_logic;");
+		signalDecls.push_back("signal in_exit_set_" + ATTR(state, X("documentOrder")) + "_sig : std_logic;");
+		signalDecls.push_back("signal in_complete_entry_set_" + ATTR(state, X("documentOrder")) + "_sig : std_logic;");
 
 		// not needed for <scxml> state
 		if (parent.size() != 0) {
 			signalDecls.push_back(
-			    "signal in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig : std_logic;");
+			    "signal in_complete_entry_set_up_" + ATTR(state, X("documentOrder")) + "_sig : std_logic;");
 		}
 	}
 
@@ -1282,7 +1282,7 @@ void ChartToVHDL::writeSignalsAndComponents(std::ostream &stream) {
 	stream << "signal optimal_transition_set_combined_sig : std_logic;" << std::endl;
 
 	for (auto transition : _transitions) {
-		stream << "signal in_optimal_transition_set_" << ATTR(transition, "postFixOrder") << "_sig : std_logic;"
+		stream << "signal in_optimal_transition_set_" << ATTR(transition, X("postFixOrder")) << "_sig : std_logic;"
 		       << std::endl;
 	}
 	stream << std::endl;
@@ -1405,9 +1405,9 @@ void ChartToVHDL::writeInternalEventHandler(std::ostream &stream) {
 	VContainer eventConsumed = VOR;
 	for (auto transition : _transitions) {
 
-		if (HAS_ATTR(transition, "event") == true) {
+		if (HAS_ATTR(transition, kXMLCharEvent) == true) {
 			*eventConsumed += VLINE("in_optimal_transition_set_"
-			                        + ATTR(transition, "postFixOrder") + "_sig");
+			                        + ATTR(transition, X("postFixOrder")) + "_sig");
 		}
 	}
 
@@ -1467,21 +1467,21 @@ void ChartToVHDL::writeActiveStateNplusOne(std::ostream &stream) {
 	stream << "-- active configuration" << std::endl;
 
 	for (auto state : _states) {
-		std::string parent = ATTR(state, "parent");
+		std::string parent = ATTR(state, X("parent"));
 
 		// special case for <scxml> to start the state machine
 		if (parent.size() == 0) {
-			stream << "        state_next_" << ATTR(state, "documentOrder") << "_sig <= " <<
+			stream << "        state_next_" << ATTR(state, X("documentOrder")) << "_sig <= " <<
 			       "not completed_sig;" << std::endl;
 			continue;
 		}
 
 		VBranch *tree = (VASSIGN,
-		                 VLINE("state_next_" + ATTR(state, "documentOrder") + "_sig"),
+		                 VLINE("state_next_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                 (VOR,
-		                  VLINE("in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
-		                  (VAND, (VNOT, VLINE("in_exit_set_" + ATTR(state, "documentOrder") + "_sig")),
-		                   VLINE("state_active_" + ATTR(state, "documentOrder") + "_sig"))
+		                  VLINE("in_complete_entry_set_" + ATTR(state, X("documentOrder")) + "_sig"),
+		                  (VAND, (VNOT, VLINE("in_exit_set_" + ATTR(state, X("documentOrder")) + "_sig")),
+		                   VLINE("state_active_" + ATTR(state, X("documentOrder")) + "_sig"))
 		                 ));
 
 		tree->print(stream);
@@ -1497,12 +1497,12 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream &stream) {
 
 	for (auto transIter = _transitions.begin(); transIter != _transitions.end(); transIter++) {
 		DOMElement *transition = *transIter;
-		std::string conflicts = ATTR(transition, "conflictBools");
+		std::string conflicts = ATTR(transition, X("conflictBools"));
 
 
 		VContainer nameMatchers = VOR;
-		if (HAS_ATTR(transition, "event")) {
-			std::list<std::string> eventDescs = tokenize(ATTR(transition, "event"));
+		if (HAS_ATTR(transition, kXMLCharEvent)) {
+			std::list<std::string> eventDescs = tokenize(ATTR(transition, kXMLCharEvent));
 			for (std::list<std::string>::iterator descIter = eventDescs.begin();
 			        descIter != eventDescs.end(); descIter++) {
 				std::list<TrieNode *> eventNames = _eventTrie.getWordsWithPrefix(
@@ -1517,26 +1517,26 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream &stream) {
 		}
 
 		VContainer conflicters = VOR;
-		for (size_t j = 0; j < strTo<size_t>(ATTR(transition, "postFixOrder")); j++) {
+		for (size_t j = 0; j < strTo<size_t>(ATTR(transition, X("postFixOrder"))); j++) {
 			if (conflicts[j] == '1') {
 				*conflicters += VLINE("in_optimal_transition_set_" + toStr(j) + "_sig");
 			}
 		}
 
 		VBranch *tree = (VASSIGN,
-		                 VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig"),
+		                 VLINE("in_optimal_transition_set_" + ATTR(transition, X("postFixOrder")) + "_sig"),
 		                 (VAND,
-		                  (HAS_ATTR(transition, "event")
+		                  (HAS_ATTR(transition, kXMLCharEvent)
 		                   ? (VNOT, VLINE("spontaneous_active"))
 		                   : (VNOP, VLINE("spontaneous_en"))),
 
-		                  HAS_ATTR(transition, "cond")
+		                  HAS_ATTR(transition, kXMLCharCond)
 		                  ? (VNOP,
-		                     VLINE("transition_condition_fulfilled_" + ATTR(transition, "postFixOrder") +
+		                     VLINE("transition_condition_fulfilled_" + ATTR(transition, X("postFixOrder")) +
 		                           "_i"))
 		                  : (VNOP, VLINE("'1'")),
 
-		                  VLINE("state_active_" + ATTR(transition, "source") + "_sig"),
+		                  VLINE("state_active_" + ATTR(transition, kXMLCharSource) + "_sig"),
 		                  nameMatchers,
 		                  (VNOT, conflicters)));
 
@@ -1544,10 +1544,10 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream &stream) {
 		stream << ";" << std::endl;
 
 		*optimalTransitions += VLINE("in_optimal_transition_set_"
-		                             + ATTR(transition, "postFixOrder") + "_sig");
-		if (HAS_ATTR(transition, "event") == false) {
+		                             + ATTR(transition, X("postFixOrder")) + "_sig");
+		if (HAS_ATTR(transition, kXMLCharEvent) == false) {
 			*spontaneoursActive += VLINE("in_optimal_transition_set_"
-			                             + ATTR(transition, "postFixOrder") + "_sig");
+			                             + ATTR(transition, X("postFixOrder")) + "_sig");
 		}
 	}
 
@@ -1570,23 +1570,23 @@ void ChartToVHDL::writeExitSet(std::ostream &stream) {
 
 	for (auto state : _states) {
 
-		std::string completion = ATTR(state, "completionBools");
-		std::string ancestors = ATTR(state, "ancBools");
-		std::string children = ATTR(state, "childBools");
-		std::string parent = ATTR(state, "parent");
+		std::string completion = ATTR(state, X("completionBools"));
+		std::string ancestors = ATTR(state, X("ancBools"));
+		std::string children = ATTR(state, X("childBools"));
+		std::string parent = ATTR(state, X("parent"));
 
 		VContainer exitsetters = VOR;
 		for (auto transition : _transitions) {
-			std::string exitSet = ATTR(transition, "exitSetBools");
-			if (exitSet.at(strTo<size_t>(ATTR(state, "documentOrder"))) == '1') {
-				*exitsetters += VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig ");
+			std::string exitSet = ATTR(transition, X("exitSetBools"));
+			if (exitSet.at(strTo<size_t>(ATTR(state, X("documentOrder")))) == '1') {
+				*exitsetters += VLINE("in_optimal_transition_set_" + ATTR(transition, X("postFixOrder")) + "_sig ");
 			}
 		}
 
 		VBranch *tree = (VASSIGN,
-		                 VLINE("in_exit_set_" + ATTR(state, "documentOrder") + "_sig"),
+		                 VLINE("in_exit_set_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                 (VAND,
-		                  VLINE("state_active_" + ATTR(state, "documentOrder") + "_sig"),
+		                  VLINE("state_active_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                  exitsetters));
 
 		tree->print(stream);
@@ -1600,11 +1600,11 @@ void ChartToVHDL::writeEntrySet(std::ostream &stream) {
 	for (auto state : _states) {
 
 		VBranch *tree = (VASSIGN,
-		                 VLINE("in_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
+		                 VLINE("in_entry_set_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                 (VAND,
-		                  VLINE("in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
-		                  (VOR, VLINE("in_exit_set_" + ATTR(state, "documentOrder") + "_sig"),
-		                   (VNOT, VLINE("state_active_" + ATTR(state, "documentOrder") + "_sig")))));
+		                  VLINE("in_complete_entry_set_" + ATTR(state, X("documentOrder")) + "_sig"),
+		                  (VOR, VLINE("in_exit_set_" + ATTR(state, X("documentOrder")) + "_sig"),
+		                   (VNOT, VLINE("state_active_" + ATTR(state, X("documentOrder")) + "_sig")))));
 
 		tree->print(stream);
 		stream << ";" << std::endl;
@@ -1615,10 +1615,10 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 	stream << "-- complete entry set selection" << std::endl;
 
 	for (auto state : _states) {
-		std::string completion = ATTR(state, "completionBools");
-		std::string ancestors = ATTR(state, "ancBools");
-		std::string children = ATTR(state, "childBools");
-		std::string parent = ATTR(state, "parent");
+		std::string completion = ATTR(state, X("completionBools"));
+		std::string ancestors = ATTR(state, X("ancBools"));
+		std::string children = ATTR(state, X("childBools"));
+		std::string parent = ATTR(state, X("parent"));
 
 		if (parent.size() == 0) {
 			continue; // skips <scxml> node
@@ -1629,11 +1629,11 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 		VContainer optimalEntrysetters = VOR;
 		for (auto transition : _transitions) {
 			// Is this state in TargetSet of the transition?
-			std::string targetSet = ATTR(transition, "targetBools");
-			if (targetSet[strTo<size_t>(ATTR(state, "documentOrder"))] == '1') {
+			std::string targetSet = ATTR(transition, X("targetBools"));
+			if (targetSet[strTo<size_t>(ATTR(state, X("documentOrder")))] == '1') {
 				//yes? then add the transition to optimal entry set of the state
 				*optimalEntrysetters +=
-				    VLINE("in_optimal_transition_set_" + ATTR(transition, "postFixOrder") + "_sig");
+				    VLINE("in_optimal_transition_set_" + ATTR(transition, X("postFixOrder")) + "_sig");
 			}
 		}
 
@@ -1642,16 +1642,16 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 		if (isCompound(state) || isParallel(state)) {
 			for (auto tmp_state : _states) {
 				// is tmp_state is child of state continue?
-				if (children[strTo<size_t>(ATTR(state, "documentOrder"))] == '1') {
+				if (children[strTo<size_t>(ATTR(state, X("documentOrder")))] == '1') {
 					// yes? then add its complete_entry_set_up as ancestor completion
 					*completeEntrysetters +=
-					    VLINE("in_complete_entry_set_up_" + ATTR(tmp_state, "documentOrder") + "_sig");
+					    VLINE("in_complete_entry_set_up_" + ATTR(tmp_state, X("documentOrder")) + "_sig");
 				}
 			}
 		}
 
 		VBranch *tree = (VASSIGN,
-		                 VLINE("in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig"),
+		                 VLINE("in_complete_entry_set_up_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                 (VOR, optimalEntrysetters, completeEntrysetters)
 		                );
 		tree->print(stream);
@@ -1661,9 +1661,9 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 
 	// descendant completion
 	for (auto state : _states) {
-		std::string completion = ATTR(state, "completionBools");
-		std::string ancestors = ATTR(state, "ancBools");
-		std::string parent = ATTR(state, "parent"); //is it a int ?
+		std::string completion = ATTR(state, X("completionBools"));
+		std::string ancestors = ATTR(state, X("ancBools"));
+		std::string parent = ATTR(state, X("parent")); //is it a int ?
 
 		if (parent.size() == 0) {
 			continue; // skips <scxml> node
@@ -1674,18 +1674,18 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 		if (getParentState(state) != NULL &&
 		        isCompound(getParentState(state))) {
 			std::string children = ATTR_CAST(_states[strTo<size_t>(parent)],
-			                                 "childBools");
+			                                 X("childBools"));
 
-			std::string parentInit = ATTR(getParentState(state), "initial");
+			std::string parentInit = ATTR(getParentState(state), kXMLCharInitial);
 			if (// if parent has init field an this state is inside --> add it as default completion
 			    (!parentInit.empty()
-			     && ATTR(state, "id").compare(parentInit) == 0) ||
+			     && ATTR(state, kXMLCharId).compare(parentInit) == 0) ||
 			    // or add this state as default completion when parent has no init field and it is the first in document order
 			    (parentInit.empty() &&
-			     (strTo<size_t>(ATTR(getParentState(state), "documentOrder")) + 1) ==
-			     strTo<size_t>(ATTR(state, "documentOrder")))) {
+			     (strTo<size_t>(ATTR(getParentState(state), X("documentOrder"))) + 1) ==
+			     strTo<size_t>(ATTR(state, X("documentOrder"))))) {
 				*descendantCompletion +=
-				    VLINE("in_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
+				    VLINE("in_entry_set_" + ATTR(getParentState(state), X("documentOrder")) + "_sig");
 
 				// but only if compound parent is not already completed
 				for (auto tmp_state : _states) {
@@ -1693,12 +1693,12 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 						// skip state itselve
 						continue;
 					}
-					if (children[strTo<size_t>(ATTR(tmp_state, "documentOrder"))] == '1') {
+					if (children[strTo<size_t>(ATTR(tmp_state, X("documentOrder")))] == '1') {
 						*descendantCompletion += (VNOT,
 						                          (VAND,
-						                           VLINE("state_active_" + ATTR(tmp_state, "documentOrder") + "_sig"),
+						                           VLINE("state_active_" + ATTR(tmp_state, X("documentOrder")) + "_sig"),
 						                           (VNOT,
-						                            VLINE("in_exit_set_" + ATTR(tmp_state, "documentOrder") +
+						                            VLINE("in_exit_set_" + ATTR(tmp_state, X("documentOrder")) +
 						                                  "_sig"))));
 					}
 				}
@@ -1711,13 +1711,13 @@ void ChartToVHDL::writeCompleteEntrySet(std::ostream &stream) {
 			if (getParentState(state) != NULL &&
 			        isParallel(getParentState(state))) {
 				*descendantCompletion +=
-				    VLINE("in_complete_entry_set_" + ATTR(getParentState(state), "documentOrder") + "_sig");
+				    VLINE("in_complete_entry_set_" + ATTR(getParentState(state), X("documentOrder")) + "_sig");
 			}
 
 		VBranch *tree = (VASSIGN,
-		                 VLINE("in_complete_entry_set_" + ATTR(state, "documentOrder") + "_sig"),
+		                 VLINE("in_complete_entry_set_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                 (VOR,
-		                  VLINE("in_complete_entry_set_up_" + ATTR(state, "documentOrder") + "_sig"),
+		                  VLINE("in_complete_entry_set_up_" + ATTR(state, X("documentOrder")) + "_sig"),
 		                  descendantCompletion));
 
 		tree->print(stream);
@@ -1734,7 +1734,7 @@ void ChartToVHDL::writeStateHandler(std::ostream &stream) {
 	stream << "    if rst = '1' then" << std::endl;
 
 	for (auto state : _states) {
-		stream << "        state_active_" << ATTR(state, "documentOrder") << "_sig <= " << "'0';" << std::endl;
+		stream << "        state_active_" << ATTR(state, X("documentOrder")) << "_sig <= " << "'0';" << std::endl;
 	}
 
 	stream << "        in_complete_entry_set_0_sig <= '1';" << std::endl;
@@ -1742,8 +1742,8 @@ void ChartToVHDL::writeStateHandler(std::ostream &stream) {
 	stream << "        in_complete_entry_set_0_sig <= '0';" << std::endl;
 
 	for (auto state : _states) {
-		stream << "        state_active_" << ATTR(state, "documentOrder") << "_sig <= " << "state_next_" <<
-		       ATTR(state, "documentOrder") << "_sig;" << std::endl;
+		stream << "        state_active_" << ATTR(state, X("documentOrder")) << "_sig <= " << "state_next_" <<
+		       ATTR(state, X("documentOrder")) << "_sig;" << std::endl;
 	}
 
 	stream << "    end if;" << std::endl;
@@ -1758,7 +1758,7 @@ void ChartToVHDL::writeSystemSignalMapping(std::ostream &stream) {
 
 	VContainer tlf = VOR;
 	for (auto final : topLevelFinal) {
-		*tlf += VLINE("state_active_" + ATTR(final, "documentOrder") + "_sig");
+		*tlf += VLINE("state_active_" + ATTR(final, X("documentOrder")) + "_sig");
 
 	}
 
@@ -1785,26 +1785,26 @@ void ChartToVHDL::writeSystemSignalMapping(std::ostream &stream) {
 	// interface signals
 	stream << "-- interface signals" << std::endl;
 	for (auto state : _states) {
-		stream << "state_active_" << ATTR(state, "documentOrder")
-		       << "_o <= state_active_" << ATTR(state, "documentOrder")
+		stream << "state_active_" << ATTR(state, X("documentOrder"))
+		       << "_o <= state_active_" << ATTR(state, X("documentOrder"))
 		       << "_sig;" << std::endl;
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onexit", state).size() > 0) {
-			stream << "exit_set_" << ATTR(state, "documentOrder")
-			       << "_o <= in_exit_set_" << ATTR(state, "documentOrder")
+			stream << "exit_set_" << ATTR(state, X("documentOrder"))
+			       << "_o <= in_exit_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig;" << std::endl;
 		}
 
 		if (DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "onentry", state).size() > 0) {
-			stream << "entry_set_" << ATTR(state, "documentOrder")
-			       << "_o <= in_entry_set_" << ATTR(state, "documentOrder")
+			stream << "entry_set_" << ATTR(state, X("documentOrder"))
+			       << "_o <= in_entry_set_" << ATTR(state, X("documentOrder"))
 			       << "_sig;" << std::endl;
 		}
 	}
 
 	for (auto transition : _transitions) {
 		if (DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, transition).size() > 0) {
-			stream << "transition_set_" << ATTR(transition, "postFixOrder")
-			       << "_o <= in_optimal_transition_set_" << ATTR(transition, "postFixOrder")
+			stream << "transition_set_" << ATTR(transition, X("postFixOrder"))
+			       << "_o <= in_optimal_transition_set_" << ATTR(transition, X("postFixOrder"))
 			       << "_sig;" << std::endl;
 		}
 	}

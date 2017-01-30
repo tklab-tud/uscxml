@@ -33,13 +33,13 @@ WrappedInterpreterMonitor::~WrappedInterpreterMonitor() {}
 void WrappedInterpreterMonitor::beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	beforeExitingState(ATTR(state, "id"), DOMUtils::xPathForNode(state), ss.str());
+	beforeExitingState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
 }
 
 void WrappedInterpreterMonitor::afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	afterExitingState(ATTR(state, "id"), DOMUtils::xPathForNode(state), ss.str());
+	afterExitingState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
 }
 
 void WrappedInterpreterMonitor::beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* content) {
@@ -58,8 +58,8 @@ void WrappedInterpreterMonitor::beforeUninvoking(Interpreter& interpreter, const
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
-	if (invoker->getUserData(X("invokeid")) != NULL) {
-		invokeId = (char*)invoker->getUserData(X("invokeid"));
+	if (invoker->getUserData(kXMLCharInvokeId) != NULL) {
+		invokeId = (char*)invoker->getUserData(kXMLCharInvokeId);
 	}
 
 	beforeUninvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
@@ -69,8 +69,8 @@ void WrappedInterpreterMonitor::afterUninvoking(Interpreter& interpreter, const 
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
-	if (invoker->getUserData(X("invokeid")) != NULL) {
-		invokeId = (char*)invoker->getUserData(X("invokeid"));
+	if (invoker->getUserData(kXMLCharInvokeId) != NULL) {
+		invokeId = (char*)invoker->getUserData(kXMLCharInvokeId);
 	}
 
 	afterUninvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
@@ -87,10 +87,10 @@ void WrappedInterpreterMonitor::beforeTakingTransition(Interpreter& interpreter,
 
 	std::list<std::string> targets;
 	for (auto t : targetStates) {
-		targets.push_back(ATTR_CAST(t, "id"));
+		targets.push_back(ATTR_CAST(t, kXMLCharId));
 	}
 
-	beforeTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, "id"), targets, ss.str());
+	beforeTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, kXMLCharId), targets, ss.str());
 }
 
 void WrappedInterpreterMonitor::afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
@@ -104,30 +104,30 @@ void WrappedInterpreterMonitor::afterTakingTransition(Interpreter& interpreter, 
 
 	std::list<std::string> targets;
 	for (auto t : targetStates) {
-		targets.push_back(ATTR_CAST(t, "id"));
+		targets.push_back(ATTR_CAST(t, kXMLCharId));
 	}
 
-	afterTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, "id"), targets, ss.str());
+	afterTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, kXMLCharId), targets, ss.str());
 }
 
 void WrappedInterpreterMonitor::beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	beforeEnteringState(ATTR(state, "id"), DOMUtils::xPathForNode(state), ss.str());
+	beforeEnteringState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
 }
 
 void WrappedInterpreterMonitor::afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	afterEnteringState(ATTR(state, "id"), DOMUtils::xPathForNode(state), ss.str());
+	afterEnteringState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
 }
 
 void WrappedInterpreterMonitor::beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
-	if (invoker->getUserData(X("invokeid")) != NULL) {
-		invokeId = (char*)invoker->getUserData(X("invokeid"));
+	if (invoker->getUserData(kXMLCharInvokeId) != NULL) {
+		invokeId = (char*)invoker->getUserData(kXMLCharInvokeId);
 	}
 
 	beforeInvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
@@ -137,8 +137,8 @@ void WrappedInterpreterMonitor::afterInvoking(Interpreter& interpreter, const XE
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
-	if (invoker->getUserData(X("invokeid")) != NULL) {
-		invokeId = (char*)invoker->getUserData(X("invokeid"));
+	if (invoker->getUserData(kXMLCharInvokeId) != NULL) {
+		invokeId = (char*)invoker->getUserData(kXMLCharInvokeId);
 	}
 
 	afterInvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());

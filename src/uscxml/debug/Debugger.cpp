@@ -41,7 +41,7 @@ std::list<Breakpoint> Debugger::getQualifiedStateBreakpoints(InterpreterImpl* im
 	std::list<Breakpoint> breakpoints;
 
 	Breakpoint bp = breakpointTemplate; // copy base as template
-	bp.stateId = ATTR(state, "id");
+	bp.stateId = ATTR(state, kXMLCharId);
 	bp.element = state;
 	bp.subject = Breakpoint::STATE;
 	breakpoints.push_back(bp);
@@ -57,10 +57,10 @@ std::list<Breakpoint> Debugger::getQualifiedInvokeBreakpoints(InterpreterImpl* i
 	bp.element = invokeElem;
 	bp.invokeId = invokeId;
 
-	if (HAS_ATTR(invokeElem, "type")) {
-		bp.invokeType = ATTR(invokeElem, "type");
-	} else if (HAS_ATTR(invokeElem, "typeexpr")) {
-		bp.invokeType = impl->evalAsData(ATTR(invokeElem, "typeexpr")).atom;
+	if (HAS_ATTR(invokeElem, kXMLCharType)) {
+		bp.invokeType = ATTR(invokeElem, kXMLCharType);
+	} else if (HAS_ATTR(invokeElem, kXMLCharTypeExpr)) {
+		bp.invokeType = impl->evalAsData(ATTR(invokeElem, kXMLCharTypeExpr)).atom;
 	}
 
 	breakpoints.push_back(bp);
@@ -78,8 +78,8 @@ std::list<Breakpoint> Debugger::getQualifiedTransBreakpoints(InterpreterImpl* im
 
 		Breakpoint bp = breakpointTemplate; // copy base as template
 		bp.element = transition;
-		bp.transSourceId = ATTR(source, "id");
-		bp.transTargetId = ATTR(target, "id");
+		bp.transSourceId = ATTR(source, kXMLCharId);
+		bp.transTargetId = ATTR(target, kXMLCharId);
 		bp.subject = Breakpoint::TRANSITION;
 
 		breakpoints.push_back(bp);
