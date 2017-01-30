@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <mutex>
+#include <iostream>
 
 using namespace uscxml;
 class MyPausableDelayedEventQueue;

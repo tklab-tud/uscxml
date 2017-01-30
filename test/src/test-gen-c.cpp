@@ -6,6 +6,8 @@
 #include <deque> // deque
 #include <boost/algorithm/string.hpp> // trim
 
+#include <iostream>
+
 #define USCXML_VERBOSE
 
 #include "uscxml/config.h"

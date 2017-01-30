@@ -113,7 +113,7 @@ Data DebugSession::debugPrepare(const Data& data) {
 			_interpreter = Interpreter();
 		}
 	} catch(ErrorEvent e) {
-		std::cerr << e;
+		log(USCXML_ERROR, e);
 	} catch(...) {}
 
 	if (_interpreter) {

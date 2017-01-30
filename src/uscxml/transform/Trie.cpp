@@ -18,7 +18,6 @@
  */
 
 #include "Trie.h"
-#include <iostream>
 #include <boost/algorithm/string.hpp>
 
 namespace uscxml {
@@ -146,6 +145,7 @@ std::list<TrieNode*> Trie::getChildsWithWords(TrieNode* node) {
 	return nodes;
 }
 
+#if 0
 void TrieNode::dump(size_t indent) {
 	std::string padding;
 	for (size_t i = 0; i < indent; i++) {
@@ -169,5 +169,5 @@ void Trie::dump() {
 		std::cout << "(word)" << std::endl;
 	root->dump();
 }
-
+#endif
 }

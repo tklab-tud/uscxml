@@ -38,6 +38,8 @@ enum LogSeverity {
 	USCXML_TRACE,
 	USCXML_DEBUG,
 	USCXML_INFO,
+	USCXML_LOG, // from log element
+	USCXML_VERBATIM, // no additional decorations
 	USCXML_WARN,
 	USCXML_ERROR,
 	USCXML_FATAL

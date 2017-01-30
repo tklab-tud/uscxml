@@ -24,7 +24,6 @@
 #include "uscxml/Common.h"
 
 #include <list>
-#include <iostream>
 
 // forward declare
 namespace XERCESC_NS {

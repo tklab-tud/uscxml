@@ -26,7 +26,6 @@ extern "C" {
 
 #include <string.h>
 
-#include <iostream>
 #include <sstream>
 #include <iomanip>
 #include "uscxml/Common.h"

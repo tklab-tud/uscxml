@@ -90,6 +90,8 @@ std::string Logger::severityToString(LogSeverity severity) {
 		return "Error";
 	case USCXML_FATAL:
 		return "Fatal";
+	case USCXML_LOG:
+		return "Log";
 	default:
 		return "Unknown";
 

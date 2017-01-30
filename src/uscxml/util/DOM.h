@@ -22,7 +22,7 @@
 
 #include <set>
 #include <list>
-#include <iostream>
+#include <string>
 
 #include "uscxml/Common.h"
 #include <xercesc/util/XMLString.hpp>
@@ -36,8 +36,6 @@
 #define TAGNAME_CAST(elem) TAGNAME(static_cast<const DOMElement*>(elem))
 #define LOCALNAME(elem) std::string(X((elem)->getLocalName()))
 #define LOCALNAME_CAST(elem) LOCALNAME(static_cast<const DOMElement*>(elem))
-
-
 
 namespace uscxml {
 
@@ -53,21 +51,26 @@ public:
 	static bool isMember(const XERCESC_NS::DOMNode* node, const std::list<XERCESC_NS::DOMNode*>& list);
 	static bool isMember(const XERCESC_NS::DOMNode* node, const XERCESC_NS::DOMNodeList* list);
 
-	static std::string xPathForNode(const XERCESC_NS::DOMNode* node,
-	                                const std::string& ns = "");
+	static std::string xPathForNode(const XERCESC_NS::DOMNode* node, const std::string& ns = "");
 	static std::string idForNode(const XERCESC_NS::DOMNode* node);
 
 	static std::list<XERCESC_NS::DOMElement*> inPostFixOrder(const std::set<std::string>& elements,
 	        const XERCESC_NS::DOMElement* root,
-	        const bool includeEmbeddedDoc = false);
+	        const bool includeEmbeddedDoc = false) {
+		return filterElementGeneric(elements, root, POSTFIX, includeEmbeddedDoc, true);
+	}
 
 	static std::list<XERCESC_NS::DOMElement*> inDocumentOrder(const std::set<std::string>& elements,
 	        const XERCESC_NS::DOMElement* root,
-	        const bool includeEmbeddedDoc = false);
+	        const bool includeEmbeddedDoc = false) {
+		return filterElementGeneric(elements, root, DOCUMENT, includeEmbeddedDoc, true);
+	}
 
 	static std::list<XERCESC_NS::DOMElement*> filterChildElements(const std::string& tagName,
 	        const XERCESC_NS::DOMElement* node,
-	        bool recurse = false);
+	        bool recurse = false) {
+		return filterElementGeneric({ tagName }, node, (recurse ? DOCUMENT : NO_RECURSE), true, false);
+	}
 
 	static std::list<XERCESC_NS::DOMElement*> filterChildElements(const std::string& tagName,
 	        const std::list<XERCESC_NS::DOMElement*>& nodeSet,
@@ -75,7 +78,10 @@ public:
 
 	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
 	        const XERCESC_NS::DOMNode* node,
-	        bool recurse = false);
+	        bool recurse = false) {
+		return filterTypeGeneric({ type }, node, (recurse ? DOCUMENT : NO_RECURSE), true, false);
+
+	}
 
 	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
 	        const std::list<XERCESC_NS::DOMNode*>& nodeSet,
@@ -94,24 +100,24 @@ public:
 	                                 const bool includeEmbeddedDoc,
 	                                 const bool includeRoot);
 
+	static std::list<XERCESC_NS::DOMElement*> filterElementGeneric(const std::set<std::string>& elements,
+	        const XERCESC_NS::DOMElement* root,
+	        const Order order,
+	        const bool includeEmbeddedDoc,
+	        const bool includeRoot);
+
 	static void filterTypeGeneric(const std::set<XERCESC_NS::DOMNode::NodeType>& types,
 	                              std::list<XERCESC_NS::DOMNode*>& result,
-	                              const XERCESC_NS::DOMElement* root,
+	                              const XERCESC_NS::DOMNode* root,
 	                              const Order order,
 	                              const bool includeEmbeddedDoc,
 	                              const bool includeRoot);
 
-#if 0
-	static void inPostFixOrder(const std::set<std::string>& elements,
-	                           const XERCESC_NS::DOMElement* root,
-	                           const bool includeEmbeddedDoc,
-	                           std::list<XERCESC_NS::DOMElement*>& nodes);
-
-	static void inDocumentOrder(const std::set<std::string>& elements,
-	                            const XERCESC_NS::DOMElement* root,
-	                            const bool includeEmbeddedDoc,
-	                            std::list<XERCESC_NS::DOMElement*>& nodes);
-#endif
+	static std::list<XERCESC_NS::DOMNode*> filterTypeGeneric(const std::set<XERCESC_NS::DOMNode::NodeType>& types,
+	        const XERCESC_NS::DOMNode* root,
+	        const Order order,
+	        const bool includeEmbeddedDoc,
+	        const bool includeRoot);
 
 };
 

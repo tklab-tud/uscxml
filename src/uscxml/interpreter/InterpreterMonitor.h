@@ -22,6 +22,7 @@
 
 #include "uscxml/Common.h"
 #include "uscxml/messages/Event.h"
+#include "uscxml/interpreter/Logging.h"
 #include "uscxml/debug/InterpreterIssue.h"
 
 #include <mutex>
@@ -55,7 +56,10 @@ class Interpreter;
 
 class USCXML_API InterpreterMonitor {
 public:
-	InterpreterMonitor() : _copyToInvokers(false) {}
+	InterpreterMonitor() : _copyToInvokers(false) {
+		_logger = Logger::getDefault();
+	}
+	InterpreterMonitor(Logger logger) : _copyToInvokers(false), _logger(logger) {}
 	virtual ~InterpreterMonitor() {}
 
 	virtual void beforeProcessingEvent(Interpreter& interpreter, const Event& event) {}
@@ -97,7 +101,7 @@ public:
 
 protected:
 	bool _copyToInvokers;
-
+	Logger _logger;
 };
 
 class USCXML_API StateTransitionMonitor : public uscxml::InterpreterMonitor {

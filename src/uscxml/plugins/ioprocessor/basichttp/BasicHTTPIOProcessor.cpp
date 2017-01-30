@@ -23,7 +23,6 @@
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"
 
-#include <iostream>
 #include <event2/dns.h>
 #include <event2/buffer.h>
 #include <event2/keyvalq_struct.h>

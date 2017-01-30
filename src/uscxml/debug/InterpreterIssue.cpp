@@ -55,10 +55,10 @@ std::list<std::set<const DOMElement* > > getAllConfigurations(const DOMElement* 
 	std::string localName = X(root->getLocalName());
 	bool isAtomic = true;
 
-	std::cout << *root;
+//	std::cout << *root;
 
 	for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
-		std::cout << *childElem;
+//		std::cout << *childElem;
 
 		if (XMLString::compareIString(childElem->getTagName(), X(nsPrefix + "state")) == 0 ||
 		        XMLString::compareIString(childElem->getTagName(), X(nsPrefix + "parallel")) == 0 ||

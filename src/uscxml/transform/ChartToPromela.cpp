@@ -1233,7 +1233,7 @@ void ChartToPromela::writeExecContent(std::ostream& stream, const XERCESC_NS::DO
 			stream << "  " << padding << "cancelSendId(" << ADAPT_SRC(ATTR(element, "sendidexpr")) << "," << _analyzer->macroForLiteral(_invokerid) << ");" << std::endl;
 		}
 	} else {
-		std::cerr << "'" << TAGNAME(element) << "' not supported" << std::endl << element << std::endl;
+		LOGD(USCXML_VERBATIM) << "'" << TAGNAME(element) << "' not supported" << std::endl << element << std::endl;
 		assert(false);
 	}
 }

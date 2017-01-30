@@ -20,7 +20,6 @@
 #ifndef TRANSFORMER_H_32113356
 #define TRANSFORMER_H_32113356
 
-#include <iostream>
 #include <map>
 #include "uscxml/Interpreter.h"
 #include "uscxml/interpreter/InterpreterImpl.h"

@@ -66,10 +66,10 @@ int main(int argc, char** argv) {
 				if (options.validate) {
 					std::list<InterpreterIssue> issues = interpreter.validate();
 					for (std::list<InterpreterIssue>::iterator issueIter = issues.begin(); issueIter != issues.end(); issueIter++) {
-						std::cout << *issueIter << std::endl;
+						LOGD(USCXML_DEBUG) << "" << *issueIter << std::endl;
 					}
 					if (issues.size() == 0) {
-						std::cout << "No issues found" << std::endl;
+						LOGD(USCXML_DEBUG) << "No issues found" << std::endl;
 					}
 
 				}
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 				LOGD(USCXML_ERROR) << "Cannot create interpreter from " << documentURL;
 			}
 		} catch (Event e) {
-			std::cout << e << std::endl;
+			LOGD(USCXML_DEBUG) << e << std::endl;
 		}
 	}
 
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
                 interpreterIter = interpreters.begin();
             }
         } catch (Event e) {
-            std::cout << e << std::endl;
+            LOGD(USCXML_ERROR) << e << std::endl;
         }
     } else if (options.withDebugger) {
         while(true)

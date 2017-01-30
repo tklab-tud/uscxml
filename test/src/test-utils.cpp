@@ -12,6 +12,8 @@
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/util/DOM.h"
 
+#include <iostream>
+
 using namespace uscxml;
 using namespace XERCESC_NS;
 

@@ -29,7 +29,6 @@
 #include "uscxml/util/DOM.h"
 
 #include <string>
-#include <iostream>
 
 extern "C" {
 #include <event2/dns.h>

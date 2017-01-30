@@ -219,6 +219,17 @@ bool DOMUtils::isDescendant(const DOMNode* s1,
 	return false;
 }
 
+std::list<DOMElement*> DOMUtils::filterElementGeneric(const std::set<std::string>& elements,
+        const DOMElement* root,
+        const Order order,
+        const bool includeEmbeddedDoc,
+        const bool includeRoot) {
+	std::list<DOMElement*> result;
+	filterElementGeneric(elements, result, root, order, includeEmbeddedDoc, includeRoot);
+	return result;
+}
+
+
 void DOMUtils::filterElementGeneric(const std::set<std::string>& elements,
                                     std::list<DOMElement*>& result,
                                     const DOMElement* root,
@@ -261,9 +272,19 @@ void DOMUtils::filterElementGeneric(const std::set<std::string>& elements,
 }
 
 
+std::list<DOMNode*> DOMUtils::filterTypeGeneric(const std::set<DOMNode::NodeType>& types,
+        const DOMNode* root,
+        const Order order,
+        const bool includeEmbeddedDoc,
+        const bool includeRoot) {
+	std::list<DOMNode*> result;
+	filterTypeGeneric(types, result, root, order, includeEmbeddedDoc, includeRoot);
+	return result;
+}
+
 void DOMUtils::filterTypeGeneric(const std::set<DOMNode::NodeType>& types,
                                  std::list<DOMNode*>& result,
-                                 const DOMElement* root,
+                                 const DOMNode* root,
                                  const Order order,
                                  const bool includeEmbeddedDoc,
                                  const bool includeRoot) {
@@ -304,43 +325,7 @@ void DOMUtils::filterTypeGeneric(const std::set<DOMNode::NodeType>& types,
 
 }
 
-#if 1
-std::list<DOMElement*> DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
-        const DOMElement* root,
-        const bool includeEmbeddedDoc) {
-	std::list<DOMElement*> result;
-	filterElementGeneric(elements, result, root, POSTFIX, includeEmbeddedDoc, true);
-	return result;
-}
-#else
-std::list<DOMElement*> DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
-        const DOMElement* root,
-        const bool includeEmbeddedDoc) {
-	std::list<DOMElement*> nodes;
-	inPostFixOrder(elements, root, includeEmbeddedDoc, nodes);
-	return nodes;
-}
-#endif
 
-#if 1
-std::list<DOMElement*> DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
-        const DOMElement* root,
-        const bool includeEmbeddedDoc) {
-	std::list<DOMElement*> result;
-	filterElementGeneric(elements, result, root, DOCUMENT, includeEmbeddedDoc, true);
-	return result;
-}
-#else
-std::list<DOMElement*> DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
-        const DOMElement* root,
-        const bool includeEmbeddedDoc) {
-	std::list<DOMElement*> nodes;
-	inDocumentOrder(elements, root, includeEmbeddedDoc, nodes);
-	return nodes;
-}
-#endif
-
-#if 1
 std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
         const std::list<DOMElement*>& nodeSet,
         bool recurse) {
@@ -354,57 +339,7 @@ std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
 	}
 	return filteredChildElems;
 }
-#else
-std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
-        const std::list<DOMElement*>& nodeSet,
-        bool recurse) {
 
-	std::list<DOMElement*> filteredChildElems;
-	std::list<DOMElement*>::const_iterator nodeIter = nodeSet.begin();
-	while(nodeIter != nodeSet.end()) {
-		std::list<DOMElement*> filtered = filterChildElements(tagName, *nodeIter, recurse);
-		filteredChildElems.merge(filtered); // TODO: guess we want insert?
-		nodeIter++;
-	}
-	return filteredChildElems;
-}
-#endif
-
-#if 1
-std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
-        const DOMElement* node,
-        bool recurse) {
-
-	std::list<DOMElement*> result;
-	filterElementGeneric({ tagName }, result, node, (recurse ? DOCUMENT : NO_RECURSE), true, false);
-	return result;
-}
-#else
-std::list<DOMElement*> DOMUtils::filterChildElements(const std::string& tagName,
-        const DOMElement* node,
-        bool recurse) {
-
-	std::list<DOMElement*> filteredChildElems;
-
-	if (!node)
-		return filteredChildElems;
-
-	for (auto childElem = node->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
-		//		std::cerr << TAGNAME(childs.item(i)) << std::endl;
-		if(iequals(TAGNAME(childElem), tagName)) {
-			filteredChildElems.push_back((DOMElement*)childElem);
-		}
-		if (recurse) {
-			std::list<DOMElement*> nested = filterChildElements(tagName, childElem, recurse);
-			filteredChildElems.merge(nested);
-		}
-	}
-	return filteredChildElems;
-}
-
-#endif
-
-#if 1
 std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
         const std::list<DOMNode*>& nodeSet,
         bool recurse) {
@@ -417,101 +352,5 @@ std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
 	}
 	return filteredChildType;
 }
-#else
-std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
-        const std::list<DOMNode*>& nodeSet,
-        bool recurse) {
-	std::list<DOMNode*> filteredChildType;
-	std::list<DOMNode*>::const_iterator nodeIter = nodeSet.begin();
-	while(nodeIter != nodeSet.end()) {
-		std::list<DOMNode*> filtered = filterChildType(type, *nodeIter, recurse);
-		filteredChildType.merge(filtered);
-		nodeIter++;
-	}
-	return filteredChildType;
-}
-#endif
 
-#if 1
-std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
-        const DOMNode* node,
-        bool recurse) {
-
-	std::list<DOMNode*> result;
-	if (node) {
-		assert(node->getNodeType() == DOMNode::ELEMENT_NODE);
-	}
-	filterTypeGeneric({ type }, result, (DOMElement*)node, (recurse ? DOCUMENT : NO_RECURSE), true, false);
-	return result;
-}
-#else
-std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
-        const DOMNode* node,
-        bool recurse) {
-
-	std::list<DOMNode*> filteredChildTypes;
-
-	if (!node)
-		return filteredChildTypes;
-
-	for (auto child = node->getFirstChild(); child; child = child->getNextSibling()) {
-		if (child->getNodeType() == type)
-			filteredChildTypes.push_back(child);
-		if (recurse) {
-			std::list<DOMNode*> nested = filterChildType(type, child, recurse);
-			filteredChildTypes.merge(nested);
-
-		}
-	}
-	return filteredChildTypes;
-}
-#endif
-
-#if 0
-void DOMUtils::inPostFixOrder(const std::set<std::string>& elements,
-                              const DOMElement* root,
-                              const bool includeEmbeddedDoc,
-                              std::list<DOMElement*>& nodes) {
-
-	if (root == NULL)
-		return;
-
-	for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
-		if (!includeEmbeddedDoc && LOCALNAME(childElem) == "scxml")
-			continue;
-		inPostFixOrder(elements, childElem, includeEmbeddedDoc, nodes);
-
-	}
-	for (auto childElem = root->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
-		if (!includeEmbeddedDoc && TAGNAME(childElem) == XML_PREFIX(root).str() + "scxml")
-			continue;
-
-		if (elements.find(TAGNAME(childElem)) != elements.end()) {
-			nodes.push_back((DOMElement*)childElem);
-		}
-	}
-}
-
-void DOMUtils::inDocumentOrder(const std::set<std::string>& elements,
-                               const DOMElement* root,
-                               const bool includeEmbeddedDoc,
-                               std::list<DOMElement*>& nodes) {
-	if (root == NULL)
-		return;
-
-	if (elements.find(TAGNAME(root)) != elements.end()) {
-		nodes.push_back((DOMElement*)root);
-	}
-
-	/// @todo: item from getChildNodes is O(N)!
-	DOMElement* child = root->getFirstElementChild();
-	while(child) {
-		if (includeEmbeddedDoc || TAGNAME(child) != XML_PREFIX(root).str() + "scxml") {
-			inDocumentOrder(elements, child, includeEmbeddedDoc, nodes);
-		}
-
-		child = child->getNextElementSibling();
-	}
-}
-#endif
 }

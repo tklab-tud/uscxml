@@ -27,15 +27,15 @@ std::shared_ptr<LoggerImpl> StdOutLogger::create() {
 }
 
 void StdOutLogger::log(LogSeverity severity, const std::string& message) {
-	std::cout << Logger::severityToString(severity) << ": " << message << std::endl;
+	std::cout << (severity != USCXML_VERBATIM ? Logger::severityToString(severity) + ": " : "") << message << std::endl;
 }
 
 void StdOutLogger::log(LogSeverity severity, const Event& event) {
-	std::cout << Logger::severityToString(severity) << ": " << event << std::endl;
+	std::cout << (severity != USCXML_VERBATIM ? Logger::severityToString(severity) + ": " : "") << event << std::endl;
 }
 
 void StdOutLogger::log(LogSeverity severity, const Data& data) {
-	std::cout << Logger::severityToString(severity) << ": " << data << std::endl;
+	std::cout << (severity != USCXML_VERBATIM ? Logger::severityToString(severity) + ": " : "") << data << std::endl;
 }
 
 }

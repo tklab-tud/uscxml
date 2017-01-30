@@ -18,7 +18,9 @@
  */
 
 #include "PromelaInlines.h"
+#include "uscxml/interpreter/Logging.h"
 #include <boost/algorithm/string.hpp>
+
 
 namespace uscxml {
 
@@ -73,7 +75,7 @@ PromelaInline::PromelaInline(const XERCESC_NS::DOMNode* node) {
 	while(std::getline(ssLine, line)) {
 		boost::trim(line);
 		if (boost::starts_with(line, "promela")) {
-			std::cerr << "Split multiple #promela pragmas into multiple comments!" << std::endl;
+			LOGD(USCXML_ERROR) << "Split multiple #promela pragmas into multiple comments!" << std::endl;
 			break;
 		}
 		contentSS << seperator << line;

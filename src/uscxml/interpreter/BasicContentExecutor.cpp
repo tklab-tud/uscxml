@@ -277,9 +277,9 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 
 	Data d = _callbacks->evalAsData(expr);
 	if (label.size() > 0) {
-		std::cout << label << ": ";
+		_callbacks->getLogger().log(USCXML_LOG) << label << ": ";
 	}
-	std::cout << d << std::endl;
+	_callbacks->getLogger().log(USCXML_LOG) << d << std::endl;
 }
 
 void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {

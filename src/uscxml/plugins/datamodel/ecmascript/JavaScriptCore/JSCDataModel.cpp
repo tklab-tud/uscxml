@@ -769,7 +769,7 @@ JSValueRef JSCDataModel::jsPrint(JSContextRef ctx, JSObjectRef function, JSObjec
 			std::string msg(buffer);
 			free(buffer);
 
-			std::cout << msg;
+			INSTANCE->_callbacks->getLogger().log(USCXML_LOG) << msg;
 		}
 	}
 	return JSValueMakeUndefined(ctx);

@@ -32,7 +32,6 @@
 #include <xercesc/util/PlatformUtils.hpp>
 #include "uscxml/interpreter/Logging.h"
 
-#include <iostream>
 #include <boost/algorithm/string.hpp>
 
 #include <assert.h>
@@ -256,10 +255,10 @@ std::list<InterpreterIssue> Interpreter::validate() {
 }
 
 #if 1
-static void printNodeSet(const std::list<XERCESC_NS::DOMElement*> nodes) {
+static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
-		std::cerr << seperator << (HAS_ATTR(*nIter, "id") ? ATTR(*nIter, "id") : DOMUtils::xPathForNode(*nIter));
+		LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, "id") ? ATTR(*nIter, "id") : DOMUtils::xPathForNode(*nIter));
 		seperator = ", ";
 	}
 }
@@ -269,52 +268,52 @@ std::recursive_mutex StateTransitionMonitor::_mutex;
 
 void StateTransitionMonitor::beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
 
 void StateTransitionMonitor::onStableConfiguration(Interpreter& interpreter) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Stable Config: { ";
-	printNodeSet(interpreter.getConfiguration());
-	std::cerr << " }" << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Stable Config: { ";
+	printNodeSet(_logger, interpreter.getConfiguration());
+	LOG(_logger, USCXML_VERBATIM) << " }" << std::endl;
 }
 
 void StateTransitionMonitor::beforeProcessingEvent(Interpreter& interpreter, const uscxml::Event& event) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	switch (event.eventType) {
 	case uscxml::Event::INTERNAL:
-		std::cerr << "Internal Event: " << event.name << std::endl;
+		LOG(_logger, USCXML_VERBATIM) << "Internal Event: " << event.name << std::endl;
 		break;
 	case uscxml::Event::EXTERNAL:
-		std::cerr << "External Event: " << event.name << std::endl;
+		LOG(_logger, USCXML_VERBATIM) << "External Event: " << event.name << std::endl;
 		break;
 	case uscxml::Event::PLATFORM:
-		std::cerr << "Platform Event: " << event.name << std::endl;
+		LOG(_logger, USCXML_VERBATIM) << "Platform Event: " << event.name << std::endl;
 		break;
 	}
 }
 
 void StateTransitionMonitor::beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* element) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
 void StateTransitionMonitor::beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Exiting: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Exiting: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
 }
 
 void StateTransitionMonitor::beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Entering: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Entering: " << (HAS_ATTR(state, "id") ? ATTR(state, "id") : DOMUtils::xPathForNode(state)) << std::endl;
 
 }
 
 void StateTransitionMonitor::beforeMicroStep(Interpreter& interpreter) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-	std::cerr << "Microstep in config: {";
-	printNodeSet(interpreter.getConfiguration());
-	std::cerr << "}" << std::endl;
+	LOG(_logger, USCXML_VERBATIM) << "Microstep in config: {";
+	printNodeSet(_logger, interpreter.getConfiguration());
+	LOG(_logger, USCXML_VERBATIM) << "}" << std::endl;
 }
 
 }

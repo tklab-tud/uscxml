@@ -26,7 +26,6 @@
 #include <boost/algorithm/string.hpp>
 #include "uscxml/interpreter/Logging.h"
 
-#include <iostream>
 #include <algorithm>
 #include <iomanip>
 

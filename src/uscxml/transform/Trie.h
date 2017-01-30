@@ -36,7 +36,7 @@ struct USCXML_API TrieNode {
 	std::string identifier;
 	std::string value;
 	std::map<std::string, TrieNode*> childs;
-	void dump(size_t indent = 0);
+//	void dump(size_t indent = 0);
 };
 
 struct USCXML_API Trie {
@@ -51,7 +51,7 @@ struct USCXML_API Trie {
 	TrieNode* getNodeWithPrefix(const std::string& prefix);
 	std::list<TrieNode*> getWordsWithPrefix(const std::string& prefix);
 	std::list<TrieNode*> getChildsWithWords(TrieNode* node);
-	void dump();
+//	void dump();
 
 	TrieNode* root;
 	std::string seperator;

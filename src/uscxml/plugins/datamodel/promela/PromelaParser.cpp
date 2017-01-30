@@ -20,8 +20,8 @@
 #include "PromelaParser.h"
 #include "parser/promela.tab.hpp"
 #include "uscxml/messages/Event.h"
+#include "uscxml/interpreter/Logging.h"
 
-#include <iostream>
 #include <string.h> // memcpy
 
 struct yy_buffer_state;
@@ -169,13 +169,13 @@ PromelaParserNode* PromelaParser::value(int type, void* location, const char* va
 void PromelaParser::dump() {
 	switch (type) {
 	case PROMELA_EXPR:
-		std::cout << "Promela Expression" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Promela Expression" << std::endl;
 		break;
 	case PROMELA_DECL:
-		std::cout << "Promela Declarations" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Promela Declarations" << std::endl;
 		break;
 	case PROMELA_STMNT:
-		std::cout << "Promela Statement" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Promela Statement" << std::endl;
 		break;
 	}
 	ast->dump();
@@ -201,11 +201,11 @@ void PromelaParserNode::dump(size_t indent) {
 	for (size_t i = 0; i < indent; i++) {
 		padding += "  ";
 	}
-	std::cout << padding << typeToDesc(type) << ": " << value;
+	LOGD(USCXML_VERBATIM) << padding << typeToDesc(type) << ": " << value;
 	if (loc != NULL) {
-		std::cout << " (" << loc->firstLine << ":" << loc->firstCol << ")-(" << loc->lastLine << ":" << loc->lastCol << ")";
+		LOGD(USCXML_VERBATIM) << " (" << loc->firstLine << ":" << loc->firstCol << ")-(" << loc->lastLine << ":" << loc->lastCol << ")";
 	}
-	std::cout << std::endl;
+	LOGD(USCXML_VERBATIM) << "\n";
 	for (std::list<PromelaParserNode*>::iterator iter = operands.begin();
 	        iter != operands.end(); iter++) {
 		(*iter)->dump(indent + 1);

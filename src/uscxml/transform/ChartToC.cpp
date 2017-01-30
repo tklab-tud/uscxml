@@ -18,7 +18,6 @@
  */
 
 #include "uscxml/transform/ChartToC.h"
-#include <iostream>
 #include "uscxml/util/UUID.h"
 #include "uscxml/util/Predicates.h"
 #include "uscxml/util/MD5.hpp"
@@ -1358,7 +1357,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << padding << "}" << std::endl;
 
 	} else {
-		std::cerr << "'" << TAGNAME(elem) << "'" << std::endl << elem << std::endl;
+		LOGD(USCXML_VERBATIM) << "'" << TAGNAME(elem) << "'" << std::endl << elem << std::endl;
 		assert(false);
 	}
 

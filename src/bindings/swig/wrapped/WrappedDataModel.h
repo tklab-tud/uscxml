@@ -24,7 +24,6 @@
 #include <list>
 #include <ostream>
 #include <string>
-#include <iostream>
 
 #include <xercesc/dom/DOM.hpp>
 

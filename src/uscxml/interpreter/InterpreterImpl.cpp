@@ -32,7 +32,6 @@
 
 #include "uscxml/interpreter/Logging.h"
 
-#include <iostream>
 #include <fstream>
 
 #include <assert.h>

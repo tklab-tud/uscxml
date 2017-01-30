@@ -624,7 +624,9 @@ v8::Local<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 void V8DataModel::jsPrint(const v8::FunctionCallbackInfo<v8::Value>& info) {
 	if (info.Length() > 0) {
 		v8::String::AsciiValue printMsg(info[0]->ToString());
-		std::cout << *printMsg;
+		v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
+		V8DataModel* dataModel = (V8DataModel*)field->Value();
+		dataModel->_callbacks->getLogger().log(USCXML_LOG) << *printMsg;
 	}
 }
 

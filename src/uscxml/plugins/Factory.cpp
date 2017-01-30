@@ -37,7 +37,6 @@
 #include <xercesc/util/PlatformUtils.hpp>
 #include "uscxml/util/DOM.h"
 
-#include <iostream>
 
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
@@ -246,19 +245,19 @@ while(iter != name.end()) { \
 	std::list<std::string> names = iter->second->getNames(); \
 	std::list<std::string>::iterator nameIter = names.begin(); \
 	if (nameIter != names.end()) { \
-		std::cout << "\t" << *nameIter; \
+		LOGD(USCXML_VERBATIM) << "\t" << *nameIter; \
 		nameIter++; \
 		std::string seperator = ""; \
 		if (nameIter != names.end()) { \
-			std::cout << "\t("; \
+			LOGD(USCXML_VERBATIM) << "\t("; \
 			while(nameIter != names.end()) { \
-				std::cout << seperator << *nameIter; \
+				LOGD(USCXML_VERBATIM) << seperator << *nameIter; \
 				seperator = ", "; \
 				nameIter++; \
 			} \
-			std::cout << ")"; \
+			LOGD(USCXML_VERBATIM) << ")"; \
 		} \
-		std::cout << std::endl; \
+		LOGD(USCXML_VERBATIM) << "\n"; \
 	} \
 	iter++; \
 }
@@ -266,28 +265,28 @@ while(iter != name.end()) { \
 
 void Factory::listComponents() {
 	{
-		std::cout << "Available Datamodels:" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Available Datamodels:" << std::endl;
 		LIST_COMPONENTS(DataModelImpl, _dataModels);
-		std::cout << std::endl;
+		LOGD(USCXML_VERBATIM) << "\n";
 	}
 	{
-		std::cout << "Available Invokers:" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Available Invokers:" << std::endl;
 		LIST_COMPONENTS(InvokerImpl, _invokers);
-		std::cout << std::endl;
+		LOGD(USCXML_VERBATIM) << "\n";
 	}
 	{
-		std::cout << "Available I/O Processors:" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Available I/O Processors:" << std::endl;
 		LIST_COMPONENTS(IOProcessorImpl, _ioProcessors);
-		std::cout << std::endl;
+		LOGD(USCXML_VERBATIM) << "\n";
 	}
 	{
-		std::cout << "Available Elements:" << std::endl;
+		LOGD(USCXML_VERBATIM) << "Available Elements:" << std::endl;
 		std::map<std::pair<std::string, std::string>, ExecutableContentImpl*>::iterator iter = _executableContent.begin();
 		while(iter != _executableContent.end()) {
-			std::cout << "\t" << iter->second->getNamespace() << " / " << iter->second->getLocalName() << std::endl;
+			LOGD(USCXML_VERBATIM) << "\t" << iter->second->getNamespace() << " / " << iter->second->getLocalName() << std::endl;
 			iter++;
 		}
-		std::cout << std::endl;
+		LOGD(USCXML_VERBATIM) << "\n";
 	}
 }
 

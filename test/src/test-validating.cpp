@@ -4,6 +4,7 @@
 #include "uscxml/debug/InterpreterIssue.h"
 #include "uscxml/interpreter/Logging.h"
 #include <xercesc/util/PlatformUtils.hpp>
+#include <iostream>
 
 uscxml::Factory* factory = NULL;
 

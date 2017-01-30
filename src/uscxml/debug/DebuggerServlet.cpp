@@ -25,7 +25,7 @@
 namespace uscxml {
 
 void DebuggerServlet::pushData(std::shared_ptr<DebugSession> session, Data pushData) {
-	std::cout << "trying to push " << pushData.at("replyType").atom << std::endl;
+	LOGD(USCXML_DEBUG) << "trying to push " << pushData.at("replyType").atom << std::endl;
 
 	if (!session) {
 		if (_sendQueues.size() > 0) // logging is not aware of its interpreter
@@ -45,7 +45,7 @@ void DebuggerServlet::serverPushData(std::shared_ptr<DebugSession> session) {
 		return;
 
 	Data reply = _sendQueues[session].pop();
-	std::cout << "pushing " << reply.at("replyType").atom << std::endl;
+	LOGD(USCXML_DEBUG) << "pushing " << reply.at("replyType").atom << std::endl;
 	returnData(_clientConns[session], reply);
 	_clientConns[session] = HTTPServer::Request();
 }
@@ -57,7 +57,7 @@ void DebuggerServlet::returnData(const HTTPServer::Request& request, Data replyD
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	}
 
-	std::cout << "<- " << replyData << std::endl;
+	LOGD(USCXML_DEBUG) << "<- " << replyData << std::endl;
 
 	reply.content = Data::toJSON(replyData);
 	reply.headers["Access-Control-Allow-Origin"] = "*";
@@ -96,7 +96,7 @@ bool DebuggerServlet::requestFromHTTP(const HTTPServer::Request& request) {
 		return true;
 	}
 
-	std::cout << request.data["path"] << ": " << request.data["content"] << std::endl;
+	LOGD(USCXML_DEBUG) << request.data["path"] << ": " << request.data["content"] << std::endl;
 
 	Data replyData;
 	// process request that don't need a session
