@@ -104,11 +104,15 @@ add_executable(test-gen-c
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/Invoker.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/IOProcessor.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/null/NullDataModel.cpp
-#	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.cpp
+	# ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.cpp
   ${PROJECT_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
   ${PROJECT_SOURCE_DIR}/contrib/src/evws/evws.c
 	${GETOPT_FILES})
 target_link_libraries(test-gen-c ${LIBEVENT_LIBRARIES})
+if (WIN32)
+	target_link_libraries(test-gen-c Ws2_32)
+	
+endif()
 set_target_properties(test-gen-c PROPERTIES FOLDER "Tests")
 set_target_properties(test-gen-c PROPERTIES COMPILE_DEFINITIONS "NO_XERCESC;FEATS_ON_CMD")
 
