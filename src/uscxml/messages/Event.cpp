@@ -18,7 +18,6 @@
  */
 
 #include "uscxml/messages/Event.h"
-#include "uscxml/util/DOM.h"
 
 namespace uscxml {
 

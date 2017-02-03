@@ -83,9 +83,34 @@ add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})
 target_link_libraries(test-state-pass uscxml)
 set_target_properties(test-state-pass PROPERTIES FOLDER "Tests")
 
-add_executable(test-gen-c src/test-gen-c.cpp ${GETOPT_FILES})
-target_link_libraries(test-gen-c uscxml)
+add_executable(test-gen-c 
+	src/test-gen-c.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/BasicDelayedEventQueue.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/BasicEventQueue.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/EventQueue.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/Logging.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/StdOutLogger.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/util/UUID.cpp
+	# ${PROJECT_SOURCE_DIR}/src/uscxml/util/URL.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/util/Convenience.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/util/Base64.c
+	${PROJECT_SOURCE_DIR}/src/uscxml/util/MD5.c
+	${PROJECT_SOURCE_DIR}/src/uscxml/util/SHA1.c
+	${PROJECT_SOURCE_DIR}/src/uscxml/messages/Data.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/messages/Event.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/messages/Blob.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/Factory.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/DataModel.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/Invoker.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/IOProcessor.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/null/NullDataModel.cpp
+#	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.cpp
+  ${PROJECT_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
+  ${PROJECT_SOURCE_DIR}/contrib/src/evws/evws.c
+	${GETOPT_FILES})
+target_link_libraries(test-gen-c ${LIBEVENT_LIBRARIES})
 set_target_properties(test-gen-c PROPERTIES FOLDER "Tests")
+set_target_properties(test-gen-c PROPERTIES COMPILE_DEFINITIONS "NO_XERCESC;FEATS_ON_CMD")
 
 # issues
 file(GLOB_RECURSE USCXML_ISSUES

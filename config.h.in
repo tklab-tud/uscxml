@@ -58,6 +58,7 @@
 #cmakedefine BUILD_PROFILING
 #cmakedefine SWI_BINARY "@SWI_BINARY@"
 
+#ifndef FEATS_ON_CMD
 /** whether we want some feature */
 #cmakedefine WITH_CACHE_FILES
 #cmakedefine WITH_INV_SCXML
@@ -72,6 +73,7 @@
 #cmakedefine WITH_DM_PYTHON
 #cmakedefine WITH_DM_C89
 #cmakedefine WITH_DM_PROMELA
+#endif
 
 #cmakedefine BUILD_AS_PLUGINS
 

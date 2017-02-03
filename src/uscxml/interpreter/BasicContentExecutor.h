@@ -46,7 +46,7 @@ public:
 	void processLog(XERCESC_NS::DOMElement* content);
 	void processScript(XERCESC_NS::DOMElement* content);
 
-	virtual void process(XERCESC_NS::DOMElement* block, const X& xmlPrefix);
+	virtual void process(XERCESC_NS::DOMElement* block);
 
 	virtual void invoke(XERCESC_NS::DOMElement* invoke);
 	virtual void uninvoke(XERCESC_NS::DOMElement* invoke);

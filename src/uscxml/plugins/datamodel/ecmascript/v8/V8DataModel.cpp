@@ -27,7 +27,6 @@
 #include "uscxml/util/String.h"
 
 #include "V8DataModel.h"
-//#include "V8SCXMLEvent.h"
 
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"

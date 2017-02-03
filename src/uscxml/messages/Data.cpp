@@ -22,7 +22,9 @@
 
 #include <boost/algorithm/string.hpp>
 
+#ifndef NO_XERCESC
 #include "uscxml/util/DOM.h"
+#endif
 
 #include "uscxml/interpreter/Logging.h"
 
@@ -262,6 +264,7 @@ std::string Data::toJSON(const Data& data) {
 		} else {
 			os << data.atom;
 		}
+#ifndef NO_XERCESC
 	} else if (data.node) {
 		std::ostringstream xmlSerSS;
 		xmlSerSS << *data.node;
@@ -270,6 +273,7 @@ std::string Data::toJSON(const Data& data) {
 //		boost::replace_all(xmlSer, "\n", "\\n");
 //		boost::replace_all(xmlSer, "\t", "\\t");
 		os << "\"" << jsonEscape(xmlSer) << "\"";
+#endif
 	} else {
 		if (data.type == Data::VERBATIM) {
 			os << "\"\""; // empty string

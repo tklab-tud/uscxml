@@ -87,7 +87,7 @@ InterpreterImpl::~InterpreterImpl() {
 
 	// make sure we deallocate all user-data in the DOM,
 	// this is neccesary if we were aborted early
-	std::list<DOMElement*> invokes = DOMUtils::filterChildElements(_xmlPrefix.str() + "invoke", _scxml, true);
+	std::list<DOMElement*> invokes = DOMUtils::filterChildElements(_xmlPrefix + "invoke", _scxml, true);
 	for (auto invoke : invokes) {
 		char* invokeId = (char*)invoke->getUserData(X("invokeid"));
 		if (invokeId != NULL) {
@@ -284,9 +284,9 @@ SCXML_STOP_SEARCH:
 
 		_scxml = dynamic_cast<XERCESC_NS::DOMElement*>(scxmls->item(0));
 
-		_xmlPrefix = _scxml->getPrefix();
-		_xmlNS = _scxml->getNamespaceURI();
-		if (_xmlPrefix) {
+		_xmlPrefix = X(_scxml->getPrefix()).str();
+		_xmlNS = X(_scxml->getNamespaceURI()).str();
+		if (_xmlPrefix.size() > 0) {
 			_xmlPrefix = std::string(_xmlPrefix) + ":";
 		}
 		if (HAS_ATTR(_scxml, kXMLCharName)) {
@@ -467,7 +467,7 @@ Event InterpreterImpl::dequeueExternal(size_t blockMs) {
 		if (_currEvent.invokeid.size() > 0 &&
 		        _invokers.find(_currEvent.invokeid) != _invokers.end() &&
 		        _invokers[_currEvent.invokeid].getFinalize() != NULL) {
-			_execContent.process(_invokers[_currEvent.invokeid].getFinalize(), _xmlPrefix);
+			_execContent.process(_invokers[_currEvent.invokeid].getFinalize());
 		}
 
 		for (auto invIter = _invokers.begin(); invIter != _invokers.end(); invIter++) {

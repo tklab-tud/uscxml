@@ -23,7 +23,7 @@
 //#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
 #endif
 
-#include "uscxml/util/URL.h"
+//#include "uscxml/util/URL.h"
 //#include "uscxml/concurrency/Timer.h"
 //#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/plugins/Factory.h"
@@ -43,6 +43,12 @@
 #define USER_DATA(ctx) ((StateMachine*)(((uscxml_ctx*)ctx)->user_data))
 
 using namespace uscxml;
+
+namespace XERCESC_NS {
+class DOMDocument;
+class DOMNode;
+}
+
 
 class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, public DelayedEventQueueCallbacks {
 public:
@@ -105,7 +111,7 @@ public:
 	}
 
 	XERCESC_NS::DOMDocument* getDocument() const {
-		return document;
+		return NULL;
 	}
 	const std::map<std::string, Invoker>& getInvokers() {
 		return invokers;
@@ -675,6 +681,7 @@ public:
 						if (data->content) {
 							content << data->content;
 						} else {
+#if 0
 							URL sourceURL(data->src);
 							if (USER_DATA(ctx)->baseURL.size() > 0) {
 								sourceURL = URL::resolve(sourceURL, USER_DATA(ctx)->baseURL);
@@ -682,6 +689,7 @@ public:
 								sourceURL = URL::resolveWithCWD(sourceURL);
 							}
 							content << sourceURL.getInContent();
+#endif
 						}
 						/**
 						 * first attempt to parse as structured data, we will try
@@ -947,8 +955,8 @@ protected:
 		size_t currIteration;
 	};
 
-	X xmlPrefix;
-	XERCESC_NS::DOMDocument* document;
+//	X xmlPrefix;
+//	XERCESC_NS::DOMDocument* document;
 
 	DelayedEventQueue delayQueue;
 	std::map<std::string, std::tuple<std::string, std::string, std::string> > sendUUIDs;

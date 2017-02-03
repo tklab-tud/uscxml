@@ -20,6 +20,8 @@
 #include "uscxml/debug/DebuggerServlet.h"
 #include "uscxml/debug/DebugSession.h"
 #include "uscxml/util/UUID.h"
+
+#include <xercesc/dom/DOMDocument.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace uscxml {

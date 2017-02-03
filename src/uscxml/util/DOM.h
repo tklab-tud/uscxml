@@ -201,7 +201,7 @@ public :
 		return _localForm;
 	}
 
-    operator XMLCh* () const {
+	operator XMLCh* () const {
 		assert(_unicodeForm != NULL); // constructor with XMLCh
 		return _unicodeForm;
 	}

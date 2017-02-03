@@ -97,6 +97,7 @@ include_directories(contrib/src)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/evws)
+# include_directories(${PROJECT_SOURCE_DIR}/contrib/src/uriparser/include)
 
 set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/uscxml/InterpreterOptions.cpp)	
 if (WIN32)

@@ -18,6 +18,8 @@
  */
 
 #include "USCXMLInvoker.h"
+#include "uscxml/util/DOM.h"
+
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>

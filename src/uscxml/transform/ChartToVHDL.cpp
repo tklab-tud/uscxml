@@ -1523,6 +1523,8 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream &stream) {
 			}
 		}
 
+		LOGD(USCXML_WARN) << ATTR(transition, X("postFixOrder"));
+
 		VBranch *tree = (VASSIGN,
 		                 VLINE("in_optimal_transition_set_" + ATTR(transition, X("postFixOrder")) + "_sig"),
 		                 (VAND,
@@ -1536,7 +1538,7 @@ void ChartToVHDL::writeOptimalTransitionSetSelection(std::ostream &stream) {
 		                           "_i"))
 		                  : (VNOP, VLINE("'1'")),
 
-		                  VLINE("state_active_" + ATTR(transition, kXMLCharSource) + "_sig"),
+		                  VLINE("state_active_" + ATTR(transition, X("source")) + "_sig"),
 		                  nameMatchers,
 		                  (VNOT, conflicters)));
 

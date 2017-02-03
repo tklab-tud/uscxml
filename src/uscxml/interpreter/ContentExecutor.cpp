@@ -23,8 +23,8 @@
 
 namespace uscxml {
 
-void ContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPrefix) {
-	_impl->process(block, xmlPrefix);
+void ContentExecutor::process(XERCESC_NS::DOMElement* block) {
+	_impl->process(block);
 }
 
 void ContentExecutor::invoke(XERCESC_NS::DOMElement* invoke) {

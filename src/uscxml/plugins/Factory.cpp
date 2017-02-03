@@ -33,10 +33,11 @@
 #include "uscxml/plugins/InvokerImpl.h"
 #include "uscxml/plugins/DataModelImpl.h"
 
+#if 0
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
 #include "uscxml/util/DOM.h"
-
+#endif
 
 // see http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system
 
@@ -538,13 +539,14 @@ size_t DataModelImpl::replaceExpressions(std::string& content) {
 
 
 Factory* Factory::getInstance() {
-	// this needs to be here as some plugins use xercesc
+#if 0
+	// this needs to be here as some plugins use xercesc, now in X::X in DOM.h
 	try {
 		::xercesc_3_1::XMLPlatformUtils::Initialize();
 	} catch (const XERCESC_NS::XMLException& toCatch) {
 		ERROR_PLATFORM_THROW("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
 	}
-
+#endif
 	if (_instance == NULL) {
 		_instance = new Factory(Factory::_defaultPluginPath);
 	}

@@ -235,7 +235,7 @@ void BasicContentExecutor::processIf(XERCESC_NS::DOMElement* content) {
 		// current block is true
 		if (blockIsTrue) {
 			// we do now that the prefix of content is correct
-			process(childElem, XML_PREFIX(content));
+			process(childElem);
 		}
 	}
 }
@@ -266,7 +266,7 @@ void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
 		_callbacks->setForeach(item, array, index, iteration);
 
 		for (auto childElem = content->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
-			process(childElem, XML_PREFIX(content));
+			process(childElem);
 		}
 	}
 }
@@ -289,18 +289,18 @@ void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
 
 }
 
-void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPrefix) {
+void BasicContentExecutor::process(XERCESC_NS::DOMElement* block) {
 	std::string tagName = TAGNAME(block);
+	std::string xmlPrefix = XML_PREFIX(block);
 
-
-	if (iequals(tagName, xmlPrefix.str() + "onentry") ||
-	        iequals(tagName, xmlPrefix.str() + "onexit") ||
-	        iequals(tagName, xmlPrefix.str() + "transition")) {
+	if (iequals(tagName, xmlPrefix + "onentry") ||
+	        iequals(tagName, xmlPrefix + "onexit") ||
+	        iequals(tagName, xmlPrefix + "transition")) {
 
 		try {
 			for (auto childElem = block->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
 				// process any child eleents
-				process(childElem, xmlPrefix);
+				process(childElem);
 			}
 		} catch (Event e) {
 			// there has been an error in an executable content block
@@ -310,18 +310,18 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 		return;
 	}
 
-	if (iequals(tagName, xmlPrefix.str() + "finalize")) {
+	if (iequals(tagName, xmlPrefix + "finalize")) {
 		std::list<DOMNode*> childElems = DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, block, false);
 		if(childElems.size() > 0) {
 			for(auto elemIter = childElems.begin(); elemIter != childElems.end(); elemIter++) {
-				process(static_cast<DOMElement*>(*elemIter), xmlPrefix);
+				process(static_cast<DOMElement*>(*elemIter));
 			}
 		} else {
 			// issue 67 - empty finalize element
 			DOMNode* parent = block->getParentNode();
 			if (parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 				DOMElement* invokeElem = static_cast<DOMElement*>(parent);
-				if (iequals(X(invokeElem->getTagName()).str(), xmlPrefix.str() + "invoke")) {
+				if (iequals(X(invokeElem->getTagName()).str(), xmlPrefix + "invoke")) {
 					// we are the empth finalize element of an invoke
 					// Specification 6.5.2: http://www.w3.org/TR/scxml/#N110EF
 
@@ -347,21 +347,21 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block, const X& xmlPr
 		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeExecutingContent, block);
 
 		if (false) {
-		} else if (iequals(tagName, xmlPrefix.str() + "raise")) {
+		} else if (iequals(tagName, xmlPrefix + "raise")) {
 			processRaise(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "send")) {
+		} else if (iequals(tagName, xmlPrefix + "send")) {
 			processSend(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "cancel")) {
+		} else if (iequals(tagName, xmlPrefix + "cancel")) {
 			processCancel(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "if")) {
+		} else if (iequals(tagName, xmlPrefix + "if")) {
 			processIf(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "assign")) {
+		} else if (iequals(tagName, xmlPrefix + "assign")) {
 			processAssign(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "foreach")) {
+		} else if (iequals(tagName, xmlPrefix + "foreach")) {
 			processForeach(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "log")) {
+		} else if (iequals(tagName, xmlPrefix + "log")) {
 			processLog(block);
-		} else if (iequals(tagName, xmlPrefix.str() + "script")) {
+		} else if (iequals(tagName, xmlPrefix + "script")) {
 			processScript(block);
 		} else {
 			LOG(_callbacks->getLogger(), USCXML_ERROR) << tagName;

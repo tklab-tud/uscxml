@@ -37,7 +37,7 @@
 #include "uscxml/interpreter/ContentExecutorImpl.h"
 #include "uscxml/interpreter/EventQueue.h"
 #include "uscxml/interpreter/EventQueueImpl.h"
-#include "uscxml/util/DOM.h"
+//#include "uscxml/util/DOM.h"
 
 namespace uscxml {
 
@@ -109,7 +109,7 @@ public:
 	}
 
 	virtual void process(XERCESC_NS::DOMElement* block) {
-		_execContent.process(block, _xmlPrefix);
+		_execContent.process(block);
 	}
 
 	virtual bool isMatched(const Event& event, const std::string& eventDesc);
@@ -290,8 +290,8 @@ protected:
 	friend class DebugSession;
 	friend class Debugger;
 
-	X _xmlPrefix;
-	X _xmlNS;
+	std::string _xmlPrefix;
+	std::string _xmlNS;
 	Factory* _factory;
 
 	URL _baseURL;
