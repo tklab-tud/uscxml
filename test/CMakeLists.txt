@@ -109,9 +109,12 @@ add_executable(test-gen-c
   ${PROJECT_SOURCE_DIR}/contrib/src/evws/evws.c
 	${GETOPT_FILES})
 target_link_libraries(test-gen-c ${LIBEVENT_LIBRARIES})
+
 if (WIN32)
-	target_link_libraries(test-gen-c Ws2_32)
-	
+	target_link_libraries(test-gen-c Ws2_32)	
+endif()
+if (UNIX)
+	target_link_libraries(test-gen-c pthread)
 endif()
 set_target_properties(test-gen-c PROPERTIES FOLDER "Tests")
 set_target_properties(test-gen-c PROPERTIES COMPILE_DEFINITIONS "NO_XERCESC;FEATS_ON_CMD")

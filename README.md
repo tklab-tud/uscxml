@@ -1,15 +1,17 @@
 # uSCXML ReadMe
 
-[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/tklab-tud/uscxml)[![Build status](https://ci.appveyor.com/api/projects/status/b3mwo7w2qhtjal6f/branch/master?svg=true)](https://ci.appveyor.com/project/sradomski/uscxml/branch/master)
+[![Build Status](https://travis-ci.org/tklab-tud/uscxml.png?branch=master)](https://travis-ci.org/tklab-tud/uscxml)[![Build status](https://ci.appveyor.com/api/projects/status/b3mwo7w2qhtjal6f/branch/master?svg=true)](https://ci.appveyor.com/project/sradomski/uscxml/branch/master)[![Build status](https://scan.coverity.com/projects/11688/badge.svg)](https://scan.coverity.com/projects/tklab-tud-uscxml)
 
-**Note**: We deprecated the [old version](https://github.com/tklab-tud/uscxml/tree/legacy-1.0) and refactored quite a few classes and interfaces.
+#### Quick Links
 
-**Note**: Some of the features described below may not yet have made it into the new version, but all will eventually. If implied functionality is not yet available just post an issue and we will make it a priority.
+- [Building from source](http://tklab-tud.github.io/uscxml/building.html)
+- [Tests passed](test/w3c/TESTS.md)
+- [Publications](docs/PUBLICATIONS.md)
 
 ## What is it?
 
 uSCXML is a platform to work with state-charts given as
-[SCXML](http://www.w3.org/TR/scxml/) files. Currently, it consists of three principal components:
+[SCXML](http://www.w3.org/TR/scxml/) files. It consists of three principal components:
 
  1. `libuscxml`: [C++ library](#embedded-as-a-library) containing an interpreter and accompanying functionality.
 
