@@ -110,6 +110,10 @@ add_executable(test-gen-c
 	${GETOPT_FILES})
 target_link_libraries(test-gen-c ${LIBEVENT_LIBRARIES})
 
+if (USCXML_PREREQS)
+    add_dependencies(test-gen-c ${USCXML_PREREQS})
+endif()
+
 if (WIN32)
 	target_link_libraries(test-gen-c Ws2_32)	
 endif()
