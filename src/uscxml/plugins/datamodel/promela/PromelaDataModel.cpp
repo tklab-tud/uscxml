@@ -448,6 +448,12 @@ void PromelaDataModel::setEvent(const Event& event) {
 			return Data(dataToInt(evaluateExpr(*opIter++)) << dataToInt(evaluateExpr(*opIter++)));
 		case PML_RSHIFT:
 			return Data(dataToInt(evaluateExpr(*opIter++)) >> dataToInt(evaluateExpr(*opIter++)));
+		case PML_ASGN: {
+			PromelaParserNode* lhs = *opIter++;
+			PromelaParserNode* rhs = *opIter++;
+			setVariable(lhs, evaluateExpr(rhs));
+			break;
+		}
 		case PML_AND:
 		case PML_OR: {
 			PromelaParserNode* lhs = *opIter++;

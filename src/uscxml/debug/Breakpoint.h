@@ -52,6 +52,7 @@ public:
 		subject = UNDEF_SUBJECT;
 		when    = UNDEF_WHEN;
 		action  = UNDEF_ACTION;
+		enabled = true;
 	}
 	Breakpoint(const Data& data);
 

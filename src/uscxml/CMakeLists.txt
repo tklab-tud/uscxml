@@ -56,7 +56,7 @@ list (APPEND USCXML_FILES ${USCXML_SERVER})
 file(GLOB USCXML_CORE
   ${CMAKE_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
   ${CMAKE_SOURCE_DIR}/contrib/src/evws/evws.c
-  # ${CMAKE_SOURCE_DIR}/contrib/src/uriparser/src/*.c
+  ${CMAKE_SOURCE_DIR}/contrib/src/uriparser/src/*.c
 	*.cpp
 	*.h
 )
