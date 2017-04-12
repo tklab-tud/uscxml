@@ -230,7 +230,7 @@ void Interpreter::setActionLanguage(ActionLanguage actionLanguage) {
 	return _impl->setActionLanguage(actionLanguage);
 }
 
-ActionLanguage Interpreter::getActionLanguage() {
+ActionLanguage* Interpreter::getActionLanguage() {
 	return _impl->getActionLanguage();
 }
 

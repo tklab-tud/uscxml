@@ -28,12 +28,6 @@
 
 #include <set>
 
-namespace XERCESC_NS {
-class DOMElement;
-class DOMDocument;
-class DOMNode;
-}
-
 namespace uscxml {
 
 class Interpreter;
@@ -51,7 +45,7 @@ public:
 	virtual ~InvokerCallbacks() {} ///< silence virtual destructor warning from swig
 	virtual void enqueueInternal(const Event& event) = 0;
 	virtual void enqueueExternal(const Event& event) = 0;
-	virtual ActionLanguage getActionLanguage() = 0;
+	virtual ActionLanguage* getActionLanguage() = 0; /// We return a pointer to relax dependencies in transpiled mode
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
 	virtual std::string getBaseURL() = 0;
 	virtual Logger getLogger() = 0;
@@ -64,15 +58,14 @@ public:
  */
 class USCXML_API InvokerImpl : public EventHandlerImpl {
 public:
-	InvokerImpl() : _finalize(NULL) {};
+	InvokerImpl() {};
 	virtual ~InvokerImpl() {}
 
 	virtual std::list<std::string> getNames() = 0;
 
 	/**
 	 * Factory demands a new instance.
-	 * @param interpreter The imlementation of the associated Interpreter
-	 * @todo We will eventually introduce callbacks and prevent complete access to the interpreter.
+	 * @param callbacks An object implementing the invoker callbacks.
 	 */
 	virtual std::shared_ptr<InvokerImpl> create(InvokerCallbacks* callbacks) = 0;
 
@@ -92,21 +85,6 @@ public:
 	 * Invoker received an event from the SCXML Interpreter.
 	 */
 	virtual void eventFromSCXML(const Event& event) = 0;
-
-	/**
-	 * Return the finalize XML element associated with this invoker.
-	 */
-	virtual XERCESC_NS::DOMElement* getFinalize() {
-		return _finalize;
-	}
-
-	/**
-	 * Set the finalize XML element associated with this invoker.
-	 * @param finalize The finalize XMl element.
-	 */
-	virtual void setFinalize(XERCESC_NS::DOMElement* finalize) {
-		_finalize = finalize;
-	}
 
 	/**
 	 * Set the invocation identifier as required when returning events.
@@ -139,7 +117,6 @@ protected:
 	 */
 	void eventToSCXML(Event& event, const std::string& type, const std::string& invokeId, bool internal = false);
 
-	XERCESC_NS::DOMElement* _finalize;
 	std::string _invokeId;
 	InvokerCallbacks* _callbacks;
 };

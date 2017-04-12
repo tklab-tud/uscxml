@@ -234,16 +234,15 @@ public:
 		_delayQueue = al.delayQueue;
 	}
 
-	ActionLanguage getActionLanguage() {
-		ActionLanguage al;
-		al.logger = _logger;
-		al.execContent = _execContent;
-		al.microStepper = _microStepper;
-		al.dataModel = _dataModel;
-		al.internalQueue = _internalQueue;
-		al.externalQueue = _externalQueue;
-		al.delayQueue = _delayQueue;
-		return al;
+	ActionLanguage* getActionLanguage() {
+		_al.logger = _logger;
+		_al.execContent = _execContent;
+		_al.microStepper = _microStepper;
+		_al.dataModel = _dataModel;
+		_al.internalQueue = _internalQueue;
+		_al.externalQueue = _externalQueue;
+		_al.delayQueue = _delayQueue;
+		return &_al;
 	}
 
 	void setFactory(Factory* factory) {
@@ -264,6 +263,7 @@ protected:
 	static void addInstance(std::shared_ptr<InterpreterImpl> instance);
 
 	Binding _binding;
+	ActionLanguage _al;
 
 	std::string _sessionId;
 	std::string _name;
@@ -314,6 +314,7 @@ protected:
 
 	std::map<std::string, IOProcessor> _ioProcs;
 	std::map<std::string, Invoker> _invokers;
+	std::map<std::string, XERCESC_NS::DOMElement*> _finalize;
 	std::set<std::string> _autoForwarders;
 	std::set<InterpreterMonitor*> _monitors;
 

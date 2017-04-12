@@ -36,10 +36,6 @@ void Invoker::eventFromSCXML(const Event& event)     {
 	_impl->eventFromSCXML(event);
 }
 
-XERCESC_NS::DOMElement* Invoker::getFinalize() {
-	return _impl->getFinalize();
-}
-
 void Invoker::deserialize(const Data& encodedState) {
 	return _impl->deserialize(encodedState);
 }

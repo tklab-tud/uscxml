@@ -465,9 +465,9 @@ Event InterpreterImpl::dequeueExternal(size_t blockMs) {
 
 		// test 233
 		if (_currEvent.invokeid.size() > 0 &&
-		        _invokers.find(_currEvent.invokeid) != _invokers.end() &&
-		        _invokers[_currEvent.invokeid].getFinalize() != NULL) {
-			_execContent.process(_invokers[_currEvent.invokeid].getFinalize());
+		        _finalize.find(_currEvent.invokeid) != _finalize.end() &&
+		        _finalize[_currEvent.invokeid] != NULL) {
+			_execContent.process(_finalize[_currEvent.invokeid]);
 		}
 
 		for (auto invIter = _invokers.begin(); invIter != _invokers.end(); invIter++) {
@@ -545,7 +545,7 @@ void InterpreterImpl::invoke(const std::string& type, const std::string& src, bo
 	}
 
 	std::shared_ptr<InvokerImpl> invokerImpl = _factory->createInvoker(type, this);
-	invokerImpl->setFinalize(finalize);
+	_finalize[invokeEvent.invokeid] = finalize;
 	_invokers[invokeEvent.invokeid] = invokerImpl;
 	_invokers[invokeEvent.invokeid].invoke(tmp, invokeEvent);
 
@@ -558,6 +558,7 @@ void InterpreterImpl::uninvoke(const std::string& invokeId) {
 	if (_invokers.find(invokeId) != _invokers.end()) {
 		_invokers[invokeId].uninvoke();
 		_autoForwarders.erase(invokeId);
+		_finalize.erase(invokeId);
 		_invokers.erase(invokeId);
 	}
 

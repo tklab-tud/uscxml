@@ -182,16 +182,18 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 
 		// create new instances from the parent's ActionLanguage
 		InterpreterImpl* invoked = _invokedInterpreter.getImpl().get();
-		ActionLanguage al = _callbacks->getActionLanguage();
+		ActionLanguage* alOrig = _callbacks->getActionLanguage();
+		if (alOrig != NULL) {
+			ActionLanguage al = *alOrig; // invokes copy operator
+			// create new instances
+			al.execContent = alOrig->execContent.getImpl()->create(invoked);
+			al.delayQueue = alOrig->delayQueue.getImplDelayed()->create(invoked);
+			al.internalQueue = alOrig->internalQueue.getImplBase()->create();
+			al.externalQueue = alOrig->externalQueue.getImplBase()->create();
+			al.microStepper = alOrig->microStepper.getImpl()->create(invoked);
 
-		// create new instances
-		al.execContent = al.execContent.getImpl()->create(invoked);
-		al.delayQueue = al.delayQueue.getImplDelayed()->create(invoked);
-		al.internalQueue = al.internalQueue.getImplBase()->create();
-		al.externalQueue = al.externalQueue.getImplBase()->create();
-		al.microStepper = al.microStepper.getImpl()->create(invoked);
-
-		_invokedInterpreter.setActionLanguage(al);
+			_invokedInterpreter.setActionLanguage(al);
+		}
 		// TODO: setup invokers dom, check datamodel attribute and create new instance from parent if matching?
 
 		// copy monitors

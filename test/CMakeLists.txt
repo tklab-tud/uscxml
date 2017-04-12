@@ -83,11 +83,15 @@ add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})
 target_link_libraries(test-state-pass uscxml)
 set_target_properties(test-state-pass PROPERTIES FOLDER "Tests")
 
-add_executable(test-gen-c 
+set(TEST_GEN_C_DEFINITIONS "NO_XERCESC" "FEATS_ON_CMD")
+set(TEST_GEN_C_LIBRARIES ${LIBEVENT_LIBRARIES})
+set(TEST_GEN_C_FILES
 	src/test-gen-c.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/BasicDelayedEventQueue.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/BasicEventQueue.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/EventQueue.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/ContentExecutor.cpp
+	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/MicroStep.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/Logging.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/interpreter/StdOutLogger.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/util/UUID.cpp
@@ -102,13 +106,57 @@ add_executable(test-gen-c
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/Factory.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/DataModel.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/Invoker.cpp
+	# ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/invoker/dirmon/DirMonInvoker.cpp
+	# ${PROJECT_SOURCE_DIR}/src/uscxml/util/URL.cpp
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriCommon.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriCompare.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriEscape.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriFile.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriIp4.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriIp4Base.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriNormalize.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriNormalizeBase.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriParse.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriParseBase.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriQuery.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriRecompose.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriResolve.c
+	# ${PROJECT_SOURCE_DIR}/contrib/src/uriparser/src/UriShorten.c
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/IOProcessor.cpp
 	${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/null/NullDataModel.cpp
-	# ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.cpp
   ${PROJECT_SOURCE_DIR}/contrib/src/jsmn/jsmn.c
   ${PROJECT_SOURCE_DIR}/contrib/src/evws/evws.c
 	${GETOPT_FILES})
-target_link_libraries(test-gen-c ${LIBEVENT_LIBRARIES})
+
+if (${WITH_DM_ECMA_V8})
+	list (APPEND TEST_GEN_C_DEFINITIONS "WITH_DM_ECMA_V8")
+	list (APPEND TEST_GEN_C_FILES ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.cpp)
+	list (APPEND TEST_GEN_C_LIBRARIES ${V8_LIBRARY})
+endif()
+if (${WITH_DM_ECMA_JSC})
+	list (APPEND TEST_GEN_C_DEFINITIONS "WITH_DM_ECMA_JSC")
+	list (APPEND TEST_GEN_C_FILES ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDataModel.cpp)
+	list (APPEND TEST_GEN_C_LIBRARIES ${JSC_LIBRARY})
+endif()
+if (${WITH_DM_LUA})
+	list (APPEND TEST_GEN_C_DEFINITIONS "WITH_DM_LUA")
+	list (APPEND TEST_GEN_C_FILES ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/lua/LuaDataModel.cpp)
+	list (APPEND TEST_GEN_C_LIBRARIES ${LUA_LIBRARIES})
+endif()
+if (${WITH_DM_PROMELA})
+	list (APPEND TEST_GEN_C_DEFINITIONS "WITH_DM_PROMELA")
+	list (APPEND TEST_GEN_C_FILES 
+		${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/promela/PromelaDataModel.cpp
+		${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/promela/PromelaParser.cpp
+		${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/promela/parser/promela.lex.yy.cpp
+		${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/promela/parser/promela.tab.cpp
+		${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/promela/parser/promela.lex.yy.cpp
+	)
+endif()
+
+add_executable(test-gen-c ${TEST_GEN_C_FILES})
+target_link_libraries(test-gen-c ${TEST_GEN_C_LIBRARIES})
+# target_link_libraries(test-gen-c ${XercesC_LIBRARIES} ${LIBEVENT_LIBRARIES} ${CURL_LIBRARIES})
 
 if (USCXML_PREREQS)
     add_dependencies(test-gen-c ${USCXML_PREREQS})
@@ -121,7 +169,8 @@ if (UNIX)
 	target_link_libraries(test-gen-c pthread)
 endif()
 set_target_properties(test-gen-c PROPERTIES FOLDER "Tests")
-set_target_properties(test-gen-c PROPERTIES COMPILE_DEFINITIONS "NO_XERCESC;FEATS_ON_CMD")
+set_target_properties(test-gen-c PROPERTIES COMPILE_DEFINITIONS "${TEST_GEN_C_DEFINITIONS}")
+# set_target_properties(test-gen-c PROPERTIES COMPILE_DEFINITIONS "NO_XERCESC;FEATS_ON_CMD")
 
 # issues
 file(GLOB_RECURSE USCXML_ISSUES
@@ -329,7 +378,15 @@ if (NOT BUILD_MINIMAL)
 								-DOUTDIR:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${TEST_CLASS}
 								-DTESTFILE:FILEPATH=${W3C_TEST}
 								-DTARGETLANG=${TEST_TARGET}
+								-DWITH_DM_ECMA_JSC:BOOL=${WITH_DM_ECMA_JSC}
+								-DJSC_INCLUDE_DIR:BOOL=${JSC_INCLUDE_DIR}
 								-DJSC_LIBRARY:FILEPATH=${JSC_LIBRARY}
+								-DWITH_DM_ECMA_V8:BOOL=${WITH_DM_ECMA_V8}
+								-DV8_LIBRARY:FILEPATH=${V8_LIBRARY}
+								-DV8_INCLUDE_DIR:BOOL=${V8_INCLUDE_DIR}
+								-DWITH_DM_LUA:BOOL=${WITH_DM_LUA}
+								-DLUA_LIBRARIES:FILEPATH=${LUA_LIBRARIES}
+								-DLUA_INCLUDE_DIR:FILEPATH=${LUA_INCLUDE_DIR}
 								-DUSCXML_TRANSFORM_BIN:FILEPATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/uscxml-transform
 								-DANT_BIN:FILEPATH=${ANT_BIN}
 								-DCC_BIN:FILEPATH=${CC_BIN}

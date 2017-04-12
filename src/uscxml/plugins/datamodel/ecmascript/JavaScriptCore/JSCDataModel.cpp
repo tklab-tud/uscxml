@@ -24,7 +24,9 @@
 #include "JSCDataModel.h"
 
 #include "uscxml/messages/Event.h"
+#ifndef NO_XERCESC
 #include "uscxml/util/DOM.h"
+#endif
 #include "uscxml/interpreter/Logging.h"
 
 #include <vector>
@@ -52,6 +54,7 @@ if (exception) \
 
 using namespace XERCESC_NS;
 
+#ifndef NO_XERCESC
 static JSValueRef XMLString2JS(const XMLCh* input, JSContextRef context) {
 	JSValueRef output;
 
@@ -83,6 +86,9 @@ static XMLCh* JS2XMLString(JSValueRef input, JSContextRef context) {
 }
 
 #include "JSCDOM.cpp.inc"
+#else
+#include "JSCEvent.cpp.inc"
+#endif
 
 namespace uscxml {
 
@@ -104,6 +110,7 @@ JSCDataModel::~JSCDataModel() {
 }
 
 void JSCDataModel::addExtension(DataModelExtension* ext) {
+#if 0
 	if (_extensions.find(ext) != _extensions.end())
 		return;
 
@@ -142,6 +149,7 @@ void JSCDataModel::addExtension(DataModelExtension* ext) {
 			break;
 		}
 	}
+#endif
 }
 
 JSValueRef JSCDataModel::jsExtension(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
@@ -183,6 +191,8 @@ JSClassDefinition JSCDataModel::jsIOProcessorsClassDef = { 0, 0, "ioProcessors",
 JSClassDefinition JSCDataModel::jsInvokersClassDef = { 0, 0, "invokers", 0, 0, 0, 0, 0, jsInvokerHasProp, jsInvokerGetProp, 0, 0, jsInvokerListProps, 0, 0, 0, 0 };
 
 std::mutex JSCDataModel::_initMutex;
+
+#ifndef NO_XERCESC
 
 bool JSCNodeListHasPropertyCallback(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName) {
 	size_t propMaxSize = JSStringGetMaximumUTF8CStringSize(propertyName);
@@ -232,6 +242,7 @@ JSValueRef JSCNodeListGetPropertyCallback(JSContextRef context, JSObjectRef obje
 	                      SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_as_voidptrptr(&node)), 0);
 	return jsresult;
 }
+#endif
 
 std::shared_ptr<DataModelImpl> JSCDataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<JSCDataModel> dm(new JSCDataModel());
@@ -239,6 +250,7 @@ std::shared_ptr<DataModelImpl> JSCDataModel::create(DataModelCallbacks* callback
 	dm->_ctx = JSGlobalContextCreate(NULL);
 	dm->_callbacks = callbacks;
 
+#ifndef NO_XERCESC
 	JSObjectRef exports;
 
 	// register subscript operator with nodelist
@@ -250,6 +262,7 @@ std::shared_ptr<DataModelImpl> JSCDataModel::create(DataModelCallbacks* callback
 		std::lock_guard<std::mutex> lock(_initMutex);
 		JSCDOM_initialize(dm->_ctx, &exports);
 	}
+#endif
 
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);
@@ -333,11 +346,15 @@ void JSCDataModel::setEvent(const Event& event) {
 
 	/* Manually handle swig ignored event data */
 	if (event.data.node) {
+#ifndef NO_XERCESC
 		JSStringRef propName = JSStringCreateWithUTF8CString("data");
 		JSObjectSetProperty(_ctx, eventObj, propName, getNodeAsValue(event.data.node), 0, &exception);
 		JSStringRelease(propName);
 		if (exception)
 			handleException(exception);
+#else
+		ERROR_EXECUTION_THROW("Compiled without DOM support");
+#endif
 #if 0
 	} else if (event.content.length() > 0) {
 		// _event.data is a string or JSON
@@ -440,7 +457,12 @@ JSValueRef JSCDataModel::getDataAsValue(const Data& data) {
 	JSValueRef exception = NULL;
 
 	if (data.node) {
+#ifndef NO_XERCESC
 		return getNodeAsValue(data.node);
+#else
+		ERROR_EXECUTION_THROW("Compiled without DOM support");
+#endif
+
 	}
 	if (data.compound.size() > 0) {
 		JSObjectRef value = JSObjectMake(_ctx, 0, 0);
@@ -539,7 +561,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 //			data.binary = privObj->nativeObj->_blob;
 //			return data;
 //		} else
-
+#ifndef NO_XERCESC
 		if (JSValueIsObjectOfClass(_ctx, value, _exports_DOMNode_classRef)) {
 			// dom node
 			void* privData = NULL;
@@ -547,6 +569,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 			data.node = (XERCESC_NS::DOMNode*)privData;
 			return data;
 		}
+#endif
 		std::set<std::string> propertySet;
 
 		JSPropertyNameArrayRef properties = JSObjectCopyPropertyNames(_ctx, objValue);
@@ -672,6 +695,7 @@ JSValueRef JSCDataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 	return result;
 }
 
+#ifndef NO_XERCESC
 JSValueRef JSCDataModel::getNodeAsValue(const DOMNode* node) {
 	return SWIG_JSC_NewPointerObj(_ctx,
 	                              (void*)node,
@@ -694,6 +718,7 @@ JSValueRef JSCDataModel::getNodeAsValue(const DOMNode* node) {
 //        break;
 //    }
 }
+#endif
 
 void JSCDataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 
@@ -711,7 +736,11 @@ void JSCDataModel::assign(const std::string& location, const Data& data, const s
 
 	JSValueRef exception = NULL;
 	if (data.node) {
+#ifndef NO_XERCESC
 		JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getNodeAsValue(data.node), 0, &exception);
+#else
+		ERROR_EXECUTION_THROW("Compiled without DOM support");
+#endif
 	} else {
 		evalAsValue(location + " = " + Data::toJSON(data));
 	}

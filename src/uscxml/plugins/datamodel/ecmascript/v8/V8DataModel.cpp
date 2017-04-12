@@ -29,7 +29,9 @@
 #include "V8DataModel.h"
 
 #include "uscxml/messages/Event.h"
+#ifndef NO_XERCESC
 #include "uscxml/util/DOM.h"
+#endif
 #include "uscxml/interpreter/Logging.h"
 
 #include <boost/algorithm/string.hpp>
@@ -40,6 +42,9 @@
 
 using namespace XERCESC_NS;
 
+#define SWIG_V8_VERSION 0x032317
+
+#ifndef NO_XERCESC
 static v8::Local<v8::Value> XMLString2JS(const XMLCh* input) {
 	char* res = XERCESC_NS::XMLString::transcode(input);
 	v8::Local<v8::Value> handle = v8::String::New(res);
@@ -53,9 +58,11 @@ static XMLCh* JS2XMLString(const v8::Local<v8::Value>& value) {
 }
 
 // this is the version we support here
-#define SWIG_V8_VERSION 0x032317
 
 #include "V8DOM.cpp.inc"
+#else
+#include "V8Event.cpp.inc"
+#endif
 
 namespace uscxml {
 
@@ -149,6 +156,7 @@ std::mutex V8DataModel::_initMutex;
 
 v8::Isolate* V8DataModel::_isolate = NULL;
 
+#ifndef NO_XERCESC
 void V8NodeListIndexedPropertyHandler(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
 	XERCESC_NS::DOMNodeList* list;
 	SWIG_V8_GetInstancePtr(info.Holder(), (void**)&list);
@@ -163,6 +171,7 @@ void V8NodeListIndexedPropertyHandler(uint32_t index, const v8::PropertyCallback
 	info.GetReturnValue().Set(v8::Undefined());
 
 }
+#endif
 
 std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<V8DataModel> dm(new V8DataModel());
@@ -197,6 +206,8 @@ std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks
 	v8::Context::Scope contextScope(context);
 	assert(dm->_isolate->GetCurrentContext() == context);
 
+#ifndef NO_XERCESC
+
 	// not thread safe!
 	{
 		std::lock_guard<std::mutex> lock(_initMutex);
@@ -212,6 +223,7 @@ std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks
 		SWIGV8_SET_CLASS_TEMPL(_exports_DOMNodeList_clientData.class_templ, _exports_DOMNodeList_class);
 
 	}
+#endif
 
 	context->Global()->SetAccessor(v8::String::NewSymbol("_sessionid"),
 	                               V8DataModel::getAttribute,
@@ -400,7 +412,11 @@ void V8DataModel::setEvent(const Event& event) {
 	}
 
 	if (event.data.node) {
+#ifndef NO_XERCESC
 		eventObj->Set(v8::String::NewSymbol("data"), getNodeAsValue(event.data.node));
+#else
+		ERROR_EXECUTION_THROW("Compiled without DOM support");
+#endif
 	} else {
 		// _event.data is KVP
 		Data data = event.data;
@@ -527,13 +543,14 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 //			data.binary = privObj->nativeObj->_blob;
 //			return data;
 //		}
+#ifndef NO_XERCESC
 
 		v8::Local<v8::FunctionTemplate> tmpl = v8::Local<v8::FunctionTemplate>::New(_isolate, _exports_DOMNode_clientData.class_templ);
 		if (tmpl->HasInstance(value)) {
 			SWIG_V8_GetInstancePtr(value, (void**)&(data.node));
 			return data;
 		}
-
+#endif
 		v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
 		v8::Local<v8::Array> properties = object->GetPropertyNames();
 		for (int i = 0; i < properties->Length(); i++) {
@@ -562,12 +579,14 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 	return data;
 }
 
+#ifndef NO_XERCESC
 v8::Local<v8::Value> V8DataModel::getNodeAsValue(const XERCESC_NS::DOMNode* node) {
 	return SWIG_NewPointerObj(SWIG_as_voidptr(node),
 	                          SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode,
 	                                  SWIG_as_voidptrptr(&node)),
 	                          0);
 }
+#endif
 
 v8::Local<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 
@@ -601,7 +620,11 @@ v8::Local<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 		}
 	}
 	if (data.node) {
+#ifndef NO_XERCESC
 		return getNodeAsValue(data.node);
+#else
+		ERROR_EXECUTION_THROW("Compiled without DOM support");
+#endif
 	}
 
 //	if (data.binary) {
@@ -759,7 +782,9 @@ void V8DataModel::assign(const std::string& location, const Data& data, const st
 	v8::HandleScope scope(_isolate);
 
 	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
+#ifndef NO_XERCESC
 	v8::Local<v8::Object> global = ctx->Global();
+#endif
 	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
 
 	if (location.compare("_sessionid") == 0) // test 322
@@ -774,7 +799,11 @@ void V8DataModel::assign(const std::string& location, const Data& data, const st
 		ERROR_EXECUTION_THROW("Cannot assign to _event");
 
 	if (data.node) {
+#ifndef NO_XERCESC
 		global->Set(v8::String::NewSymbol(location.c_str()), getNodeAsValue(data.node));
+#else
+		ERROR_EXECUTION_THROW("Compiled without DOM support");
+#endif
 	} else {
 		evalAsValue(location + " = " + Data::toJSON(data));
 	}

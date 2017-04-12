@@ -289,6 +289,7 @@ void DOMUtils::filterTypeGeneric(const std::set<DOMNode::NodeType>& types,
                                  const bool includeEmbeddedDoc,
                                  const bool includeRoot) {
 
+#if 0
 	if (!root)
 		return;
 
@@ -322,6 +323,42 @@ void DOMUtils::filterTypeGeneric(const std::set<DOMNode::NodeType>& types,
 	        types.find(root->getNodeType()) != types.end()) {
 		result.push_back((DOMNode*)root);
 	}
+#else
+	if (!root)
+		return;
+
+	if ((order == NO_RECURSE || order == DOCUMENT) &&
+	        includeRoot &&
+	        types.find(root->getNodeType()) != types.end()) {
+
+		result.push_back((DOMNode*)root);
+	}
+
+	if (root->getNodeType() == DOMNode::ELEMENT_NODE && root->hasChildNodes()) {
+		DOMNode* currNode = root->getFirstChild();
+		while (currNode) {
+			if (order == NO_RECURSE) {
+				if (types.find(currNode->getNodeType()) != types.end()) {
+					result.push_back(currNode);
+				}
+			} else {
+				if (includeEmbeddedDoc ||
+				        (currNode->getNodeType() == DOMNode::ELEMENT_NODE &&
+				         TAGNAME_CAST(currNode) != XML_PREFIX(root).str() + "scxml")) {
+					filterTypeGeneric(types, result, currNode, order, includeEmbeddedDoc, true);
+				}
+			}
+			currNode = currNode->getNextSibling();
+		}
+	}
+
+	if (order == POSTFIX &&
+	        includeRoot &&
+	        types.find(root->getNodeType()) != types.end()) {
+		result.push_back((DOMNode*)root);
+	}
+
+#endif
 
 }
 

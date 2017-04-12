@@ -36,7 +36,9 @@
 #endif
 
 #include "uscxml/messages/Event.h"
+#ifndef NO_XERCESC
 #include "uscxml/util/DOM.h"
+#endif
 #include "uscxml/interpreter/Logging.h"
 #include <boost/algorithm/string.hpp>
 
@@ -271,6 +273,7 @@ void LuaDataModel::addExtension(DataModelExtension* ext) {
 void LuaDataModel::setEvent(const Event& event) {
 	luabridge::LuaRef luaEvent(_luaState);
 	luaEvent = luabridge::newTable(_luaState);
+
 
 	luaEvent["name"] = event.name;
 	if (event.raw.size() > 0)

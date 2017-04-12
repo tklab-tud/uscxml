@@ -7,6 +7,7 @@
 %import "uscxml/config.h"
 %import "uscxml/Common.h"
 
+#ifndef NO_XERCESC
 %import "xercesc/util/XercesDefs.hpp"
 %import "xercesc/util/Xerces_autoconf_config.hpp"
 
@@ -29,6 +30,7 @@
 %}
 
 %include "../common/bindings/dom/dom.i"
+#endif
 
 // Operators we do want
 // %rename(operator_assignment) operator=;

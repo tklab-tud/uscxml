@@ -15,24 +15,39 @@ if (CMD_RESULT)
 endif ()
 message(STATUS "time for transforming to c machine")
 
+set(LIBRARY_PATH "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "-L/opt/local/lib")
+set(LIBRARY_FILE "-luscxml")
+set(INCLUDE_PATH 
+	"-I${PROJECT_SOURCE_DIR}/contrib/src"
+	"-I${PROJECT_SOURCE_DIR}/src"
+	"-I${PROJECT_BINARY_DIR}"
+	"-I${LIBEVENT_INCLUDE_DIR}"
+)
+
+# if (WITH_DM_ECMA_JSC AND JSC_INCLUDE_DIR)
+# 	message(FATAL_ERROR "${JSC_INCLUDE_DIR}")
+# 	if (JSC_LIBRARY)
+# 		list (APPEND LIBRARY_FILE ${JSC_LIBRARY})
+# 	endif()
+# 	list (APPEND INCLUDE_PATH "-I${JSC_INCLUDE_DIR}")
+# endif()
+#
+# if (WITH_DM_ECMA_V8 AND V8_INCLUDE_DIR)
+# 	# message(FATAL_ERROR "${V8_INCLUDE_DIR}")
+# 	# list (APPEND LIBRARY_FILE ${V8_LIBRARY})
+# 	list (APPEND INCLUDE_PATH "-I${V8_INCLUDE_DIR}")
+# endif()
+
 set(COMPILE_CMD_BIN
         "-O0"
         "-std=c++11"
         "-Wl,-search_paths_first"
         "-Wl,-headerpad_max_install_names"
         "-o" "${OUTDIR}/${TEST_FILE_NAME}"
-        "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-        "-L${PROJECT_BINARY_DIR}/deps/xerces-c/lib"
-        "-L/opt/local/lib"
-        "-luscxml"
-        "-lxerces-c"
+        ${LIBRARY_PATH}
+        ${LIBRARY_FILE}
+        ${INCLUDE_PATH}
         "-include" "${OUTDIR}/${TEST_FILE_NAME}.machine.c"
-        "-I${PROJECT_SOURCE_DIR}/contrib/src"
-        "-I${PROJECT_SOURCE_DIR}/src"
-        "-I${PROJECT_BINARY_DIR}"
-        "-I${XercesC_INCLUDE_DIRS}"
-        "-I${URIPARSER_INCLUDE_DIR}"
-        "-I${LIBEVENT_INCLUDE_DIR}"
         "-Wl,-rpath,${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
         "-DAUTOINCLUDE_TEST=ON"
         "${SCAFFOLDING_FOR_GENERATED_C}")

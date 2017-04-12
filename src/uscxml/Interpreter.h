@@ -194,7 +194,7 @@ public:
 	/**
 	 * Return ActionLanguage with the instances actually used (i.e. those from the factory).
 	 */
-	ActionLanguage getActionLanguage();
+	ActionLanguage* getActionLanguage();
 
 	/**
 	 * Provide a custom Factory to instantiate dynamic instances for this and invoked state-chart instances.

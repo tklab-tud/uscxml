@@ -26,7 +26,7 @@ my @breakpointSeq;
 my $pid = fork;
 
 if (!$pid) {
-	# exec("$scxmlBin -t4088 -d");
+	exec("$scxmlBin -t4088 -d");
 	exit;
 }
 

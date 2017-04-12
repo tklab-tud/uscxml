@@ -161,6 +161,19 @@ else()
 			ecmascript/JavaScriptCore/bindings.i
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMENT "Creating the DOM for JavaScriptCore ...")
+		add_custom_target(jsc-bindings-noxercesc
+			COMMAND ${SWIG_EXECUTABLE}
+			-I${XercesC_INCLUDE_DIRS}
+			-I${PROJECT_SOURCE_DIR}/src
+			-I${CMAKE_BINARY_DIR}
+			-javascript 
+			-jsc
+			-DNO_XERCESC
+			-c++ 
+			-o ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/JavaScriptCore/JSCEvent.cpp.inc
+			ecmascript/JavaScriptCore/bindings.i
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMENT "Creating the DOM for JavaScriptCore (no XERCESC) ...")
 
 		# list (APPEND JSC_DATAMODEL ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/JavaScriptCore/JSCDOM.cpp.inc)
 		set_target_properties(jsc-bindings PROPERTIES FOLDER "Bindings")
@@ -180,6 +193,20 @@ else()
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMENT "Creating the DOM for V8 ...")
 
+		add_custom_target(v8-bindings-noxercesc
+			COMMAND ${SWIG_EXECUTABLE}
+			-I${XercesC_INCLUDE_DIRS}
+			-I${PROJECT_SOURCE_DIR}/src
+			-I${CMAKE_BINARY_DIR}
+			-javascript 
+			-v8 
+			-DNO_XERCESC
+			-c++ 
+			-o ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/v8/V8Event.cpp.inc
+			ecmascript/v8/bindings.i
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMENT "Creating the DOM for V8 (no XERCESC) ...")
+
 		# list (APPEND V8_DATAMODEL ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/v8/V8DOM.cpp.inc)
 		set_target_properties(v8-bindings PROPERTIES FOLDER "Bindings")
 		
@@ -192,6 +219,19 @@ else()
 			-I${PROJECT_SOURCE_DIR}/src
 			-I${CMAKE_BINARY_DIR}
 			-lua 
+			-c++ 
+			-o ${CMAKE_CURRENT_SOURCE_DIR}/lua/LuaDOM.cpp.inc
+			lua/bindings.i
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMENT "Creating the DOM for Lua ...")
+
+		add_custom_target(lua-bindings-noxercesc
+			COMMAND ${SWIG_EXECUTABLE}
+			-I${XercesC_INCLUDE_DIRS}
+			-I${PROJECT_SOURCE_DIR}/src
+			-I${CMAKE_BINARY_DIR}
+			-lua 
+			-DNO_XERCESC
 			-c++ 
 			-o ${CMAKE_CURRENT_SOURCE_DIR}/lua/LuaDOM.cpp.inc
 			lua/bindings.i

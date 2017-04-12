@@ -53,9 +53,6 @@ public:
 	/// @copydoc InvokerImpl::eventFromSCXML
 	virtual void eventFromSCXML(const Event& event);
 
-	/// @copydoc InvokerImpl::getFinalize
-	virtual XERCESC_NS::DOMElement* getFinalize();
-
 	/// @copydoc InvokerImpl::deserialize
 	virtual void deserialize(const Data& encodedState);
 

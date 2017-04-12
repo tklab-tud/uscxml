@@ -20,8 +20,9 @@
 #include "uscxml/Common.h"
 #include "uscxml/util/String.h"
 #include "PromelaDataModel.h"
+#ifndef NO_XERCESC
 #include "uscxml/util/DOM.h"
-
+#endif
 #include <cctype>
 #include <boost/algorithm/string.hpp>
 
@@ -264,7 +265,11 @@ void PromelaDataModel::setEvent(const Event& event) {
 	}
 
 	Data PromelaDataModel::getAsData(const std::string& content) {
-		return evalAsData(content);
+		try {
+			return evalAsData(content);
+		} catch (ErrorEvent e) {
+			return Data::fromJSON(content);
+		}
 	}
 
 	void PromelaDataModel::evaluateDecl(const std::string& expr) {
@@ -360,8 +365,8 @@ void PromelaDataModel::setEvent(const Event& event) {
 	}
 
 	int PromelaDataModel::dataToInt(const Data& data) {
-		if (data.type != Data::INTERPRETED)
-			ERROR_EXECUTION_THROW("Operand is not integer");
+//		if (data.type != Data::INTERPRETED)
+//			ERROR_EXECUTION_THROW("Operand is not integer");
 		int value = strTo<int>(data.atom);
 		if (data.atom.compare(toStr(value)) != 0)
 			ERROR_EXECUTION_THROW("Operand is not integer");
@@ -398,7 +403,14 @@ void PromelaDataModel::setEvent(const Event& event) {
 			if (iequals(node->value, "true"))
 				return Data(true);
 			return Data(strTo<int>(node->value));
-		case PML_NAME:
+		case PML_NAME: {
+			Data d = getVariable(node);
+			if (d.atom.size() != 0)
+				return Data(d.asJSON(), Data::VERBATIM);
+			if (d.type == Data::INTERPRETED && d.atom[0] == '\'' && d.atom[d.atom.size() - 1] == '\'')
+				return Data(d.atom.substr(1, d.atom.size() - 2), Data::VERBATIM);
+			return d;
+		}
 		case PML_VAR_ARRAY:
 		case PML_CMPND:
 			return getVariable(node);

@@ -1186,6 +1186,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(transition) << "_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {" << std::endl;
 			stream << "    int err = USCXML_ERR_OK;" << std::endl;
 			for (auto iter = execContent.begin(); iter != execContent.end(); iter++) {
+//                LOGD(USCXML_VERBATIM) << LOCALNAME(static_cast<DOMElement*>(*iter));
 				writeExecContent(stream, static_cast<DOMElement*>(*iter), 1);
 			}
 			stream << "    return USCXML_ERR_OK;" << std::endl;
@@ -1357,7 +1358,7 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		stream << padding << "}" << std::endl;
 
 	} else {
-		LOGD(USCXML_VERBATIM) << "'" << TAGNAME(elem) << "'" << std::endl << elem << std::endl;
+		LOGD(USCXML_VERBATIM) << "writeExecContent unsupported element: '" << TAGNAME(elem) << "'" << std::endl << *elem << std::endl;
 		assert(false);
 	}
 

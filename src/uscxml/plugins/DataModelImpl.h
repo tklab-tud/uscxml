@@ -51,7 +51,9 @@ public:
 	virtual const std::string& getSessionId() = 0;
 	virtual const std::map<std::string, IOProcessor>& getIOProcessors() = 0;
 	virtual bool isInState(const std::string& stateId) = 0;
+#ifndef NO_XERCESC
 	virtual XERCESC_NS::DOMDocument* getDocument() const = 0;
+#endif
 	virtual const std::map<std::string, Invoker>& getInvokers() = 0;
 	virtual Logger getLogger() = 0;
 };

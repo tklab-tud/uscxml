@@ -9,6 +9,7 @@
 #include <iostream>
 
 #define USCXML_VERBOSE
+#define WITH_DM_ECMA_JSC
 
 #include "uscxml/config.h"
 
@@ -19,8 +20,9 @@
 #endif
 
 #ifndef AUTOINCLUDE_TEST
-#include "test-c-machine.scxml.c"
-//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
+//#include "test-c-machine.scxml.c"
+#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
+//#include "/Users/sradomski/Desktop/Puneet/foo.c"
 #endif
 
 //#include "uscxml/util/URL.h"
@@ -28,9 +30,25 @@
 //#include "uscxml/dom/DOMUtils.h"
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/plugins/IOProcessorImpl.h"
+#include "uscxml/plugins/InvokerImpl.h"
 //#include "uscxml/Interpreter.h"
 #include "uscxml/util/UUID.h"
 //#include "uscxml/server/HTTPServer.h"
+
+//#include "uscxml/plugins/invoker/dirmon/DirMonInvoker.h"
+#include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
+
+#ifdef FEATS_ON_CMD
+#ifdef WITH_DM_ECMA_V8
+#include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
+#endif
+#ifdef WITH_DM_ECMA_JSC
+#include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDataModel.h"
+#endif
+#ifdef WITH_DM_LUA
+#include "uscxml/plugins/datamodel/lua/LuaDataModel.h"
+#endif
+#endif
 
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/interpreter/BasicEventQueue.h"
@@ -50,19 +68,35 @@ class DOMNode;
 }
 
 
-class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, public DelayedEventQueueCallbacks {
+class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, public DelayedEventQueueCallbacks, public InvokerCallbacks {
 public:
 	StateMachine(const uscxml_machine* machine) : machine(machine), parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
 		allMachines[sessionId] = this;
 		topMostMachine = this;
 		currentMachine = allMachines.begin();
-		init();
+		try {
+			init();
+		} catch (ErrorEvent e) {
+			LOGD(USCXML_FATAL) << e;
+		}
 	}
 
 	StateMachine(StateMachine* parent, const uscxml_machine* machine, const uscxml_elem_invoke* invoke) : machine(machine), invocation(invoke) {
 		parentMachine = parent;
 		topMostMachine = parent->topMostMachine;
 		init();
+	}
+
+	ActionLanguage* getActionLanguage() {
+		return NULL;
+	}
+
+	std::set<InterpreterMonitor*> getMonitors() {
+		return std::set<InterpreterMonitor*>();
+	}
+
+	std::string getBaseURL() {
+		return "";
 	}
 
 	virtual Logger getLogger() {
@@ -310,6 +344,8 @@ public:
 					topMachine->invocationIds.erase(invocation);
 				}
 			} else {
+				// TODO: Uninvoke other types of invokers
+
 				return USCXML_ERR_UNSUPPORTED;
 			}
 		} else {
@@ -334,6 +370,16 @@ public:
 				}
 				allMachines[invokedMachine->invokeId] = invokedMachine;
 				topMachine->invocationIds[invocation] = invokedMachine->invokeId;
+
+			} else if (Factory::getInstance()->hasInvoker(invocation->type)) {
+
+				Event invokeEvent; // see BasicContentExecutor::384ff
+				// TODO: Establish the invokeEvent
+				if (invocation->params != NULL) {
+				}
+				Invoker inv = Factory::getInstance()->createInvoker(invocation->type, USER_DATA(ctx));
+				inv.invoke("", invokeEvent);
+				USER_DATA(ctx)->_invocations[invocation] = inv;
 			} else {
 				return USCXML_ERR_UNSUPPORTED;
 			}
@@ -681,6 +727,7 @@ public:
 						if (data->content) {
 							content << data->content;
 						} else {
+// avoid dependency on URL.cpp -> urlparser -> curl
 #if 0
 							URL sourceURL(data->src);
 							if (USER_DATA(ctx)->baseURL.size() > 0) {
@@ -942,6 +989,8 @@ NEXT_DESC:
 	const uscxml_elem_invoke* invocation;
 	std::map<std::string, Data> invokeData;
 
+	std::map<const uscxml_elem_invoke*, Invoker> _invocations;
+
 	std::deque<Event> iq;
 	std::deque<Event> eq;
 
@@ -983,12 +1032,24 @@ int main(int argc, char** argv) {
 
 	size_t microSteps = 0;
 
+#ifdef FEATS_ON_CMD
+	Factory::getInstance()->registerDataModel(new PromelaDataModel());
+#ifdef WITH_DM_ECMA_V8
+	Factory::getInstance()->registerDataModel(new V8DataModel());
+#endif
+#ifdef WITH_DM_ECMA_JSC
+	Factory::getInstance()->registerDataModel(new JSCDataModel());
+#endif
+#ifdef WITH_DM_LUA
+	Factory::getInstance()->registerDataModel(new LuaDataModel());
+#endif
+#endif
+
 	StateMachine rootMachine(&USCXML_MACHINE);
 
 	while(remainingRuns-- > 0) {
 
 		microSteps = 0;
-
 
 		for (;;) {
 			err = rootMachine.step();

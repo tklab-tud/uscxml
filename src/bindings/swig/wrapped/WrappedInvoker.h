@@ -56,12 +56,6 @@ public:
 
 	virtual void eventFromSCXML(const Event& event) {}
 
-	virtual XERCESC_NS::DOMElement* getFinalize() {
-		return _finalize;
-	}
-	virtual void setFinalize(XERCESC_NS::DOMElement* finalize) {
-		_finalize = finalize;
-	}
 	virtual void setInvokeId(const std::string& invokeId) {
 		_invokeId = invokeId;
 	}
