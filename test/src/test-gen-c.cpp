@@ -20,9 +20,8 @@
 #endif
 
 #ifndef AUTOINCLUDE_TEST
-//#include "test-c-machine.scxml.c"
-#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
-//#include "/Users/sradomski/Desktop/Puneet/foo.c"
+#include "test-c-machine.scxml.c"
+//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
 #endif
 
 //#include "uscxml/util/URL.h"
