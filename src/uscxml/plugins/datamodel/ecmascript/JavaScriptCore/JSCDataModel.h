@@ -24,6 +24,7 @@
 #include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 #include <set>
+#include <mutex>
 
 #if defined(HAS_JSC_JAVASCRIPTCORE_H)
 #include <JavaScriptCore/JavaScriptCore.h>
