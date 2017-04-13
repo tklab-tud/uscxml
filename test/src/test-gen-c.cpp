@@ -9,7 +9,7 @@
 #include <iostream>
 
 #define USCXML_VERBOSE
-#define WITH_DM_ECMA_JSC
+//#define WITH_DM_ECMA_JSC
 
 #include "uscxml/config.h"
 
@@ -1017,7 +1017,7 @@ protected:
 
 int main(int argc, char** argv) {
 
-	int err;
+	int err = 0;
 	size_t benchmarkRuns = 1;
 	const char* envBenchmarkRuns = getenv("USCXML_BENCHMARK_ITERATIONS");
 	if (envBenchmarkRuns != NULL) {
