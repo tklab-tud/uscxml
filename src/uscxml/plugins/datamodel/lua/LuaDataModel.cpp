@@ -554,7 +554,27 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 				}
 			}
 			if (field.second) {
-				value[strTo<long>(field.first)] = lua;
+				if (field.first.length() == 0) {
+					ERROR_EXECUTION_THROW("Subscript operator is empty");
+				}
+
+				if (!isNumeric(field.first.c_str(), 10) && field.first[0] != '"' && field.first[0] != '\'') {
+					// evaluate subscript as variable
+					Data subscript = evalAsData(field.first);
+					if (subscript.atom.length() > 0) {
+						field.first = subscript.atom;
+					} else {
+						ERROR_EXECUTION_THROW("Evaluated subscript operator '" + subscript.asJSON() + "' is invalid");
+					}
+				}
+
+				if (isNumeric(field.first.c_str(), 10)) {
+					// numeric array subscript
+					value[strTo<long>(field.first)] = lua;
+				} else {
+					// string array subscript
+					value[field.first] = lua;
+				}
 			} else {
 				value[field.first] = lua;
 			}
