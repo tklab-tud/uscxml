@@ -276,10 +276,16 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 	std::string expr = ATTR(content, kXMLCharExpr);
 
 	Data d = _callbacks->evalAsData(expr);
+#if 1
 	if (label.size() > 0) {
 		_callbacks->getLogger().log(USCXML_LOG) << label << ": ";
 	}
 	_callbacks->getLogger().log(USCXML_LOG) << d << std::endl;
+#else
+	// see issue113
+	_callbacks->getLogger().log(USCXML_LOG) << (label.size() > 0 ? label + ":" : "") << d << std::endl;
+#endif
+
 }
 
 void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
