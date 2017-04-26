@@ -227,7 +227,7 @@ std::shared_ptr<DataModelImpl> LuaDataModel::create(DataModelCallbacks* callback
 			}
 		}
 	} catch (luabridge::LuaException e) {
-		LOG(_callbacks->getLogger(), USCXML_INFO) << e.what();
+		LOG(dm->_callbacks->getLogger(), USCXML_INFO) << e.what();
 	}
 
 	luabridge::getGlobalNamespace(dm->_luaState).beginClass<LuaDataModel>("DataModel").endClass();
@@ -560,7 +560,6 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 			}
 
 		}
-
 
 //        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
 	}

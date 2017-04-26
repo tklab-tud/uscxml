@@ -1,0 +1,42 @@
+<scxml datamodel="lua" initial="s0" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+	<datamodel>
+		<data expr="1" id="Var1"/>
+	</datamodel>
+	<state id="s0">
+		<onentry>
+			<send delay="2000" event="timeout" xmlns:scxml="http://www.w3.org/2005/07/scxml"/>
+		</onentry>
+		<invoke type="http://www.w3.org/TR/scxml/">
+			<content>
+				<scxml datamodel="lua" initial="sub0" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+					<datamodel>
+						<data expr="555" id="VarXXX"/>
+					</datamodel>
+					<final id="subFinal"/>
+					<state id="sub0">
+						<transition cond="Var1==1" target="subFinal">
+							<log expr="Var1" label="Var1 is supposed to be out of scope" />
+							<send target="#_parent" event="failure"/>
+						</transition>
+						<transition target="subFinal">
+							<send target="#_parent" event="success"/>
+						</transition>
+					</state>
+				</scxml>
+			</content>
+		</invoke>
+		<transition event="success" cond="not VarXXX" target="pass"/>
+		<transition event="*" target="fail"/>
+	</state>
+	<final id="pass" xmlns:scxml="http://www.w3.org/2005/07/scxml">
+		<onentry>
+			<log expr="'pass'" label="Outcome"/>
+			<log expr="VarXXX" label="We mustn't see VarXXX here"/>
+		</onentry>
+	</final>
+	<final id="fail" xmlns:scxml="http://www.w3.org/2005/07/scxml">
+		<onentry>
+			<log expr="'fail'" label="Outcome"/>
+		</onentry>
+	</final>
+</scxml>

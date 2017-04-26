@@ -1,0 +1,17 @@
+<scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+	<datamodel>
+		<data id="VarArray">{ 0, 0, 0 }</data>
+		<data expr="1" id="Var1"/>
+	</datamodel>
+	<state id="StateShape1">
+		<onentry>
+			<assign expr="555" location="VarArray[Var1]"/>
+		</onentry>
+		<transition cond="VarArray[1]~=0" target="Pass"/>
+		<transition event="error.*" target="Fail"/>
+		<transition cond="VarArray[1]==0" target="Unknown"/>
+	</state>
+	<final id="Pass"/>
+	<final id="Fail"/>
+	<final id="Unknown"/>
+</scxml>
