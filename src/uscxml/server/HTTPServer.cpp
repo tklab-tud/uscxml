@@ -92,9 +92,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_port > 0) {
 		_httpHandle = evhttp_bind_socket_with_handle(_http, NULL, _port);
 		if (_httpHandle) {
-            LOGD(USCXML_INFO) << "HTTP server listening on tcp/" << _port << std::endl;;
+			LOGD(USCXML_INFO) << "HTTP server listening on tcp/" << _port << std::endl;;
 		} else {
-            LOGD(USCXML_ERROR) << "HTTP server cannot bind to tcp/" << _port << std::endl;
+			LOGD(USCXML_ERROR) << "HTTP server cannot bind to tcp/" << _port << std::endl;
 		}
 	}
 
