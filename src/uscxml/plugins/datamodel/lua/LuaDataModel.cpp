@@ -227,7 +227,7 @@ std::shared_ptr<DataModelImpl> LuaDataModel::create(DataModelCallbacks* callback
 			}
 		}
 	} catch (luabridge::LuaException e) {
-		LOG(dm->_callbacks->getLogger(), USCXML_INFO) << e.what();
+		LOG(dm->_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
 	}
 
 	luabridge::getGlobalNamespace(dm->_luaState).beginClass<LuaDataModel>("DataModel").endClass();

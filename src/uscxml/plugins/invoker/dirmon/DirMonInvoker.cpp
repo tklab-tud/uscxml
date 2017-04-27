@@ -98,7 +98,7 @@ void DirMonInvoker::eventFromSCXML(const Event& event) {
 
 void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 	if (req.params.find("dir") == req.params.end()) {
-		LOG(_callbacks->getLogger(), USCXML_ERROR) << "No dir param given";
+		LOG(_callbacks->getLogger(), USCXML_ERROR) << "No dir param given" << std::endl;
 		return;
 	}
 
@@ -136,7 +136,7 @@ void DirMonInvoker::invoke(const std::string& source, const Event& req) {
 		URL url = URL::resolve(dirIter->second.atom, _callbacks->getBaseURL());
 
 		if (!url.isAbsolute()) {
-			LOG(_callbacks->getLogger(), USCXML_ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path";
+			LOG(_callbacks->getLogger(), USCXML_ERROR) << "Given directory '" << dirIter->second << "' cannot be transformed to absolute path" << std::endl;
 		} else {
 			_dir = url.path();
 		}
@@ -313,7 +313,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 	// stat directory for modification date
 	struct stat dirStat;
 	if (stat((_dir + _relDir).c_str(), &dirStat) != 0) {
-		LOG(_logger, USCXML_ERROR) << "Error with stat on directory " << _dir << ": " << strerror(errno);
+		LOG(_logger, USCXML_ERROR) << "Error with stat on directory " << _dir << ": " << strerror(errno) << std::endl;
 		return;
 	}
 
@@ -327,7 +327,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 		DIR *dp;
 		dp = opendir((_dir + _relDir).c_str());
 		if (dp == NULL) {
-			LOG(_logger, USCXML_ERROR) << "Error opening directory " << _dir + _relDir << ": " << strerror(errno);
+			LOG(_logger, USCXML_ERROR) << "Error opening directory " << _dir + _relDir << ": " << strerror(errno) << std::endl;
 			return;
 		}
 		// iterate all entries and see what changed
@@ -352,7 +352,7 @@ void DirectoryWatch::updateEntries(bool reportAsExisting) {
 
 			struct stat fileStat;
 			if (stat(filename.c_str(), &fileStat) != 0) {
-				LOG(_logger, USCXML_ERROR) << "Error with stat on directory entry: " << filename << ": " << strerror(errno);
+				LOG(_logger, USCXML_ERROR) << "Error with stat on directory entry: " << filename << ": " << strerror(errno) << std::endl;
 				continue;
 			}
 

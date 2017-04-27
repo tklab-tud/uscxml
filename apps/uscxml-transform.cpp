@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
 	Interpreter interpreter;
 	try {
 		if (inputFile.size() == 0 || inputFile == "-") {
-			LOGD(USCXML_INFO) << "Reading SCXML from STDIN";
+			LOGD(USCXML_INFO) << "Reading SCXML from STDIN" << std::endl;
 			std::stringstream ss;
 			std::string line;
 			while (std::getline(std::cin, line)) {
@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (!interpreter) {
-		LOGD(USCXML_ERROR) << "Cannot create interpreter from " << inputFile;
+		LOGD(USCXML_ERROR) << "Cannot create interpreter from " << inputFile << std::endl;
 		exit(EXIT_FAILURE);
 
 	}

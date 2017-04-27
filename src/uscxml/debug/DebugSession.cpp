@@ -215,7 +215,7 @@ void DebugSession::run(void* instance) {
 		//			return;
 		//		}
 	}
-	LOG(INSTANCE->_interpreter.getLogger(), USCXML_DEBUG) << "done";
+	LOG(INSTANCE->_interpreter.getLogger(), USCXML_DEBUG) << "done" << std::endl;
 }
 
 Data DebugSession::debugStop(const Data& data) {

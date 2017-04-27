@@ -363,7 +363,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		if (withCache && cachedState->compound.find("completion") != cachedState->compound.end()) {
 			boost::dynamic_bitset<BITSET_BLOCKTYPE> completion = fromBase64(cachedState->compound["completion"]);
 			if (completion.size() != _states.size()) {
-				LOG(_callbacks->getLogger(), USCXML_WARN) << "State completion has wrong size: Cache corrupted";
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "State completion has wrong size: Cache corrupted" << std::endl;
 			} else {
 				_states[i]->completion = completion;
 				goto COMPLETION_STABLISHED;
@@ -470,7 +470,7 @@ COMPLETION_STABLISHED:
 		if (withCache && cachedTrans->compound.find("exitset") != cachedTrans->compound.end()) {
 			boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet = fromBase64(cachedTrans->compound["exitset"]);
 			if (exitSet.size() != _states.size()) {
-				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition exit set has wrong size: Cache corrupted";
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition exit set has wrong size: Cache corrupted" << std::endl;
 			} else {
 				_transitions[i]->exitSet = exitSet;
 				goto EXIT_SET_ESTABLISHED;
@@ -501,7 +501,7 @@ EXIT_SET_ESTABLISHED:
 		if (withCache && cachedTrans->compound.find("conflicts") != cachedTrans->compound.end()) {
 			boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts = fromBase64(cachedTrans->compound["conflicts"]);
 			if (conflicts.size() != _transitions.size()) {
-				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition conflicts has wrong size: Cache corrupted";
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition conflicts has wrong size: Cache corrupted" << std::endl;
 			} else {
 				_transitions[i]->conflicts = conflicts;
 				goto CONFLICTS_ESTABLISHED;
@@ -531,7 +531,7 @@ CONFLICTS_ESTABLISHED:
 		if (withCache && cachedTrans->compound.find("target") != cachedTrans->compound.end()) {
 			boost::dynamic_bitset<BITSET_BLOCKTYPE> target = fromBase64(cachedTrans->compound["target"]);
 			if (target.size() != _states.size()) {
-				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition target set has wrong size: Cache corrupted";
+				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition target set has wrong size: Cache corrupted" << std::endl;
 			} else {
 				_transitions[i]->target = target;
 				goto TARGET_SET_ESTABLISHED;
@@ -1282,14 +1282,14 @@ bool FastMicroStep::hasLegalConfiguration() {
 		DOMElement* state = *sIter;
 		if (isMember(state, config)) {
 			if (foundScxmlChild) {
-				LOG(USCXML_ERROR) << "Invalid configuration: Multiple childs of scxml root are active '" << ATTR_CAST(foundScxmlChild, "id") << "' and '" << ATTR_CAST(scxmlChilds[i], "id") << "'";
+				LOG(USCXML_ERROR) << "Invalid configuration: Multiple childs of scxml root are active '" << ATTR_CAST(foundScxmlChild, "id") << "' and '" << ATTR_CAST(scxmlChilds[i], "id") << "'" << std::endl;
 				return false;
 			}
 			foundScxmlChild = scxmlChilds[i];
 		}
 	}
 	if (!foundScxmlChild) {
-		LOG(USCXML_ERROR) << "Invalid configuration: No childs of scxml root are active";
+		LOG(USCXML_ERROR) << "Invalid configuration: No childs of scxml root are active" << std::endl;
 
 		return false;
 	}
@@ -1303,14 +1303,14 @@ bool FastMicroStep::hasLegalConfiguration() {
 		}
 	}
 	if (!foundAtomicState) {
-		LOG(USCXML_ERROR) << "Invalid configuration: No atomic state is active";
+		LOG(USCXML_ERROR) << "Invalid configuration: No atomic state is active" << std::endl;
 		return false;
 	}
 
 	// the configuration contains no history pseudo-states
 	for (size_t i = 0; i < config.size(); i++) {
 		if (isHistory(Element<std::string>(config[i]))) {
-			LOG(USCXML_ERROR) << "Invalid configuration: history state " << ATTR_CAST(config[i], "id") << " is active";
+			LOG(USCXML_ERROR) << "Invalid configuration: history state " << ATTR_CAST(config[i], "id") << " is active" << std::endl;
 			return false;
 		}
 	}
@@ -1326,7 +1326,7 @@ bool FastMicroStep::hasLegalConfiguration() {
 				        (iequals(LOCALNAME(parent), "state") ||
 				         iequals(LOCALNAME(parent), "parallel"))) {
 					if (!isMember(parent, config)) {
-						LOG(USCXML_ERROR) << "Invalid configuration: atomic state '" << ATTR_CAST(config[i], "id") << "' is active, but parent '" << ATTR_CAST(parent, "id") << "' is not";
+						LOG(USCXML_ERROR) << "Invalid configuration: atomic state '" << ATTR_CAST(config[i], "id") << "' is active, but parent '" << ATTR_CAST(parent, "id") << "' is not" << std::endl;
 						return false;
 					}
 				}
@@ -1346,14 +1346,14 @@ bool FastMicroStep::hasLegalConfiguration() {
 				if (isMember(childs[j], config)) {
 					if (foundChildState) {
 						LOG(USCXML_ERROR) << "Invalid configuration: Multiple childs of compound '" << ATTR_CAST(config[i], "id")
-						                  << "' are active '" << ATTR_CAST(foundChildState, "id") << "' and '" << ATTR_CAST(childs[j], "id") << "'";
+						                  << "' are active '" << ATTR_CAST(foundChildState, "id") << "' and '" << ATTR_CAST(childs[j], "id") << "'" << std::endl;
 						return false;
 					}
 					foundChildState = childs[j];
 				}
 			}
 			if (!foundChildState) {
-				LOG(USCXML_ERROR) << "Invalid configuration: No childs of compound '" << ATTR_CAST(config[i], "id") << "' are active";
+				LOG(USCXML_ERROR) << "Invalid configuration: No childs of compound '" << ATTR_CAST(config[i], "id") << "' are active" << std::endl;
 				return false;
 			}
 		}
@@ -1365,7 +1365,7 @@ bool FastMicroStep::hasLegalConfiguration() {
 			NodeSet<std::string> childs = getChildStates(config[i]);
 			for (size_t j = 0; j < childs.size(); j++) {
 				if (!isMember(childs[j], config) && !isHistory(Element<std::string>(childs[j]))) {
-					LOG(USCXML_ERROR) << "Invalid configuration: Not all children of parallel '" << ATTR_CAST(config[i], "id") << "' are active i.e. '" << ATTR_CAST(childs[j], "id") << "' is not";
+					LOG(USCXML_ERROR) << "Invalid configuration: Not all children of parallel '" << ATTR_CAST(config[i], "id") << "' are active i.e. '" << ATTR_CAST(childs[j], "id") << "' is not" << std::endl;
 					return false;
 				}
 			}

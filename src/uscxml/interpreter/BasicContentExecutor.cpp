@@ -144,7 +144,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			} else if (delayAttr.unit.length() == 0) { // unit less delay is interpreted as milliseconds
 				delayMs = strTo<uint32_t>(delayAttr.value);
 			} else {
-				LOG(_callbacks->getLogger(), USCXML_ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
+				LOG(_callbacks->getLogger(), USCXML_ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'" << std::endl;
 			}
 		}
 	} catch (Event e) {
@@ -370,7 +370,7 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block) {
 		} else if (iequals(tagName, xmlPrefix + "script")) {
 			processScript(block);
 		} else {
-			LOG(_callbacks->getLogger(), USCXML_ERROR) << tagName;
+			LOG(_callbacks->getLogger(), USCXML_ERROR) << tagName << std::endl;
 			assert(false);
 		}
 	} catch (ErrorEvent exc) {

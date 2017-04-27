@@ -92,9 +92,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_port > 0) {
 		_httpHandle = evhttp_bind_socket_with_handle(_http, NULL, _port);
 		if (_httpHandle) {
-			LOGD(USCXML_INFO) << "HTTP server listening on tcp/" << _port;
+            LOGD(USCXML_INFO) << "HTTP server listening on tcp/" << _port << std::endl;;
 		} else {
-			LOGD(USCXML_ERROR) << "HTTP server cannot bind to tcp/" << _port;
+            LOGD(USCXML_ERROR) << "HTTP server cannot bind to tcp/" << _port << std::endl;
 		}
 	}
 
@@ -102,9 +102,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	if (_wsPort > 0) {
 		_wsHandle = evws_bind_socket(_evws, _wsPort);
 		if (_wsHandle) {
-			LOGD(USCXML_INFO) << "WebSocket server listening on tcp/" << _wsPort;
+			LOGD(USCXML_INFO) << "WebSocket server listening on tcp/" << _wsPort << std::endl;
 		} else {
-			LOGD(USCXML_ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort;
+			LOGD(USCXML_ERROR) << "WebSocket server cannot bind to tcp/" << _wsPort << std::endl;
 		}
 	}
 
@@ -145,9 +145,9 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 		if (_sslPort > 0) {
 			_sslHandle = evhttp_bind_socket_with_handle(_https, INADDR_ANY, _sslPort);
 			if (_sslHandle) {
-				LOG(USCXML_INFO) << "HTTPS server listening on tcp/" << _wsPort;
+				LOG(USCXML_INFO) << "HTTPS server listening on tcp/" << _wsPort << std::endl;
 			} else {
-				LOG(USCXML_ERROR) << "HTTPS server cannot bind to tcp/" << _wsPort;
+				LOG(USCXML_ERROR) << "HTTPS server cannot bind to tcp/" << _wsPort << std::endl;
 
 			}
 		}
@@ -461,7 +461,7 @@ void HTTPServer::processByMatchingServlet(const Request& request) {
 		matchesIter++;
 	}
 
-	LOGD(USCXML_INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix";
+	LOGD(USCXML_INFO) << "Got an HTTP request at " << actualPath << " but no servlet is registered there or at a prefix"  << std::endl;
 	evhttp_send_error(request.evhttpReq, 404, NULL);
 }
 
@@ -504,7 +504,7 @@ void HTTPServer::replyCallback(evutil_socket_t fd, short what, void *arg) {
 	Reply* reply = (Reply*)arg;
 
 	if (reply->content.size() > 0 && reply->headers.find("Content-Type") == reply->headers.end()) {
-		LOGD(USCXML_INFO) << "Sending content without Content-Type header";
+		LOGD(USCXML_INFO) << "Sending content without Content-Type header" << std::endl;
 	}
 
 	std::map<std::string, std::string>::const_iterator headerIter = reply->headers.begin();
@@ -564,7 +564,7 @@ bool HTTPServer::registerServlet(const std::string& path, HTTPServlet* servlet) 
 	HTTPServer* INSTANCE = getInstance();
 
 	if (!INSTANCE->_httpHandle) {
-		LOGD(USCXML_INFO) << "Registering at unstarted HTTP Server";
+		LOGD(USCXML_INFO) << "Registering at unstarted HTTP Server" << std::endl;
 		return true; // this is the culprit!
 	}
 
@@ -701,7 +701,7 @@ void HTTPServer::run(void* instance) {
 	while(INSTANCE->_isRunning) {
 		event_base_dispatch(INSTANCE->_base);
 	}
-	LOGD(USCXML_INFO) << "HTTP Server stopped";
+	LOGD(USCXML_INFO) << "HTTP Server stopped" << std::endl;
 }
 
 void HTTPServer::determineAddress() {

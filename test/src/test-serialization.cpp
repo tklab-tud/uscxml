@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 		sourceXML = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test557.scxml";
 
 		Interpreter interpreter = Interpreter::fromURL(sourceXML);
-		LOGD(USCXML_INFO) << "Processing " << interpreter.getImpl()->getBaseURL();
+		LOGD(USCXML_INFO) << "Processing " << interpreter.getImpl()->getBaseURL() << std::endl;
 		if (interpreter) {
 
 			interpreter.addMonitor(&vm);

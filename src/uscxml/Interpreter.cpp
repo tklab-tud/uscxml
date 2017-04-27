@@ -170,13 +170,13 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 	}
 
 	catch (const XERCESC_NS::SAXParseException& toCatch) {
-		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage()) << std::endl;
 	} catch (const XERCESC_NS::RuntimeException& toCatch) {
-		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage()) << std::endl;
 	} catch (const XERCESC_NS::XMLException& toCatch) {
-		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage()) << std::endl;
 	} catch (const XERCESC_NS::DOMException& toCatch) {
-		LOGD(USCXML_ERROR) << X(toCatch.getMessage());
+		LOGD(USCXML_ERROR) << X(toCatch.getMessage()) << std::endl;
 	}
 
 	return interpreter;
@@ -258,7 +258,7 @@ std::list<InterpreterIssue> Interpreter::validate() {
 static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
-		LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, kXMLCharId) ? ATTR(*nIter, kXMLCharId) : DOMUtils::xPathForNode(*nIter));
+		LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, kXMLCharId) ? ATTR(*nIter, kXMLCharId) : DOMUtils::xPathForNode(*nIter)) << std::endl;
 		seperator = ", ";
 	}
 }
