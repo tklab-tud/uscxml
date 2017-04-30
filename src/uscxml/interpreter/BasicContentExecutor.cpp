@@ -283,7 +283,7 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 	_callbacks->getLogger().log(USCXML_LOG) << d << std::endl;
 #else
 	// see issue113
-	_callbacks->getLogger().log(USCXML_LOG) << (label.size() > 0 ? label + ":"  : "") << d << std::endl;
+	_callbacks->getLogger().log(USCXML_LOG) << (label.size() > 0 ? label + ": " : "") << d << std::endl;
 #endif
 
 }

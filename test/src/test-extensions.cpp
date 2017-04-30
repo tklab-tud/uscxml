@@ -4,6 +4,7 @@
 #include "uscxml/interpreter/BasicEventQueue.h"
 #include "uscxml/interpreter/BasicDelayedEventQueue.h"
 #include "uscxml/PausableDelayedEventQueue.h"
+#include "uscxml/ExtendedLuaDataModel.h"
 
 #include <event2/util.h>                // for evutil_socket_t
 
@@ -107,6 +108,27 @@ bool testPausableEventQueue() {
 
 }
 
+
+static const char *customLuaExtension =
+    "<scxml datamodel=\"lua\">"
+    "  <script>"
+    "    GetSomeResult();"
+    "  </script>"
+    "  <state/>"
+    "</scxml>"
+    ;
+
+bool testLuaExtension() {
+	Factory::getInstance()->registerDataModel(new ExtendedLuaDataModel());
+	Interpreter exLua = Interpreter::fromXML(customLuaExtension, "");
+	InterpreterState state;
+
+	while ((state = exLua.step(0)) != USCXML_IDLE) {}
+
+	return true;
+}
+
 int main(int argc, char** argv) {
-	testPausableEventQueue();
+	testLuaExtension();
+//	testPausableEventQueue();
 }

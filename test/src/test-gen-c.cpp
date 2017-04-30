@@ -21,7 +21,7 @@
 
 #ifndef AUTOINCLUDE_TEST
 #include "test-c-machine.scxml.c"
-//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/ecma/test446.scxml.machine.c"
+//#include "/Users/sradomski/Documents/TK/Code/uscxml/build/cli/test/gen/c/lua/test192.scxml.machine.c"
 #endif
 
 //#include "uscxml/util/URL.h"
@@ -546,25 +546,24 @@ public:
 		}
 
 		size_t delayMs = 0;
-		std::string delay;
 		if (send->delayexpr != NULL) {
-			delay = USER_DATA(ctx)->dataModel.evalAsData(send->delayexpr).atom;
-		} else if (send->delay != NULL) {
-			delay = send->delay;
-		}
-		if (delay.size() > 0) {
-			boost::trim(delay);
+			std::string delay = USER_DATA(ctx)->dataModel.evalAsData(send->delayexpr).atom;
+			if (delay.size() > 0) {
+				boost::trim(delay);
 
-			NumAttr delayAttr(delay);
-			if (iequals(delayAttr.unit, "ms")) {
-				delayMs = strTo<uint32_t>(delayAttr.value);
-			} else if (iequals(delayAttr.unit, "s")) {
-				delayMs = strTo<double>(delayAttr.value) * 1000;
-			} else if (delayAttr.unit.length() == 0) { // unit less delay is interpreted as milliseconds
-				delayMs = strTo<uint32_t>(delayAttr.value);
-			} else {
-				std::cerr << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
+				NumAttr delayAttr(delay);
+				if (iequals(delayAttr.unit, "ms")) {
+					delayMs = strTo<uint32_t>(delayAttr.value);
+				} else if (iequals(delayAttr.unit, "s")) {
+					delayMs = strTo<double>(delayAttr.value) * 1000;
+				} else if (delayAttr.unit.length() == 0) { // unit less delay is interpreted as milliseconds
+					delayMs = strTo<uint32_t>(delayAttr.value);
+				} else {
+					std::cerr << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'";
+				}
 			}
+		} else if (send->delay > 0) {
+			delayMs = send->delay;
 		}
 
 		if (USER_DATA(ctx)->invokeId.size() > 0) {

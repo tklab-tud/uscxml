@@ -1,6 +1,6 @@
 /**
   Generated from source:
-  file:///Users/sradomski/Documents/TK/Code/uscxml/test/w3c/lua/test240.scxml
+  file:///Users/sradomski/Documents/Electronics/WaterPump/WaterPump.scxml
 */
 
 #ifndef USCXML_NO_STDTYPES_H
@@ -51,7 +51,7 @@
  */
 
 #ifndef USCXML_MAX_NR_STATES_BYTES 
-#  define USCXML_MAX_NR_STATES_BYTES 1
+#  define USCXML_MAX_NR_STATES_BYTES 2
 #endif 
 
 /**
@@ -368,27 +368,13 @@ struct uscxml_ctx {
 #endif
 
 /* forward declare machines to allow references */
-extern const uscxml_machine _uscxml_ED395C23__machine;
-extern const uscxml_machine _uscxml_7847B274__machine;
-extern const uscxml_machine _uscxml_DB2A83B0__machine;
+extern const uscxml_machine _uscxml_4FC60039__machine;
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_elem_data _uscxml_ED395C23__elem_datas[2] = {
-    /* id, src, expr, content */
-    { "Var1", NULL, "1", NULL },
-    { NULL, NULL, NULL, NULL }
-};
-
-static const uscxml_elem_param _uscxml_ED395C23__elem_params[2] = {
-    /* name, expr, location */
-    { "Var1", "1", NULL },
-    { NULL, NULL, NULL }
-};
-
-static const uscxml_elem_send _uscxml_ED395C23__elem_sends[1] = {
+static const uscxml_elem_send _uscxml_4FC60039__elem_sends[1] = {
     { 
-        /* event       */ "timeout", 
+        /* event       */ "idle", 
         /* eventexpr   */ NULL, 
         /* target      */ NULL, 
         /* targetexpr  */ NULL, 
@@ -396,7 +382,7 @@ static const uscxml_elem_send _uscxml_ED395C23__elem_sends[1] = {
         /* typeexpr    */ NULL, 
         /* id          */ NULL, 
         /* idlocation  */ NULL, 
-        /* delay       */ 2000, 
+        /* delay       */ 8000, 
         /* delayexpr   */ NULL, 
         /* namelist    */ NULL, 
         /* content     */ NULL,
@@ -405,7 +391,7 @@ static const uscxml_elem_send _uscxml_ED395C23__elem_sends[1] = {
     }
 };
 
-static const uscxml_elem_donedata _uscxml_ED395C23__elem_donedatas[1] = {
+static const uscxml_elem_donedata _uscxml_4FC60039__elem_donedatas[1] = {
     /* source, content, contentexpr, params */
     { 0, NULL, NULL, NULL }
 };
@@ -414,17 +400,17 @@ static const uscxml_elem_donedata _uscxml_ED395C23__elem_donedatas[1] = {
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_elem_invoke _uscxml_ED395C23__elem_invokes[2] = {
+static const uscxml_elem_invoke _uscxml_4FC60039__elem_invokes[5] = {
     { 
-        /* machine     */ &_uscxml_7847B274__machine, 
-        /* type        */ "http://www.w3.org/TR/scxml/", 
+        /* machine     */ NULL, 
+        /* type        */ "capsense", 
         /* typeexpr    */ NULL, 
         /* src         */ NULL, 
         /* srcexpr     */ NULL, 
-        /* id          */ NULL, 
+        /* id          */ "cap", 
         /* idlocation  */ NULL, 
-        /* sourcename  */ "s01", 
-        /* namelist    */ "Var1", 
+        /* sourcename  */ "light", 
+        /* namelist    */ NULL, 
         /* autoforward */ 0, 
         /* params      */ NULL, 
         /* finalize    */ NULL, 
@@ -432,17 +418,65 @@ static const uscxml_elem_invoke _uscxml_ED395C23__elem_invokes[2] = {
         /* contentexpr */ NULL,
     },
     { 
-        /* machine     */ &_uscxml_DB2A83B0__machine, 
-        /* type        */ "http://www.w3.org/TR/scxml/", 
+        /* machine     */ NULL, 
+        /* type        */ "pump", 
         /* typeexpr    */ NULL, 
         /* src         */ NULL, 
         /* srcexpr     */ NULL, 
-        /* id          */ NULL, 
+        /* id          */ "1", 
         /* idlocation  */ NULL, 
-        /* sourcename  */ "s02", 
+        /* sourcename  */ "pump1", 
         /* namelist    */ NULL, 
         /* autoforward */ 0, 
-        /* params      */ &_uscxml_ED395C23__elem_params[0], 
+        /* params      */ NULL, 
+        /* finalize    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+    },
+    { 
+        /* machine     */ NULL, 
+        /* type        */ "pump", 
+        /* typeexpr    */ NULL, 
+        /* src         */ NULL, 
+        /* srcexpr     */ NULL, 
+        /* id          */ "2", 
+        /* idlocation  */ NULL, 
+        /* sourcename  */ "pump2", 
+        /* namelist    */ NULL, 
+        /* autoforward */ 0, 
+        /* params      */ NULL, 
+        /* finalize    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+    },
+    { 
+        /* machine     */ NULL, 
+        /* type        */ "pump", 
+        /* typeexpr    */ NULL, 
+        /* src         */ NULL, 
+        /* srcexpr     */ NULL, 
+        /* id          */ "3", 
+        /* idlocation  */ NULL, 
+        /* sourcename  */ "pump3", 
+        /* namelist    */ NULL, 
+        /* autoforward */ 0, 
+        /* params      */ NULL, 
+        /* finalize    */ NULL, 
+        /* content     */ NULL,
+        /* contentexpr */ NULL,
+    },
+    { 
+        /* machine     */ NULL, 
+        /* type        */ "pump", 
+        /* typeexpr    */ NULL, 
+        /* src         */ NULL, 
+        /* srcexpr     */ NULL, 
+        /* id          */ "4", 
+        /* idlocation  */ NULL, 
+        /* sourcename  */ "pump4", 
+        /* namelist    */ NULL, 
+        /* autoforward */ 0, 
+        /* params      */ NULL, 
         /* finalize    */ NULL, 
         /* content     */ NULL,
         /* contentexpr */ NULL,
@@ -453,137 +487,200 @@ static const uscxml_elem_invoke _uscxml_ED395C23__elem_invokes[2] = {
 
 #ifndef USCXML_NO_EXEC_CONTENT
 
-static int _uscxml_ED395C23__s0_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+static int _uscxml_4FC60039__global_script_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+    
+	  pinMode(LED, OUTPUT);
+	  for (char i = 0; i < 4; ++i) {
+	    pinMode(pump[i], OUTPUT);
+	    digitalWrite(pump[i], PUMP_OFF);
+	    bed[i].set_CS_AutocaL_Millis(0xFFFFFFFF);
+	  }
+    return USCXML_ERR_OK;
+}
+static int _uscxml_4FC60039__global_script(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_4FC60039__global_script_0(ctx, state, event);
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_4FC60039__dark_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    int err = USCXML_ERR_OK;
+    
+			  for (char i = 0; i < 4; ++i) {
+			    digitalWrite(pump[i], PUMP_OFF);
+				}
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_4FC60039__dark_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_4FC60039__dark_on_entry_0(ctx, state, event);
+    return USCXML_ERR_OK;
+}
+
+static int _uscxml_4FC60039__light_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
+    ctx->invoke(ctx, s, &_uscxml_4FC60039__elem_invokes[0], uninvoke);
+
+    return USCXML_ERR_OK;
+}
+static int _uscxml_4FC60039__pumping_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
     int err = USCXML_ERR_OK;
     if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_uscxml_ED395C23__elem_sends[0])) != USCXML_ERR_OK) return err;
+        if ((ctx->exec_content_send(ctx, &_uscxml_4FC60039__elem_sends[0])) != USCXML_ERR_OK) return err;
     } else {
         return USCXML_ERR_MISSING_CALLBACK;
     }
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_ED395C23__s0_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_ED395C23__s0_on_entry_0(ctx, state, event);
+static int _uscxml_4FC60039__pumping_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
+    _uscxml_4FC60039__pumping_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
 
-static int _uscxml_ED395C23__s01_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
-    ctx->invoke(ctx, s, &_uscxml_ED395C23__elem_invokes[0], uninvoke);
+static int _uscxml_4FC60039__pump1_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
+    ctx->invoke(ctx, s, &_uscxml_4FC60039__elem_invokes[1], uninvoke);
 
     return USCXML_ERR_OK;
 }
-static int _uscxml_ED395C23__s02_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
-    ctx->invoke(ctx, s, &_uscxml_ED395C23__elem_invokes[1], uninvoke);
+static int _uscxml_4FC60039__pump2_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
+    ctx->invoke(ctx, s, &_uscxml_4FC60039__elem_invokes[2], uninvoke);
 
     return USCXML_ERR_OK;
 }
-static int _uscxml_ED395C23__pass_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_log != NULL) {
-        if unlikely((ctx->exec_content_log(ctx, "Outcome", "'pass'")) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
+static int _uscxml_4FC60039__pump3_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
+    ctx->invoke(ctx, s, &_uscxml_4FC60039__elem_invokes[3], uninvoke);
+
     return USCXML_ERR_OK;
 }
+static int _uscxml_4FC60039__pump4_invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
+    ctx->invoke(ctx, s, &_uscxml_4FC60039__elem_invokes[4], uninvoke);
 
-static int _uscxml_ED395C23__pass_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_ED395C23__pass_on_entry_0(ctx, state, event);
     return USCXML_ERR_OK;
 }
-
-static int _uscxml_ED395C23__fail_on_entry_0(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_log != NULL) {
-        if unlikely((ctx->exec_content_log(ctx, "Outcome", "'fail'")) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
-    return USCXML_ERR_OK;
+static int _uscxml_4FC60039__dark_transition0_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
+    return (_event->data.light > LIGHT_THRES);
 }
-
-static int _uscxml_ED395C23__fail_on_entry(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    _uscxml_ED395C23__fail_on_entry_0(ctx, state, event);
-    return USCXML_ERR_OK;
+static int _uscxml_4FC60039__idle_transition0_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
+    return (soil[0] < 0 && soil[0] <= soil[1]);
 }
-
+static int _uscxml_4FC60039__idle_transition1_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
+    return (soil[1] < 0 && soil[1] <= soil[0]);
+}
+static int _uscxml_4FC60039__light_transition0_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
+    return (_event->data.light < LIGHT_THRES);
+}
 #endif
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_state _uscxml_ED395C23__states[6] = {
+static const uscxml_state _uscxml_4FC60039__states[9] = {
     {   /* state number 0 */
         /* name       */ NULL,
         /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x32 /* 010011 */ },
-        /* completion */ { 0x02 /* 010000 */ }, 	
-        /* ancestors  */ { 0x00 /* 000000 */ },
-        /* data       */ &_uscxml_ED395C23__elem_datas[0],
+        /* children   */ { 0x06, 0x00 /* 011000000 */ },
+        /* completion */ { 0x02, 0x00 /* 010000000 */ }, 	
+        /* ancestors  */ { 0x00, 0x00 /* 000000000 */ },
+        /* data       */ NULL,
         /* type       */ USCXML_STATE_COMPOUND,
     },
     {   /* state number 1 */
-        /* name       */ "s0",
+        /* name       */ "dark",
         /* parent     */ 0,
-        /* onentry    */ _uscxml_ED395C23__s0_on_entry,
+        /* onentry    */ _uscxml_4FC60039__dark_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x0c /* 001100 */ },
-        /* completion */ { 0x04 /* 001000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
-        /* data       */ NULL,
-        /* type       */ USCXML_STATE_COMPOUND,
-    },
-    {   /* state number 2 */
-        /* name       */ "s01",
-        /* parent     */ 1,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ _uscxml_ED395C23__s01_invoke,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x03 /* 110000 */ },
+        /* children   */ { 0x00, 0x00 /* 000000000 */ },
+        /* completion */ { 0x00, 0x00 /* 000000000 */ }, 	
+        /* ancestors  */ { 0x01, 0x00 /* 100000000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_ATOMIC,
     },
-    {   /* state number 3 */
-        /* name       */ "s02",
-        /* parent     */ 1,
+    {   /* state number 2 */
+        /* name       */ "light",
+        /* parent     */ 0,
         /* onentry    */ NULL,
         /* onexit     */ NULL,
-        /* invoke     */ _uscxml_ED395C23__s02_invoke,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x03 /* 110000 */ },
+        /* invoke     */ _uscxml_4FC60039__light_invoke,
+        /* children   */ { 0x18, 0x00 /* 000110000 */ },
+        /* completion */ { 0x08, 0x00 /* 000100000 */ }, 	
+        /* ancestors  */ { 0x01, 0x00 /* 100000000 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_COMPOUND,
+    },
+    {   /* state number 3 */
+        /* name       */ "idle",
+        /* parent     */ 2,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ NULL,
+        /* children   */ { 0x00, 0x00 /* 000000000 */ },
+        /* completion */ { 0x00, 0x00 /* 000000000 */ }, 	
+        /* ancestors  */ { 0x05, 0x00 /* 101000000 */ },
         /* data       */ NULL,
         /* type       */ USCXML_STATE_ATOMIC,
     },
     {   /* state number 4 */
-        /* name       */ "pass",
-        /* parent     */ 0,
-        /* onentry    */ _uscxml_ED395C23__pass_on_entry,
+        /* name       */ "pumping",
+        /* parent     */ 2,
+        /* onentry    */ _uscxml_4FC60039__pumping_on_entry,
         /* onexit     */ NULL,
         /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* children   */ { 0xe0, 0x01 /* 000001111 */ },
+        /* completion */ { 0x20, 0x00 /* 000001000 */ }, 	
+        /* ancestors  */ { 0x05, 0x00 /* 101000000 */ },
         /* data       */ NULL,
-        /* type       */ USCXML_STATE_FINAL,
+        /* type       */ USCXML_STATE_COMPOUND,
     },
     {   /* state number 5 */
-        /* name       */ "fail",
-        /* parent     */ 0,
-        /* onentry    */ _uscxml_ED395C23__fail_on_entry,
+        /* name       */ "pump1",
+        /* parent     */ 4,
+        /* onentry    */ NULL,
         /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000000 */ },
-        /* completion */ { 0x00 /* 000000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100000 */ },
+        /* invoke     */ _uscxml_4FC60039__pump1_invoke,
+        /* children   */ { 0x00, 0x00 /* 000000000 */ },
+        /* completion */ { 0x00, 0x00 /* 000000000 */ }, 	
+        /* ancestors  */ { 0x15, 0x00 /* 101010000 */ },
         /* data       */ NULL,
-        /* type       */ USCXML_STATE_FINAL,
+        /* type       */ USCXML_STATE_ATOMIC,
+    },
+    {   /* state number 6 */
+        /* name       */ "pump2",
+        /* parent     */ 4,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ _uscxml_4FC60039__pump2_invoke,
+        /* children   */ { 0x00, 0x00 /* 000000000 */ },
+        /* completion */ { 0x00, 0x00 /* 000000000 */ }, 	
+        /* ancestors  */ { 0x15, 0x00 /* 101010000 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_ATOMIC,
+    },
+    {   /* state number 7 */
+        /* name       */ "pump3",
+        /* parent     */ 4,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ _uscxml_4FC60039__pump3_invoke,
+        /* children   */ { 0x00, 0x00 /* 000000000 */ },
+        /* completion */ { 0x00, 0x00 /* 000000000 */ }, 	
+        /* ancestors  */ { 0x15, 0x00 /* 101010000 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_ATOMIC,
+    },
+    {   /* state number 8 */
+        /* name       */ "pump4",
+        /* parent     */ 4,
+        /* onentry    */ NULL,
+        /* onexit     */ NULL,
+        /* invoke     */ _uscxml_4FC60039__pump4_invoke,
+        /* children   */ { 0x00, 0x00 /* 000000000 */ },
+        /* completion */ { 0x00, 0x00 /* 000000000 */ }, 	
+        /* ancestors  */ { 0x15, 0x00 /* 101010000 */ },
+        /* data       */ NULL,
+        /* type       */ USCXML_STATE_ATOMIC,
     }
 };
 
@@ -591,71 +688,71 @@ static const uscxml_state _uscxml_ED395C23__states[6] = {
 
 #ifndef USCXML_NO_ELEM_INFO
 
-static const uscxml_transition _uscxml_ED395C23__transitions[5] = {
-    {   /* transition number 1 with priority 0
-           target: s02
+static const uscxml_transition _uscxml_4FC60039__transitions[5] = {
+    {   /* transition number 0 with priority 0
+           target: light
          */
-        /* source     */ 2,
-        /* target     */ { 0x08 /* 000100 */ },
-        /* event      */ "success",
+        /* source     */ 1,
+        /* target     */ { 0x04, 0x00 /* 001000000 */ },
+        /* event      */ "light",
         /* condition  */ NULL,
-        /* is_enabled */ NULL,
+        /* is_enabled */ _uscxml_4FC60039__dark_transition0_is_enabled,
         /* ontrans    */ NULL,
         /* type       */ 0,
         /* conflicts  */ { 0x1f /* 11111 */ }, 
-        /* exit set   */ { 0x0c /* 001100 */ }
+        /* exit set   */ { 0xfe, 0x01 /* 011111111 */ }
     },
     {   /* transition number 2 with priority 1
-           target: fail
+           target: pump1
          */
-        /* source     */ 2,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ "failure",
+        /* source     */ 3,
+        /* target     */ { 0x20, 0x00 /* 000001000 */ },
+        /* event      */ "pump",
         /* condition  */ NULL,
-        /* is_enabled */ NULL,
+        /* is_enabled */ _uscxml_4FC60039__idle_transition0_is_enabled,
         /* ontrans    */ NULL,
         /* type       */ 0,
         /* conflicts  */ { 0x1f /* 11111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* exit set   */ { 0xf8, 0x01 /* 000111111 */ }
     },
     {   /* transition number 3 with priority 2
-           target: pass
+           target: pump2
          */
         /* source     */ 3,
-        /* target     */ { 0x10 /* 000010 */ },
-        /* event      */ "success",
+        /* target     */ { 0x40, 0x00 /* 000000100 */ },
+        /* event      */ "pump",
         /* condition  */ NULL,
-        /* is_enabled */ NULL,
+        /* is_enabled */ _uscxml_4FC60039__idle_transition1_is_enabled,
         /* ontrans    */ NULL,
         /* type       */ 0,
         /* conflicts  */ { 0x1f /* 11111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* exit set   */ { 0xf8, 0x01 /* 000111111 */ }
     },
     {   /* transition number 4 with priority 3
-           target: fail
+           target: idle
          */
-        /* source     */ 3,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ "failure",
+        /* source     */ 4,
+        /* target     */ { 0x08, 0x00 /* 000100000 */ },
+        /* event      */ "idle",
         /* condition  */ NULL,
         /* is_enabled */ NULL,
         /* ontrans    */ NULL,
         /* type       */ 0,
         /* conflicts  */ { 0x1f /* 11111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* exit set   */ { 0xf8, 0x01 /* 000111111 */ }
     },
-    {   /* transition number 0 with priority 4
-           target: fail
+    {   /* transition number 1 with priority 4
+           target: dark
          */
-        /* source     */ 1,
-        /* target     */ { 0x20 /* 000001 */ },
-        /* event      */ "timeout",
+        /* source     */ 2,
+        /* target     */ { 0x02, 0x00 /* 010000000 */ },
+        /* event      */ "light",
         /* condition  */ NULL,
-        /* is_enabled */ NULL,
+        /* is_enabled */ _uscxml_4FC60039__light_transition0_is_enabled,
         /* ontrans    */ NULL,
         /* type       */ 0,
         /* conflicts  */ { 0x1f /* 11111 */ }, 
-        /* exit set   */ { 0x3e /* 011111 */ }
+        /* exit set   */ { 0xfe, 0x01 /* 011111111 */ }
     }
 };
 
@@ -664,391 +761,24 @@ static const uscxml_transition _uscxml_ED395C23__transitions[5] = {
 #ifndef USCXML_NO_ELEM_INFO
 
 #ifndef USCXML_MACHINE
-#  define USCXML_MACHINE _uscxml_ED395C23__machine
+#  define USCXML_MACHINE _uscxml_4FC60039__machine
 #endif
-#define USCXML_MACHINE_0 _uscxml_ED395C23__machine
-#define USCXML_MACHINE_TEST240_SCXML _uscxml_ED395C23__machine
+#define USCXML_MACHINE_0 _uscxml_4FC60039__machine
+#define USCXML_MACHINE_WATERPUMP_SCXML _uscxml_4FC60039__machine
 
-const uscxml_machine _uscxml_ED395C23__machine = {
+const uscxml_machine _uscxml_4FC60039__machine = {
         /* flags          */ 0,
-        /* nr_states      */ 6,
+        /* nr_states      */ 9,
         /* nr_transitions */ 5,
-        /* name           */ "test240.scxml",
-        /* datamodel      */ "lua",
-        /* uuid           */ "ED395C2320352170727CA99C3797822B",
-        /* states         */ &_uscxml_ED395C23__states[0], 
-        /* transitions    */ &_uscxml_ED395C23__transitions[0], 
+        /* name           */ "WaterPump.scxml",
+        /* datamodel      */ "native",
+        /* uuid           */ "4FC600390B3422E11879652D26725E30",
+        /* states         */ &_uscxml_4FC60039__states[0], 
+        /* transitions    */ &_uscxml_4FC60039__transitions[0], 
         /* parent         */ NULL,
-        /* donedata       */ &_uscxml_ED395C23__elem_donedatas[0], 
-        /* script         */ NULL
-};
+        /* donedata       */ &_uscxml_4FC60039__elem_donedatas[0], 
+        /* script         */ _uscxml_4FC60039__global_script
 
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-static const uscxml_elem_data _uscxml_7847B274__elem_datas[2] = {
-    /* id, src, expr, content */
-    { "Var1", NULL, "0", NULL },
-    { NULL, NULL, NULL, NULL }
-};
-
-static const uscxml_elem_send _uscxml_7847B274__elem_sends[2] = {
-    { 
-        /* event       */ "success", 
-        /* eventexpr   */ NULL, 
-        /* target      */ "#_parent", 
-        /* targetexpr  */ NULL, 
-        /* type        */ NULL, 
-        /* typeexpr    */ NULL, 
-        /* id          */ NULL, 
-        /* idlocation  */ NULL, 
-        /* delay       */ 0, 
-        /* delayexpr   */ NULL, 
-        /* namelist    */ NULL, 
-        /* content     */ NULL,
-        /* contentexpr */ NULL,
-        /* params      */ NULL 
-    },
-    { 
-        /* event       */ "failure", 
-        /* eventexpr   */ NULL, 
-        /* target      */ "#_parent", 
-        /* targetexpr  */ NULL, 
-        /* type        */ NULL, 
-        /* typeexpr    */ NULL, 
-        /* id          */ NULL, 
-        /* idlocation  */ NULL, 
-        /* delay       */ 0, 
-        /* delayexpr   */ NULL, 
-        /* namelist    */ NULL, 
-        /* content     */ NULL,
-        /* contentexpr */ NULL,
-        /* params      */ NULL 
-    }
-};
-
-static const uscxml_elem_donedata _uscxml_7847B274__elem_donedatas[1] = {
-    /* source, content, contentexpr, params */
-    { 0, NULL, NULL, NULL }
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-#endif
-
-#ifndef USCXML_NO_EXEC_CONTENT
-
-static int _uscxml_7847B274__sub01_transition0_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
-    if likely(ctx->is_true != NULL) {
-        return (ctx->is_true(ctx, "Var1==1"));
-    }
-    return USCXML_ERR_MISSING_CALLBACK;
-}
-static int _uscxml_7847B274__sub01_transition0_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_uscxml_7847B274__elem_sends[0])) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
-    return USCXML_ERR_OK;
-}
-
-static int _uscxml_7847B274__sub01_transition1_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_uscxml_7847B274__elem_sends[1])) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
-    return USCXML_ERR_OK;
-}
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-static const uscxml_state _uscxml_7847B274__states[3] = {
-    {   /* state number 0 */
-        /* name       */ NULL,
-        /* parent     */ 0,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x06 /* 011 */ },
-        /* completion */ { 0x02 /* 010 */ }, 	
-        /* ancestors  */ { 0x00 /* 000 */ },
-        /* data       */ &_uscxml_7847B274__elem_datas[0],
-        /* type       */ USCXML_STATE_COMPOUND,
-    },
-    {   /* state number 1 */
-        /* name       */ "sub01",
-        /* parent     */ 0,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000 */ },
-        /* completion */ { 0x00 /* 000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100 */ },
-        /* data       */ NULL,
-        /* type       */ USCXML_STATE_ATOMIC,
-    },
-    {   /* state number 2 */
-        /* name       */ "subFinal1",
-        /* parent     */ 0,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000 */ },
-        /* completion */ { 0x00 /* 000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100 */ },
-        /* data       */ NULL,
-        /* type       */ USCXML_STATE_FINAL,
-    }
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-static const uscxml_transition _uscxml_7847B274__transitions[2] = {
-    {   /* transition number 0 with priority 0
-           target: subFinal1
-         */
-        /* source     */ 1,
-        /* target     */ { 0x04 /* 001 */ },
-        /* event      */ NULL,
-        /* condition  */ "Var1==1",
-        /* is_enabled */ _uscxml_7847B274__sub01_transition0_is_enabled,
-        /* ontrans    */ _uscxml_7847B274__sub01_transition0_on_trans,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x03 /* 11 */ }, 
-        /* exit set   */ { 0x06 /* 011 */ }
-    },
-    {   /* transition number 1 with priority 1
-           target: subFinal1
-         */
-        /* source     */ 1,
-        /* target     */ { 0x04 /* 001 */ },
-        /* event      */ NULL,
-        /* condition  */ NULL,
-        /* is_enabled */ NULL,
-        /* ontrans    */ _uscxml_7847B274__sub01_transition1_on_trans,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x03 /* 11 */ }, 
-        /* exit set   */ { 0x06 /* 011 */ }
-    }
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-#ifndef USCXML_MACHINE
-#  define USCXML_MACHINE _uscxml_7847B274__machine
-#endif
-#define USCXML_MACHINE_1 _uscxml_7847B274__machine
-#define USCXML_MACHINE_TEST240_SCXML_S01_INVOKE0_CONTENT0_SCXML0 _uscxml_7847B274__machine
-
-const uscxml_machine _uscxml_7847B274__machine = {
-        /* flags          */ 0,
-        /* nr_states      */ 3,
-        /* nr_transitions */ 2,
-        /* name           */ "test240.scxml.s01_invoke0_content0_scxml0",
-        /* datamodel      */ "lua",
-        /* uuid           */ "7847B274CA8610349BFA9F21A78B590E",
-        /* states         */ &_uscxml_7847B274__states[0], 
-        /* transitions    */ &_uscxml_7847B274__transitions[0], 
-        /* parent         */ &_uscxml_ED395C23__machine,
-        /* donedata       */ &_uscxml_7847B274__elem_donedatas[0], 
-        /* script         */ NULL
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-static const uscxml_elem_data _uscxml_DB2A83B0__elem_datas[2] = {
-    /* id, src, expr, content */
-    { "Var1", NULL, "0", NULL },
-    { NULL, NULL, NULL, NULL }
-};
-
-static const uscxml_elem_send _uscxml_DB2A83B0__elem_sends[2] = {
-    { 
-        /* event       */ "success", 
-        /* eventexpr   */ NULL, 
-        /* target      */ "#_parent", 
-        /* targetexpr  */ NULL, 
-        /* type        */ NULL, 
-        /* typeexpr    */ NULL, 
-        /* id          */ NULL, 
-        /* idlocation  */ NULL, 
-        /* delay       */ 0, 
-        /* delayexpr   */ NULL, 
-        /* namelist    */ NULL, 
-        /* content     */ NULL,
-        /* contentexpr */ NULL,
-        /* params      */ NULL 
-    },
-    { 
-        /* event       */ "failure", 
-        /* eventexpr   */ NULL, 
-        /* target      */ "#_parent", 
-        /* targetexpr  */ NULL, 
-        /* type        */ NULL, 
-        /* typeexpr    */ NULL, 
-        /* id          */ NULL, 
-        /* idlocation  */ NULL, 
-        /* delay       */ 0, 
-        /* delayexpr   */ NULL, 
-        /* namelist    */ NULL, 
-        /* content     */ NULL,
-        /* contentexpr */ NULL,
-        /* params      */ NULL 
-    }
-};
-
-static const uscxml_elem_donedata _uscxml_DB2A83B0__elem_donedatas[1] = {
-    /* source, content, contentexpr, params */
-    { 0, NULL, NULL, NULL }
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-#endif
-
-#ifndef USCXML_NO_EXEC_CONTENT
-
-static int _uscxml_DB2A83B0__sub02_transition0_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {
-    if likely(ctx->is_true != NULL) {
-        return (ctx->is_true(ctx, "Var1==1"));
-    }
-    return USCXML_ERR_MISSING_CALLBACK;
-}
-static int _uscxml_DB2A83B0__sub02_transition0_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_uscxml_DB2A83B0__elem_sends[0])) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
-    return USCXML_ERR_OK;
-}
-
-static int _uscxml_DB2A83B0__sub02_transition1_on_trans(const uscxml_ctx* ctx, const uscxml_state* state, const void* event) {
-    int err = USCXML_ERR_OK;
-    if likely(ctx->exec_content_send != NULL) {
-        if ((ctx->exec_content_send(ctx, &_uscxml_DB2A83B0__elem_sends[1])) != USCXML_ERR_OK) return err;
-    } else {
-        return USCXML_ERR_MISSING_CALLBACK;
-    }
-    return USCXML_ERR_OK;
-}
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-static const uscxml_state _uscxml_DB2A83B0__states[3] = {
-    {   /* state number 0 */
-        /* name       */ NULL,
-        /* parent     */ 0,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x06 /* 011 */ },
-        /* completion */ { 0x02 /* 010 */ }, 	
-        /* ancestors  */ { 0x00 /* 000 */ },
-        /* data       */ &_uscxml_DB2A83B0__elem_datas[0],
-        /* type       */ USCXML_STATE_COMPOUND,
-    },
-    {   /* state number 1 */
-        /* name       */ "sub02",
-        /* parent     */ 0,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000 */ },
-        /* completion */ { 0x00 /* 000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100 */ },
-        /* data       */ NULL,
-        /* type       */ USCXML_STATE_ATOMIC,
-    },
-    {   /* state number 2 */
-        /* name       */ "subFinal2",
-        /* parent     */ 0,
-        /* onentry    */ NULL,
-        /* onexit     */ NULL,
-        /* invoke     */ NULL,
-        /* children   */ { 0x00 /* 000 */ },
-        /* completion */ { 0x00 /* 000 */ }, 	
-        /* ancestors  */ { 0x01 /* 100 */ },
-        /* data       */ NULL,
-        /* type       */ USCXML_STATE_FINAL,
-    }
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-static const uscxml_transition _uscxml_DB2A83B0__transitions[2] = {
-    {   /* transition number 0 with priority 0
-           target: subFinal2
-         */
-        /* source     */ 1,
-        /* target     */ { 0x04 /* 001 */ },
-        /* event      */ NULL,
-        /* condition  */ "Var1==1",
-        /* is_enabled */ _uscxml_DB2A83B0__sub02_transition0_is_enabled,
-        /* ontrans    */ _uscxml_DB2A83B0__sub02_transition0_on_trans,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x03 /* 11 */ }, 
-        /* exit set   */ { 0x06 /* 011 */ }
-    },
-    {   /* transition number 1 with priority 1
-           target: subFinal2
-         */
-        /* source     */ 1,
-        /* target     */ { 0x04 /* 001 */ },
-        /* event      */ NULL,
-        /* condition  */ NULL,
-        /* is_enabled */ NULL,
-        /* ontrans    */ _uscxml_DB2A83B0__sub02_transition1_on_trans,
-        /* type       */ USCXML_TRANS_SPONTANEOUS,
-        /* conflicts  */ { 0x03 /* 11 */ }, 
-        /* exit set   */ { 0x06 /* 011 */ }
-    }
-};
-
-#endif
-
-#ifndef USCXML_NO_ELEM_INFO
-
-#ifndef USCXML_MACHINE
-#  define USCXML_MACHINE _uscxml_DB2A83B0__machine
-#endif
-#define USCXML_MACHINE_2 _uscxml_DB2A83B0__machine
-#define USCXML_MACHINE_TEST240_SCXML_S02_INVOKE0_CONTENT0_SCXML0 _uscxml_DB2A83B0__machine
-
-const uscxml_machine _uscxml_DB2A83B0__machine = {
-        /* flags          */ 0,
-        /* nr_states      */ 3,
-        /* nr_transitions */ 2,
-        /* name           */ "test240.scxml.s02_invoke0_content0_scxml0",
-        /* datamodel      */ "lua",
-        /* uuid           */ "DB2A83B067CD692F49AB0A6A6F13C5D0",
-        /* states         */ &_uscxml_DB2A83B0__states[0], 
-        /* transitions    */ &_uscxml_DB2A83B0__transitions[0], 
-        /* parent         */ &_uscxml_ED395C23__machine,
-        /* donedata       */ &_uscxml_DB2A83B0__elem_donedatas[0], 
-        /* script         */ NULL
 };
 
 #endif

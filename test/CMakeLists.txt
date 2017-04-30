@@ -46,7 +46,9 @@ endfunction()
 
 # simple one file tests
 USCXML_TEST_COMPILE(NAME test-utils LABEL general/test-utils FILES src/test-utils.cpp)
-USCXML_TEST_COMPILE(NAME test-extensions LABEL general/test-extensions FILES src/test-extensions.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp)
+if(WITH_DM_LUA)
+	USCXML_TEST_COMPILE(NAME test-extensions LABEL general/test-extensions FILES src/test-extensions.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp ../contrib/src/uscxml/ExtendedLuaDataModel.cpp)
+endif()
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)

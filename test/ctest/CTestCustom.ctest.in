@@ -175,6 +175,8 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   # we do not support io processors yet
   "w3c/gen/c/ecma/test201.scxml" # basichttp
   "w3c/gen/c/ecma/test453.scxml" # functions as first-class objects
+  "w3c/gen/c/ecma/test446.scxml" # No URLs at runtime anymore
+  "w3c/gen/c/ecma/test552.scxml" # No URLs at runtime anymore
   "w3c/gen/c/ecma/test500.scxml" # _ioprocessors
   "w3c/gen/c/ecma/test501.scxml" # _ioprocessors
   "w3c/gen/c/ecma/test509.scxml" # _ioprocessors / basichttp
@@ -222,6 +224,7 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "w3c/gen/c/lua/test532.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/lua/test534.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/lua/test558.scxml" # content per url
+  "w3c/gen/c/lua/test552.scxml" # content per url
   "w3c/gen/c/lua/test567.scxml" # _ioprocessors / basichttp
   "w3c/gen/c/lua/test569.scxml" # _ioprocessors
   "w3c/gen/c/lua/test577.scxml" # basichttp

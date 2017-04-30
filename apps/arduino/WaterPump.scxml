@@ -1,0 +1,70 @@
+<scxml datamodel="native" initial="dark" version="1.0">
+  <!-- we provide the datamodel inline in the scaffolding -->
+  <script><![CDATA[
+    pinMode(LED, OUTPUT);
+    for (char i = 0; i < 4; ++i) {
+      pinMode(pump[i], OUTPUT);
+      digitalWrite(pump[i], PUMP_OFF);
+      bed[i].set_CS_AutocaL_Millis(0xFFFFFFFF);
+    }
+  ]]></script>
+
+  <!-- it is too dark to water flowers -->
+  <state id="dark">
+    <transition event="light" cond="_event->data.light > LIGHT_THRES" target="light" />
+    <onentry>
+      <script><![CDATA[
+        for (char i = 0; i < 4; ++i) {
+          digitalWrite(pump[i], PUMP_OFF);
+        }
+      ]]></script>
+    </onentry>
+  </state>
+
+  <!-- start to take measurements and activate single pumps if too dry -->
+  <state id="light">
+    <transition event="light" cond="_event->data.light &lt; LIGHT_THRES" target="dark" />
+
+    <!-- delivers events for all the capsense measurements -->
+    <invoke type="capsense" id="cap" />
+
+    <state id="idle">
+      <transition event="pump" cond="soil[0] &lt; 0 &amp;&amp;
+                                     soil[0] &lt;= soil[1] &amp;&amp;
+                                     soil[0] &lt;= soil[2] &amp;&amp;
+                                     soil[0] &lt;= soil[3]" target="pump1" />
+      <transition event="pump" cond="soil[1] &lt; 0 &amp;&amp;
+                                     soil[1] &lt;= soil[0] &amp;&amp;
+                                     soil[1] &lt;= soil[2] &amp;&amp;
+                                     soil[1] &lt;= soil[3]" target="pump2" />
+      <transition event="pump" cond="soil[2] &lt; 0 &amp;&amp;
+                                     soil[2] &lt;= soil[0] &amp;&amp;
+                                     soil[2] &lt;= soil[1] &amp;&amp;
+                                     soil[2] &lt;= soil[3]" target="pump3" />
+      <transition event="pump" cond="soil[3] &lt; 0 &amp;&amp;
+                                     soil[3] &lt;= soil[0] &amp;&amp;
+                                     soil[3] &lt;= soil[1] &amp;&amp;
+                                     soil[3] &lt;= soil[2]" target="pump4" />
+    </state>
+    
+    <state id="pumping">
+      <transition event="idle" target="idle" />
+      <onentry>
+        <send delay="8000ms" event="idle" />
+      </onentry>
+
+      <state id="pump1">
+        <invoke type="pump" id="1" />
+      </state>
+      <state id="pump2">
+        <invoke type="pump" id="2" />
+      </state>
+      <state id="pump3">
+        <invoke type="pump" id="3" />
+      </state>
+      <state id="pump4">
+        <invoke type="pump" id="4" />
+      </state>
+    </state>
+  </state>
+</scxml>

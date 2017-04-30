@@ -90,6 +90,7 @@ protected:
 	std::list<ChartToC*> _allMachines;
 
 	std::list<std::string>* _prefixes;
+	bool _hasNativeDataModel;
 };
 
 }

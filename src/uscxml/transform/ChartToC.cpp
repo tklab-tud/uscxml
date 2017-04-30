@@ -51,6 +51,7 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(other), _topMostM
 	_md5 = md5(ss.str());
 	_prefix = "_uscxml_" + _md5.substr(0, 8) + "_";
 	_allMachines.push_back(this);
+	_hasNativeDataModel = HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native";
 
 	prepare();
 	findNestedMachines();
@@ -746,7 +747,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to a <data> element->" << std::endl;
+	stream << " * All information pertaining to a <data> element" << std::endl;
 	stream << " * With late data binding, blocks of data elements are separated by NULL" << std::endl;
 	stream << " * use USCXML_ELEM_DATA_IS_SET to test for end of a block." << std::endl;
 	stream << " */" << std::endl;
@@ -759,7 +760,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to an <assign> element->" << std::endl;
+	stream << " * All information pertaining to an <assign> element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_elem_assign {" << std::endl;
 	stream << "    const char* location;" << std::endl;
@@ -769,7 +770,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to any state element->" << std::endl;
+	stream << " * All information pertaining to any state element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_state {" << std::endl;
 	stream << "    const char* name;                                  /* eventual name          */" << std::endl;
@@ -786,7 +787,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to a <transitions> element->" << std::endl;
+	stream << " * All information pertaining to a <transition> element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_transition {" << std::endl;
 	stream << "    const USCXML_NR_STATES_TYPE source;" << std::endl;
@@ -802,7 +803,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to a <foreach> element->" << std::endl;
+	stream << " * All information pertaining to a <foreach> element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_elem_foreach {" << std::endl;
 	stream << "    const char* array;" << std::endl;
@@ -812,7 +813,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to a <param> element->" << std::endl;
+	stream << " * All information pertaining to a <param> element" << std::endl;
 	stream << " * Blocks of params are separated by NULL params, use" << std::endl;
 	stream << " * USCXML_ELEM_PARAM_IS_SET to test for end of a block." << std::endl;
 	stream << " */" << std::endl;
@@ -824,7 +825,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to a <donedata> element->" << std::endl;
+	stream << " * All information pertaining to a <donedata> element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_elem_donedata {" << std::endl;
 	stream << "    const USCXML_NR_STATES_TYPE source;" << std::endl;
@@ -835,7 +836,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to an <invoke> element->" << std::endl;
+	stream << " * All information pertaining to an <invoke> element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_elem_invoke {" << std::endl;
 	stream << "    const uscxml_machine* machine;" << std::endl;
@@ -856,7 +857,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << std::endl;
 
 	stream << "/**" << std::endl;
-	stream << " * All information pertaining to a <send> element->" << std::endl;
+	stream << " * All information pertaining to a <send> element" << std::endl;
 	stream << " */" << std::endl;
 	stream << "struct uscxml_elem_send {" << std::endl;
 	stream << "    const char* event;" << std::endl;
@@ -867,7 +868,7 @@ void ChartToC::writeTypes(std::ostream& stream) {
 	stream << "    const char* typeexpr;" << std::endl;
 	stream << "    const char* id;" << std::endl;
 	stream << "    const char* idlocation;" << std::endl;
-	stream << "    const char* delay;" << std::endl;
+	stream << "    unsigned long delay;" << std::endl;
 	stream << "    const char* delayexpr;" << std::endl;
 	stream << "    const char* namelist;    /* not space-separated, still as in attribute value */" << std::endl;
 	stream << "    const char* content;" << std::endl;
@@ -1171,7 +1172,7 @@ void ChartToC::writeExecContent(std::ostream& stream) {
 
 		if (HAS_ATTR(transition, kXMLCharCond)) {
 			stream << "static int " << _prefix << "_" << DOMUtils::idForNode(transition) << "_is_enabled(const uscxml_ctx* ctx, const uscxml_transition* transition) {" << std::endl;
-			if (HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native") {
+			if (_hasNativeDataModel) {
 				stream << "    return (" << ATTR(transition, kXMLCharCond) << ");" << std::endl;
 			} else {
 				stream << "    if likely(ctx->is_true != NULL) {" << std::endl;
@@ -1204,10 +1205,18 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 	if (!node)
 		return;
 
-	if (node->getNodeType() == DOMNode::TEXT_NODE) {
-		if (boost::trim_copy(X(node->getNodeValue()).str()).length() > 0) {
-			if (HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native") {
-				stream << node->getNodeValue();
+	if (node->getNodeType() == DOMNode::TEXT_NODE || node->getNodeType() == DOMNode::CDATA_SECTION_NODE) {
+		X data;
+		if (node->getNodeType() == DOMNode::TEXT_NODE) {
+			data = node->getNodeValue();
+		} else {
+			const DOMCharacterData* cdata = (const DOMCharacterData*)node;
+			data = cdata->getTextContent();
+//            LOGD(USCXML_FATAL) << data;
+		}
+		if (boost::trim_copy(data.str()).length() > 0) {
+			if (_hasNativeDataModel) {
+				stream << data.str();
 			} else {
 				std::string escaped = escape(X(node->getNodeValue()).str());
 				stream << escaped;
@@ -1240,25 +1249,43 @@ void ChartToC::writeExecContent(std::ostream& stream, const DOMNode* node, size_
 		}
 	} else if(TAGNAME(elem) == XML_PREFIX(elem).str() + "script") {
 		stream << padding;
-		stream << "if likely(ctx->exec_content_script != NULL) {" << std::endl;
-		stream << padding;
-		stream << "    if unlikely((err = ctx->exec_content_script(ctx, ";
-		stream << (HAS_ATTR(elem, kXMLCharSource) ? "\"" + escape(ATTR(elem, kXMLCharSource)) + "\"" : "NULL") << ", ";
 
 		std::list<DOMNode*> scriptTexts = DOMUtils::filterChildType(DOMNode::TEXT_NODE, elem);
-		if (scriptTexts.size() > 0) {
-			stream << "\"";
-			writeExecContent(stream, scriptTexts.front(), 0);
-			stream << "\"";
+		scriptTexts.splice(scriptTexts.end(), DOMUtils::filterChildType(DOMNode::CDATA_SECTION_NODE, elem));
+
+		if (_hasNativeDataModel) {
+			if (HAS_ATTR(elem, kXMLCharSource)) {
+				URL srcURL(ATTR(elem, kXMLCharSource));
+				if (!srcURL.isAbsolute()) {
+					srcURL = URL::resolve(srcURL, _baseURL);
+				}
+				stream << (std::string)srcURL;
+
+			} else if (scriptTexts.size() > 0) {
+				for (DOMNode* text : scriptTexts)
+					writeExecContent(stream, text, 0);
+			}
 		} else {
-			stream << "NULL";
+
+			stream << "if likely(ctx->exec_content_script != NULL) {" << std::endl;
+			stream << padding;
+			stream << "    if unlikely((err = ctx->exec_content_script(ctx, ";
+			stream << (HAS_ATTR(elem, kXMLCharSource) ? "\"" + escape(ATTR(elem, kXMLCharSource)) + "\"" : "NULL") << ", ";
+
+			std::list<DOMNode*> scriptTexts = DOMUtils::filterChildType(DOMNode::TEXT_NODE, elem);
+			if (scriptTexts.size() > 0) {
+				stream << "\"";
+				writeExecContent(stream, scriptTexts.front(), 0);
+				stream << "\"";
+			} else {
+				stream << "NULL";
+			}
+
+			stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
+			stream << padding << "} else {" << std::endl;
+			stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
+			stream << padding << "}" << std::endl;
 		}
-
-		stream << ")) != USCXML_ERR_OK) return err;" << std::endl;
-		stream << padding << "} else {" << std::endl;
-		stream << padding << "    return USCXML_ERR_MISSING_CALLBACK;" << std::endl;
-		stream << padding << "}" << std::endl;
-
 	} else if(TAGNAME(elem) == XML_PREFIX(elem).str() + "log") {
 		stream << padding;
 		stream << "if likely(ctx->exec_content_log != NULL) {" << std::endl;
@@ -1680,7 +1707,21 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 			stream << std::endl << "        /* idlocation  */ ";
 			stream << (HAS_ATTR(send, kXMLCharIdLocation) ? "\"" + escape(ATTR(send, kXMLCharIdLocation)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* delay       */ ";
-			stream << (HAS_ATTR(send, kXMLCharDelay) ? "\"" + escape(ATTR(send, kXMLCharDelay)) + "\"" : "NULL") << ", ";
+			if (HAS_ATTR(send, kXMLCharDelay)) {
+				NumAttr delay(ATTR(send, kXMLCharDelay));
+				if (delay.unit == "ms") {
+					stream << strTo<unsigned long>(delay.value);
+				} else if (delay.unit == "s") {
+					stream << (strTo<unsigned long>(delay.value) * 1000);
+				} else {
+					// no unit given, assume ms
+					stream << strTo<unsigned long>(delay.value);
+				}
+			} else {
+				stream << "0";
+			}
+			stream << ", ";
+
 			stream << std::endl << "        /* delayexpr   */ ";
 			stream << (HAS_ATTR(send, kXMLCharDelayExpr) ? "\"" + escape(ATTR(send, kXMLCharDelayExpr)) + "\"" : "NULL") << ", ";
 			stream << std::endl << "        /* namelist    */ ";
@@ -2014,7 +2055,7 @@ void ChartToC::writeTransitions(std::ostream& stream) {
 			stream << "," << std::endl;
 
 			stream << "        /* condition  */ ";
-			stream << (HAS_ATTR(transition, kXMLCharCond) ? "\"" + escape(ATTR(transition, kXMLCharCond)) + "\"" : "NULL");
+			stream << (HAS_ATTR(transition, kXMLCharCond) && !_hasNativeDataModel ? "\"" + escape(ATTR(transition, kXMLCharCond)) + "\"" : "NULL");
 			stream << "," << std::endl;
 
 
@@ -2340,6 +2381,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                    bit_or(entry_set, USCXML_GET_STATE(i).completion, nr_states_bytes);" << std::endl;
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
+	stream << "#ifndef USCXML_NO_HISTORY" << std::endl;
 	stream << "                case USCXML_STATE_HISTORY_SHALLOW:" << std::endl;
 	stream << "                case USCXML_STATE_HISTORY_DEEP: {" << std::endl;
 	stream << "                    if (!bit_has_and(USCXML_GET_STATE(i).completion, ctx->history, nr_states_bytes) &&" << std::endl;
@@ -2387,6 +2429,7 @@ void ChartToC::writeFSM(std::ostream& stream) {
 	stream << "                    }" << std::endl;
 	stream << "                    break;" << std::endl;
 	stream << "                }" << std::endl;
+	stream << "#endif" << std::endl;
 	stream << "                case USCXML_STATE_INITIAL: {" << std::endl;
 	stream << "                    for (j = 0; j < USCXML_NUMBER_TRANS; j++) {" << std::endl;
 	stream << "                        if (ctx->machine->transitions[j].source == i) {" << std::endl;
