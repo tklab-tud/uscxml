@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_f2c8af9107d7604b778bd4ea9fe0debe.html">interpreter</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6d12b73cf1a07bae559bd2e97fe773a8.html">interpreter</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -101,26 +101,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#ifndef LOGGING_H_3B1A3A0F</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#define LOGGING_H_3B1A3A0F</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;uscxml/config.h&quot;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_data_8h.html">uscxml/messages/Data.h</a>&quot;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_8h.html">uscxml/messages/Event.h</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_data_8h.html">uscxml/messages/Data.h</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_8h.html">uscxml/messages/Event.h</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#define LOG(logger, lvl) logger.log(lvl)</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#define LOG2(logger, lvl, thing) logger.log(lvl, thing)</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#define LOGD(lvl) uscxml::Logger::getDefault().log(lvl)</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#define LOGD2(lvl, thing) uscxml::Logger::getDefault().log(lvl, thing);</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#define LOG(logger, lvl) logger.log(lvl)</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#define LOG2(logger, lvl, thing) logger.log(lvl, thing)</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#define LOGD(lvl) uscxml::Logger::getDefault().log(lvl)</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#define LOGD2(lvl, thing) uscxml::Logger::getDefault().log(lvl, thing);</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">enum</span> LogSeverity {</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    USCXML_SCXML,</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    USCXML_TRACE,</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    USCXML_DEBUG,</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    USCXML_INFO,</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">enum</span> LogSeverity {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    USCXML_SCXML,</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    USCXML_TRACE,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    USCXML_DEBUG,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    USCXML_INFO,</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    USCXML_LOG, <span class="comment">// from log element</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    USCXML_VERBATIM, <span class="comment">// no additional decorations</span></div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    USCXML_WARN,</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    USCXML_ERROR,</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    USCXML_FATAL</div>
@@ -174,10 +174,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classuscxml_1_1_stream_logger_html"><div class="ttname"><a href="classuscxml_1_1_stream_logger.html">uscxml::StreamLogger</a></div><div class="ttdef"><b>Definition:</b> Logging.h:53</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
+<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:94</div></div>
 <div class="ttc" id="_data_8h_html"><div class="ttname"><a href="_data_8h.html">Data.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_logger_html"><div class="ttname"><a href="classuscxml_1_1_logger.html">uscxml::Logger</a></div><div class="ttdef"><b>Definition:</b> Logging.h:69</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -187,7 +187,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

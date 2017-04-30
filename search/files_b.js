@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['plugins_2ecpp',['Plugins.cpp',['../_plugins_8cpp.html',1,'']]],
+  ['plugins_2eh',['Plugins.h',['../_plugins_8h.html',1,'']]],
   ['predicates_2ecpp',['Predicates.cpp',['../_predicates_8cpp.html',1,'']]],
   ['predicates_2eh',['Predicates.h',['../_predicates_8h.html',1,'']]],
   ['promelacodeanalyzer_2ecpp',['PromelaCodeAnalyzer.cpp',['../_promela_code_analyzer_8cpp.html',1,'']]],

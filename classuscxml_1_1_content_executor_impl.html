@@ -122,15 +122,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a381e88477a2dbc7610f7000949a6750b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a381e88477a2dbc7610f7000949a6750b"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_content_executor_impl.html">ContentExecutorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="classuscxml_1_1_content_executor_callbacks.html">ContentExecutorCallbacks</a> *callbacks)=0</td></tr>
 <tr class="separator:a381e88477a2dbc7610f7000949a6750b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2341fcb29893f4ad8b4cf12b9bff3b5b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2341fcb29893f4ad8b4cf12b9bff3b5b"></a>
-virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>elementAsData</b> (XERCESC_NS::DOMElement *element)=0</td></tr>
-<tr class="separator:a2341fcb29893f4ad8b4cf12b9bff3b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3376713a39ec05ac7049bccd429f9484"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3376713a39ec05ac7049bccd429f9484"></a>
+virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>elementAsData</b> (XERCESC_NS::DOMElement *element, bool asExpression=false)=0</td></tr>
+<tr class="separator:a3376713a39ec05ac7049bccd429f9484"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7cf1dbb1d8ff190333eb92f1c3e4d5ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7cf1dbb1d8ff190333eb92f1c3e4d5ff"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>invoke</b> (XERCESC_NS::DOMElement *invoke)=0</td></tr>
 <tr class="separator:a7cf1dbb1d8ff190333eb92f1c3e4d5ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf344b90449ba9ecd9a12fd7e4731be4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf344b90449ba9ecd9a12fd7e4731be4"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>process</b> (XERCESC_NS::DOMElement *block, const <a class="el" href="classuscxml_1_1_x.html">X</a> &amp;xmlPrefix)=0</td></tr>
-<tr class="separator:adf344b90449ba9ecd9a12fd7e4731be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d01e88610ab4cd14f198972dd61f4e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d01e88610ab4cd14f198972dd61f4e3"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>process</b> (XERCESC_NS::DOMElement *block)=0</td></tr>
+<tr class="separator:a1d01e88610ab4cd14f198972dd61f4e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a246447d34fe24076bdc9b3ffb117c2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a246447d34fe24076bdc9b3ffb117c2"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>raiseDoneEvent</b> (XERCESC_NS::DOMElement *state, XERCESC_NS::DOMElement *doneData)=0</td></tr>
 <tr class="separator:a9a246447d34fe24076bdc9b3ffb117c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,7 +156,7 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

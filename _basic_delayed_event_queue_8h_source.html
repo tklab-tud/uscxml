@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_f2c8af9107d7604b778bd4ea9fe0debe.html">interpreter</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6d12b73cf1a07bae559bd2e97fe773a8.html">interpreter</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -129,49 +129,53 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    }</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reset();</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;EventQueueImpl&gt; create() {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <a class="code" href="classuscxml_1_1_error_event.html">ErrorEvent</a> e(<span class="stringliteral">&quot;Cannot create a DelayedEventQueue without callbacks&quot;</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">throw</span> e;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">   61</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">callbackData</a> {</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <a class="code" href="classuscxml_1_1_event.html">Event</a> userData;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        std::string eventUUID;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordtype">bool</span> persist;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="keyword">struct </span>event *event;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <a class="code" href="classuscxml_1_1_basic_delayed_event_queue.html">BasicDelayedEventQueue</a>* eventQueue;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        timeval added;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        timeval due;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    };</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">bool</span> _isStarted;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    std::thread* _thread;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> serialize();</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> deserialize(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;EventQueueImpl&gt; create() {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <a class="code" href="classuscxml_1_1_error_event.html">ErrorEvent</a> e(<span class="stringliteral">&quot;Cannot create a DelayedEventQueue without callbacks&quot;</span>);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">throw</span> e;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">   64</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">callbackData</a> {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <a class="code" href="classuscxml_1_1_event.html">Event</a> userData;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        std::string eventUUID;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keywordtype">bool</span> persist;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keyword">struct </span>event *event;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <a class="code" href="classuscxml_1_1_basic_delayed_event_queue.html">BasicDelayedEventQueue</a>* eventQueue;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        timeval added;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        timeval due;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    };</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    std::map&lt;std::string, callbackData&gt; _callbackData;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">struct </span>event_base* _eventLoop;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">struct </span>event* _dummyEvent;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> run(<span class="keywordtype">void</span>* instance);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">void</span> start();</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">void</span> stop();</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> timerCallback(evutil_socket_t fd, <span class="keywordtype">short</span> what, <span class="keywordtype">void</span> *arg);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <a class="code" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a>* _callbacks;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;};</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;}</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: BASICDELAYEDEVENTQUEUE_H_49D837C4 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">bool</span> _isStarted;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    std::thread* _thread;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    std::map&lt;std::string, callbackData&gt; _callbackData;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">struct </span>event_base* _eventLoop;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">struct </span>event* _dummyEvent;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> run(<span class="keywordtype">void</span>* instance);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">void</span> start();</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordtype">void</span> stop();</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> timerCallback(evutil_socket_t fd, <span class="keywordtype">short</span> what, <span class="keywordtype">void</span> *arg);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <a class="code" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a>* _callbacks;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;};</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: BASICDELAYEDEVENTQUEUE_H_49D837C4 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
-<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:197</div></div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
 <div class="ttc" id="classuscxml_1_1_basic_event_queue_html"><div class="ttname"><a href="classuscxml_1_1_basic_event_queue.html">uscxml::BasicEventQueue</a></div><div class="ttdef"><b>Definition:</b> BasicEventQueue.h:37</div></div>
 <div class="ttc" id="classuscxml_1_1_basic_delayed_event_queue_html"><div class="ttname"><a href="classuscxml_1_1_basic_delayed_event_queue.html">uscxml::BasicDelayedEventQueue</a></div><div class="ttdef"><b>Definition:</b> BasicDelayedEventQueue.h:39</div></div>
-<div class="ttc" id="classuscxml_1_1_delayed_event_queue_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_callbacks.html">uscxml::DelayedEventQueueCallbacks</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:51</div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
-<div class="ttc" id="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data_html"><div class="ttname"><a href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">uscxml::BasicDelayedEventQueue::callbackData</a></div><div class="ttdef"><b>Definition:</b> BasicDelayedEventQueue.h:61</div></div>
-<div class="ttc" id="classuscxml_1_1_delayed_event_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:60</div></div>
+<div class="ttc" id="classuscxml_1_1_delayed_event_queue_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_callbacks.html">uscxml::DelayedEventQueueCallbacks</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:53</div></div>
+<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:94</div></div>
+<div class="ttc" id="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data_html"><div class="ttname"><a href="structuscxml_1_1_basic_delayed_event_queue_1_1callback_data.html">uscxml::BasicDelayedEventQueue::callbackData</a></div><div class="ttdef"><b>Definition:</b> BasicDelayedEventQueue.h:64</div></div>
+<div class="ttc" id="classuscxml_1_1_delayed_event_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:62</div></div>
 <div class="ttc" id="_basic_event_queue_8h_html"><div class="ttname"><a href="_basic_event_queue_8h.html">BasicEventQueue.h</a></div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -181,7 +185,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

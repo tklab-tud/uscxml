@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_f2c8af9107d7604b778bd4ea9fe0debe.html">interpreter</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6d12b73cf1a07bae559bd2e97fe773a8.html">interpreter</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -119,31 +119,41 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_event.html">Event</a> dequeue(<span class="keywordtype">size_t</span> blockMs) = 0;</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueue(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reset() = 0;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classuscxml_1_1_delayed_event_queue_callbacks.html">   51</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a> {</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> eventReady(<a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; eventId) = 0;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;};</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="classuscxml_1_1_delayed_event_queue_impl.html">   60</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_delayed_event_queue_impl.html">DelayedEventQueueImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_event_queue_impl.html">EventQueueImpl</a> {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;DelayedEventQueueImpl&gt; create(<a class="code" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a>*) = 0;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueueDelayed(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keywordtype">size_t</span> delayMs, <span class="keyword">const</span> std::string&amp; eventUUID) = 0;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> cancelDelayed(<span class="keyword">const</span> std::string&amp; eventId) = 0;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> cancelAllDelayed() = 0;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;};</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;}</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: EVENTQUEUEIMPL_H_48027643 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> serialize() = 0;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> deserialize(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;};</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="classuscxml_1_1_delayed_event_queue_callbacks.html">   53</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a> {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> eventReady(<a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; eventId) = 0;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;};</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="classuscxml_1_1_delayed_event_queue_impl.html">   62</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_delayed_event_queue_impl.html">DelayedEventQueueImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_event_queue_impl.html">EventQueueImpl</a> {</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;DelayedEventQueueImpl&gt; create(<a class="code" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a>*) = 0;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueueDelayed(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keywordtype">size_t</span> delayMs, <span class="keyword">const</span> std::string&amp; eventUUID) = 0;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> cancelDelayed(<span class="keyword">const</span> std::string&amp; eventId) = 0;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> cancelAllDelayed() = 0;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> serialize() = 0;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> deserialize(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data) = 0;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="comment">// this will silence the warning about the hidden overloaded virtual function</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">using</span> EventQueueImpl::create;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;};</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;}</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: EVENTQUEUEIMPL_H_48027643 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
-<div class="ttc" id="classuscxml_1_1_delayed_event_queue_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_callbacks.html">uscxml::DelayedEventQueueCallbacks</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:51</div></div>
+<div class="ttc" id="classuscxml_1_1_delayed_event_queue_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_callbacks.html">uscxml::DelayedEventQueueCallbacks</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:53</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
-<div class="ttc" id="classuscxml_1_1_delayed_event_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:60</div></div>
+<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:94</div></div>
+<div class="ttc" id="classuscxml_1_1_delayed_event_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_delayed_event_queue_impl.html">uscxml::DelayedEventQueueImpl</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:62</div></div>
 <div class="ttc" id="classuscxml_1_1_event_queue_impl_html"><div class="ttname"><a href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a></div><div class="ttdef"><b>Definition:</b> EventQueueImpl.h:39</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -153,7 +163,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

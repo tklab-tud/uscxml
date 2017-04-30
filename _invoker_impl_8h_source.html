@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_38c8d24aef3972a7f87b834274e76e31.html">plugins</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_2cd592331b95683ae50c1625a7a0233f.html">plugins</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -106,63 +106,78 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_handler_8h.html">uscxml/plugins/EventHandler.h</a>&quot;</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_8h.html">uscxml/messages/Event.h</a>&quot;</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_interpreter_impl_8h.html">uscxml/interpreter/InterpreterImpl.h</a>&quot;</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">class </span>Interpreter;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html">   39</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_event_handler_impl.html">EventHandlerImpl</a> {</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a>() : _finalize(NULL) {};</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a>() {}</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">virtual</span> std::list&lt;std::string&gt; getNames() = 0;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;InvokerImpl&gt; create(<a class="code" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a>* interpreter) = 0;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> invoke(<span class="keyword">const</span> std::string&amp; source, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; invokeEvent) = 0;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> uninvoke() = 0;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> eventFromSCXML(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html#a77254dc1e4f6c5755ea577280db5c9c4">   73</a></span>&#160;    <span class="keyword">virtual</span> XERCESC_NS::DOMElement* <a class="code" href="classuscxml_1_1_invoker_impl.html#a77254dc1e4f6c5755ea577280db5c9c4">getFinalize</a>() {</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordflow">return</span> _finalize;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    }</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00081"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html#aa2888c20951790678e2998adb16e82d3">   81</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_invoker_impl.html#aa2888c20951790678e2998adb16e82d3">setFinalize</a>(XERCESC_NS::DOMElement* finalize) {</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        _finalize = finalize;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    }</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00089"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html#a2cb2605ffd14b2e68ac234d2a60af8ba">   89</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_invoker_impl.html#a2cb2605ffd14b2e68ac234d2a60af8ba">setInvokeId</a>(<span class="keyword">const</span> std::string&amp; invokeId) {</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        _invokeId = invokeId;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    }</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordtype">void</span> eventToSCXML(<a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; invokeId, <span class="keywordtype">bool</span> <span class="keyword">internal</span> = <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &lt;set&gt;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">class </span>Interpreter;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">class </span>InterpreterMonitor;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">class </span>ActionLanguage;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">class </span>Logger;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
+<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_callbacks.html">   43</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_invoker_callbacks.html">InvokerCallbacks</a> {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_callbacks.html#ad1409df4dc07f14765c826615a35ee02">   45</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_invoker_callbacks.html#ad1409df4dc07f14765c826615a35ee02">~InvokerCallbacks</a>() {} </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueueInternal(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> enqueueExternal(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_action_language.html">ActionLanguage</a>* getActionLanguage() = 0; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> std::set&lt;InterpreterMonitor*&gt; getMonitors() = 0;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">virtual</span> std::string getBaseURL() = 0;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_logger.html">Logger</a> getLogger() = 0;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;};</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html">   59</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_event_handler_impl.html">EventHandlerImpl</a> {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a>() {};</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a>() {}</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> std::list&lt;std::string&gt; getNames() = 0;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;InvokerImpl&gt; create(<a class="code" href="classuscxml_1_1_invoker_callbacks.html">InvokerCallbacks</a>* callbacks) = 0;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> invoke(<span class="keyword">const</span> std::string&amp; source, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; invokeEvent) = 0;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> uninvoke() = 0;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> eventFromSCXML(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) = 0;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html#a2cb2605ffd14b2e68ac234d2a60af8ba">   93</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_invoker_impl.html#a2cb2605ffd14b2e68ac234d2a60af8ba">setInvokeId</a>(<span class="keyword">const</span> std::string&amp; invokeId) {</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        _invokeId = invokeId;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    }</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html#a7d488de043b253e700b1bb25c808d7ed">  101</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classuscxml_1_1_invoker_impl.html#a7d488de043b253e700b1bb25c808d7ed">deserialize</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; encodedState) {}</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    XERCESC_NS::DOMElement* _finalize;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    std::string _invokeId;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;};</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;}</div>
+<div class="line"><a name="l00106"></a><span class="lineno"><a class="line" href="classuscxml_1_1_invoker_impl.html#a9ea613442d5052ca7425526e1c324382">  106</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> <a class="code" href="classuscxml_1_1_invoker_impl.html#a9ea613442d5052ca7425526e1c324382">serialize</a>() {</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>();</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    }</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: INVOKERIMPL_H_8A15A102 */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="_interpreter_impl_8h_html"><div class="ttname"><a href="_interpreter_impl_8h.html">InterpreterImpl.h</a></div></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keywordtype">void</span> eventToSCXML(<a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event, <span class="keyword">const</span> std::string&amp; type, <span class="keyword">const</span> std::string&amp; invokeId, <span class="keywordtype">bool</span> <span class="keyword">internal</span> = <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    std::string _invokeId;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <a class="code" href="classuscxml_1_1_invoker_callbacks.html">InvokerCallbacks</a>* _callbacks;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;};</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;}</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: INVOKERIMPL_H_8A15A102 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
-<div class="ttc" id="classuscxml_1_1_invoker_impl_html_a2cb2605ffd14b2e68ac234d2a60af8ba"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html#a2cb2605ffd14b2e68ac234d2a60af8ba">uscxml::InvokerImpl::setInvokeId</a></div><div class="ttdeci">virtual void setInvokeId(const std::string &amp;invokeId)</div><div class="ttdoc">Set the invocation identifier as required when returning events. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:89</div></div>
-<div class="ttc" id="classuscxml_1_1_invoker_impl_html_aa2888c20951790678e2998adb16e82d3"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html#aa2888c20951790678e2998adb16e82d3">uscxml::InvokerImpl::setFinalize</a></div><div class="ttdeci">virtual void setFinalize(XERCESC_NS::DOMElement *finalize)</div><div class="ttdoc">Set the finalize XML element associated with this invoker. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:81</div></div>
-<div class="ttc" id="classuscxml_1_1_invoker_impl_html"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html">uscxml::InvokerImpl</a></div><div class="ttdoc">Abstract base class for all invokers. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:39</div></div>
+<div class="ttc" id="classuscxml_1_1_invoker_impl_html_a2cb2605ffd14b2e68ac234d2a60af8ba"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html#a2cb2605ffd14b2e68ac234d2a60af8ba">uscxml::InvokerImpl::setInvokeId</a></div><div class="ttdeci">virtual void setInvokeId(const std::string &amp;invokeId)</div><div class="ttdoc">Set the invocation identifier as required when returning events. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:93</div></div>
+<div class="ttc" id="classuscxml_1_1_invoker_impl_html"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html">uscxml::InvokerImpl</a></div><div class="ttdoc">Abstract base class for all invokers. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:59</div></div>
+<div class="ttc" id="classuscxml_1_1_action_language_html"><div class="ttname"><a href="classuscxml_1_1_action_language.html">uscxml::ActionLanguage</a></div><div class="ttdoc">Collection of instances for interpreter that constitute its action language. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:53</div></div>
 <div class="ttc" id="_event_handler_8h_html"><div class="ttname"><a href="_event_handler_8h.html">EventHandler.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_event_handler_impl_html"><div class="ttname"><a href="classuscxml_1_1_event_handler_impl.html">uscxml::EventHandlerImpl</a></div><div class="ttdoc">Common base class for invokers and i/o processors. </div><div class="ttdef"><b>Definition:</b> EventHandler.h:41</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_impl_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a></div><div class="ttdef"><b>Definition:</b> InterpreterImpl.h:48</div></div>
+<div class="ttc" id="classuscxml_1_1_invoker_impl_html_a7d488de043b253e700b1bb25c808d7ed"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html#a7d488de043b253e700b1bb25c808d7ed">uscxml::InvokerImpl::deserialize</a></div><div class="ttdeci">virtual void deserialize(const Data &amp;encodedState)</div><div class="ttdoc">Load a state from a Data object. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:101</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
-<div class="ttc" id="classuscxml_1_1_invoker_impl_html_a77254dc1e4f6c5755ea577280db5c9c4"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html#a77254dc1e4f6c5755ea577280db5c9c4">uscxml::InvokerImpl::getFinalize</a></div><div class="ttdeci">virtual XERCESC_NS::DOMElement * getFinalize()</div><div class="ttdoc">Return the finalize XML element associated with this invoker. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:73</div></div>
+<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:94</div></div>
+<div class="ttc" id="classuscxml_1_1_invoker_callbacks_html_ad1409df4dc07f14765c826615a35ee02"><div class="ttname"><a href="classuscxml_1_1_invoker_callbacks.html#ad1409df4dc07f14765c826615a35ee02">uscxml::InvokerCallbacks::~InvokerCallbacks</a></div><div class="ttdeci">virtual ~InvokerCallbacks()</div><div class="ttdoc">silence virtual destructor warning from swig </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:45</div></div>
+<div class="ttc" id="classuscxml_1_1_invoker_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_invoker_callbacks.html">uscxml::InvokerCallbacks</a></div><div class="ttdoc">Callbacks available for every invoker. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_logger_html"><div class="ttname"><a href="classuscxml_1_1_logger.html">uscxml::Logger</a></div><div class="ttdef"><b>Definition:</b> Logging.h:69</div></div>
+<div class="ttc" id="classuscxml_1_1_invoker_impl_html_a9ea613442d5052ca7425526e1c324382"><div class="ttname"><a href="classuscxml_1_1_invoker_impl.html#a9ea613442d5052ca7425526e1c324382">uscxml::InvokerImpl::serialize</a></div><div class="ttdeci">virtual Data serialize()</div><div class="ttdoc">Save our state into a Data object. </div><div class="ttdef"><b>Definition:</b> InvokerImpl.h:106</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -172,7 +187,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

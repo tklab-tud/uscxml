@@ -1,5 +1,6 @@
 <map id="uscxml::DebuggerServlet" name="uscxml::DebuggerServlet">
-<area shape="rect" id="node2" href="$classuscxml_1_1_debugger.html" title="uscxml::Debugger" alt="" coords="29,80,159,107"/>
-<area shape="rect" id="node3" href="$classuscxml_1_1_interpreter_monitor.html" title="uscxml::InterpreterMonitor" alt="" coords="5,5,183,32"/>
-<area shape="rect" id="node4" href="$classuscxml_1_1_h_t_t_p_servlet.html" title="uscxml::HTTPServlet" alt="" coords="183,80,330,107"/>
+<area shape="rect" id="node2" href="$classuscxml_1_1_debugger.html" title="uscxml::Debugger" alt="" coords="29,171,159,197"/>
+<area shape="rect" id="node3" href="$classuscxml_1_1_interpreter_monitor.html" title="uscxml::InterpreterMonitor" alt="" coords="5,95,183,121"/>
+<area shape="rect" id="node4" href="$classuscxml_1_1_logger.html" title="uscxml::Logger" alt="" coords="38,5,150,32"/>
+<area shape="rect" id="node5" href="$classuscxml_1_1_h_t_t_p_servlet.html" title="uscxml::HTTPServlet" alt="" coords="183,171,330,197"/>
 </map>

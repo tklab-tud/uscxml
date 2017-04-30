@@ -120,6 +120,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a6cffb6d5573c2168e0215b5389a44aa8">cancel</a> ()</td></tr>
 <tr class="memdesc:a6cffb6d5573c2168e0215b5389a44aa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unblock and mark for finalize. <br /></td></tr>
 <tr class="separator:a6cffb6d5573c2168e0215b5389a44aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a699942bf490c427d69c13fc99b757ca4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a699942bf490c427d69c13fc99b757ca4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a699942bf490c427d69c13fc99b757ca4">deserialize</a> (const std::string &amp;encodedState)</td></tr>
+<tr class="memdesc:a699942bf490c427d69c13fc99b757ca4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize the state for the interpreter from a string. <br /></td></tr>
+<tr class="separator:a699942bf490c427d69c13fc99b757ca4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab85c99c01462d078f567a86286b2d60f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#ab85c99c01462d078f567a86286b2d60f">getActionLanguage</a> ()</td></tr>
+<tr class="memdesc:ab85c99c01462d078f567a86286b2d60f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return <a class="el" href="classuscxml_1_1_action_language.html" title="Collection of instances for interpreter that constitute its action language. ">ActionLanguage</a> with the instances actually used (i.e.  <a href="#ab85c99c01462d078f567a86286b2d60f">More...</a><br /></td></tr>
+<tr class="separator:ab85c99c01462d078f567a86286b2d60f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf7fa4cdb85a97331f3c69d54675949f"><td class="memItemLeft" align="right" valign="top">std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#aaf7fa4cdb85a97331f3c69d54675949f">getConfiguration</a> ()</td></tr>
 <tr class="memdesc:aaf7fa4cdb85a97331f3c69d54675949f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all state elements that constitute the active configuration.  <a href="#aaf7fa4cdb85a97331f3c69d54675949f">More...</a><br /></td></tr>
 <tr class="separator:aaf7fa4cdb85a97331f3c69d54675949f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,6 +159,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#acd21b0cc08aee82e55685955cc3fe64c">reset</a> ()</td></tr>
 <tr class="memdesc:acd21b0cc08aee82e55685955cc3fe64c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize and reset interpeter. <br /></td></tr>
 <tr class="separator:acd21b0cc08aee82e55685955cc3fe64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a751d6408b517eee3b64391c84ac412f9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a751d6408b517eee3b64391c84ac412f9"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a751d6408b517eee3b64391c84ac412f9">serialize</a> ()</td></tr>
+<tr class="memdesc:a751d6408b517eee3b64391c84ac412f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the interpreter's state in a string. <br /></td></tr>
+<tr class="separator:a751d6408b517eee3b64391c84ac412f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a269f8d91e9ea8e213fd51cac9964c6a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a269f8d91e9ea8e213fd51cac9964c6a3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter.html#a269f8d91e9ea8e213fd51cac9964c6a3">setActionLanguage</a> (<a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a> actionLanguage)</td></tr>
 <tr class="memdesc:a269f8d91e9ea8e213fd51cac9964c6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapt the constituting components for a SCXML interpreter. <br /></td></tr>
@@ -385,6 +396,22 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
 
 </div>
 </div>
+<a class="anchor" id="ab85c99c01462d078f567a86286b2d60f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a> * uscxml::Interpreter::getActionLanguage </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>those from the factory). </p>
+
+</div>
+</div>
 <a class="anchor" id="aaf7fa4cdb85a97331f3c69d54675949f"></a>
 <div class="memitem">
 <div class="memproto">
@@ -521,7 +548,7 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_interpreter_impl.html">I
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

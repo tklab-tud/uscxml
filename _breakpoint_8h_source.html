@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_84d4ec99856759213102e4209c09c524.html">debug</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_38a182f92f920d3a6e24b71612e5af73.html">debug</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -133,52 +133,53 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        subject = UNDEF_SUBJECT;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        when    = UNDEF_WHEN;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        action  = UNDEF_ACTION;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    }</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="comment">// would we match the given breakpoint as well?</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">bool</span> matches(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a>&amp; other) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="classuscxml_1_1_data.html">Data</a> toData() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a>&amp; other)<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordflow">return</span> (toData() &lt; other.toData());</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    }</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">operator</span> bool() {</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">return</span> (subject != UNDEF_SUBJECT ||</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                when    != UNDEF_WHEN ||</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                action  != UNDEF_ACTION);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    }</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">mutable</span> <span class="keywordtype">bool</span> enabled;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    When when;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    Subject subject;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    Action action;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">const</span> XERCESC_NS::DOMElement* element = NULL;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    std::string invokeId;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    std::string invokeType;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    std::string eventName;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    std::string executableName;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    std::string executableXPath;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    std::string stateId;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    std::string transSourceId;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    std::string transTargetId;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    std::string condition;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;};</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;}</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        enabled = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a>(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; data);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="comment">// would we match the given breakpoint as well?</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">bool</span> matches(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a>&amp; other) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="code" href="classuscxml_1_1_data.html">Data</a> toData() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_breakpoint.html">Breakpoint</a>&amp; other)<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="keywordflow">return</span> (toData() &lt; other.toData());</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    }</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">operator</span> bool() {</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keywordflow">return</span> (subject != UNDEF_SUBJECT ||</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                when    != UNDEF_WHEN ||</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                action  != UNDEF_ACTION);</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    }</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">mutable</span> <span class="keywordtype">bool</span> enabled;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    When when;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    Subject subject;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    Action action;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">const</span> XERCESC_NS::DOMElement* element = NULL;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    std::string invokeId;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    std::string invokeType;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    std::string eventName;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    std::string executableName;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    std::string executableXPath;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    std::string stateId;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    std::string transSourceId;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    std::string transTargetId;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    std::string condition;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;};</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;}</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: BREAKPOINT_H_VR7K7T1X */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: BREAKPOINT_H_VR7K7T1X */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="_interpreter_8h_html"><div class="ttname"><a href="_interpreter_8h.html">Interpreter.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:79</div></div>
@@ -186,7 +187,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="namespace_x_e_r_c_e_s_c___n_s_html"><div class="ttname"><a href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:30</div></div>
 <div class="ttc" id="classuscxml_1_1_breakpoint_html"><div class="ttname"><a href="classuscxml_1_1_breakpoint.html">uscxml::Breakpoint</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:36</div></div>
 <div class="ttc" id="_data_8h_html"><div class="ttname"><a href="_data_8h.html">Data.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -196,7 +197,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

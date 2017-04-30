@@ -106,6 +106,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a443f03fa2c3ffd2969cf81cc74f910e2"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step.html#a443f03fa2c3ffd2969cf81cc74f910e2">deserialize</a> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;encodedState)</td></tr>
+<tr class="separator:a443f03fa2c3ffd2969cf81cc74f910e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a270b5bd06f40525e99b5d8ded5c0abca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a270b5bd06f40525e99b5d8ded5c0abca"></a>
 std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getConfiguration</b> ()</td></tr>
 <tr class="separator:a270b5bd06f40525e99b5d8ded5c0abca"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,6 +129,8 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>markAsCancell
 <tr class="memitem:a84ed5bb21637d8e625eaef3dca29ffbb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a84ed5bb21637d8e625eaef3dca29ffbb"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()</td></tr>
 <tr class="separator:a84ed5bb21637d8e625eaef3dca29ffbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a748e5075aa921404887c5c2f77254a25"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step.html#a748e5075aa921404887c5c2f77254a25">serialize</a> ()</td></tr>
+<tr class="separator:a748e5075aa921404887c5c2f77254a25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4884e5c2b5b27ac558ee42dbc8026f61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4884e5c2b5b27ac558ee42dbc8026f61"></a>
 virtual InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><b>step</b> (size_t blockMs)</td></tr>
 <tr class="separator:a4884e5c2b5b27ac558ee42dbc8026f61"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,6 +141,54 @@ Protected Attributes</h2></td></tr>
 std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_impl</b></td></tr>
 <tr class="separator:a7375de390d297273ee84a14b0b71fc15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a443f03fa2c3ffd2969cf81cc74f910e2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void uscxml::MicroStep::deserialize </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td>
+          <td class="paramname"><em>encodedState</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a748e5075aa921404887c5c2f77254a25"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classuscxml_1_1_data.html">Data</a> uscxml::MicroStep::serialize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>interpreter/<a class="el" href="_micro_step_8h_source.html">MicroStep.h</a></li>
 <li>interpreter/<a class="el" href="_micro_step_8cpp.html">MicroStep.cpp</a></li>
@@ -150,7 +202,7 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_micro_step_impl.html">Mi
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

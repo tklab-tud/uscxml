@@ -133,6 +133,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a909ba66a03fb5cd50ee560e450d8c4d8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a909ba66a03fb5cd50ee560e450d8c4d8"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a> *callbacks)</td></tr>
 <tr class="separator:a909ba66a03fb5cd50ee560e450d8c4d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7fb1b1d5817dd36e26f53b0805e5f6c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7fb1b1d5817dd36e26f53b0805e5f6c9"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;encodedState)</td></tr>
+<tr class="separator:a7fb1b1d5817dd36e26f53b0805e5f6c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a355864ecbf90e5adceb912af93dcd248"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a355864ecbf90e5adceb912af93dcd248"></a>
 virtual std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getConfiguration</b> ()</td></tr>
 <tr class="separator:a355864ecbf90e5adceb912af93dcd248"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +149,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>markAsCancelled</b> (
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_fast_micro_step.html#a03cc8e445bd51461bbb6e897e9a83db0">reset</a> ()</td></tr>
 <tr class="memdesc:a03cc8e445bd51461bbb6e897e9a83db0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset state machine. <br /></td></tr>
 <tr class="separator:a03cc8e445bd51461bbb6e897e9a83db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a569edcab5b352428ba524e35262303b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a569edcab5b352428ba524e35262303b3"></a>
+virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> ()</td></tr>
+<tr class="separator:a569edcab5b352428ba524e35262303b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad19eb7cd93c5d5ec574502b463a213cb"><td class="memItemLeft" align="right" valign="top">virtual InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_fast_micro_step.html#ad19eb7cd93c5d5ec574502b463a213cb">step</a> (size_t blockMs)</td></tr>
 <tr class="separator:ad19eb7cd93c5d5ec574502b463a213cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_micro_step_impl"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_micro_step_impl')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_micro_step_impl.html">uscxml::MicroStepImpl</a></td></tr>
@@ -166,9 +172,9 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a75cd9faa3ad002fe2d125710db18ca04"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a75cd9faa3ad002fe2d125710db18ca04"></a>
 Binding&#160;</td><td class="memItemRight" valign="bottom"><b>_binding</b></td></tr>
 <tr class="separator:a75cd9faa3ad002fe2d125710db18ca04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c62fe1c02a316717ba1fd2d4400e04d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0c62fe1c02a316717ba1fd2d4400e04d"></a>
-boost::dynamic_bitset&#160;</td><td class="memItemRight" valign="bottom"><b>_configuration</b></td></tr>
-<tr class="separator:a0c62fe1c02a316717ba1fd2d4400e04d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e9a175983486c8f93fb57316a46c710"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e9a175983486c8f93fb57316a46c710"></a>
+boost::dynamic_bitset&lt; BITSET_BLOCKTYPE &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_configuration</b></td></tr>
+<tr class="separator:a6e9a175983486c8f93fb57316a46c710"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca688fe34f0ce91b7c4ce1df0ca1031b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca688fe34f0ce91b7c4ce1df0ca1031b"></a>
 <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_event</b></td></tr>
 <tr class="separator:aca688fe34f0ce91b7c4ce1df0ca1031b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,24 +184,24 @@ unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>_flags</b></
 <tr class="memitem:a75de72e913522c8f31fe8ab762a578fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a75de72e913522c8f31fe8ab762a578fe"></a>
 std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_globalScripts</b></td></tr>
 <tr class="separator:a75de72e913522c8f31fe8ab762a578fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5787aeee6dd0321f214d22811e9d356d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5787aeee6dd0321f214d22811e9d356d"></a>
-boost::dynamic_bitset&#160;</td><td class="memItemRight" valign="bottom"><b>_history</b></td></tr>
-<tr class="separator:a5787aeee6dd0321f214d22811e9d356d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96d8d4a30c8f552dcdcc1ec09b3cbec2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96d8d4a30c8f552dcdcc1ec09b3cbec2"></a>
-boost::dynamic_bitset&#160;</td><td class="memItemRight" valign="bottom"><b>_initializedData</b></td></tr>
-<tr class="separator:a96d8d4a30c8f552dcdcc1ec09b3cbec2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e35c2f8380d1032e71915e09afc9f98"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8e35c2f8380d1032e71915e09afc9f98"></a>
-boost::dynamic_bitset&#160;</td><td class="memItemRight" valign="bottom"><b>_invocations</b></td></tr>
-<tr class="separator:a8e35c2f8380d1032e71915e09afc9f98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa523bda68e6db5c23793825a0dd0855f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa523bda68e6db5c23793825a0dd0855f"></a>
+boost::dynamic_bitset&lt; BITSET_BLOCKTYPE &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_history</b></td></tr>
+<tr class="separator:aa523bda68e6db5c23793825a0dd0855f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a243e16998488c30e40bf54930ced2c26"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a243e16998488c30e40bf54930ced2c26"></a>
+boost::dynamic_bitset&lt; BITSET_BLOCKTYPE &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_initializedData</b></td></tr>
+<tr class="separator:a243e16998488c30e40bf54930ced2c26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6453eff5a0031d51d1753e8392c2c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2a6453eff5a0031d51d1753e8392c2c4"></a>
+boost::dynamic_bitset&lt; BITSET_BLOCKTYPE &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_invocations</b></td></tr>
+<tr class="separator:a2a6453eff5a0031d51d1753e8392c2c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98005d3723f63d010c1017d50226390a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a98005d3723f63d010c1017d50226390a"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_isCancelled</b></td></tr>
 <tr class="separator:a98005d3723f63d010c1017d50226390a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4aae6f9d1d2031372849c17b1dbffa7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4aae6f9d1d2031372849c17b1dbffa7"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_isInitialized</b></td></tr>
 <tr class="separator:ae4aae6f9d1d2031372849c17b1dbffa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac35ace9a07048d1f76bd40e2afdc1244"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac35ace9a07048d1f76bd40e2afdc1244"></a>
-std::set&lt; boost::dynamic_bitset&lt;&gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_microstepConfigurations</b></td></tr>
-<tr class="separator:ac35ace9a07048d1f76bd40e2afdc1244"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e2643bc706941c3b6ad761cb64590ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e2643bc706941c3b6ad761cb64590ed"></a>
+std::set&lt; boost::dynamic_bitset&lt; BITSET_BLOCKTYPE &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_microstepConfigurations</b></td></tr>
+<tr class="separator:a4e2643bc706941c3b6ad761cb64590ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af28cd93dfded0ae18e8588ac062bcbf1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af28cd93dfded0ae18e8588ac062bcbf1"></a>
 XERCESC_NS::DOMElement *&#160;</td><td class="memItemRight" valign="bottom"><b>_scxml</b></td></tr>
 <tr class="separator:af28cd93dfded0ae18e8588ac062bcbf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -301,7 +307,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

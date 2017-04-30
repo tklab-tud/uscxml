@@ -124,9 +124,15 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>cancelDelayed
 <tr class="memitem:aa3098aa9a20cf9c551ad2e455e01495e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa3098aa9a20cf9c551ad2e455e01495e"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">DelayedEventQueueImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a> *)=0</td></tr>
 <tr class="separator:aa3098aa9a20cf9c551ad2e455e01495e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae7f2e58900b0ee0062946bf025364c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaae7f2e58900b0ee0062946bf025364c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)=0</td></tr>
+<tr class="separator:aaae7f2e58900b0ee0062946bf025364c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a185e87e921abdd67145f76c04f3190b4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a185e87e921abdd67145f76c04f3190b4"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueueDelayed</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, size_t delayMs, const std::string &amp;eventUUID)=0</td></tr>
 <tr class="separator:a185e87e921abdd67145f76c04f3190b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f7df614c9b48a7932ab9bd8d18982f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f7df614c9b48a7932ab9bd8d18982f8"></a>
+virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> ()=0</td></tr>
+<tr class="separator:a4f7df614c9b48a7932ab9bd8d18982f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_event_queue_impl"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_event_queue_impl')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_event_queue_impl.html">uscxml::EventQueueImpl</a></td></tr>
 <tr class="memitem:ace06177376b2a064cac766ff337ad1cb inherit pub_methods_classuscxml_1_1_event_queue_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace06177376b2a064cac766ff337ad1cb"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_event_queue_impl.html">EventQueueImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> ()=0</td></tr>
@@ -153,7 +159,7 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()=
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

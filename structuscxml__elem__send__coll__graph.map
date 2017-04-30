@@ -1,0 +1,3 @@
+<map id="uscxml_elem_send" name="uscxml_elem_send">
+<area shape="rect" id="node2" href="$structuscxml__elem__param.html" title="All information pertaining to a &#160;element Blocks of params are separated by NULL params, use USCXML_ELEM_PARAM_IS_SET to test for end of a block. " alt="" coords="5,5,151,32"/>
+</map>

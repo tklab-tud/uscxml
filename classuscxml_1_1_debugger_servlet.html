@@ -107,14 +107,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="dynheader">
 Inheritance diagram for uscxml::DebuggerServlet:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_debugger_servlet__inherit__graph.svg" width="336" height="187"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
-</div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_debugger_servlet__inherit__graph.svg" width="336" height="187"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for uscxml::DebuggerServlet:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_debugger_servlet__coll__graph.svg" width="336" height="187"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe>
-</div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_debugger_servlet__coll__graph.svg" width="336" height="279"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -134,6 +132,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>processConnect</b> (c
 <tr class="memitem:a0e7eb5df94345a35248843215d9be395"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e7eb5df94345a35248843215d9be395"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>processDisconnect</b> (const <a class="el" href="classuscxml_1_1_h_t_t_p_server_1_1_request.html">HTTPServer::Request</a> &amp;request)</td></tr>
 <tr class="separator:a0e7eb5df94345a35248843215d9be395"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3aaa361b5b166f64a410451fdf8a70f4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3aaa361b5b166f64a410451fdf8a70f4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>processIssues</b> (const <a class="el" href="classuscxml_1_1_h_t_t_p_server_1_1_request.html">HTTPServer::Request</a> &amp;request)</td></tr>
+<tr class="separator:a3aaa361b5b166f64a410451fdf8a70f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0c4e81d8690eb2c237a57b0e2e33abe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0c4e81d8690eb2c237a57b0e2e33abe"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>processListSessions</b> (const <a class="el" href="classuscxml_1_1_h_t_t_p_server_1_1_request.html">HTTPServer::Request</a> &amp;request)</td></tr>
 <tr class="separator:ae0c4e81d8690eb2c237a57b0e2e33abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -214,6 +215,9 @@ virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_debug_session.ht
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>onStableConfiguration</b> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;interpreter)</td></tr>
 <tr class="separator:a1eaaed2e79c44b627f9a00ed23c7c3e3 inherit pub_methods_classuscxml_1_1_debugger"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_interpreter_monitor"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_interpreter_monitor')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></td></tr>
+<tr class="memitem:a16498d82225988b730d0a5ea9546183b inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a16498d82225988b730d0a5ea9546183b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>InterpreterMonitor</b> (<a class="el" href="classuscxml_1_1_logger.html">Logger</a> logger)</td></tr>
+<tr class="separator:a16498d82225988b730d0a5ea9546183b inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7684a23962d630b4b093f1750d4b5b7 inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa7684a23962d630b4b093f1750d4b5b7"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>copyToInvokers</b> (bool copy)</td></tr>
 <tr class="separator:aa7684a23962d630b4b093f1750d4b5b7 inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -293,6 +297,9 @@ std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_sess
 <tr class="memitem:a9df4f96ebb08aabaca99025e9694b0d0 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9df4f96ebb08aabaca99025e9694b0d0"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_copyToInvokers</b></td></tr>
 <tr class="separator:a9df4f96ebb08aabaca99025e9694b0d0 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5d81267ad4ec72905312271b4a55d44 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5d81267ad4ec72905312271b4a55d44"></a>
+<a class="el" href="classuscxml_1_1_logger.html">Logger</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_logger</b></td></tr>
+<tr class="separator:af5d81267ad4ec72905312271b4a55d44 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>debug/<a class="el" href="_debugger_servlet_8h_source.html">DebuggerServlet.h</a></li>
@@ -307,7 +314,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_copyToInvokers</b></
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

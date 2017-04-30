@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_f2c8af9107d7604b778bd4ea9fe0debe.html">interpreter</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6d12b73cf1a07bae559bd2e97fe773a8.html">interpreter</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -132,43 +132,50 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keyword">virtual</span> std::set&lt;InterpreterMonitor*&gt; getMonitors() = 0;</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a> getInterpreter() = 0;</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_logger.html">Logger</a> getLogger() = 0;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;};</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
-<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="classuscxml_1_1_micro_step_impl.html">   69</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a> {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">enum</span> Binding {</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        EARLY = 0,</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        LATE = 1</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    };</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <a class="code" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a>(<a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* callbacks) : _callbacks(callbacks) {}</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;MicroStepImpl&gt; create(<a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* callbacks) = 0;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">virtual</span> InterpreterState step(<span class="keywordtype">size_t</span> blockMs) = 0;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reset() = 0; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isInState(<span class="keyword">const</span> std::string&amp; stateId) = 0;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">virtual</span> std::list&lt;XERCESC_NS::DOMElement*&gt; getConfiguration() = 0;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> init(XERCESC_NS::DOMElement* scxml) = 0;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> markAsCancelled() = 0;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* _callbacks;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;};</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;}</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; getCache() = 0;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;};</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="classuscxml_1_1_micro_step_impl.html">   73</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a> {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">enum</span> Binding {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        EARLY = 0,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        LATE = 1</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    };</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <a class="code" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a>(<a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* callbacks) : _callbacks(callbacks) {}</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;MicroStepImpl&gt; create(<a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* callbacks) = 0;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">virtual</span> InterpreterState step(<span class="keywordtype">size_t</span> blockMs) = 0;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reset() = 0; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> isInState(<span class="keyword">const</span> std::string&amp; stateId) = 0;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">virtual</span> std::list&lt;XERCESC_NS::DOMElement*&gt; getConfiguration() = 0;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> init(XERCESC_NS::DOMElement* scxml) = 0;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> markAsCancelled() = 0;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> deserialize(<span class="keyword">const</span> <a class="code" href="classuscxml_1_1_data.html">Data</a>&amp; encodedState) = 0;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> serialize() = 0;</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: MICROSTEPIMPL_H_98233709 */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="classuscxml_1_1_micro_step_impl_html"><div class="ttname"><a href="classuscxml_1_1_micro_step_impl.html">uscxml::MicroStepImpl</a></div><div class="ttdef"><b>Definition:</b> MicroStepImpl.h:69</div></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <a class="code" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a>* _callbacks;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;};</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;}</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: MICROSTEPIMPL_H_98233709 */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="classuscxml_1_1_micro_step_impl_html"><div class="ttname"><a href="classuscxml_1_1_micro_step_impl.html">uscxml::MicroStepImpl</a></div><div class="ttdef"><b>Definition:</b> MicroStepImpl.h:73</div></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
 <div class="ttc" id="_interpreter_8h_html"><div class="ttname"><a href="_interpreter_8h.html">Interpreter.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_micro_step_callbacks_html"><div class="ttname"><a href="classuscxml_1_1_micro_step_callbacks.html">uscxml::MicroStepCallbacks</a></div><div class="ttdef"><b>Definition:</b> MicroStepImpl.h:40</div></div>
 <div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:79</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
+<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:94</div></div>
 <div class="ttc" id="classuscxml_1_1_logger_html"><div class="ttname"><a href="classuscxml_1_1_logger.html">uscxml::Logger</a></div><div class="ttdef"><b>Definition:</b> Logging.h:69</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -178,7 +185,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -97,6 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classuscxml_1_1_delayed_event_queue-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -122,19 +123,19 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>cancelAllDelayed</b> 
 <tr class="memitem:ac9f44e03f2d5ed67aebb9f0586049c70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac9f44e03f2d5ed67aebb9f0586049c70"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>cancelDelayed</b> (const std::string &amp;eventUUID)</td></tr>
 <tr class="separator:ac9f44e03f2d5ed67aebb9f0586049c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9d521535fd36887b03febf5254b5f0d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad9d521535fd36887b03febf5254b5f0d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueueDelayed</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, size_t delayMs, const std::string &amp;eventUUID)</td></tr>
-<tr class="separator:ad9d521535fd36887b03febf5254b5f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83ebe78d6455b5270356c214e3d1e233"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a83ebe78d6455b5270356c214e3d1e233"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_delayed_event_queue_impl.html">DelayedEventQueueImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getImplDelayed</b> ()</td></tr>
 <tr class="separator:a83ebe78d6455b5270356c214e3d1e233"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a096d47f6a01082e7a8cf9ee64f883d55"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a096d47f6a01082e7a8cf9ee64f883d55"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>PIMPL_OPERATORS_INHERIT</b> (<a class="el" href="classuscxml_1_1_delayed_event_queue.html">DelayedEventQueue</a>, <a class="el" href="classuscxml_1_1_event_queue.html">EventQueue</a>)</td></tr>
-<tr class="separator:a096d47f6a01082e7a8cf9ee64f883d55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a592b3a5c65313a00cc8562f5f14a2246"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a592b3a5c65313a00cc8562f5f14a2246"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PIMPL_OPERATORS_INHERIT</b> (<a class="el" href="classuscxml_1_1_delayed_event_queue.html">DelayedEventQueue</a>, <a class="el" href="classuscxml_1_1_event_queue.html">EventQueue</a>) void enqueueDelayed(const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event</td></tr>
+<tr class="separator:a592b3a5c65313a00cc8562f5f14a2246"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_event_queue"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_event_queue')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_event_queue.html">uscxml::EventQueue</a></td></tr>
 <tr class="memitem:a581fb5bdb2c65166f624b6b64c53b722 inherit pub_methods_classuscxml_1_1_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a581fb5bdb2c65166f624b6b64c53b722"></a>
 virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dequeue</b> (size_t blockMs)</td></tr>
 <tr class="separator:a581fb5bdb2c65166f624b6b64c53b722 inherit pub_methods_classuscxml_1_1_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a210da1c715d7a449a251d7e82a94d27f inherit pub_methods_classuscxml_1_1_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a210da1c715d7a449a251d7e82a94d27f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
+<tr class="separator:a210da1c715d7a449a251d7e82a94d27f inherit pub_methods_classuscxml_1_1_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a257db71600bf72cf21e758e9d263feaa inherit pub_methods_classuscxml_1_1_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a257db71600bf72cf21e758e9d263feaa"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueue</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
 <tr class="separator:a257db71600bf72cf21e758e9d263feaa inherit pub_methods_classuscxml_1_1_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,6 +148,18 @@ virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_event_queue_impl
 <tr class="memitem:ad8b4ad272348975fdebd377ff06e4ecd inherit pub_methods_classuscxml_1_1_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad8b4ad272348975fdebd377ff06e4ecd"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()</td></tr>
 <tr class="separator:ad8b4ad272348975fdebd377ff06e4ecd inherit pub_methods_classuscxml_1_1_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad955522e60775710d25fe80f63bf8913 inherit pub_methods_classuscxml_1_1_event_queue"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad955522e60775710d25fe80f63bf8913"></a>
+<a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> ()</td></tr>
+<tr class="separator:ad955522e60775710d25fe80f63bf8913 inherit pub_methods_classuscxml_1_1_event_queue"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:aa50500c6847bf100beb547e929f1511f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa50500c6847bf100beb547e929f1511f"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>delayMs</b></td></tr>
+<tr class="separator:aa50500c6847bf100beb547e929f1511f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af95d12ecd81a28e5fccd10a1faf76832"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af95d12ecd81a28e5fccd10a1faf76832"></a>
+size_t const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>eventUUID</b></td></tr>
+<tr class="separator:af95d12ecd81a28e5fccd10a1faf76832"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -171,7 +184,7 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_event_queue_impl.html">E
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

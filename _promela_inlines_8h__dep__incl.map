@@ -1,5 +1,5 @@
 <map id="transform/promela/PromelaInlines.h" name="transform/promela/PromelaInlines.h">
-<area shape="rect" id="node2" href="$_chart_to_java_8h.html" title="transform/ChartToJava.h" alt="" coords="19,102,189,129"/>
+<area shape="rect" id="node2" href="$_chart_to_java_8h.html" title="transform/ChartToJava.h" alt="" coords="21,102,190,129"/>
 <area shape="rect" id="node4" href="$_chart_to_promela_8h.html" title="transform/ChartToPromela.h" alt="" coords="221,102,411,129"/>
 <area shape="rect" id="node7" href="$_promela_inlines_8cpp.html" title="transform/promela/Promela\lInlines.cpp" alt="" coords="436,95,620,136"/>
 <area shape="rect" id="node3" href="$_chart_to_java_8cpp.html" title="transform/ChartToJava.cpp" alt="" coords="5,191,189,218"/>

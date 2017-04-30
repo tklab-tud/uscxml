@@ -127,12 +127,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a591403a4335f665a7f9f42b3ac00689e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a591403a4335f665a7f9f42b3ac00689e">addExtension</a> (<a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> *ext)</td></tr>
 <tr class="memdesc:a591403a4335f665a7f9f42b3ac00689e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an extension to get data into and out of the data-model.  <a href="#a591403a4335f665a7f9f42b3ac00689e">More...</a><br /></td></tr>
 <tr class="separator:a591403a4335f665a7f9f42b3ac00689e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad2e282225a1c8cdbeb29206413f3ac4a">andExpressions</a> (std::list&lt; std::string &gt;)</td></tr>
-<tr class="memdesc:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concat the given terms into a conjunctive form.  <a href="#ad2e282225a1c8cdbeb29206413f3ac4a">More...</a><br /></td></tr>
-<tr class="separator:ad2e282225a1c8cdbeb29206413f3ac4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad1cdfb5c119641aa99ae1b3cf8c66cf9">assign</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="memdesc:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data object to a location in the data-model.  <a href="#ad1cdfb5c119641aa99ae1b3cf8c66cf9">More...</a><br /></td></tr>
-<tr class="separator:ad1cdfb5c119641aa99ae1b3cf8c66cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7ae0fdb2938baf1c71e9c0d98e63167"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ab7ae0fdb2938baf1c71e9c0d98e63167">assign</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data, const std::map&lt; std::string, std::string &gt; &amp;attr=std::map&lt; std::string, std::string &gt;())</td></tr>
+<tr class="memdesc:ab7ae0fdb2938baf1c71e9c0d98e63167"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data object to a location in the data-model.  <a href="#ab7ae0fdb2938baf1c71e9c0d98e63167">More...</a><br /></td></tr>
+<tr class="separator:ab7ae0fdb2938baf1c71e9c0d98e63167"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaca23f71c1a3807d21dd6fc8d4d75488"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#aaca23f71c1a3807d21dd6fc8d4d75488">create</a> (<a class="el" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a> *callbacks)</td></tr>
 <tr class="memdesc:aaca23f71c1a3807d21dd6fc8d4d75488"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="classuscxml_1_1_factory.html">Factory</a> wants to instantiate a new instance.  <a href="#aaca23f71c1a3807d21dd6fc8d4d75488">More...</a><br /></td></tr>
 <tr class="separator:aaca23f71c1a3807d21dd6fc8d4d75488"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,9 +149,9 @@ Public Member Functions</h2></td></tr>
 virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a1491a48eba86a6b7eb713093828735a8">getNames</a> ()</td></tr>
 <tr class="memdesc:a1491a48eba86a6b7eb713093828735a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names to be matched by the <code>datamodel</code> attribute in SCXML. <br /></td></tr>
 <tr class="separator:a1491a48eba86a6b7eb713093828735a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65c4d661169e39e2feb0432834ac17f8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a65c4d661169e39e2feb0432834ac17f8">init</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="memdesc:a65c4d661169e39e2feb0432834ac17f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a variable / location in the data-model with a given data object.  <a href="#a65c4d661169e39e2feb0432834ac17f8">More...</a><br /></td></tr>
-<tr class="separator:a65c4d661169e39e2feb0432834ac17f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54ae9c3e40e138b8f34ef263f88a6dcd"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a54ae9c3e40e138b8f34ef263f88a6dcd">init</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data, const std::map&lt; std::string, std::string &gt; &amp;attr=std::map&lt; std::string, std::string &gt;())</td></tr>
+<tr class="memdesc:a54ae9c3e40e138b8f34ef263f88a6dcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a variable / location in the data-model with a given data object.  <a href="#a54ae9c3e40e138b8f34ef263f88a6dcd">More...</a><br /></td></tr>
+<tr class="separator:a54ae9c3e40e138b8f34ef263f88a6dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18e73b777496c62178b5ca885a1d1042"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_j_s_c_data_model.html#a18e73b777496c62178b5ca885a1d1042">isDeclared</a> (const std::string &amp;expr)</td></tr>
 <tr class="memdesc:a18e73b777496c62178b5ca885a1d1042"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a given variable / location is declared.  <a href="#a18e73b777496c62178b5ca885a1d1042">More...</a><br /></td></tr>
 <tr class="separator:a18e73b777496c62178b5ca885a1d1042"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -291,34 +288,7 @@ static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>j
 
 </div>
 </div>
-<a class="anchor" id="ad2e282225a1c8cdbeb29206413f3ac4a"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string uscxml::JSCDataModel::andExpressions </td>
-          <td>(</td>
-          <td class="paramtype">std::list&lt; std::string &gt;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>This is required to automatically transform a state-chart into a state-machine. Actual transformation is still only available in legacy though. </dd></dl>
-
-<p>Reimplemented from <a class="el" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">uscxml::DataModelImpl</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ad1cdfb5c119641aa99ae1b3cf8c66cf9"></a>
+<a class="anchor" id="ab7ae0fdb2938baf1c71e9c0d98e63167"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -335,7 +305,13 @@ static JSClassDefinition&#160;</td><td class="memItemRight" valign="bottom"><b>j
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td>
-          <td class="paramname"><em>data</em>&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::map&lt; std::string, std::string &gt; &amp;&#160;</td>
+          <td class="paramname"><em>attr</em> = <code>std::map&lt;&#160;std::string,&#160;std::string&#160;&gt;()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -363,12 +339,13 @@ test277:
   <table class="params">
     <tr><td class="paramname">location</td><td>A variable or locatio to assign to. </td></tr>
     <tr><td class="paramname">data</td><td>The <a class="el" href="classuscxml_1_1_data.html">Data</a> object with the respective data. </td></tr>
+    <tr><td class="paramname">attr</td><td>Additional attributes of the XML assign element. </td></tr>
   </table>
   </dd>
 </dl>
 <p>test157: We need to evaluate, as this will not throw for 'continue' = Var[5] in</p>
 
-<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a39bd9eaf711d1a8240f559da41649bfb">uscxml::DataModelImpl</a>.</p>
+<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a653d26b931f5b014ee923492e59b86a8">uscxml::DataModelImpl</a>.</p>
 
 </div>
 </div>
@@ -538,7 +515,7 @@ test277:
 
 </div>
 </div>
-<a class="anchor" id="a65c4d661169e39e2feb0432834ac17f8"></a>
+<a class="anchor" id="a54ae9c3e40e138b8f34ef263f88a6dcd"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -555,7 +532,13 @@ test277:
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td>
-          <td class="paramname"><em>data</em>&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::map&lt; std::string, std::string &gt; &amp;&#160;</td>
+          <td class="paramname"><em>attr</em> = <code>std::map&lt;&#160;std::string,&#160;std::string&#160;&gt;()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -569,16 +552,17 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This is, semantically, very close to <a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ad1cdfb5c119641aa99ae1b3cf8c66cf9" title="Assign a data object to a location in the data-model. ">assign()</a> but does not assume the location to be declared first.</p>
+<p>This is, semantically, very close to <a class="el" href="classuscxml_1_1_j_s_c_data_model.html#ab7ae0fdb2938baf1c71e9c0d98e63167" title="Assign a data object to a location in the data-model. ">assign()</a> but does not assume the location to be declared first.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">location</td><td>A variable or locatio to assign to. </td></tr>
     <tr><td class="paramname">data</td><td>The <a class="el" href="classuscxml_1_1_data.html">Data</a> object with the respective data. </td></tr>
+    <tr><td class="paramname">attr</td><td>Additional attributes of the XML data element. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#af5ab40ac509e86f071bee27a9080f4c1">uscxml::DataModelImpl</a>.</p>
+<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a99f0c2250174937e3408a5baf45b8035">uscxml::DataModelImpl</a>.</p>
 
 </div>
 </div>
@@ -750,7 +734,7 @@ test277:
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

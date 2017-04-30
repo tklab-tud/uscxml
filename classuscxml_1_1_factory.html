@@ -126,12 +126,12 @@ std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_data_model_impl.html">Da
 <tr class="memitem:abc8888a3df4a831d7a38c46338a1a3f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abc8888a3df4a831d7a38c46338a1a3f0"></a>
 std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_executable_content_impl.html">ExecutableContentImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>createExecutableContent</b> (const std::string &amp;localName, const std::string &amp;nameSpace, <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)</td></tr>
 <tr class="separator:abc8888a3df4a831d7a38c46338a1a3f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd1ea5c8fceb231d2f13ae0b594f3ff0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd1ea5c8fceb231d2f13ae0b594f3ff0"></a>
-std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>createInvoker</b> (const std::string &amp;type, <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)</td></tr>
-<tr class="separator:abd1ea5c8fceb231d2f13ae0b594f3ff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41d30acbf6e7c3b69f7578540f3c43e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a41d30acbf6e7c3b69f7578540f3c43e2"></a>
-std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>createIOProcessor</b> (const std::string &amp;type, <a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *interpreter)</td></tr>
-<tr class="separator:a41d30acbf6e7c3b69f7578540f3c43e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7db5393979aa9ea83cd367a1241156d2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7db5393979aa9ea83cd367a1241156d2"></a>
+std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_invoker_impl.html">InvokerImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>createInvoker</b> (const std::string &amp;type, <a class="el" href="classuscxml_1_1_invoker_callbacks.html">InvokerCallbacks</a> *interpreter)</td></tr>
+<tr class="separator:a7db5393979aa9ea83cd367a1241156d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65777b0e5e560b498cf3c62cb31035c2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a65777b0e5e560b498cf3c62cb31035c2"></a>
+std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>createIOProcessor</b> (const std::string &amp;type, <a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html">IOProcessorCallbacks</a> *callbacks)</td></tr>
+<tr class="separator:a65777b0e5e560b498cf3c62cb31035c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d8ccca32564ca179130eb1378a7734c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6d8ccca32564ca179130eb1378a7734c"></a>
 std::map&lt; std::string, <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getIOProcessors</b> ()</td></tr>
 <tr class="separator:a6d8ccca32564ca179130eb1378a7734c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -208,7 +208,7 @@ std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" va
 std::map&lt; std::string, <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_ioProcessors</b></td></tr>
 <tr class="separator:a86f867b8898104dd44f4ed20831265ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ef01bda79e043510addd93d2e8b3c11"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ef01bda79e043510addd93d2e8b3c11"></a>
-<a class="el" href="classuscxml_1_1_factory.html">Factory</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_parentFactory</b></td></tr>
+<a class="el" href="classuscxml_1_1_factory.html">Factory</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_parentFactory</b> = NULL</td></tr>
 <tr class="separator:a0ef01bda79e043510addd93d2e8b3c11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2986c0abc9ef1393c573dc9b11549ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa2986c0abc9ef1393c573dc9b11549ab"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_pluginPath</b></td></tr>
@@ -236,7 +236,7 @@ static <a class="el" href="classuscxml_1_1_factory.html">Factory</a> *&#160;</td
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

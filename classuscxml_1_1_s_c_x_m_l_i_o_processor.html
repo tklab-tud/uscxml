@@ -97,7 +97,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classuscxml_1_1_s_c_x_m_l_i_o_processor-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">uscxml::SCXMLIOProcessor Class Reference<div class="ingroups"><a class="el" href="group__extension.html">Extension Points</a> &raquo; <a class="el" href="group__ioproc.html">I/O Processors</a></div></div>  </div>
@@ -116,15 +115,14 @@ Inheritance diagram for uscxml::SCXMLIOProcessor:</div>
 <div class="dynheader">
 Collaboration diagram for uscxml::SCXMLIOProcessor:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_s_c_x_m_l_i_o_processor__coll__graph.svg" width="100%" height="600"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
-</div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_s_c_x_m_l_i_o_processor__coll__graph.svg" width="416" height="203"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aec5871aed6a2c935e148cd5c646b7265"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_s_c_x_m_l_i_o_processor.html#aec5871aed6a2c935e148cd5c646b7265">create</a> (<a class="el" href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a> *interpreter)</td></tr>
-<tr class="memdesc:aec5871aed6a2c935e148cd5c646b7265"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance.  <a href="#aec5871aed6a2c935e148cd5c646b7265">More...</a><br /></td></tr>
-<tr class="separator:aec5871aed6a2c935e148cd5c646b7265"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab508b9edba4af0e2e41ade25bf62b171"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_s_c_x_m_l_i_o_processor.html#ab508b9edba4af0e2e41ade25bf62b171">create</a> (<a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html">uscxml::IOProcessorCallbacks</a> *callbacks)</td></tr>
+<tr class="memdesc:ab508b9edba4af0e2e41ade25bf62b171"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_factory.html">Factory</a> demands a new instance.  <a href="#ab508b9edba4af0e2e41ade25bf62b171">More...</a><br /></td></tr>
+<tr class="separator:ab508b9edba4af0e2e41ade25bf62b171"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e55d6be7638b6a88337d2a195d1044d"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_s_c_x_m_l_i_o_processor.html#a4e55d6be7638b6a88337d2a195d1044d">eventFromSCXML</a> (const std::string &amp;target, const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
 <tr class="memdesc:a4e55d6be7638b6a88337d2a195d1044d"><td class="mdescLeft">&#160;</td><td class="mdescRight">We received an event from the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> we are associated with.  <a href="#a4e55d6be7638b6a88337d2a195d1044d">More...</a><br /></td></tr>
 <tr class="separator:a4e55d6be7638b6a88337d2a195d1044d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,25 +137,19 @@ virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign
 <tr class="memdesc:a9e260a4d1cd4d23fe954b141801864b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the given target is a valid destination for events.  <a href="#a9e260a4d1cd4d23fe954b141801864b0">More...</a><br /></td></tr>
 <tr class="separator:a9e260a4d1cd4d23fe954b141801864b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:a454da6730e64ae5f3e6148383fb544a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a454da6730e64ae5f3e6148383fb544a2"></a>
-<a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_interpreter</b></td></tr>
-<tr class="separator:a454da6730e64ae5f3e6148383fb544a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_attribs_classuscxml_1_1_event_handler_impl"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_event_handler_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_event_handler_impl.html">uscxml::EventHandlerImpl</a></td></tr>
-<tr class="memitem:af7069a12f5b67953f76c2eda8c1fc419 inherit pro_attribs_classuscxml_1_1_event_handler_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af7069a12f5b67953f76c2eda8c1fc419"></a>
-<a class="el" href="classuscxml_1_1_interpreter_impl.html">InterpreterImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_interpreter</b></td></tr>
-<tr class="separator:af7069a12f5b67953f76c2eda8c1fc419 inherit pro_attribs_classuscxml_1_1_event_handler_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_methods_classuscxml_1_1_i_o_processor_impl"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classuscxml_1_1_i_o_processor_impl')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">uscxml::IOProcessorImpl</a></td></tr>
 <tr class="memitem:a1d41b3fd61ac1ce289c28af5da130109 inherit pro_methods_classuscxml_1_1_i_o_processor_impl"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_i_o_processor_impl.html#a1d41b3fd61ac1ce289c28af5da130109">eventToSCXML</a> (<a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, const std::string &amp;type, const std::string &amp;origin, bool internal=false)</td></tr>
 <tr class="memdesc:a1d41b3fd61ac1ce289c28af5da130109 inherit pro_methods_classuscxml_1_1_i_o_processor_impl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an event to the SCXML <a class="el" href="classuscxml_1_1_interpreter.html" title="Central class to interpret and process SCXML documents. ">Interpreter</a> instance.  <a href="#a1d41b3fd61ac1ce289c28af5da130109">More...</a><br /></td></tr>
 <tr class="separator:a1d41b3fd61ac1ce289c28af5da130109 inherit pro_methods_classuscxml_1_1_i_o_processor_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classuscxml_1_1_i_o_processor_impl"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_i_o_processor_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">uscxml::IOProcessorImpl</a></td></tr>
+<tr class="memitem:aaf66c95de75c5c5599046c4d4949e503 inherit pro_attribs_classuscxml_1_1_i_o_processor_impl"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf66c95de75c5c5599046c4d4949e503"></a>
+<a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html">IOProcessorCallbacks</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_callbacks</b></td></tr>
+<tr class="separator:aaf66c95de75c5c5599046c4d4949e503 inherit pro_attribs_classuscxml_1_1_i_o_processor_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aec5871aed6a2c935e148cd5c646b7265"></a>
+<a class="anchor" id="ab508b9edba4af0e2e41ade25bf62b171"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -167,8 +159,8 @@ Additional Inherited Members</h2></td></tr>
         <tr>
           <td class="memname">std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_i_o_processor_impl.html">IOProcessorImpl</a> &gt; uscxml::SCXMLIOProcessor::create </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classuscxml_1_1_interpreter_impl.html">uscxml::InterpreterImpl</a> *&#160;</td>
-          <td class="paramname"><em>interpreter</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html">uscxml::IOProcessorCallbacks</a> *&#160;</td>
+          <td class="paramname"><em>callbacks</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -184,9 +176,9 @@ Additional Inherited Members</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000006">Todo:</a></b></dt><dd>We will eventually introduce callbacks and prevent complete access to the interpreter. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>We will eventually introduce callbacks and prevent complete access to the interpreter. </dd></dl>
 
-<p>Implements <a class="el" href="classuscxml_1_1_i_o_processor_impl.html#a29b122781dc57dcd889e06ae1fccb813">uscxml::IOProcessorImpl</a>.</p>
+<p>Implements <a class="el" href="classuscxml_1_1_i_o_processor_impl.html#a6ced12837f4af0c42b8a92ed942f1255">uscxml::IOProcessorImpl</a>.</p>
 
 </div>
 </div>
@@ -310,7 +302,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:21 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

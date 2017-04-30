@@ -96,14 +96,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="classuscxml_1_1_d_o_m_utils-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">uscxml::DOMUtils Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a8e6c8433634ca8a79ca4532ae9633865"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8e6c8433634ca8a79ca4532ae9633865"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Order</b> { <b>POSTFIX</b>, 
+<b>DOCUMENT</b>, 
+<b>NO_RECURSE</b>
+ }<tr class="separator:a8e6c8433634ca8a79ca4532ae9633865"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aca22d6888bac9acefa46be1f518b2d26"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca22d6888bac9acefa46be1f518b2d26"></a>
@@ -118,9 +126,18 @@ static std::list&lt; XERCESC_NS::DOMNode * &gt;&#160;</td><td class="memItemRigh
 <tr class="memitem:a906bda1390a102f1b615cbaec3ae6b69"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a906bda1390a102f1b615cbaec3ae6b69"></a>
 static std::list&lt; XERCESC_NS::DOMNode * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>filterChildType</b> (const XERCESC_NS::DOMNode::NodeType type, const std::list&lt; XERCESC_NS::DOMNode * &gt; &amp;nodeSet, bool recurse=false)</td></tr>
 <tr class="separator:a906bda1390a102f1b615cbaec3ae6b69"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1a654921636c4d8dc6d8e408799a4e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af1a654921636c4d8dc6d8e408799a4e5"></a>
-static std::list&lt; XERCESC_NS::DOMNode * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getElementsByType</b> (const XERCESC_NS::DOMNode *root, XERCESC_NS::DOMNode::NodeType type)</td></tr>
-<tr class="separator:af1a654921636c4d8dc6d8e408799a4e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a36e4dbf01152175dd8fbd66788a383"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a36e4dbf01152175dd8fbd66788a383"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>filterElementGeneric</b> (const std::set&lt; std::string &gt; &amp;elements, std::list&lt; XERCESC_NS::DOMElement * &gt; &amp;result, const XERCESC_NS::DOMElement *root, const Order order, const bool includeEmbeddedDoc, const bool includeRoot)</td></tr>
+<tr class="separator:a4a36e4dbf01152175dd8fbd66788a383"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2cae319031c9af154979560edb9a055"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2cae319031c9af154979560edb9a055"></a>
+static std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>filterElementGeneric</b> (const std::set&lt; std::string &gt; &amp;elements, const XERCESC_NS::DOMElement *root, const Order order, const bool includeEmbeddedDoc, const bool includeRoot)</td></tr>
+<tr class="separator:ae2cae319031c9af154979560edb9a055"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab561b528818a2195ca1794d3fe0ac60"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aab561b528818a2195ca1794d3fe0ac60"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>filterTypeGeneric</b> (const std::set&lt; XERCESC_NS::DOMNode::NodeType &gt; &amp;types, std::list&lt; XERCESC_NS::DOMNode * &gt; &amp;result, const XERCESC_NS::DOMNode *root, const Order order, const bool includeEmbeddedDoc, const bool includeRoot)</td></tr>
+<tr class="separator:aab561b528818a2195ca1794d3fe0ac60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98c632b6354bf797ec5ce39329ba1944"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a98c632b6354bf797ec5ce39329ba1944"></a>
+static std::list&lt; XERCESC_NS::DOMNode * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>filterTypeGeneric</b> (const std::set&lt; XERCESC_NS::DOMNode::NodeType &gt; &amp;types, const XERCESC_NS::DOMNode *root, const Order order, const bool includeEmbeddedDoc, const bool includeRoot)</td></tr>
+<tr class="separator:a98c632b6354bf797ec5ce39329ba1944"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61e85cd64af886264b6b714cc9d72506"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a61e85cd64af886264b6b714cc9d72506"></a>
 static const XERCESC_NS::DOMElement *&#160;</td><td class="memItemRight" valign="bottom"><b>getNearestAncestor</b> (const XERCESC_NS::DOMNode *node, const std::string tagName)</td></tr>
 <tr class="separator:a61e85cd64af886264b6b714cc9d72506"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -151,15 +168,6 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>isMember</b> (
 <tr class="memitem:aa84d9d95fe631f8a6c90e4e3b1949c07"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa84d9d95fe631f8a6c90e4e3b1949c07"></a>
 static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>xPathForNode</b> (const XERCESC_NS::DOMNode *node, const std::string &amp;ns=&quot;&quot;)</td></tr>
 <tr class="separator:aa84d9d95fe631f8a6c90e4e3b1949c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
-Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:ad1b5938450742613910edf1276801d7f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad1b5938450742613910edf1276801d7f"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>inDocumentOrder</b> (const std::set&lt; std::string &gt; &amp;elements, const XERCESC_NS::DOMElement *root, const bool includeEmbeddedDoc, std::list&lt; XERCESC_NS::DOMElement * &gt; &amp;nodes)</td></tr>
-<tr class="separator:ad1b5938450742613910edf1276801d7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac09f1d1f1a384dca2233e151a522affe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac09f1d1f1a384dca2233e151a522affe"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>inPostFixOrder</b> (const std::set&lt; std::string &gt; &amp;elements, const XERCESC_NS::DOMElement *root, const bool includeEmbeddedDoc, std::list&lt; XERCESC_NS::DOMElement * &gt; &amp;nodes)</td></tr>
-<tr class="separator:ac09f1d1f1a384dca2233e151a522affe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>util/<a class="el" href="_d_o_m_8h_source.html">DOM.h</a></li>
@@ -174,7 +182,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>inPostFixOrder
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -126,15 +126,24 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7d070ce2d6bc137c028edb10554647ad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7d070ce2d6bc137c028edb10554647ad"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> ()</td></tr>
 <tr class="separator:a7d070ce2d6bc137c028edb10554647ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1924887576e4c7e72fd85941cae7fba6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1924887576e4c7e72fd85941cae7fba6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>operator const XMLCh *</b> ()</td></tr>
-<tr class="separator:a1924887576e4c7e72fd85941cae7fba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b0e52a91651056e4ce09cfcf9dc1f57"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0b0e52a91651056e4ce09cfcf9dc1f57"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>operator std::string</b> ()</td></tr>
 <tr class="separator:a0b0e52a91651056e4ce09cfcf9dc1f57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab89284719f44e212a8eebe15a6c83547"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab89284719f44e212a8eebe15a6c83547"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator XMLCh *</b> () const </td></tr>
+<tr class="separator:ab89284719f44e212a8eebe15a6c83547"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca56ba002bf6d1f6c27ef548c476dfca"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aca56ba002bf6d1f6c27ef548c476dfca"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classuscxml_1_1_x.html">X</a> &amp;other) const </td></tr>
+<tr class="separator:aca56ba002bf6d1f6c27ef548c476dfca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad336542e8af8d9c7028003724ad7706"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad336542e8af8d9c7028003724ad7706"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classuscxml_1_1_x.html">X</a> &amp;other) const </td></tr>
+<tr class="separator:aad336542e8af8d9c7028003724ad7706"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28e41b94bd68489543f85ab1a2a350f5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a28e41b94bd68489543f85ab1a2a350f5"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classuscxml_1_1_x.html">X</a> const &amp;other)</td></tr>
 <tr class="separator:a28e41b94bd68489543f85ab1a2a350f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e1d7a3cb167da145e27b2094b7d1f8f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e1d7a3cb167da145e27b2094b7d1f8f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classuscxml_1_1_x.html">X</a> &amp;other) const </td></tr>
+<tr class="separator:a3e1d7a3cb167da145e27b2094b7d1f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af678ef58893cf63811402ce4d10eceb7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af678ef58893cf63811402ce4d10eceb7"></a>
 const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>str</b> () const </td></tr>
 <tr class="separator:af678ef58893cf63811402ce4d10eceb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,7 +155,7 @@ USCXML_API std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="separator:afbdc3a26269bef3db5a4629f9ddee812"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000008">Todo:</a></b></dt><dd>: More performant XercesStrings <a href="https://alfps.wordpress.com/2010/05/27/cppx-xerces-strings-simplified-by-ownership-part-i/">https://alfps.wordpress.com/2010/05/27/cppx-xerces-strings-simplified-by-ownership-part-i/</a> </dd></dl>
+<div class="textblock"><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>: More performant XercesStrings <a href="https://alfps.wordpress.com/2010/05/27/cppx-xerces-strings-simplified-by-ownership-part-i/">https://alfps.wordpress.com/2010/05/27/cppx-xerces-strings-simplified-by-ownership-part-i/</a> </dd></dl>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>util/<a class="el" href="_d_o_m_8h_source.html">DOM.h</a></li>
 </ul>
@@ -159,7 +168,7 @@ USCXML_API std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:21 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

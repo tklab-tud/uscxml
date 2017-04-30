@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b8f7637664a38e012eb6b40bd154637c.html">messages</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_a186d0848b97a60ade3edd5ad8e78038.html">messages</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -106,13 +106,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for Event.h:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="_event_8h__incl.svg" width="100%" height="552"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_event_8h__incl.svg" width="852" height="336"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="_event_8h__dep__incl.svg" width="100%" height="600"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
-</div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_event_8h__dep__incl.svg" width="5002" height="559"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div>
 <p><a href="_event_8h_source.html">Go to the source code of this file.</a></p>
@@ -180,10 +179,12 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code" href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a> identifier; \</div>
 <div class="line">    identifier.data.compound[<span class="stringliteral">&quot;cause&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(cause, uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;file&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;line&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \</div>
 <div class="line">    identifier.name = <span class="stringliteral">&quot;error.communication&quot;</span>; \</div>
 <div class="line">    identifier.eventType = uscxml::Event::PLATFORM;</div>
-<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:197</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -218,11 +219,13 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code" href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a> identifier; \</div>
 <div class="line">    identifier.data.compound[<span class="stringliteral">&quot;cause&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(cause, uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;file&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;line&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \</div>
 <div class="line">    identifier.name = <span class="stringliteral">&quot;error.communication&quot;</span>; \</div>
 <div class="line">    identifier.data.compound[<span class="stringliteral">&quot;xpath&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \</div>
 <div class="line">    identifier.eventType = uscxml::Event::PLATFORM;</div>
-<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:197</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -301,10 +304,12 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code" href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a> identifier; \</div>
 <div class="line">    identifier.data.compound[<span class="stringliteral">&quot;cause&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(cause, uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;file&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;line&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \</div>
 <div class="line">    identifier.name = <span class="stringliteral">&quot;error.execution&quot;</span>; \</div>
 <div class="line">    identifier.eventType = uscxml::Event::PLATFORM;</div>
-<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:197</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -339,11 +344,13 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code" href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a> identifier; \</div>
 <div class="line">    identifier.data.compound[<span class="stringliteral">&quot;cause&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(cause, uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;file&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \</div>
+<div class="line">    identifier.data.compound[<span class="stringliteral">&quot;line&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \</div>
 <div class="line">    identifier.name = <span class="stringliteral">&quot;error.execution&quot;</span>; \</div>
 <div class="line">    identifier.data.compound[<span class="stringliteral">&quot;xpath&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \</div>
 <div class="line">    identifier.eventType = uscxml::Event::PLATFORM;</div>
-<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:197</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -410,10 +417,14 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">ErrorEvent e; \</div>
+<b>Value:</b><div class="fragment"><div class="line"><a class="code" href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a> e; \</div>
 <div class="line">    e.name = <span class="stringliteral">&quot;error.platform&quot;</span>; \</div>
-<div class="line">    e.data.compound[<span class="stringliteral">&quot;cause&quot;</span>] = Data(msg, Data::VERBATIM); \</div>
+<div class="line">    e.data.compound[<span class="stringliteral">&quot;cause&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(msg, uscxml::Data::VERBATIM); \</div>
+<div class="line">    e.data.compound[<span class="stringliteral">&quot;file&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \</div>
+<div class="line">    e.data.compound[<span class="stringliteral">&quot;line&quot;</span>] = <a class="code" href="classuscxml_1_1_data.html">uscxml::Data</a>(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \</div>
 <div class="line">    throw e; \</div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -426,7 +437,7 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

@@ -89,33 +89,34 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_23ec12649285f9fabf3a6b7380226c28.html">util</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_92105864f9e085ad080aaeef739227b1.html">util</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">DOM.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;set&gt;</code><br />
 <code>#include &lt;list&gt;</code><br />
-<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 <code>#include &quot;<a class="el" href="_common_8h_source.html">uscxml/Common.h</a>&quot;</code><br />
 <code>#include &lt;xercesc/util/XMLString.hpp&gt;</code><br />
 <code>#include &lt;xercesc/dom/DOM.hpp&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for DOM.h:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="_d_o_m_8h__incl.svg" width="100%" height="440"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_d_o_m_8h__incl.svg" width="736" height="187"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="_d_o_m_8h__dep__incl.svg" width="100%" height="600"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_d_o_m_8h__dep__incl.svg" width="4392" height="306"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div>
 <p><a href="_d_o_m_8h_source.html">Go to the source code of this file.</a></p>
@@ -130,13 +131,13 @@ Classes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a8fe3d5505f63be81c6bea6c553804afd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8fe3d5505f63be81c6bea6c553804afd"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ATTR</b>(elem,  attr)&#160;&#160;&#160;std::string(X((elem)-&gt;getAttribute(X(attr))))</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>ATTR</b>(elem,  attr)&#160;&#160;&#160;std::string(X((elem)-&gt;getAttribute(attr)))</td></tr>
 <tr class="separator:a8fe3d5505f63be81c6bea6c553804afd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f8126098a762090d655cb43ab953210"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4f8126098a762090d655cb43ab953210"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ATTR_CAST</b>(elem,  attr)&#160;&#160;&#160;ATTR(static_cast&lt;const DOMElement*&gt;(elem), attr)</td></tr>
 <tr class="separator:a4f8126098a762090d655cb43ab953210"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae63e11ff28c0dde12b9969213fee21a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae63e11ff28c0dde12b9969213fee21a3"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>HAS_ATTR</b>(elem,  attr)&#160;&#160;&#160;(elem)-&gt;hasAttribute(X(attr))</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>HAS_ATTR</b>(elem,  attr)&#160;&#160;&#160;(elem)-&gt;hasAttribute(attr)</td></tr>
 <tr class="separator:ae63e11ff28c0dde12b9969213fee21a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0a2bccae277031a49a8ff6a67b57d16"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af0a2bccae277031a49a8ff6a67b57d16"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>HAS_ATTR_CAST</b>(elem,  attr)&#160;&#160;&#160;HAS_ATTR(static_cast&lt;const DOMElement*&gt;(elem), attr)</td></tr>
@@ -165,6 +166,150 @@ std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml:
 <tr class="memitem:a96c1073b11faa115c5a8afb8af02d7b9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96c1073b11faa115c5a8afb8af02d7b9"></a>
 USCXML_API std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::operator&lt;&lt;</b> (std::ostream &amp;os, const XERCESC_NS::DOMNode &amp;node)</td></tr>
 <tr class="separator:a96c1073b11faa115c5a8afb8af02d7b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a62b03089e45cbb9956acf9c693180d5e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62b03089e45cbb9956acf9c693180d5e"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharArray</b> = X(&quot;array&quot;)</td></tr>
+<tr class="separator:a62b03089e45cbb9956acf9c693180d5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c4b756dcfc7e8a3677ee0544ae01ab1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4c4b756dcfc7e8a3677ee0544ae01ab1"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharAssign</b> = X(&quot;assign&quot;)</td></tr>
+<tr class="separator:a4c4b756dcfc7e8a3677ee0544ae01ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88db3eb90381868cc2f29eaf84936570"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88db3eb90381868cc2f29eaf84936570"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharAutoForward</b> = X(&quot;autoforward&quot;)</td></tr>
+<tr class="separator:a88db3eb90381868cc2f29eaf84936570"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a974289a4a063be80b5f52e35deadb0dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a974289a4a063be80b5f52e35deadb0dd"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharBinding</b> = X(&quot;binding&quot;)</td></tr>
+<tr class="separator:a974289a4a063be80b5f52e35deadb0dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96f4260871c813e3db3bec5a3b8986fa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96f4260871c813e3db3bec5a3b8986fa"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharCond</b> = X(&quot;cond&quot;)</td></tr>
+<tr class="separator:a96f4260871c813e3db3bec5a3b8986fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8c41e2d6cd610f5a128813f341856de"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8c41e2d6cd610f5a128813f341856de"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharContent</b> = X(&quot;content&quot;)</td></tr>
+<tr class="separator:ab8c41e2d6cd610f5a128813f341856de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad176479ffc6a4edbaa94f816d1f48253"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad176479ffc6a4edbaa94f816d1f48253"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharData</b> = X(&quot;data&quot;)</td></tr>
+<tr class="separator:ad176479ffc6a4edbaa94f816d1f48253"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a610291b888d0db8a18ea8434adb6b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5a610291b888d0db8a18ea8434adb6b2"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharDataModel</b> = X(&quot;datamodel&quot;)</td></tr>
+<tr class="separator:a5a610291b888d0db8a18ea8434adb6b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1820de6f6d6f3bf91bb26f33e82a1958"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1820de6f6d6f3bf91bb26f33e82a1958"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharDelay</b> = X(&quot;delay&quot;)</td></tr>
+<tr class="separator:a1820de6f6d6f3bf91bb26f33e82a1958"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b6a133bb467e865b0c0b8c880f47a10"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b6a133bb467e865b0c0b8c880f47a10"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharDelayExpr</b> = X(&quot;delayexpr&quot;)</td></tr>
+<tr class="separator:a1b6a133bb467e865b0c0b8c880f47a10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6075e825857101ea867f55429d12877d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6075e825857101ea867f55429d12877d"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharElse</b> = X(&quot;else&quot;)</td></tr>
+<tr class="separator:a6075e825857101ea867f55429d12877d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a565d4669d4b8b6eb313e31a72940ec"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a565d4669d4b8b6eb313e31a72940ec"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharElseIf</b> = X(&quot;elseif&quot;)</td></tr>
+<tr class="separator:a9a565d4669d4b8b6eb313e31a72940ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e9fe6a488b1aa18a81c6d3b74ec1b1e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e9fe6a488b1aa18a81c6d3b74ec1b1e"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharEvent</b> = X(&quot;event&quot;)</td></tr>
+<tr class="separator:a2e9fe6a488b1aa18a81c6d3b74ec1b1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bf24ce118eeba03766dd5bb735191a7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2bf24ce118eeba03766dd5bb735191a7"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharEventExpr</b> = X(&quot;eventexpr&quot;)</td></tr>
+<tr class="separator:a2bf24ce118eeba03766dd5bb735191a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37c52fd35aec7f9d6bb9e0777bf9835b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a37c52fd35aec7f9d6bb9e0777bf9835b"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharExpr</b> = X(&quot;expr&quot;)</td></tr>
+<tr class="separator:a37c52fd35aec7f9d6bb9e0777bf9835b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15c5ef4cfbf83ab830fd15a9d19ff87e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15c5ef4cfbf83ab830fd15a9d19ff87e"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharFinal</b> = X(&quot;final&quot;)</td></tr>
+<tr class="separator:a15c5ef4cfbf83ab830fd15a9d19ff87e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab06cce7baf243afdc9332b9eeb794644"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab06cce7baf243afdc9332b9eeb794644"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharForEach</b> = X(&quot;foreach&quot;)</td></tr>
+<tr class="separator:ab06cce7baf243afdc9332b9eeb794644"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43261a03a519691d0e49f86ca7dbd46c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a43261a03a519691d0e49f86ca7dbd46c"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharHistory</b> = X(&quot;history&quot;)</td></tr>
+<tr class="separator:a43261a03a519691d0e49f86ca7dbd46c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3b103dd06e7cc99da12a287e0d66a65"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac3b103dd06e7cc99da12a287e0d66a65"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharId</b> = X(&quot;id&quot;)</td></tr>
+<tr class="separator:ac3b103dd06e7cc99da12a287e0d66a65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51e50843b0d02447982825ba47cc948e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a51e50843b0d02447982825ba47cc948e"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharIdLocation</b> = X(&quot;idlocation&quot;)</td></tr>
+<tr class="separator:a51e50843b0d02447982825ba47cc948e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf8c2593c0e7d085be8f854167c0b387"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf8c2593c0e7d085be8f854167c0b387"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharIf</b> = X(&quot;if&quot;)</td></tr>
+<tr class="separator:adf8c2593c0e7d085be8f854167c0b387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9f299aeb3ef47cb1e1d5ae072da81a0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac9f299aeb3ef47cb1e1d5ae072da81a0"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharIndex</b> = X(&quot;index&quot;)</td></tr>
+<tr class="separator:ac9f299aeb3ef47cb1e1d5ae072da81a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2507875eabd835694c7aa52c61b7ec0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab2507875eabd835694c7aa52c61b7ec0"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharInitial</b> = X(&quot;initial&quot;)</td></tr>
+<tr class="separator:ab2507875eabd835694c7aa52c61b7ec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaabea19d88ae73420a0a320f9b8091d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaabea19d88ae73420a0a320f9b8091d4"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharInvokeId</b> = X(&quot;invokeid&quot;)</td></tr>
+<tr class="separator:aaabea19d88ae73420a0a320f9b8091d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e12442cd52877947a78229e9be1158f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e12442cd52877947a78229e9be1158f"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharItem</b> = X(&quot;item&quot;)</td></tr>
+<tr class="separator:a4e12442cd52877947a78229e9be1158f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40caa752bead105aa80c17ff3d36abfb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a40caa752bead105aa80c17ff3d36abfb"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharLabel</b> = X(&quot;label&quot;)</td></tr>
+<tr class="separator:a40caa752bead105aa80c17ff3d36abfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27662656694c1c059d5fe4ff42be4232"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a27662656694c1c059d5fe4ff42be4232"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharLocation</b> = X(&quot;location&quot;)</td></tr>
+<tr class="separator:a27662656694c1c059d5fe4ff42be4232"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b3005cd0ed6f552f481736ed72b009d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b3005cd0ed6f552f481736ed72b009d"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharLog</b> = X(&quot;log&quot;)</td></tr>
+<tr class="separator:a3b3005cd0ed6f552f481736ed72b009d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a709fede3155f99a39ae0d8e3c4ea4d71"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a709fede3155f99a39ae0d8e3c4ea4d71"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharName</b> = X(&quot;name&quot;)</td></tr>
+<tr class="separator:a709fede3155f99a39ae0d8e3c4ea4d71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1a58f03b334a20bd58932d1128c6d72"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac1a58f03b334a20bd58932d1128c6d72"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharNameList</b> = X(&quot;namelist&quot;)</td></tr>
+<tr class="separator:ac1a58f03b334a20bd58932d1128c6d72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9085622875e5e51a791d9ff42de10872"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9085622875e5e51a791d9ff42de10872"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharOnEntry</b> = X(&quot;onentry&quot;)</td></tr>
+<tr class="separator:a9085622875e5e51a791d9ff42de10872"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9060c7cac97d4d02622d95d5f15236ef"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9060c7cac97d4d02622d95d5f15236ef"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharOnExit</b> = X(&quot;onexit&quot;)</td></tr>
+<tr class="separator:a9060c7cac97d4d02622d95d5f15236ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50410b4609eee2c082c7a79538dc5387"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a50410b4609eee2c082c7a79538dc5387"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharParallel</b> = X(&quot;parallel&quot;)</td></tr>
+<tr class="separator:a50410b4609eee2c082c7a79538dc5387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f82931f69662c1dcb8236db9eea79f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f82931f69662c1dcb8236db9eea79f8"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharParam</b> = X(&quot;param&quot;)</td></tr>
+<tr class="separator:a5f82931f69662c1dcb8236db9eea79f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23211c0323e89077a007b61538a3fd81"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a23211c0323e89077a007b61538a3fd81"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharRaise</b> = X(&quot;raise&quot;)</td></tr>
+<tr class="separator:a23211c0323e89077a007b61538a3fd81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a671285f0443a85d2ae4c3b0934c1fd99"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a671285f0443a85d2ae4c3b0934c1fd99"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharScript</b> = X(&quot;script&quot;)</td></tr>
+<tr class="separator:a671285f0443a85d2ae4c3b0934c1fd99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ca74d53be3ced4e435a8e09898f2dba"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ca74d53be3ced4e435a8e09898f2dba"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharScxml</b> = X(&quot;scxml&quot;)</td></tr>
+<tr class="separator:a0ca74d53be3ced4e435a8e09898f2dba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80fa5f6aac6d6fb2281ba1aa26b0c3ee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a80fa5f6aac6d6fb2281ba1aa26b0c3ee"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharSendId</b> = X(&quot;sendid&quot;)</td></tr>
+<tr class="separator:a80fa5f6aac6d6fb2281ba1aa26b0c3ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9fa3a508518d837bcaf169f4af6138e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa9fa3a508518d837bcaf169f4af6138e"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharSendIdExpr</b> = X(&quot;sendidexpr&quot;)</td></tr>
+<tr class="separator:aa9fa3a508518d837bcaf169f4af6138e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee3a65deb76a59c4752d41cd7f11d1b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee3a65deb76a59c4752d41cd7f11d1b2"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharSource</b> = X(&quot;src&quot;)</td></tr>
+<tr class="separator:aee3a65deb76a59c4752d41cd7f11d1b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a256664e5abb7999b8e487bb872c25a67"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a256664e5abb7999b8e487bb872c25a67"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharSourceExpr</b> = X(&quot;srcexpr&quot;)</td></tr>
+<tr class="separator:a256664e5abb7999b8e487bb872c25a67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add4294ff26365d0efc15969748f8a1b7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add4294ff26365d0efc15969748f8a1b7"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharState</b> = X(&quot;state&quot;)</td></tr>
+<tr class="separator:add4294ff26365d0efc15969748f8a1b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d143778f35bc1eb7a4346d7d6b2c536"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d143778f35bc1eb7a4346d7d6b2c536"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharTarget</b> = X(&quot;target&quot;)</td></tr>
+<tr class="separator:a9d143778f35bc1eb7a4346d7d6b2c536"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7af33f70aff3e70bb2d648d8e9323d78"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7af33f70aff3e70bb2d648d8e9323d78"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharTargetExpr</b> = X(&quot;targetexpr&quot;)</td></tr>
+<tr class="separator:a7af33f70aff3e70bb2d648d8e9323d78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a162cea94850fab787d84178309258886"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a162cea94850fab787d84178309258886"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharTransition</b> = X(&quot;transition&quot;)</td></tr>
+<tr class="separator:a162cea94850fab787d84178309258886"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa264b977aa7404b692a7d98004655eb5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa264b977aa7404b692a7d98004655eb5"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharType</b> = X(&quot;type&quot;)</td></tr>
+<tr class="separator:aa264b977aa7404b692a7d98004655eb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5b71002fdbf069d60e22e37e5b09cf2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac5b71002fdbf069d60e22e37e5b09cf2"></a>
+static const X&#160;</td><td class="memItemRight" valign="bottom"><b>uscxml::kXMLCharTypeExpr</b> = X(&quot;typeexpr&quot;)</td></tr>
+<tr class="separator:ac5b71002fdbf069d60e22e37e5b09cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>2012-2013 Stefan Radomski (<a href="#" onclick="location.href='mai'+'lto:'+'ste'+'fa'+'n.r'+'ad'+'oms'+'ki'+'@cs'+'.t'+'u-d'+'ar'+'mst'+'ad'+'t.d'+'e'; return false;">stefa<span style="display: none;">.nosp@m.</span>n.ra<span style="display: none;">.nosp@m.</span>domsk<span style="display: none;">.nosp@m.</span>i@cs<span style="display: none;">.nosp@m.</span>.tu-d<span style="display: none;">.nosp@m.</span>arms<span style="display: none;">.nosp@m.</span>tadt.<span style="display: none;">.nosp@m.</span>de</a>) </dd></dl>
@@ -178,7 +323,7 @@ USCXML_API std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

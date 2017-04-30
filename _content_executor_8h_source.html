@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_f2c8af9107d7604b778bd4ea9fe0debe.html">interpreter</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6d12b73cf1a07bae559bd2e97fe773a8.html">interpreter</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -120,10 +120,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <a class="code" href="_common_8h.html#ac032f21241a861312a181b3e6bfeb8d7">PIMPL_OPERATORS</a>(<a class="code" href="classuscxml_1_1_content_executor.html">ContentExecutor</a>);</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> process(XERCESC_NS::DOMElement* block, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_x.html">X</a>&amp; xmlPrefix);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> process(XERCESC_NS::DOMElement* block);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> invoke(XERCESC_NS::DOMElement* invoke);</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> uninvoke(XERCESC_NS::DOMElement* invoke);</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> elementAsData(XERCESC_NS::DOMElement* element);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classuscxml_1_1_data.html">Data</a> elementAsData(XERCESC_NS::DOMElement* element, <span class="keywordtype">bool</span> asExpression = <span class="keyword">false</span>);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData);</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">virtual</span> std::shared_ptr&lt;ContentExecutorImpl&gt; getImpl() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
@@ -140,8 +140,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="namespace_x_e_r_c_e_s_c___n_s_html"><div class="ttname"><a href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:30</div></div>
 <div class="ttc" id="_data_8h_html"><div class="ttname"><a href="_data_8h.html">Data.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_content_executor_html"><div class="ttname"><a href="classuscxml_1_1_content_executor.html">uscxml::ContentExecutor</a></div><div class="ttdef"><b>Definition:</b> ContentExecutor.h:42</div></div>
-<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:43</div></div>
-<div class="ttc" id="classuscxml_1_1_x_html"><div class="ttname"><a href="classuscxml_1_1_x.html">uscxml::X</a></div><div class="ttdef"><b>Definition:</b> DOM.h:110</div></div>
+<div class="ttc" id="classuscxml_1_1_data_html"><div class="ttname"><a href="classuscxml_1_1_data.html">uscxml::Data</a></div><div class="ttdef"><b>Definition:</b> Data.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -151,7 +150,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

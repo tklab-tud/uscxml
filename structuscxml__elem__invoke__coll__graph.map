@@ -1,0 +1,9 @@
+<map id="uscxml_elem_invoke" name="uscxml_elem_invoke">
+<area shape="rect" id="node2" href="$structuscxml__ctx.html" title="Represents an instance of a state&#45;chart at runtime/. " alt="" coords="96,355,184,382"/>
+<area shape="rect" id="node3" href="$structuscxml__machine.html" title="A single SCXML state&#45;machine. " alt="" coords="145,184,266,211"/>
+<area shape="rect" id="node4" href="$structuscxml__transition.html" title="All information pertaining to a &lt;transition&gt; element. " alt="" coords="5,95,131,121"/>
+<area shape="rect" id="node5" href="$structuscxml__elem__donedata.html" title="All information pertaining to a &lt;donedata&gt; element. " alt="" coords="280,95,443,121"/>
+<area shape="rect" id="node6" href="$structuscxml__elem__param.html" title="All information pertaining to a &#160;element Blocks of params are separated by NULL params, use USCXML_ELEM_PARAM_IS_SET to test for end of a block. " alt="" coords="361,5,506,32"/>
+<area shape="rect" id="node7" href="$structuscxml__state.html" title="All information pertaining to any state element. " alt="" coords="155,95,255,121"/>
+<area shape="rect" id="node8" href="$structuscxml__elem__data.html" title="All information pertaining to a &lt;data&gt; element With late data binding, blocks of data elements are se..." alt="" coords="139,5,272,32"/>
+</map>

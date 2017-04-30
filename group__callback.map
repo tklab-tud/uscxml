@@ -1,6 +1,8 @@
 <map id="Callbacks" name="Callbacks">
-<area shape="rect" id="node1" href="$group__eventqueue.html" title="Implementation of proper and delayed event queues. " alt="" coords="353,19,453,45"/>
-<area shape="rect" id="node2" href="$group__microstep.html" title="Implementations of the micro&#45;step(t) algorithm. " alt="" coords="363,69,443,96"/>
-<area shape="rect" id="node3" href="$group__datamodel.html" title="Additional data&#45;models for embedded scriptings. " alt="" coords="354,120,451,147"/>
-<area shape="rect" id="node4" href="$group__execcontent.html" title="Instances to process executable content as part of a micro&#45;step. " alt="" coords="340,171,465,197"/>
+<area shape="rect" id="node1" href="$group__eventqueue.html" title="Implementation of proper and delayed event queues. " alt="" coords="353,28,453,55"/>
+<area shape="rect" id="node2" href="$group__invoker.html" title="Types of components for the invoke element to summon. " alt="" coords="367,79,439,105"/>
+<area shape="rect" id="node3" href="$group__ioproc.html" title="Custom In&#45;/Ouput processors. " alt="" coords="347,129,458,156"/>
+<area shape="rect" id="node4" href="$group__microstep.html" title="Implementations of the micro&#45;step(t) algorithm. " alt="" coords="363,180,443,207"/>
+<area shape="rect" id="node5" href="$group__datamodel.html" title="Additional data&#45;models for embedded scriptings. " alt="" coords="354,231,451,257"/>
+<area shape="rect" id="node6" href="$group__execcontent.html" title="Instances to process executable content as part of a micro&#45;step. " alt="" coords="340,281,465,308"/>
 </map>

@@ -125,12 +125,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3d99dd50bf50bfd589baaa1fc018a341"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a3d99dd50bf50bfd589baaa1fc018a341">addExtension</a> (<a class="el" href="classuscxml_1_1_data_model_extension.html">DataModelExtension</a> *ext)</td></tr>
 <tr class="memdesc:a3d99dd50bf50bfd589baaa1fc018a341"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register an extension to get data into and out of the data-model.  <a href="#a3d99dd50bf50bfd589baaa1fc018a341">More...</a><br /></td></tr>
 <tr class="separator:a3d99dd50bf50bfd589baaa1fc018a341"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77f0f840033e50f3d06d9e8463edb1ad"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a77f0f840033e50f3d06d9e8463edb1ad">andExpressions</a> (std::list&lt; std::string &gt;)</td></tr>
-<tr class="memdesc:a77f0f840033e50f3d06d9e8463edb1ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Concat the given terms into a conjunctive form.  <a href="#a77f0f840033e50f3d06d9e8463edb1ad">More...</a><br /></td></tr>
-<tr class="separator:a77f0f840033e50f3d06d9e8463edb1ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e4030feed63efaf6e0e07012b4fc212"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a0e4030feed63efaf6e0e07012b4fc212">assign</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="memdesc:a0e4030feed63efaf6e0e07012b4fc212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data object to a location in the data-model.  <a href="#a0e4030feed63efaf6e0e07012b4fc212">More...</a><br /></td></tr>
-<tr class="separator:a0e4030feed63efaf6e0e07012b4fc212"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a219638e3d2e2b31299cef042f2ce8f77"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a219638e3d2e2b31299cef042f2ce8f77">assign</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data, const std::map&lt; std::string, std::string &gt; &amp;attr=std::map&lt; std::string, std::string &gt;())</td></tr>
+<tr class="memdesc:a219638e3d2e2b31299cef042f2ce8f77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data object to a location in the data-model.  <a href="#a219638e3d2e2b31299cef042f2ce8f77">More...</a><br /></td></tr>
+<tr class="separator:a219638e3d2e2b31299cef042f2ce8f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97d212198d59ebd5e26fed65042463a2"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_data_model_impl.html">DataModelImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a97d212198d59ebd5e26fed65042463a2">create</a> (<a class="el" href="classuscxml_1_1_data_model_callbacks.html">DataModelCallbacks</a> *callbacks)</td></tr>
 <tr class="memdesc:a97d212198d59ebd5e26fed65042463a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="classuscxml_1_1_factory.html">Factory</a> wants to instantiate a new instance.  <a href="#a97d212198d59ebd5e26fed65042463a2">More...</a><br /></td></tr>
 <tr class="separator:a97d212198d59ebd5e26fed65042463a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,9 +147,9 @@ Public Member Functions</h2></td></tr>
 virtual std::list&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a11cc56d5ae2f5e21fa31cb8b512dc6b6">getNames</a> ()</td></tr>
 <tr class="memdesc:a11cc56d5ae2f5e21fa31cb8b512dc6b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a list of names to be matched by the <code>datamodel</code> attribute in SCXML. <br /></td></tr>
 <tr class="separator:a11cc56d5ae2f5e21fa31cb8b512dc6b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a387f5d60474bf5dbcd52e7a600dc0765"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a387f5d60474bf5dbcd52e7a600dc0765">init</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="memdesc:a387f5d60474bf5dbcd52e7a600dc0765"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a variable / location in the data-model with a given data object.  <a href="#a387f5d60474bf5dbcd52e7a600dc0765">More...</a><br /></td></tr>
-<tr class="separator:a387f5d60474bf5dbcd52e7a600dc0765"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a556fb0f2ba387f08afff55df300d21de"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a556fb0f2ba387f08afff55df300d21de">init</a> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data, const std::map&lt; std::string, std::string &gt; &amp;attr=std::map&lt; std::string, std::string &gt;())</td></tr>
+<tr class="memdesc:a556fb0f2ba387f08afff55df300d21de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a variable / location in the data-model with a given data object.  <a href="#a556fb0f2ba387f08afff55df300d21de">More...</a><br /></td></tr>
+<tr class="separator:a556fb0f2ba387f08afff55df300d21de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00a3dec5c2c74d656ae144e812a2a8af"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_lua_data_model.html#a00a3dec5c2c74d656ae144e812a2a8af">isDeclared</a> (const std::string &amp;expr)</td></tr>
 <tr class="memdesc:a00a3dec5c2c74d656ae144e812a2a8af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether a given variable / location is declared.  <a href="#a00a3dec5c2c74d656ae144e812a2a8af">More...</a><br /></td></tr>
 <tr class="separator:a00a3dec5c2c74d656ae144e812a2a8af"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -214,34 +211,7 @@ lua_State *&#160;</td><td class="memItemRight" valign="bottom"><b>_luaState</b><
 
 </div>
 </div>
-<a class="anchor" id="a77f0f840033e50f3d06d9e8463edb1ad"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string uscxml::LuaDataModel::andExpressions </td>
-          <td>(</td>
-          <td class="paramtype">std::list&lt; std::string &gt;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>This is required to automatically transform a state-chart into a state-machine. Actual transformation is still only available in legacy though. </dd></dl>
-
-<p>Reimplemented from <a class="el" href="classuscxml_1_1_data_model_impl.html#a85a2bdd7493a4dfb156c723b204e858a">uscxml::DataModelImpl</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a0e4030feed63efaf6e0e07012b4fc212"></a>
+<a class="anchor" id="a219638e3d2e2b31299cef042f2ce8f77"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -258,7 +228,13 @@ lua_State *&#160;</td><td class="memItemRight" valign="bottom"><b>_luaState</b><
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td>
-          <td class="paramname"><em>data</em>&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::map&lt; std::string, std::string &gt; &amp;&#160;</td>
+          <td class="paramname"><em>attr</em> = <code>std::map&lt;&#160;std::string,&#160;std::string&#160;&gt;()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -286,11 +262,12 @@ test277:
   <table class="params">
     <tr><td class="paramname">location</td><td>A variable or locatio to assign to. </td></tr>
     <tr><td class="paramname">data</td><td>The <a class="el" href="classuscxml_1_1_data.html">Data</a> object with the respective data. </td></tr>
+    <tr><td class="paramname">attr</td><td>Additional attributes of the XML assign element. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a39bd9eaf711d1a8240f559da41649bfb">uscxml::DataModelImpl</a>.</p>
+<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a653d26b931f5b014ee923492e59b86a8">uscxml::DataModelImpl</a>.</p>
 
 </div>
 </div>
@@ -460,7 +437,7 @@ test277:
 
 </div>
 </div>
-<a class="anchor" id="a387f5d60474bf5dbcd52e7a600dc0765"></a>
+<a class="anchor" id="a556fb0f2ba387f08afff55df300d21de"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -477,7 +454,13 @@ test277:
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td>
-          <td class="paramname"><em>data</em>&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::map&lt; std::string, std::string &gt; &amp;&#160;</td>
+          <td class="paramname"><em>attr</em> = <code>std::map&lt;&#160;std::string,&#160;std::string&#160;&gt;()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -491,16 +474,17 @@ test277:
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This is, semantically, very close to <a class="el" href="classuscxml_1_1_lua_data_model.html#a0e4030feed63efaf6e0e07012b4fc212" title="Assign a data object to a location in the data-model. ">assign()</a> but does not assume the location to be declared first.</p>
+<p>This is, semantically, very close to <a class="el" href="classuscxml_1_1_lua_data_model.html#a219638e3d2e2b31299cef042f2ce8f77" title="Assign a data object to a location in the data-model. ">assign()</a> but does not assume the location to be declared first.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">location</td><td>A variable or locatio to assign to. </td></tr>
     <tr><td class="paramname">data</td><td>The <a class="el" href="classuscxml_1_1_data.html">Data</a> object with the respective data. </td></tr>
+    <tr><td class="paramname">attr</td><td>Additional attributes of the XML data element. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#af5ab40ac509e86f071bee27a9080f4c1">uscxml::DataModelImpl</a>.</p>
+<p>Implements <a class="el" href="classuscxml_1_1_data_model_impl.html#a99f0c2250174937e3408a5baf45b8035">uscxml::DataModelImpl</a>.</p>
 
 </div>
 </div>
@@ -672,7 +656,7 @@ test277:
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

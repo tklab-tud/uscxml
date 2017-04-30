@@ -100,6 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classuscxml_1_1_data-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -124,17 +125,20 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afce79f0ffb082329e9b79e2190b934ee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afce79f0ffb082329e9b79e2190b934ee"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Data</b> (const char *data, size_t size, const std::string &amp;mimeType, bool adopt=false)</td></tr>
 <tr class="separator:afce79f0ffb082329e9b79e2190b934ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a587d2793c30c3d8211a63f26f93a1861"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a587d2793c30c3d8211a63f26f93a1861"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Data</b> (bool atom)</td></tr>
-<tr class="separator:a587d2793c30c3d8211a63f26f93a1861"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aebbdb4ed53d67be5bb6adc03ffef2757"><td class="memTemplParams" colspan="2"><a class="anchor" id="aebbdb4ed53d67be5bb6adc03ffef2757"></a>
+<tr class="memitem:ab7d66ba87f1fafb492a9ee8439b4dd7d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab7d66ba87f1fafb492a9ee8439b4dd7d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Data</b> (XERCESC_NS::DOMNode *node_)</td></tr>
+<tr class="separator:ab7d66ba87f1fafb492a9ee8439b4dd7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a696a1d287bffedc85757debe110bdeb8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a696a1d287bffedc85757debe110bdeb8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Data</b> (const std::string &amp;value)</td></tr>
+<tr class="separator:a696a1d287bffedc85757debe110bdeb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40d68b754e95e418352dacfb59764cc5"><td class="memTemplParams" colspan="2"><a class="anchor" id="a40d68b754e95e418352dacfb59764cc5"></a>
+template&lt;typename T , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value, T&gt;::type&gt; </td></tr>
+<tr class="memitem:a40d68b754e95e418352dacfb59764cc5"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Data</b> (T value)</td></tr>
+<tr class="separator:a40d68b754e95e418352dacfb59764cc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fa52ff6d402bc0404461c87e7b0aed8"><td class="memTemplParams" colspan="2"><a class="anchor" id="a4fa52ff6d402bc0404461c87e7b0aed8"></a>
 template&lt;typename T &gt; </td></tr>
-<tr class="memitem:aebbdb4ed53d67be5bb6adc03ffef2757"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Data</b> (T value, typename std::enable_if&lt;!std::is_base_of&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a>, T &gt;::value &gt;::type *=nullptr)</td></tr>
-<tr class="separator:aebbdb4ed53d67be5bb6adc03ffef2757"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14618005baa0f7e5a7f6cb1cdd225192"><td class="memTemplParams" colspan="2"><a class="anchor" id="a14618005baa0f7e5a7f6cb1cdd225192"></a>
-template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a14618005baa0f7e5a7f6cb1cdd225192"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Data</b> (T value, Type type, typename std::enable_if&lt;!std::is_base_of&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a>, T &gt;::value &gt;::type *=nullptr)</td></tr>
-<tr class="separator:a14618005baa0f7e5a7f6cb1cdd225192"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fa52ff6d402bc0404461c87e7b0aed8"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Data</b> (T value, Type type)</td></tr>
+<tr class="separator:a4fa52ff6d402bc0404461c87e7b0aed8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4af722b198b82488b8abf0a1a115f775"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4af722b198b82488b8abf0a1a115f775"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>asJSON</b> () const </td></tr>
 <tr class="separator:a4af722b198b82488b8abf0a1a115f775"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -144,6 +148,9 @@ const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td clas
 <tr class="memitem:addbc6c0fc0c6dd209b2ce530709c2074"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="addbc6c0fc0c6dd209b2ce530709c2074"></a>
 const <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const char *key) const </td></tr>
 <tr class="separator:addbc6c0fc0c6dd209b2ce530709c2074"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82cccafe2857129983280b28a085a798"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82cccafe2857129983280b28a085a798"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>clear</b> ()</td></tr>
+<tr class="separator:a82cccafe2857129983280b28a085a798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fcaa85240da412c98314a71326649d1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fcaa85240da412c98314a71326649d1"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>empty</b> () const </td></tr>
 <tr class="separator:a4fcaa85240da412c98314a71326649d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,9 +163,9 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getAtom</b> ()
 <tr class="memitem:ae21901d3a26d9580459f499054b3a8d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae21901d3a26d9580459f499054b3a8d4"></a>
 <a class="el" href="classuscxml_1_1_blob.html">Blob</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getBinary</b> ()</td></tr>
 <tr class="separator:ae21901d3a26d9580459f499054b3a8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4c1d74489b30b3900db38fbbcd6f8bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4c1d74489b30b3900db38fbbcd6f8bc"></a>
-std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getCompound</b> ()</td></tr>
-<tr class="separator:ae4c1d74489b30b3900db38fbbcd6f8bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85f5c599d90b085166d4740bfc927405"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a85f5c599d90b085166d4740bfc927405"></a>
+std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">uscxml::Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getCompound</b> ()</td></tr>
+<tr class="separator:a85f5c599d90b085166d4740bfc927405"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70c4ba364765b58a6c126e2fa209dbf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70c4ba364765b58a6c126e2fa209dbf5"></a>
 Type&#160;</td><td class="memItemRight" valign="bottom"><b>getType</b> ()</td></tr>
 <tr class="separator:a70c4ba364765b58a6c126e2fa209dbf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -192,12 +199,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const
 <tr class="memitem:a0fc427cf627c6e211a88bff86d1a42c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fc427cf627c6e211a88bff86d1a42c0"></a>
 <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const std::string &amp;key)</td></tr>
 <tr class="separator:a0fc427cf627c6e211a88bff86d1a42c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa777463a9b679515a42e35855eeedf49"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa777463a9b679515a42e35855eeedf49"></a>
-const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const std::string &amp;key) const </td></tr>
-<tr class="separator:aa777463a9b679515a42e35855eeedf49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2137c0dfd207359b1cec5c3fca40d09"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad2137c0dfd207359b1cec5c3fca40d09"></a>
 <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const char *key)</td></tr>
 <tr class="separator:ad2137c0dfd207359b1cec5c3fca40d09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa777463a9b679515a42e35855eeedf49"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa777463a9b679515a42e35855eeedf49"></a>
+const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const std::string &amp;key) const </td></tr>
+<tr class="separator:aa777463a9b679515a42e35855eeedf49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8441b0ad10826302de51f71a4288e367"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8441b0ad10826302de51f71a4288e367"></a>
 const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const char *key) const </td></tr>
 <tr class="separator:a8441b0ad10826302de51f71a4288e367"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -219,9 +226,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setAtom</b> (const st
 <tr class="memitem:a0fa371618f166adb03abff2b5737e1b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fa371618f166adb03abff2b5737e1b6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setBinary</b> (const <a class="el" href="classuscxml_1_1_blob.html">Blob</a> &amp;binary)</td></tr>
 <tr class="separator:a0fa371618f166adb03abff2b5737e1b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad82be841111ddbaa53b83e393bd748c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad82be841111ddbaa53b83e393bd748c1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setCompound</b> (const std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt; &amp;compound)</td></tr>
-<tr class="separator:ad82be841111ddbaa53b83e393bd748c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb82a093be6559d9c594a51d7b8d3e44"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afb82a093be6559d9c594a51d7b8d3e44"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setCompound</b> (const std::map&lt; std::string, <a class="el" href="classuscxml_1_1_data.html">uscxml::Data</a> &gt; &amp;compound)</td></tr>
+<tr class="separator:afb82a093be6559d9c594a51d7b8d3e44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3713c96532ca1f23769610f05803102"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad3713c96532ca1f23769610f05803102"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setType</b> (const Type type)</td></tr>
 <tr class="separator:ad3713c96532ca1f23769610f05803102"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -237,9 +244,6 @@ static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>toJSON<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a873b1257dfacb56cb6d26c6f714babf9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a873b1257dfacb56cb6d26c6f714babf9"></a>
-std::shared_ptr&lt; XERCESC_NS::DOMDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>adoptedDoc</b></td></tr>
-<tr class="separator:a873b1257dfacb56cb6d26c6f714babf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b563f5616cf32129ce0c2403f2acbf5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9b563f5616cf32129ce0c2403f2acbf5"></a>
 std::list&lt; <a class="el" href="classuscxml_1_1_data.html">Data</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>array</b></td></tr>
 <tr class="separator:a9b563f5616cf32129ce0c2403f2acbf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -258,6 +262,15 @@ XERCESC_NS::DOMNode *&#160;</td><td class="memItemRight" valign="bottom"><b>node
 <tr class="memitem:afcf59f136aaf82a04ce8c30fa81360e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afcf59f136aaf82a04ce8c30fa81360e3"></a>
 Type&#160;</td><td class="memItemRight" valign="bottom"><b>type</b></td></tr>
 <tr class="separator:afcf59f136aaf82a04ce8c30fa81360e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:a00c03b0c363663fc8068ba02a96d84b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a00c03b0c363663fc8068ba02a96d84b3"></a>
+static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>jsonEscape</b> (const std::string &amp;expr)</td></tr>
+<tr class="separator:a00c03b0c363663fc8068ba02a96d84b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bdcbc42ef03f6a4d682bf77d7a04a0b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2bdcbc42ef03f6a4d682bf77d7a04a0b"></a>
+static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>jsonUnescape</b> (const std::string &amp;expr)</td></tr>
+<tr class="separator:a2bdcbc42ef03f6a4d682bf77d7a04a0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -278,7 +291,7 @@ USCXML_API std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:05 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

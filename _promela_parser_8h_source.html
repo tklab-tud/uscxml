@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_38c8d24aef3972a7f87b834274e76e31.html">plugins</a></li><li class="navelem"><a class="el" href="dir_7cfdd7134d700922c16c1342750b4180.html">datamodel</a></li><li class="navelem"><a class="el" href="dir_672dcfd9277f9ad29030da9749b32c8e.html">promela</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_2cd592331b95683ae50c1625a7a0233f.html">plugins</a></li><li class="navelem"><a class="el" href="dir_752b259a3f32424381c44f18ca58e729.html">datamodel</a></li><li class="navelem"><a class="el" href="dir_f4ef9190f47eab3d8603eac93d672b2e.html">promela</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -129,7 +129,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">void</span> merge(<a class="code" href="classuscxml_1_1_promela_parser_node.html">PromelaParserNode</a>* node);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordtype">void</span> push(<a class="code" href="classuscxml_1_1_promela_parser_node.html">PromelaParserNode</a>* node);</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">void</span> dump(<span class="keywordtype">int</span> indent = 0);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">void</span> dump(<span class="keywordtype">size_t</span> indent = 0);</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">static</span> std::string typeToDesc(<span class="keywordtype">int</span> type);</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
@@ -164,7 +164,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <a class="code" href="classuscxml_1_1_promela_parser_node.html">PromelaParserNode</a>* ast;</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    Type type;</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <a class="code" href="classuscxml_1_1_event.html">Event</a> pendingException;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <a class="code" href="classuscxml_1_1_error_event.html">ErrorEvent</a> pendingException;</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keyword">operator</span> bool()<span class="keyword"> const </span>{</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">return</span> ast != NULL;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
@@ -186,9 +186,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: PROMELA_H_9AB78YB1 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
+<div class="ttc" id="classuscxml_1_1_error_event_html"><div class="ttname"><a href="classuscxml_1_1_error_event.html">uscxml::ErrorEvent</a></div><div class="ttdef"><b>Definition:</b> Event.h:211</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="classuscxml_1_1_promela_parser_node_html"><div class="ttname"><a href="classuscxml_1_1_promela_parser_node.html">uscxml::PromelaParserNode</a></div><div class="ttdef"><b>Definition:</b> PromelaParser.h:37</div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
 <div class="ttc" id="structuscxml_1_1_promela_parser_node_1_1_location_html"><div class="ttname"><a href="structuscxml_1_1_promela_parser_node_1_1_location.html">uscxml::PromelaParserNode::Location</a></div><div class="ttdef"><b>Definition:</b> PromelaParser.h:39</div></div>
 <div class="ttc" id="classuscxml_1_1_promela_parser_html"><div class="ttname"><a href="classuscxml_1_1_promela_parser.html">uscxml::PromelaParser</a></div><div class="ttdef"><b>Definition:</b> PromelaParser.h:62</div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -200,7 +200,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

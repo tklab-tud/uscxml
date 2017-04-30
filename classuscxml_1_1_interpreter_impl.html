@@ -112,13 +112,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="dynheader">
 Inheritance diagram for uscxml::InterpreterImpl:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_interpreter_impl__inherit__graph.svg" width="444" height="271"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_interpreter_impl__inherit__graph.svg" width="444" height="374"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for uscxml::InterpreterImpl:</div>
 <div class="dyncontent">
-<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_interpreter_impl__coll__graph.svg" width="100%" height="600"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
-</div>
+<div class="center"><div class="zoom"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_interpreter_impl__coll__graph.svg" width="100%" height="600"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
@@ -133,9 +132,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3230eeeafacd0f7b523936e750068d70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3230eeeafacd0f7b523936e750068d70"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>addMonitor</b> (<a class="el" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a> *monitor)</td></tr>
 <tr class="separator:a3230eeeafacd0f7b523936e750068d70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fa5a5e5d5ca934943d97e2ae40fcaac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9fa5a5e5d5ca934943d97e2ae40fcaac"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>assign</b> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data)</td></tr>
-<tr class="separator:a9fa5a5e5d5ca934943d97e2ae40fcaac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a982570d9fcbe520ebe3e5a1c9f167e13"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a982570d9fcbe520ebe3e5a1c9f167e13"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>assign</b> (const std::string &amp;location, const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;data, const std::map&lt; std::string, std::string &gt; &amp;attrs)</td></tr>
+<tr class="separator:a982570d9fcbe520ebe3e5a1c9f167e13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32c8830fa4b4192207eac342876b0fd8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a32c8830fa4b4192207eac342876b0fd8"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#a32c8830fa4b4192207eac342876b0fd8">cancel</a> ()</td></tr>
 <tr class="memdesc:a32c8830fa4b4192207eac342876b0fd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cancel and finalize state machine. <br /></td></tr>
@@ -159,9 +158,19 @@ virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td 
 virtual <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#ac2621afad3b15209f3b8a81908c6647c">dequeueInternal</a> ()</td></tr>
 <tr class="memdesc:ac2621afad3b15209f3b8a81908c6647c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MicrostepCallbacks. <br /></td></tr>
 <tr class="separator:ac2621afad3b15209f3b8a81908c6647c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c622abf77f3a75d6850195933ca566e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5c622abf77f3a75d6850195933ca566e"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (const std::string &amp;encodedState)</td></tr>
+<tr class="separator:a5c622abf77f3a75d6850195933ca566e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71b7888431ab95ece48064bd00b20358"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a71b7888431ab95ece48064bd00b20358"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueue</b> (const std::string &amp;type, const std::string &amp;target, size_t delayMs, const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;sendEvent)</td></tr>
 <tr class="separator:a71b7888431ab95ece48064bd00b20358"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed243ad9ee17da0ba13cabdf780b927f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed243ad9ee17da0ba13cabdf780b927f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#aed243ad9ee17da0ba13cabdf780b927f">enqueueAtInvoker</a> (const std::string &amp;invokeId, const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
+<tr class="memdesc:aed243ad9ee17da0ba13cabdf780b927f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html" title="Callbacks available for every IO processor. ">IOProcessorCallbacks</a>. <br /></td></tr>
+<tr class="separator:aed243ad9ee17da0ba13cabdf780b927f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f3d87eee0348237d39b14c8b0189a71"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f3d87eee0348237d39b14c8b0189a71"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueueAtParent</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
+<tr class="separator:a2f3d87eee0348237d39b14c8b0189a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66528fb801f10cb5139fa60e28f605c8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66528fb801f10cb5139fa60e28f605c8"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueueExternal</b> (const <a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event)</td></tr>
 <tr class="separator:a66528fb801f10cb5139fa60e28f605c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,12 +188,19 @@ virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td cl
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#ad47b133cf11345554774cd2b64ac55d8">eventReady</a> (<a class="el" href="classuscxml_1_1_event.html">Event</a> &amp;event, const std::string &amp;eventUUID)</td></tr>
 <tr class="memdesc:ad47b133cf11345554774cd2b64ac55d8"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classuscxml_1_1_delayed_event_queue_callbacks.html">DelayedEventQueueCallbacks</a>. <br /></td></tr>
 <tr class="separator:ad47b133cf11345554774cd2b64ac55d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b7863a9f7c0ff92bfe46f6304220001"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b7863a9f7c0ff92bfe46f6304220001"></a>
+<a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getActionLanguage</b> ()</td></tr>
+<tr class="separator:a1b7863a9f7c0ff92bfe46f6304220001"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a878fc3bb10a828ad719e7193c2f71c23"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a878fc3bb10a828ad719e7193c2f71c23"></a>
 virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getAsData</b> (const std::string &amp;expr)</td></tr>
 <tr class="separator:a878fc3bb10a828ad719e7193c2f71c23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adaacf99a5f5bdeb2a50f29535cc11d43"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adaacf99a5f5bdeb2a50f29535cc11d43"></a>
 virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getBaseURL</b> ()</td></tr>
 <tr class="separator:adaacf99a5f5bdeb2a50f29535cc11d43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc4be076bc08550f55efdeb6b1d5e71d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afc4be076bc08550f55efdeb6b1d5e71d"></a>
+virtual <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#afc4be076bc08550f55efdeb6b1d5e71d">getCache</a> ()</td></tr>
+<tr class="memdesc:afc4be076bc08550f55efdeb6b1d5e71d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cache <a class="el" href="classuscxml_1_1_data.html">Data</a>. <br /></td></tr>
+<tr class="separator:afc4be076bc08550f55efdeb6b1d5e71d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a572df8e1af6390749ba5fb495965de4f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a572df8e1af6390749ba5fb495965de4f"></a>
 std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getConfiguration</b> ()</td></tr>
 <tr class="separator:a572df8e1af6390749ba5fb495965de4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -258,8 +274,13 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>raiseDoneEven
 <tr class="memitem:ac0d1690df64e6d20a5ec398311c29fda"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac0d1690df64e6d20a5ec398311c29fda"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>removeMonitor</b> (<a class="el" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a> *monitor)</td></tr>
 <tr class="separator:ac0d1690df64e6d20a5ec398311c29fda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fc6660007dc9b400026e0d460f9d423"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#a4fc6660007dc9b400026e0d460f9d423">reset</a> ()</td></tr>
-<tr class="separator:a4fc6660007dc9b400026e0d460f9d423"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79ba895acd81ed7b3d22d5131ad5f78b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79ba895acd81ed7b3d22d5131ad5f78b"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#a79ba895acd81ed7b3d22d5131ad5f78b">reset</a> ()</td></tr>
+<tr class="memdesc:a79ba895acd81ed7b3d22d5131ad5f78b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset state machine. <br /></td></tr>
+<tr class="separator:a79ba895acd81ed7b3d22d5131ad5f78b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9919364c5a17762b7fb753a4b46c94f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9919364c5a17762b7fb753a4b46c94f8"></a>
+virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> ()</td></tr>
+<tr class="separator:a9919364c5a17762b7fb753a4b46c94f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4bfc9656f2791da0c1a643d241a8a32c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4bfc9656f2791da0c1a643d241a8a32c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_interpreter_impl.html#a4bfc9656f2791da0c1a643d241a8a32c">setActionLanguage</a> (const <a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a> &amp;al)</td></tr>
 <tr class="memdesc:a4bfc9656f2791da0c1a643d241a8a32c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><hr/>
@@ -271,9 +292,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setFactory</b> (<a cl
 <tr class="memitem:a2f9f6129ba505cf332567d170e0fc57e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f9f6129ba505cf332567d170e0fc57e"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setForeach</b> (const std::string &amp;item, const std::string &amp;array, const std::string &amp;index, uint32_t iteration)</td></tr>
 <tr class="separator:a2f9f6129ba505cf332567d170e0fc57e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99b1340ffcb883c5bde537decb4c56fb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a99b1340ffcb883c5bde537decb4c56fb"></a>
+<tr class="memitem:ab8e36091f16acb66f51de6a3aa65873f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab8e36091f16acb66f51de6a3aa65873f"></a>
 virtual InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><b>step</b> (size_t blockMs)</td></tr>
-<tr class="separator:a99b1340ffcb883c5bde537decb4c56fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:ab8e36091f16acb66f51de6a3aa65873f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4b701153462a2ab4ceb6b4e33d0caeb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4b701153462a2ab4ceb6b4e33d0caeb"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>uninvoke</b> (XERCESC_NS::DOMElement *<a class="el" href="classuscxml_1_1_interpreter_impl.html#accd5ae28f8eff2d1963b275487652816">invoke</a>)</td></tr>
 <tr class="separator:ae4b701153462a2ab4ceb6b4e33d0caeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -285,6 +306,16 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>uninvoke</b> 
 virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_data_model_callbacks.html#a7fe222e1ccfe55df21b3786c5fb96749">~DataModelCallbacks</a> ()</td></tr>
 <tr class="memdesc:a7fe222e1ccfe55df21b3786c5fb96749 inherit pub_methods_classuscxml_1_1_data_model_callbacks"><td class="mdescLeft">&#160;</td><td class="mdescRight">silence virtual destructor warning from swig <br /></td></tr>
 <tr class="separator:a7fe222e1ccfe55df21b3786c5fb96749 inherit pub_methods_classuscxml_1_1_data_model_callbacks"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classuscxml_1_1_i_o_processor_callbacks"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_i_o_processor_callbacks')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html">uscxml::IOProcessorCallbacks</a></td></tr>
+<tr class="memitem:a488e7bb72c12993be31a2bcf762cea0f inherit pub_methods_classuscxml_1_1_i_o_processor_callbacks"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a488e7bb72c12993be31a2bcf762cea0f"></a>
+virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_i_o_processor_callbacks.html#a488e7bb72c12993be31a2bcf762cea0f">~IOProcessorCallbacks</a> ()</td></tr>
+<tr class="memdesc:a488e7bb72c12993be31a2bcf762cea0f inherit pub_methods_classuscxml_1_1_i_o_processor_callbacks"><td class="mdescLeft">&#160;</td><td class="mdescRight">silence virtual destructor warning from swig <br /></td></tr>
+<tr class="separator:a488e7bb72c12993be31a2bcf762cea0f inherit pub_methods_classuscxml_1_1_i_o_processor_callbacks"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classuscxml_1_1_invoker_callbacks"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_invoker_callbacks')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_invoker_callbacks.html">uscxml::InvokerCallbacks</a></td></tr>
+<tr class="memitem:ad1409df4dc07f14765c826615a35ee02 inherit pub_methods_classuscxml_1_1_invoker_callbacks"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad1409df4dc07f14765c826615a35ee02"></a>
+virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_invoker_callbacks.html#ad1409df4dc07f14765c826615a35ee02">~InvokerCallbacks</a> ()</td></tr>
+<tr class="memdesc:ad1409df4dc07f14765c826615a35ee02 inherit pub_methods_classuscxml_1_1_invoker_callbacks"><td class="mdescLeft">&#160;</td><td class="mdescRight">silence virtual destructor warning from swig <br /></td></tr>
+<tr class="separator:ad1409df4dc07f14765c826615a35ee02 inherit pub_methods_classuscxml_1_1_invoker_callbacks"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -306,6 +337,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>addInstance</b
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
+<tr class="memitem:a980a714bc0d2d3ca7a23a93f9a988aae"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a980a714bc0d2d3ca7a23a93f9a988aae"></a>
+<a class="el" href="classuscxml_1_1_action_language.html">ActionLanguage</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_al</b></td></tr>
+<tr class="separator:a980a714bc0d2d3ca7a23a93f9a988aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a378250a33b48c274afd56264c9e5823f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a378250a33b48c274afd56264c9e5823f"></a>
 std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_autoForwarders</b></td></tr>
 <tr class="separator:a378250a33b48c274afd56264c9e5823f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -315,6 +349,9 @@ std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memitem:a34247e43e533cc1cba05790dba4441e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a34247e43e533cc1cba05790dba4441e2"></a>
 Binding&#160;</td><td class="memItemRight" valign="bottom"><b>_binding</b></td></tr>
 <tr class="separator:a34247e43e533cc1cba05790dba4441e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3139d751e4715dcc43bb4dd41117f569"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3139d751e4715dcc43bb4dd41117f569"></a>
+<a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_cache</b></td></tr>
+<tr class="separator:a3139d751e4715dcc43bb4dd41117f569"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73ec88f0b327b67665d19f9d893a9361"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a73ec88f0b327b67665d19f9d893a9361"></a>
 <a class="el" href="classuscxml_1_1_event.html">Event</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_currEvent</b></td></tr>
 <tr class="separator:a73ec88f0b327b67665d19f9d893a9361"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -342,6 +379,9 @@ XERCESC_NS::DOMDocument *&#160;</td><td class="memItemRight" valign="bottom"><b>
 <tr class="memitem:aea2ed2d616809e0514c6d785ab7cec04"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aea2ed2d616809e0514c6d785ab7cec04"></a>
 <a class="el" href="classuscxml_1_1_factory.html">Factory</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_factory</b></td></tr>
 <tr class="separator:aea2ed2d616809e0514c6d785ab7cec04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9fe369a3affa70bb419362dc84bc2e5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9fe369a3affa70bb419362dc84bc2e5"></a>
+std::map&lt; std::string, XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_finalize</b></td></tr>
+<tr class="separator:ab9fe369a3affa70bb419362dc84bc2e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2a0cc303ad004937da24c4406da9419"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab2a0cc303ad004937da24c4406da9419"></a>
 <a class="el" href="classuscxml_1_1_event_queue.html">EventQueue</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_internalQueue</b></td></tr>
 <tr class="separator:ab2a0cc303ad004937da24c4406da9419"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -363,6 +403,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_isInitialized</b></t
 <tr class="memitem:a6e69df4a16699e843e645b043115c5a2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e69df4a16699e843e645b043115c5a2"></a>
 <a class="el" href="classuscxml_1_1_logger.html">Logger</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_logger</b> = Logger::getDefault()</td></tr>
 <tr class="separator:a6e69df4a16699e843e645b043115c5a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba8c1db0d8abd9aa218bcd2ab155f003"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba8c1db0d8abd9aa218bcd2ab155f003"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_md5</b></td></tr>
+<tr class="separator:aba8c1db0d8abd9aa218bcd2ab155f003"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfdc396e2763a9750109c2ff76d657b3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfdc396e2763a9750109c2ff76d657b3"></a>
 <a class="el" href="classuscxml_1_1_micro_step.html">MicroStep</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_microStepper</b></td></tr>
 <tr class="separator:acfdc396e2763a9750109c2ff76d657b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -378,18 +421,21 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_name</b></td>
 <tr class="memitem:a18709454c3c498de3c10d23fd3b2fbed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a18709454c3c498de3c10d23fd3b2fbed"></a>
 XERCESC_NS::DOMElement *&#160;</td><td class="memItemRight" valign="bottom"><b>_scxml</b></td></tr>
 <tr class="separator:a18709454c3c498de3c10d23fd3b2fbed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2654860bb2be747615ce15585f305cb7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2654860bb2be747615ce15585f305cb7"></a>
+std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_serializationMutex</b></td></tr>
+<tr class="separator:a2654860bb2be747615ce15585f305cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a600602db7d53051056623ed943d142f2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a600602db7d53051056623ed943d142f2"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_sessionId</b></td></tr>
 <tr class="separator:a600602db7d53051056623ed943d142f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0e775581b6c256206d166d1174ed1b2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0e775581b6c256206d166d1174ed1b2"></a>
 InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><b>_state</b></td></tr>
 <tr class="separator:ae0e775581b6c256206d166d1174ed1b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3043816468b493aaecdaab828889a383"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3043816468b493aaecdaab828889a383"></a>
-<a class="el" href="classuscxml_1_1_x.html">X</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_xmlNS</b></td></tr>
-<tr class="separator:a3043816468b493aaecdaab828889a383"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a210a1421d3ba48c70ec9e43e5ab2c840"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a210a1421d3ba48c70ec9e43e5ab2c840"></a>
-<a class="el" href="classuscxml_1_1_x.html">X</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_xmlPrefix</b></td></tr>
-<tr class="separator:a210a1421d3ba48c70ec9e43e5ab2c840"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07d8ddfc8454669ad1ee2c980b2dda8c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a07d8ddfc8454669ad1ee2c980b2dda8c"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_xmlNS</b></td></tr>
+<tr class="separator:a07d8ddfc8454669ad1ee2c980b2dda8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae35fdaa0e2089fd3607070fd3ead57b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae35fdaa0e2089fd3607070fd3ead57b6"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_xmlPrefix</b></td></tr>
+<tr class="separator:ae35fdaa0e2089fd3607070fd3ead57b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
@@ -424,31 +470,6 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TransformerImpl</b><
 class&#160;</td><td class="memItemRight" valign="bottom"><b>USCXMLInvoker</b></td></tr>
 <tr class="separator:a91ba35e75b878b31ec3d1f5072eead91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a4fc6660007dc9b400026e0d460f9d423"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual void uscxml::InterpreterImpl::reset </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>&lt; Reset state machine </p>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>interpreter/<a class="el" href="_interpreter_impl_8h_source.html">InterpreterImpl.h</a></li>
 <li>interpreter/<a class="el" href="_interpreter_impl_8cpp.html">InterpreterImpl.cpp</a></li>
@@ -462,7 +483,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>USCXMLInvoker</b></t
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

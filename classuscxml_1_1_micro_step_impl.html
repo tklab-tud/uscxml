@@ -130,6 +130,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4a669fd19340258d6d01d65b5b7a6510"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4a669fd19340258d6d01d65b5b7a6510"></a>
 virtual std::shared_ptr&lt; <a class="el" href="classuscxml_1_1_micro_step_impl.html">MicroStepImpl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="classuscxml_1_1_micro_step_callbacks.html">MicroStepCallbacks</a> *callbacks)=0</td></tr>
 <tr class="separator:a4a669fd19340258d6d01d65b5b7a6510"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10ea3d6a75dfd207e1c73ad6e4f01908"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a10ea3d6a75dfd207e1c73ad6e4f01908"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize</b> (const <a class="el" href="classuscxml_1_1_data.html">Data</a> &amp;encodedState)=0</td></tr>
+<tr class="separator:a10ea3d6a75dfd207e1c73ad6e4f01908"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6af3e97c41587f21d89de119519448c5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6af3e97c41587f21d89de119519448c5"></a>
 virtual std::list&lt; XERCESC_NS::DOMElement * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getConfiguration</b> ()=0</td></tr>
 <tr class="separator:a6af3e97c41587f21d89de119519448c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +149,9 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>markAsCancell
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classuscxml_1_1_micro_step_impl.html#a0fa02ea1906b5404169e1671788c62b1">reset</a> ()=0</td></tr>
 <tr class="memdesc:a0fa02ea1906b5404169e1671788c62b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset state machine. <br /></td></tr>
 <tr class="separator:a0fa02ea1906b5404169e1671788c62b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d485fe2e6ca23b35aa1089acce4d839"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d485fe2e6ca23b35aa1089acce4d839"></a>
+virtual <a class="el" href="classuscxml_1_1_data.html">Data</a>&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> ()=0</td></tr>
+<tr class="separator:a2d485fe2e6ca23b35aa1089acce4d839"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedd6f75e3682823c3fdd5cfb59b47f8a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aedd6f75e3682823c3fdd5cfb59b47f8a"></a>
 virtual InterpreterState&#160;</td><td class="memItemRight" valign="bottom"><b>step</b> (size_t blockMs)=0</td></tr>
 <tr class="separator:aedd6f75e3682823c3fdd5cfb59b47f8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,7 +174,7 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:20 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

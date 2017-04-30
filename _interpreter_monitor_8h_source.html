@@ -89,7 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_f2c8af9107d7604b778bd4ea9fe0debe.html">interpreter</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6d12b73cf1a07bae559bd2e97fe773a8.html">interpreter</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -103,114 +103,121 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_common_8h.html">uscxml/Common.h</a>&quot;</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_event_8h.html">uscxml/messages/Event.h</a>&quot;</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_interpreter_issue_8h.html">uscxml/debug/InterpreterIssue.h</a>&quot;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &lt;mutex&gt;</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CATCH(callback) \</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">catch (Event e) { LOG(USCXML_ERROR) &lt;&lt; &quot;Syntax error when calling &quot; #callback &quot; on monitors: &quot; &lt;&lt; std::endl &lt;&lt; e &lt;&lt; std::endl; } \</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">catch (std::bad_weak_ptr e) { LOG(USCXML_ERROR) &lt;&lt; &quot;Unclean shutdown &quot; &lt;&lt; std::endl; } \</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">catch (...) { LOG(USCXML_ERROR) &lt;&lt; &quot;An exception occurred when calling &quot; #callback &quot; on monitors&quot;; } \</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">if (_state == USCXML_DESTROYED) { throw std::bad_weak_ptr(); }</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CALLBACK(callbacks, function) { \</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">for (auto callback : callbacks) { callback-&gt;function(inptr); } }</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) { \</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">for (auto callback : callbacks) { callback-&gt;function(inptr, arg1); } }</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) { \</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">for (auto callback : callbacks) { callback-&gt;function(inptr, arg1, arg2); } }</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">// forward declare</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a> {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">class </span>DOMElement;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;}</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="keyword">class </span>Interpreter;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
-<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="classuscxml_1_1_interpreter_monitor.html">   56</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a> {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>() : _copyToInvokers(<span class="keyword">false</span>) {}</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>() {}</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeProcessingEvent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) {}</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeMicroStep(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExitingState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterExitingState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExecutingContent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* execContent) {}</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterExecutingContent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* execContent) {}</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeUninvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterUninvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeTakingTransition(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* transition) {}</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterTakingTransition(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* transition) {}</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeEnteringState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterEnteringState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeInvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterInvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterMicroStep(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> onStableConfiguration(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeCompletion(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterCompletion(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reportIssue(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_interpreter_issue.html">InterpreterIssue</a>&amp; issue) {}</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> copyToInvokers(<span class="keywordtype">bool</span> copy) {</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        _copyToInvokers = copy;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_logging_8h.html">uscxml/interpreter/Logging.h</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="_interpreter_issue_8h.html">uscxml/debug/InterpreterIssue.h</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;mutex&gt;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CATCH(callback) \</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">catch (Event e) { LOG(USCXML_ERROR) &lt;&lt; &quot;Syntax error when calling &quot; #callback &quot; on monitors: &quot; &lt;&lt; std::endl &lt;&lt; e &lt;&lt; std::endl; } \</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">catch (std::bad_weak_ptr e) { LOG(USCXML_ERROR) &lt;&lt; &quot;Unclean shutdown &quot; &lt;&lt; std::endl; } \</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">catch (...) { LOG(USCXML_ERROR) &lt;&lt; &quot;An exception occurred when calling &quot; #callback &quot; on monitors&quot;; } \</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">if (_state == USCXML_DESTROYED) { throw std::bad_weak_ptr(); }</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CALLBACK(callbacks, function) { \</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">for (auto callback : callbacks) { callback-&gt;function(inptr); } }</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) { \</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">for (auto callback : callbacks) { callback-&gt;function(inptr, arg1); } }</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) { \</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">Interpreter inptr = _callbacks-&gt;getInterpreter(); \</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">for (auto callback : callbacks) { callback-&gt;function(inptr, arg1, arg2); } }</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">// forward declare</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a> {</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="keyword">class </span>DOMElement;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;}</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceuscxml.html">uscxml</a> {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">class </span>Interpreter;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="classuscxml_1_1_interpreter_monitor.html">   57</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a> {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>() : _copyToInvokers(<span class="keyword">false</span>) {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        _logger = Logger::getDefault();</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>(<a class="code" href="classuscxml_1_1_logger.html">Logger</a> logger) : _copyToInvokers(<span class="keyword">false</span>), _logger(logger) {}</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_interpreter_monitor.html">InterpreterMonitor</a>() {}</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeProcessingEvent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">Event</a>&amp; event) {}</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeMicroStep(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExitingState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterExitingState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExecutingContent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* execContent) {}</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterExecutingContent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* execContent) {}</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeUninvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterUninvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeTakingTransition(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* transition) {}</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterTakingTransition(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* transition) {}</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeEnteringState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterEnteringState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state) {}</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeInvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterInvoking(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* invokeElem, <span class="keyword">const</span> std::string&amp; invokeid) {}</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterMicroStep(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> onStableConfiguration(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeCompletion(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> afterCompletion(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter) {}</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> reportIssue(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_interpreter_issue.html">InterpreterIssue</a>&amp; issue) {}</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">bool</span> copyToInvokers() {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordflow">return</span> _copyToInvokers;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> copyToInvokers(<span class="keywordtype">bool</span> copy) {</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        _copyToInvokers = copy;</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    }</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">bool</span> _copyToInvokers;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;};</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;</div>
-<div class="line"><a name="l00103"></a><span class="lineno"><a class="line" href="classuscxml_1_1_state_transition_monitor.html">  103</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_state_transition_monitor.html">StateTransitionMonitor</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a> {</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <a class="code" href="classuscxml_1_1_state_transition_monitor.html">StateTransitionMonitor</a>() {}</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_state_transition_monitor.html">StateTransitionMonitor</a>() {}</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeTakingTransition(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* transition);</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExecutingContent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* element);</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> onStableConfiguration(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter);</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeProcessingEvent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">uscxml::Event</a>&amp; event);</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExitingState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeEnteringState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeMicroStep(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter);</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">static</span> std::recursive_mutex _mutex;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;};</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">bool</span> copyToInvokers() {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">return</span> _copyToInvokers;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">bool</span> _copyToInvokers;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <a class="code" href="classuscxml_1_1_logger.html">Logger</a> _logger;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;};</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="classuscxml_1_1_state_transition_monitor.html">  107</a></span>&#160;<span class="keyword">class </span>USCXML_API <a class="code" href="classuscxml_1_1_state_transition_monitor.html">StateTransitionMonitor</a> : <span class="keyword">public</span> <a class="code" href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a> {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <a class="code" href="classuscxml_1_1_state_transition_monitor.html">StateTransitionMonitor</a>(std::string prefix = <span class="stringliteral">&quot;&quot;</span>) : _logPrefix(prefix) {}</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classuscxml_1_1_state_transition_monitor.html">StateTransitionMonitor</a>() {}</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeTakingTransition(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* transition);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExecutingContent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* element);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> onStableConfiguration(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeProcessingEvent(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> <a class="code" href="classuscxml_1_1_event.html">uscxml::Event</a>&amp; event);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeExitingState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state);</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeEnteringState(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter, <span class="keyword">const</span> XERCESC_NS::DOMElement* state);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> beforeMicroStep(<a class="code" href="classuscxml_1_1_interpreter.html">Interpreter</a>&amp; interpreter);</div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;}</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: INTERPRETERMONITOR_H_D3F21429 */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keyword">static</span> std::recursive_mutex _mutex;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    std::string _logPrefix;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;};</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;}</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* end of include guard: INTERPRETERMONITOR_H_D3F21429 */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="namespaceuscxml_html"><div class="ttname"><a href="namespaceuscxml.html">uscxml</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.cpp:26</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_monitor_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></div><div class="ttdef"><b>Definition:</b> InterpreterMonitor.h:56</div></div>
-<div class="ttc" id="classuscxml_1_1_interpreter_issue_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_issue.html">uscxml::InterpreterIssue</a></div><div class="ttdoc">Identify and report syntactic and semantic problems with a SCXML state-charts. </div><div class="ttdef"><b>Definition:</b> InterpreterIssue.h:42</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_monitor_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></div><div class="ttdef"><b>Definition:</b> InterpreterMonitor.h:57</div></div>
+<div class="ttc" id="classuscxml_1_1_interpreter_issue_html"><div class="ttname"><a href="classuscxml_1_1_interpreter_issue.html">uscxml::InterpreterIssue</a></div><div class="ttdoc">Identify and report syntactic and semantic problems with a SCXML state-charts. </div><div class="ttdef"><b>Definition:</b> InterpreterIssue.h:41</div></div>
 <div class="ttc" id="_interpreter_issue_8h_html"><div class="ttname"><a href="_interpreter_issue_8h.html">InterpreterIssue.h</a></div><div class="ttdoc">Identifies some common problems with SCXML documents. </div></div>
 <div class="ttc" id="classuscxml_1_1_interpreter_html"><div class="ttname"><a href="classuscxml_1_1_interpreter.html">uscxml::Interpreter</a></div><div class="ttdoc">Central class to interpret and process SCXML documents. </div><div class="ttdef"><b>Definition:</b> Interpreter.h:79</div></div>
 <div class="ttc" id="_event_8h_html"><div class="ttname"><a href="_event_8h.html">Event.h</a></div></div>
 <div class="ttc" id="_common_8h_html"><div class="ttname"><a href="_common_8h.html">Common.h</a></div></div>
-<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:84</div></div>
+<div class="ttc" id="classuscxml_1_1_event_html"><div class="ttname"><a href="classuscxml_1_1_event.html">uscxml::Event</a></div><div class="ttdef"><b>Definition:</b> Event.h:94</div></div>
 <div class="ttc" id="namespace_x_e_r_c_e_s_c___n_s_html"><div class="ttname"><a href="namespace_x_e_r_c_e_s_c___n_s.html">XERCESC_NS</a></div><div class="ttdef"><b>Definition:</b> Breakpoint.h:30</div></div>
-<div class="ttc" id="classuscxml_1_1_state_transition_monitor_html"><div class="ttname"><a href="classuscxml_1_1_state_transition_monitor.html">uscxml::StateTransitionMonitor</a></div><div class="ttdef"><b>Definition:</b> InterpreterMonitor.h:103</div></div>
+<div class="ttc" id="classuscxml_1_1_state_transition_monitor_html"><div class="ttname"><a href="classuscxml_1_1_state_transition_monitor.html">uscxml::StateTransitionMonitor</a></div><div class="ttdef"><b>Definition:</b> InterpreterMonitor.h:107</div></div>
+<div class="ttc" id="classuscxml_1_1_logger_html"><div class="ttname"><a href="classuscxml_1_1_logger.html">uscxml::Logger</a></div><div class="ttdef"><b>Definition:</b> Logging.h:69</div></div>
+<div class="ttc" id="_logging_8h_html"><div class="ttname"><a href="_logging_8h.html">Logging.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.8-->
 <!-- start footer part -->
@@ -220,7 +227,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:04 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:19 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->

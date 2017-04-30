@@ -97,6 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="classuscxml_1_1_state_transition_monitor-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -111,11 +112,14 @@ Inheritance diagram for uscxml::StateTransitionMonitor:</div>
 <div class="dynheader">
 Collaboration diagram for uscxml::StateTransitionMonitor:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_state_transition_monitor__coll__graph.svg" width="216" height="112"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classuscxml_1_1_state_transition_monitor__coll__graph.svg" width="216" height="203"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a15a4f57ab414db0b5f6d45908dbc58a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15a4f57ab414db0b5f6d45908dbc58a3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>StateTransitionMonitor</b> (std::string prefix=&quot;&quot;)</td></tr>
+<tr class="separator:a15a4f57ab414db0b5f6d45908dbc58a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc8d59639e829ea7aab1bf797730b199"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc8d59639e829ea7aab1bf797730b199"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beforeEnteringState</b> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;interpreter, const XERCESC_NS::DOMElement *state)</td></tr>
 <tr class="separator:adc8d59639e829ea7aab1bf797730b199"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,6 +142,9 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beforeTakingT
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>onStableConfiguration</b> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;interpreter)</td></tr>
 <tr class="separator:a4f5bc7b1ed88bd1b3e67cea4cb058271"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classuscxml_1_1_interpreter_monitor"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classuscxml_1_1_interpreter_monitor')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></td></tr>
+<tr class="memitem:a16498d82225988b730d0a5ea9546183b inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a16498d82225988b730d0a5ea9546183b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>InterpreterMonitor</b> (<a class="el" href="classuscxml_1_1_logger.html">Logger</a> logger)</td></tr>
+<tr class="separator:a16498d82225988b730d0a5ea9546183b inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a541c0b85163d5b0a3a15410fcc3dc2cf inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a541c0b85163d5b0a3a15410fcc3dc2cf"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>afterCompletion</b> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;interpreter)</td></tr>
 <tr class="separator:a541c0b85163d5b0a3a15410fcc3dc2cf inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -181,18 +188,24 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>copyToInvokers</b> ()
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>reportIssue</b> (<a class="el" href="classuscxml_1_1_interpreter.html">Interpreter</a> &amp;interpreter, const <a class="el" href="classuscxml_1_1_interpreter_issue.html">InterpreterIssue</a> &amp;issue)</td></tr>
 <tr class="separator:a3c8fc43168be8a9238a5e14a8b12a4f9 inherit pub_methods_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a7b5c665b2bddc4446d48a00d0e1440e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7b5c665b2bddc4446d48a00d0e1440e9"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_logPrefix</b></td></tr>
+<tr class="separator:a7b5c665b2bddc4446d48a00d0e1440e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classuscxml_1_1_interpreter_monitor"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_interpreter_monitor')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></td></tr>
+<tr class="memitem:a9df4f96ebb08aabaca99025e9694b0d0 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9df4f96ebb08aabaca99025e9694b0d0"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_copyToInvokers</b></td></tr>
+<tr class="separator:a9df4f96ebb08aabaca99025e9694b0d0 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5d81267ad4ec72905312271b4a55d44 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5d81267ad4ec72905312271b4a55d44"></a>
+<a class="el" href="classuscxml_1_1_logger.html">Logger</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_logger</b></td></tr>
+<tr class="separator:af5d81267ad4ec72905312271b4a55d44 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
 <tr class="memitem:acc89d7263df3142f1a3e3310282aeaa3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acc89d7263df3142f1a3e3310282aeaa3"></a>
 static std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>_mutex</b></td></tr>
 <tr class="separator:acc89d7263df3142f1a3e3310282aeaa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header pro_attribs_classuscxml_1_1_interpreter_monitor"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classuscxml_1_1_interpreter_monitor')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classuscxml_1_1_interpreter_monitor.html">uscxml::InterpreterMonitor</a></td></tr>
-<tr class="memitem:a9df4f96ebb08aabaca99025e9694b0d0 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9df4f96ebb08aabaca99025e9694b0d0"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_copyToInvokers</b></td></tr>
-<tr class="separator:a9df4f96ebb08aabaca99025e9694b0d0 inherit pro_attribs_classuscxml_1_1_interpreter_monitor"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>interpreter/<a class="el" href="_interpreter_monitor_8h_source.html">InterpreterMonitor.h</a></li>
@@ -207,7 +220,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_copyToInvokers</b></
 </div>
 </div>
 <!-- <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 12 2016 19:50:06 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 30 2017 22:52:21 for uSCXML by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.10
 </small></address> -->
