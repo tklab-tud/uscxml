@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 				LOGD(USCXML_ERROR) << "Cannot create interpreter from " << documentURL << std::endl;
 			}
 		} catch (Event e) {
-			LOGD(USCXML_DEBUG) << e << std::endl;
+			LOGD(USCXML_ERROR) << e << std::endl;
 		}
 	}
 

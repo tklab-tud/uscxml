@@ -216,7 +216,7 @@ std::string Data::asJSON() const {
 std::string Data::toJSON(const Data& data) {
 	std::stringstream os;
 	std::string indent;
-	for (size_t i = 0; i < _dataIndentation; i++) {
+	for (size_t i = 0; i <= _dataIndentation; i++) {
 		indent += "  ";
 	}
 	if (false) {
@@ -233,7 +233,7 @@ std::string Data::toJSON(const Data& data) {
 			keyPadding += " ";
 
 		std::string seperator;
-		os << std::endl << indent << "{";
+		os << "{";
 		compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
 			os << seperator << std::endl << indent << "  \"" << jsonEscape(compoundIter->first) << "\": " << keyPadding.substr(0, longestKey - compoundIter->first.size());
