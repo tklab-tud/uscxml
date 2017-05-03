@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+
 #line 2 "promela.lex.yy.cpp"
 
 #line 4 "promela.lex.yy.cpp"

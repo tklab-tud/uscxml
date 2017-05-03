@@ -48,7 +48,7 @@ public:
 
 	void merge(PromelaParserNode* node);
 	void push(PromelaParserNode* node);
-	void dump(size_t indent = 0);
+	void USCXML_API dump(size_t indent = 0);
 
 	static std::string typeToDesc(int type);
 
@@ -59,7 +59,7 @@ public:
 	Location* loc;
 };
 
-class PromelaParser {
+class USCXML_API PromelaParser {
 public:
 	enum Type {
 		PROMELA_EXPR,

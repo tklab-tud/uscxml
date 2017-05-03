@@ -50,7 +50,7 @@ class LoggerImpl;
 void log(LogSeverity severity, const Event& event);
 void log(LogSeverity severity, const Data& data);
 
-class StreamLogger {
+class USCXML_API StreamLogger {
 public:
 	std::ostream& operator<<(const std::string& message);
 	~StreamLogger();

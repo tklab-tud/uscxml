@@ -38,7 +38,7 @@ namespace uscxml {
 
 class DirectoryWatchMonitor;
 
-class DirectoryWatch {
+class USCXML_API DirectoryWatch {
 public:
 	enum Action {
 		ADDED = 1,

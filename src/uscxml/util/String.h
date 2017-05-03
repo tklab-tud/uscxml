@@ -20,20 +20,22 @@
 #ifndef STRING_H_FD462039
 #define STRING_H_FD462039
 
+#include "uscxml/Common.h"
+
 #include <string>
 #include <list>
 
 namespace uscxml {
 
-std::string escapeMacro(std::string const &s);
+std::string USCXML_API escapeMacro(std::string const &s);
+std::string USCXML_API toBinStr(size_t val, size_t margin);
 
-std::string toBinStr(size_t val, size_t margin);
+std::list<std::string> USCXML_API tokenize(const std::string &line,
+        const char seperator = ' ',
+        bool trimWhiteSpace = true);
 
-std::list<std::string> tokenize(const std::string &line, const char seperator = ' ', bool trimWhiteSpace = true);
-
-std::string spaceNormalize(const std::string &text);
-
-bool nameMatch(const std::string &eventDescs, const std::string &event);
+std::string USCXML_API spaceNormalize(const std::string &text);
+bool USCXML_API nameMatch(const std::string &eventDescs, const std::string &event);
 
 }
 

@@ -47,7 +47,7 @@ namespace uscxml {
  * Lua data-model.
  */
 
-class LuaDataModel : public DataModelImpl {
+class USCXML_API LuaDataModel : public DataModelImpl {
 public:
 	LuaDataModel();
 	virtual ~LuaDataModel();
