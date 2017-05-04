@@ -58,11 +58,16 @@ void Logger::log(LogSeverity severity, const std::string& message) {
 }
 
 StreamLogger Logger::log(LogSeverity severity) {
+	// older c++ compilers will invoke the copy constructor and destructor here!
 	return StreamLogger(severity, _impl);
 }
 
 StreamLogger::~StreamLogger() {
-	_logger->log(_severity, ss.str());
+	ss.seekg(0, std::ios::end);
+	// only log if there is something in the string to solve issue with destructor being called twice
+	if (ss.tellg() > 0) {
+		_logger->log(_severity, ss.str());
+	}
 }
 
 std::shared_ptr<LoggerImpl> Logger::getImpl() const {
