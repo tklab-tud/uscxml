@@ -187,6 +187,10 @@ public:
 		return _dataModel.evalAsData(expr);
 	}
 
+	virtual void evalAsScript(const std::string& content) {
+		_dataModel.evalAsScript(content);
+	}
+
 	virtual Data getAsData(const std::string& expr) {
 		return _dataModel.getAsData(expr);
 	}

@@ -350,49 +350,25 @@ void LuaDataModel::setEvent(const Event& event) {
 
 Data LuaDataModel::evalAsData(const std::string& content) {
 	Data data;
-	ErrorEvent originalError;
 
 	std::string trimmedExpr = boost::trim_copy(content);
 
-	try {
-		int retVals = luaEval(_luaState, "return(" + trimmedExpr + ")");
-		if (retVals == 1) {
-			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
-		}
-		lua_pop(_luaState, retVals);
-		return data;
-	} catch (ErrorEvent e) {
-		originalError = e;
+	int retVals = luaEval(_luaState, "return(" + trimmedExpr + ")");
+	if (retVals == 1) {
+		data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
 	}
-
-	int retVals = 0;
-	try {
-		// evaluate again without the return()
-		retVals = luaEval(_luaState, trimmedExpr);
-	} catch (ErrorEvent e) {
-		throw originalError; // we will assume syntax error and throw
-	}
-
-#if 1
-	// Note: Empty result is not an error test302, but how to do test488?
-	if (retVals == 0 && !isValidSyntax(trimmedExpr)) {
-		throw originalError; // we will assume syntax error and throw
-	}
-#endif
-
-	try {
-		if (retVals == 1) {
-			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
-		}
-		lua_pop(_luaState, retVals);
-		return data;
-
-	} catch (ErrorEvent e) {
-		throw e; // we will assume syntax error and throw
-	}
-
-
+	lua_pop(_luaState, retVals);
 	return data;
+}
+
+void LuaDataModel::evalAsScript(const std::string& content) {
+	Data data;
+
+	std::string trimmedExpr = boost::trim_copy(content);
+
+	int retVals = luaEval(_luaState, trimmedExpr);
+
+	lua_pop(_luaState, retVals);
 }
 
 bool LuaDataModel::isValidSyntax(const std::string& expr) {

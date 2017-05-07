@@ -291,7 +291,7 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
 	// download as necessary
 	std::string scriptContent(X(content->getTextContent()));
-	_callbacks->evalAsData(scriptContent);
+	_callbacks->evalAsScript(scriptContent);
 
 }
 

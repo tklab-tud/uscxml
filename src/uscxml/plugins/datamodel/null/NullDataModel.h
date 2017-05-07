@@ -77,6 +77,9 @@ public:
 	virtual Data evalAsData(const std::string& content) {
 		return getAsData(content);
 	}
+	virtual void evalAsScript(const std::string& content) {
+		getAsData(content);
+	}
 	virtual std::string evalAsString(const std::string& expr) {
 		return expr;
 	}

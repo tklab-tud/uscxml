@@ -76,6 +76,7 @@ public:
 
 	virtual bool evalAsBool(const std::string& expr);
 	virtual Data evalAsData(const std::string& expr);
+	virtual void evalAsScript(const std::string& content) { evalAsData(content); }
 	virtual Data getAsData(const std::string& content);
 
 	virtual bool isDeclared(const std::string& expr);

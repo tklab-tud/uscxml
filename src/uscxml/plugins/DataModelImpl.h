@@ -153,6 +153,12 @@ public:
 	virtual Data evalAsData(const std::string& content) = 0;
 
 	/**
+	* evaluating script content without return
+	* @param mostly script content.
+	*/
+	virtual void evalAsScript(const std::string& content) = 0;
+
+	/**
 	 * Evaluate a given expression as a boolean.
 	 * This function is a subset of evalAsData() but saves on creating and copying a Data object.
 	 * @param expr An expression in the data-model's language.
