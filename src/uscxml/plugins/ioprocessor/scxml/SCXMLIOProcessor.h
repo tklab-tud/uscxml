@@ -33,7 +33,7 @@ namespace uscxml {
  * @ingroup ioproc
  * The scxml I/O processor as per standard.
  */
-class SCXMLIOProcessor : public IOProcessorImpl {
+class USCXML_API SCXMLIOProcessor : public IOProcessorImpl {
 public:
 	SCXMLIOProcessor();
 	virtual ~SCXMLIOProcessor();

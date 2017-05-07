@@ -191,6 +191,7 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 			al.internalQueue = alOrig->internalQueue.getImplBase()->create();
 			al.externalQueue = alOrig->externalQueue.getImplBase()->create();
 			al.microStepper = alOrig->microStepper.getImpl()->create(invoked);
+			al.logger = alOrig->logger.getImpl()->create();
 
 			_invokedInterpreter.setActionLanguage(al);
 		}
