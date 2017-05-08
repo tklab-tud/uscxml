@@ -1,0 +1,43 @@
+<scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+	<datamodel>
+		<data id="varFunc1">function()
+    print(&quot;Hello from function&quot;)
+end
+		</data>
+		<data id="varFunc2">function()    
+    return 2
+end
+		</data>
+		<data expr="nil" id="varFunc3"/>
+	</datamodel>
+	<final id="Pass">
+		<onentry>
+			<log expr="&quot;Pass&quot;" label="Outcome"/>
+		</onentry>
+	</final>
+	<final id="Fail">
+		<onentry>
+			<log expr="&quot;Fail&quot;" label="Outcome"/>
+		</onentry>
+	</final>
+	<state id="StateShape1">
+		<onentry>
+			<assign expr="varFunc2" location="varFunc3"/>
+			<assign expr="function()              
+    return 4
+end" location="varFunc4"/>
+			<log expr="''" label="Test"/>
+			<script>print(&quot;this is from Script!&quot;)
+
+print(string.format(&quot;varFunc3()==%d&quot;,varFunc3()))
+print(string.format(&quot;varFunc2()==%d&quot;,varFunc2()))
+
+varFunc1()
+
+print(string.format(&quot;varFunc4()==%d&quot;,varFunc4()))
+			</script>
+		</onentry>
+		<transition cond="varFunc4()==4 and varFunc3()==2" target="Pass"/>
+		<transition target="Fail"/>
+	</state>
+</scxml>

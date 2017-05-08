@@ -79,9 +79,12 @@ static int luaEval(lua_State* luaState, const std::string& expr) {
 static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 	Data data;
 	if (lua.isFunction()) {
-		// TODO: this might lead to a stack-overflow
-		luabridge::LuaRef luaEvald = lua();
-		return getLuaAsData(_luaState, luaEvald);
+		// we are creating __tmpFunc
+		// then it will be assigned to data variable
+		luabridge::setGlobal(_luaState, lua, "__tmpFunc");
+		
+		data.atom = "__tmpFunc";
+		data.type = Data::INTERPRETED;
 	} else if(lua.isLightUserdata() || lua.isUserdata()) {
 		// not sure what to do
 	} else if(lua.isThread()) {
