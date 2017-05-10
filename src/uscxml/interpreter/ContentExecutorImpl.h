@@ -59,6 +59,7 @@ public:
 	                        uint32_t iteration) = 0;
 
 	virtual Data evalAsData(const std::string& expr) = 0;
+	virtual void evalAsScript(const std::string& content) = 0;
 	virtual Data getAsData(const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attrs) = 0;
 

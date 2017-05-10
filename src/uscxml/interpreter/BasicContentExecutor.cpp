@@ -291,7 +291,7 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
 	// download as necessary
 	std::string scriptContent(X(content->getTextContent()));
-	_callbacks->evalAsData(scriptContent);
+	_callbacks->evalAsScript(scriptContent);
 
 }
 
@@ -691,9 +691,19 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool a
 				contentSS << X((*textIter)->getNodeValue());
 			}
 
+			// this must be handled in getAsData
 			// test294, test562
 			if (LOCALNAME(element) == "content") {
-				return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
+				// need first try getAsData because how to pass 179 ?
+				try {
+					// test153, we need to throw for test150 in promela
+					Data d = _callbacks->getAsData(contentSS.str());
+					if (!d.empty())
+						return d;
+				}
+				catch (ErrorEvent &) {
+					return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
+				}
 			}
 
 			if (asExpression) // not actually used, but likely expected

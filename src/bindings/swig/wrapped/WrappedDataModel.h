@@ -73,6 +73,9 @@ public:
 	virtual Data evalAsData(const std::string& expr) {
 		return Data();
 	}
+	virtual void evalAsScript(const std::string& expr) {
+		Data();
+	}
 	virtual bool evalAsBool(const std::string& expr) {
 		return true;
 	}
