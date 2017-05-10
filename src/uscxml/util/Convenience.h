@@ -29,14 +29,14 @@ namespace uscxml {
 inline bool isnan(double x);
 
 // see http://stackoverflow.com/questions/228005/alternative-to-itoa-for-converting-integer-to-string-c
-template <typename T> std::string USCXML_API toStr(T tmp) {
+template <typename T> std::string toStr(T tmp) {
 	std::ostringstream outSS;
 	outSS.precision(std::numeric_limits<double>::digits10 + 1);
 	outSS << tmp;
 	return outSS.str();
 }
 
-template <typename T> T USCXML_API strTo(std::string tmp) {
+template <typename T> T strTo(std::string tmp) {
 	T output;
 	std::istringstream in(tmp);
 	in >> output;
