@@ -27,6 +27,8 @@ extern "C" {
 #include <event2/http_struct.h>
 }
 
+// why is it duplicated from Common.h here?
+
 #if defined(_WIN32) && !defined(USCXML_STATIC)
 #	if (defined ioprocessor_basichttp_EXPORTS || defined USCXML_EXPORT)
 #		define USCXML_PLUGIN_API __declspec(dllexport)
