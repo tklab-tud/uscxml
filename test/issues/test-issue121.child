@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" name="child" version="1.0" datamodel="promela">
+	<datamodel>
+		<data id="p_id" type="int" expr="0"/>
+		<data id="child_id" type="int" expr="0"/>
+	</datamodel>
+	<state id="sc" initial="sc_01">
+		<onentry>
+			<assign location="child_id" expr="p_id"/>
+			<log label="Hello, I am invoker number" expr="child_id" />
+		</onentry>
+		<state id="sc_01">
+			<onentry>
+				<log label="state sc_01 of invoker number" expr="child_id"/>
+					<send event="sc01_over" delayexpr="500"/> 
+			</onentry>
+			<transition event="sc01_over" target="sc_02"/>
+		</state>
+		<state id="sc_02">
+			<onentry>
+				<log label="state sc_02 of invoker number" expr="child_id"/>
+				<send event="Random_Event" delayexpr="300" target="#_parent"> 
+					<param name="var1" type="int" expr="child_id" />
+				</send>
+			</onentry>
+			<transition event="Random_Event2" target="sc"/>
+		</state>
+	</state> 
+</scxml>

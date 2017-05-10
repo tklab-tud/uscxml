@@ -69,6 +69,7 @@ public:
 	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 protected:
+	virtual void setup();
 
 	int dataToInt(const Data& data);
 	bool dataToBool(const Data& data);

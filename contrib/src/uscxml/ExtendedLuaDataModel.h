@@ -27,14 +27,17 @@ public:
     ExtendedLuaDataModel() {};
     
     std::shared_ptr<DataModelImpl> create(uscxml::DataModelCallbacks* callbacks) {
-        
         std::shared_ptr<ExtendedLuaDataModel> dm(new ExtendedLuaDataModel());
-//        dm->LuaDataModel::init(callbacks);
-        
-        lua_pushcfunction(dm->_luaState, GetSomeResult);
-        lua_setglobal(dm->_luaState, "GetSomeResult");
-        
+        dm->_callbacks = callbacks;
+        dm->setup();
         return dm;
+    }
+
+    void setup() {
+        uscxml::LuaDataModel::setup();
+        lua_pushcfunction(_luaState, GetSomeResult);
+        lua_setglobal(_luaState, "GetSomeResult");
+        
     }
     
     static int GetSomeResult(lua_State * L) {

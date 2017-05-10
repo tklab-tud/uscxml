@@ -80,15 +80,35 @@ public:
 
 	/**
 	 * The Factory wants to instantiate a new instance.
-	 * This function will have to initialize the object. The actual constructor
-	 * is called from within here. The only one who calls the constructor directly
-	 * is the Factory for the prototype object.
+	 * This functions calls the constructor and returns a shared_ptr to the respective
+	 * object. Note that this function can not contain actual initialization code as we
+	 * could no longer inherit the class. Therefore, this function calls the setup()
+	 * method which can be extended by an child class to actually get the object ready.
+	 * The only other time that the constructor is called directly is for the prototype
+	 * object in the Factory.
 	 *
 	 * @param callbacks The callbacks available to the datamodel
 	 * @return A shared pointer with an initialized instance
 	 */
 	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks) = 0;
 
+protected:
+	/**
+	 * This function will initialize the object.
+	 * We cannot initialize an instance of a datamodel from the default constructors as
+	 * it would be called for the prototype objects in the factory as well. And we can
+	 * neither initialize an instance in create() as it is invoke in the prototype and
+	 * cannot be overridden by an inheriting class. Thus, we have to call this setup()
+	 * function on the instance created by create() so that inheriting classes won't have
+	 * to copy all the code in create() and can rely on the base class' initialization
+	 * of the datamodel runtime environment and merely extend it.
+	 *
+	 * @TODO: We may want to introduce two-stage constructors for other prototype types in
+	 * the factory as well.
+	 */
+	virtual void setup() = 0;
+
+public:
 	/**
 	 * Return a list of names to be matched by the `datamodel` attribute in SCXML.
 	 */

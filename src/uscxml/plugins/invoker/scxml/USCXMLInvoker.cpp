@@ -19,7 +19,7 @@
 
 #include "USCXMLInvoker.h"
 #include "uscxml/util/DOM.h"
-
+#include "uscxml/interpreter/LoggingImpl.h"
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
@@ -191,6 +191,11 @@ void USCXMLInvoker::invoke(const std::string& source, const Event& invokeEvent) 
 			al.internalQueue = alOrig->internalQueue.getImplBase()->create();
 			al.externalQueue = alOrig->externalQueue.getImplBase()->create();
 			al.microStepper = alOrig->microStepper.getImpl()->create(invoked);
+			/**
+			 * TODO: Do we want a clone of the logger or the same instance?
+			 */
+			al.logger = alOrig->logger.getImpl()->create();
+			// Note: we do not create a new instance from the existing datamodel as it may be of a different type
 
 			_invokedInterpreter.setActionLanguage(al);
 		}

@@ -42,7 +42,11 @@ NullDataModel::NullDataModel() {
 std::shared_ptr<DataModelImpl> NullDataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<NullDataModel> dm(new NullDataModel());
 	dm->_callbacks = callbacks;
+	dm->setup();
 	return dm;
+}
+
+void NullDataModel::setup() {
 }
 
 NullDataModel::~NullDataModel() {

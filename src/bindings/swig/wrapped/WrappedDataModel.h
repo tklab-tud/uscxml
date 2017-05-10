@@ -40,7 +40,11 @@ public:
 	virtual std::shared_ptr<DataModelImpl> create(DataModelCallbacks* callbacks) {
 		std::shared_ptr<WrappedDataModel> dm(create());
 		dm->callbacks = callbacks;
+		dm->setup();
 		return dm;
+	}
+
+	virtual void setup() {
 	}
 
 	virtual std::list<std::string> getNames() {

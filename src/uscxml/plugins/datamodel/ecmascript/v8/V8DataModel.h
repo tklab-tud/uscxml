@@ -82,6 +82,7 @@ public:
 	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 protected:
+	virtual void setup();
 
 	static void jsExtension(const v8::FunctionCallbackInfo<v8::Value>& info);
 	static void jsIn(const v8::FunctionCallbackInfo<v8::Value>& info);

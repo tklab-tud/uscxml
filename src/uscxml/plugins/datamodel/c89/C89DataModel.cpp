@@ -34,9 +34,14 @@ C89DataModel::C89DataModel() {
 
 std::shared_ptr<DataModelImpl> C89DataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<C89DataModel> dm(new C89DataModel());
-	PicocInitialise(&dm->_pc, PICOC_STACK_SIZE);
-	PicocIncludeAllSystemHeaders(&dm->_pc);
+	dm->setup();
 	return dm;
+}
+
+C89DataModel::setup() {
+	PicocInitialise(&_pc, PICOC_STACK_SIZE);
+	PicocIncludeAllSystemHeaders(&_pc);
+
 }
 
 C89DataModel::~C89DataModel() {

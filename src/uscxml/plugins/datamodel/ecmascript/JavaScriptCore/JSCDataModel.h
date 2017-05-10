@@ -89,6 +89,7 @@ public:
 	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 protected:
+	virtual void setup();
 
 	static JSClassDefinition jsInClassDef;
 	static JSValueRef jsIn(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);

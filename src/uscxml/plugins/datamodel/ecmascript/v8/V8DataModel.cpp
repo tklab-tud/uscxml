@@ -176,35 +176,39 @@ void V8NodeListIndexedPropertyHandler(uint32_t index, const v8::PropertyCallback
 std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<V8DataModel> dm(new V8DataModel());
 	dm->_callbacks = callbacks;
+	dm->setup();
+	return dm;
+}
 
+void V8DataModel::setup() {
 	// TODO: we cannot use one isolate per thread as swig's type will be unknown :(
 	// We could register them by hand and avoid the _export_ globals in swig?
-	if (dm->_isolate == NULL) {
-		dm->_isolate = v8::Isolate::New();
+	if (_isolate == NULL) {
+		_isolate = v8::Isolate::New();
 	}
 
-	v8::Locker locker(dm->_isolate);
-	v8::Isolate::Scope isoScope(dm->_isolate);
+	v8::Locker locker(_isolate);
+	v8::Isolate::Scope isoScope(_isolate);
 
 	// Create a handle scope to hold the temporary references.
-	v8::HandleScope scope(dm->_isolate);
+	v8::HandleScope scope(_isolate);
 
 	// Create a template for the global object where we set the built-in global functions.
 	v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
 
 	// some free functions
 	global->Set(v8::String::NewSymbol("print"),
-	            v8::FunctionTemplate::New(dm->_isolate, jsPrint,v8::External::New(reinterpret_cast<void*>(dm.get()))));
+	            v8::FunctionTemplate::New(_isolate, jsPrint,v8::External::New(reinterpret_cast<void*>(this))));
 	global->Set(v8::String::NewSymbol("In"),
-	            v8::FunctionTemplate::New(dm->_isolate, jsIn, v8::External::New(reinterpret_cast<void*>(dm.get()))));
+	            v8::FunctionTemplate::New(_isolate, jsIn, v8::External::New(reinterpret_cast<void*>(this))));
 
-	v8::Local<v8::Context> context = v8::Context::New(dm->_isolate, NULL, global);
+	v8::Local<v8::Context> context = v8::Context::New(_isolate, NULL, global);
 
-	dm->_context.Reset(dm->_isolate, context);
+	_context.Reset(_isolate, context);
 
 	// Enter the new context so all the following operations take place within it.
 	v8::Context::Scope contextScope(context);
-	assert(dm->_isolate->GetCurrentContext() == context);
+	assert(_isolate->GetCurrentContext() == context);
 
 #ifndef NO_XERCESC
 
@@ -236,11 +240,11 @@ std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks
 	context->Global()->SetAccessor(v8::String::NewSymbol("_ioprocessors"),
 	                               V8DataModel::getIOProcessors,
 	                               V8DataModel::setWithException,
-	                               v8::External::New(reinterpret_cast<void*>(dm.get())));
+	                               v8::External::New(reinterpret_cast<void*>(this)));
 	context->Global()->SetAccessor(v8::String::NewSymbol("_invokers"),
 	                               V8DataModel::getInvokers,
 	                               V8DataModel::setWithException,
-	                               v8::External::New(reinterpret_cast<void*>(dm.get())));
+	                               v8::External::New(reinterpret_cast<void*>(this)));
 
 //    v8::Persistent<v8::Value, v8::CopyablePersistentTraits<v8::Value> > persistent(_isolate, context);
 
@@ -252,7 +256,7 @@ std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks
 
 	V8Document::V8DocumentPrivate* privData = new V8Document::V8DocumentPrivate();
 	privData->nativeObj = new Document<std::string>(interpreter->getDocument());
-	privData->dom = dm->_dom;
+	privData->dom = _dom;
 	docObj->SetInternalField(0, V8DOM::toExternal(privData));
 
 	context->Global()->Set(v8::String::New("document"), docObj);
@@ -273,10 +277,9 @@ std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks
 
 
 	// instantiate objects - we have to have a context for that!
-	dm->eval(Element<std::string>(), "_x = {};");
+	eval(Element<std::string>(), "_x = {};");
 #endif
 
-	return dm;
 }
 
 void V8DataModel::getAttribute(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {

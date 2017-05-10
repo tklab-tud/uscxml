@@ -86,6 +86,7 @@ public:
 	virtual std::string andExpressions(std::list<std::string>);
 
 protected:
+	virtual void setup();
 	Picoc _pc;
 };
 

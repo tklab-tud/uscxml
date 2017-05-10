@@ -60,33 +60,36 @@ std::shared_ptr<DataModelImpl> PromelaDataModel::create(DataModelCallbacks* call
 	std::shared_ptr<PromelaDataModel> dm(new PromelaDataModel());
 
 	dm->_callbacks = callbacks;
+	dm->setup();
+	return dm;
+}
 
+void PromelaDataModel::setup() {
 	// session id
 	Data sessionId;
 	sessionId.compound["type"] = Data("string", Data::VERBATIM);
-	sessionId.compound["value"] = Data(callbacks->getSessionId(), Data::VERBATIM);
-	dm->_variables["_sessionid"] = sessionId;
+	sessionId.compound["value"] = Data(_callbacks->getSessionId(), Data::VERBATIM);
+	_variables["_sessionid"] = sessionId;
 
 	// name
 	Data name;
 	name.compound["type"] = Data("string", Data::VERBATIM);
-	name.compound["value"] = Data(callbacks->getName(), Data::VERBATIM);
-	dm->_variables["_name"] = name;
+	name.compound["value"] = Data(_callbacks->getName(), Data::VERBATIM);
+	_variables["_name"] = name;
 
 	// ioprocessors
 	Data ioProcs;
 	ioProcs.compound["type"] = Data("compound", Data::VERBATIM);
 
-	std::map<std::string, IOProcessor> ioProcessors = callbacks->getIOProcessors();
+	std::map<std::string, IOProcessor> ioProcessors = _callbacks->getIOProcessors();
 	for (std::map<std::string, IOProcessor>::iterator iter = ioProcessors.begin(); iter != ioProcessors.end(); iter++) {
 		ioProcs.compound["value"].compound[iter->first] = iter->second.getDataModelVariables();
 	}
-	dm->_variables["_ioprocessors"] = ioProcs;
+	_variables["_ioprocessors"] = ioProcs;
 
-	dm->_lastMType = 0;
-	return dm;
+	_lastMType = 0;
+
 }
-
 
 void PromelaDataModel::setEvent(const Event& event) {
 	Data variable;

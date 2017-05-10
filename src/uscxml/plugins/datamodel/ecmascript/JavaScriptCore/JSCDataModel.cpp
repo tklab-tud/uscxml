@@ -246,9 +246,13 @@ JSValueRef JSCNodeListGetPropertyCallback(JSContextRef context, JSObjectRef obje
 
 std::shared_ptr<DataModelImpl> JSCDataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<JSCDataModel> dm(new JSCDataModel());
-
-	dm->_ctx = JSGlobalContextCreate(NULL);
 	dm->_callbacks = callbacks;
+	dm->setup();
+	return dm;
+}
+
+void JSCDataModel::setup() {
+	_ctx = JSGlobalContextCreate(NULL);
 
 #ifndef NO_XERCESC
 	JSObjectRef exports;
@@ -260,50 +264,48 @@ std::shared_ptr<DataModelImpl> JSCDataModel::create(DataModelCallbacks* callback
 	// not thread safe!
 	{
 		std::lock_guard<std::mutex> lock(_initMutex);
-		JSCDOM_initialize(dm->_ctx, &exports);
+		JSCDOM_initialize(_ctx, &exports);
 	}
 #endif
 
 	// introduce global functions as objects for private data
 	JSClassRef jsInClassRef = JSClassCreate(&jsInClassDef);
-	JSObjectRef jsIn = JSObjectMake(dm->_ctx, jsInClassRef, dm.get());
+	JSObjectRef jsIn = JSObjectMake(_ctx, jsInClassRef, this);
 	JSStringRef inName = JSStringCreateWithUTF8CString("In");
-	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), inName, jsIn, kJSPropertyAttributeNone, NULL);
+	JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), inName, jsIn, kJSPropertyAttributeNone, NULL);
 	JSStringRelease(inName);
 
 	JSClassRef jsPrintClassRef = JSClassCreate(&jsPrintClassDef);
-	JSObjectRef jsPrint = JSObjectMake(dm->_ctx, jsPrintClassRef, dm.get());
+	JSObjectRef jsPrint = JSObjectMake(_ctx, jsPrintClassRef, this);
 	JSStringRef printName = JSStringCreateWithUTF8CString("print");
-	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), printName, jsPrint, kJSPropertyAttributeNone, NULL);
+	JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), printName, jsPrint, kJSPropertyAttributeNone, NULL);
 	JSStringRelease(printName);
 
 	JSClassRef jsInvokerClassRef = JSClassCreate(&jsInvokersClassDef);
-	JSObjectRef jsInvoker = JSObjectMake(dm->_ctx, jsInvokerClassRef, dm.get());
+	JSObjectRef jsInvoker = JSObjectMake(_ctx, jsInvokerClassRef, this);
 	JSStringRef invokerName = JSStringCreateWithUTF8CString("_invokers");
-	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), invokerName, jsInvoker, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+	JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), invokerName, jsInvoker, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(invokerName);
 
 	JSClassRef jsIOProcClassRef = JSClassCreate(&jsIOProcessorsClassDef);
-	JSObjectRef jsIOProc = JSObjectMake(dm->_ctx, jsIOProcClassRef, dm.get());
+	JSObjectRef jsIOProc = JSObjectMake(_ctx, jsIOProcClassRef, this);
 	JSStringRef ioProcName = JSStringCreateWithUTF8CString("_ioprocessors");
-	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), ioProcName, jsIOProc, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+	JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), ioProcName, jsIOProc, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(ioProcName);
 
 	JSStringRef nameName = JSStringCreateWithUTF8CString("_name");
-	JSStringRef name = JSStringCreateWithUTF8CString(dm->_callbacks->getName().c_str());
-	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), nameName, JSValueMakeString(dm->_ctx, name), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+	JSStringRef name = JSStringCreateWithUTF8CString(_callbacks->getName().c_str());
+	JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), nameName, JSValueMakeString(_ctx, name), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(nameName);
 	JSStringRelease(name);
 
 	JSStringRef sessionIdName = JSStringCreateWithUTF8CString("_sessionid");
-	JSStringRef sessionId = JSStringCreateWithUTF8CString(dm->_callbacks->getSessionId().c_str());
-	JSObjectSetProperty(dm->_ctx, JSContextGetGlobalObject(dm->_ctx), sessionIdName, JSValueMakeString(dm->_ctx, sessionId), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
+	JSStringRef sessionId = JSStringCreateWithUTF8CString(_callbacks->getSessionId().c_str());
+	JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), sessionIdName, JSValueMakeString(_ctx, sessionId), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete, NULL);
 	JSStringRelease(sessionIdName);
 	JSStringRelease(sessionId);
 
-	dm->evalAsValue("_x = {};");
-
-	return dm;
+	evalAsValue("_x = {};");
 }
 
 void JSCDataModel::setEvent(const Event& event) {

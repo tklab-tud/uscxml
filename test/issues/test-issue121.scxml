@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="promela">
+	<datamodel>
+		<data id="var1" type="int" />
+	</datamodel>
+	<state id="s0" initial="s01">
+		<invoke src="test-issue121.child" type="http://www.w3.org/TR/scxml/" id="pOne">	
+			<param name="p_id" type="int" expr="1" />
+		</invoke>
+		<invoke src="test-issue121.child" type="http://www.w3.org/TR/scxml/" id="pTwo">	
+			<param name="p_id" type="int" expr="2" />
+		</invoke>
+		<state id="s01">
+			<transition event="Random_Event">
+				<assign location="var1" expr="_event.data.var1"/>
+				<log label="var1 value" expr="var1"/>
+			</transition>
+		</state>
+	</state>
+</scxml>
+	

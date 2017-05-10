@@ -86,6 +86,7 @@ public:
 	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 protected:
+	virtual void setup();
 
 	static int luaInFunction(lua_State * l);
 

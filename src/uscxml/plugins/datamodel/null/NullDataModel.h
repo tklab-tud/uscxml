@@ -101,6 +101,7 @@ public:
 	virtual void addExtension(DataModelExtension* ext) {}
 
 protected:
+	virtual void setup();
 
 };
 
