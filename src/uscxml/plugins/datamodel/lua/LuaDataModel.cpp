@@ -212,54 +212,7 @@ int LuaDataModel::luaInFunction(lua_State * l) {
 std::shared_ptr<DataModelImpl> LuaDataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<LuaDataModel> dm(new LuaDataModel());
 
-	dm->_callbacks = callbacks;
-	dm->_luaState = luaL_newstate();
-	luaL_openlibs(dm->_luaState);
-
-	try {
-		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(dm->_luaState, "require");
-		if (requireFunc.isFunction()) {
-			const luabridge::LuaRef& resultLxp = requireFunc("lxp");
-			const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
-
-			// MSVC compiler bug with implicit cast operators, see comments in LuaRef class
-			if ((bool)resultLxp && (bool)resultLxpLOM) {
-				_luaHasXMLParser = true;
-				luabridge::setGlobal(dm->_luaState, resultLxp, "lxp");
-				luabridge::setGlobal(dm->_luaState, resultLxpLOM, "lxp.lom");
-			}
-		}
-	} catch (luabridge::LuaException e) {
-		LOG(dm->_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
-	}
-
-	luabridge::getGlobalNamespace(dm->_luaState).beginClass<LuaDataModel>("DataModel").endClass();
-	luabridge::setGlobal(dm->_luaState, dm.get(), "__datamodel");
-
-	luabridge::getGlobalNamespace(dm->_luaState).addCFunction("In", luaInFunction);
-
-	luabridge::LuaRef ioProcTable = luabridge::newTable(dm->_luaState);
-	std::map<std::string, IOProcessor> ioProcs = dm->_callbacks->getIOProcessors();
-	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcs.begin();
-	while(ioProcIter != ioProcs.end()) {
-		Data ioProcData = ioProcIter->second.getDataModelVariables();
-		ioProcTable[ioProcIter->first] = getDataAsLua(dm->_luaState, ioProcData);
-		ioProcIter++;
-	}
-	luabridge::setGlobal(dm->_luaState, ioProcTable, "_ioprocessors");
-
-	luabridge::LuaRef invTable = luabridge::newTable(dm->_luaState);
-	std::map<std::string, Invoker> invokers = dm->_callbacks->getInvokers();
-	std::map<std::string, Invoker>::const_iterator invIter = invokers.begin();
-	while(invIter != invokers.end()) {
-		Data invData = invIter->second.getDataModelVariables();
-		invTable[invIter->first] = getDataAsLua(dm->_luaState, invData);
-		invIter++;
-	}
-	luabridge::setGlobal(dm->_luaState, invTable, "_invokers");
-
-	luabridge::setGlobal(dm->_luaState, dm->_callbacks->getName(), "_name");
-	luabridge::setGlobal(dm->_luaState, dm->_callbacks->getSessionId(), "_sessionid");
+	dm->doCreate(callbacks);
 
 	return dm;
 }
@@ -267,6 +220,58 @@ std::shared_ptr<DataModelImpl> LuaDataModel::create(DataModelCallbacks* callback
 LuaDataModel::~LuaDataModel() {
 	if (_luaState != NULL)
 		lua_close(_luaState);
+}
+
+void LuaDataModel::doCreate(DataModelCallbacks* callbacks) {
+	this->_callbacks = callbacks;
+	this->_luaState = luaL_newstate();
+	luaL_openlibs(this->_luaState);
+
+	try {
+		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(this->_luaState, "require");
+		if (requireFunc.isFunction()) {
+			const luabridge::LuaRef& resultLxp = requireFunc("lxp");
+			const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
+
+			// MSVC compiler bug with implicit cast operators, see comments in LuaRef class
+			if ((bool)resultLxp && (bool)resultLxpLOM) {
+				_luaHasXMLParser = true;
+				luabridge::setGlobal(this->_luaState, resultLxp, "lxp");
+				luabridge::setGlobal(this->_luaState, resultLxpLOM, "lxp.lom");
+			}
+		}
+	}
+	catch (luabridge::LuaException e) {
+		LOG(this->_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
+	}
+
+	luabridge::getGlobalNamespace(this->_luaState).beginClass<LuaDataModel>("DataModel").endClass();
+	luabridge::setGlobal(this->_luaState, this, "__datamodel");
+
+	luabridge::getGlobalNamespace(this->_luaState).addCFunction("In", luaInFunction);
+
+	luabridge::LuaRef ioProcTable = luabridge::newTable(this->_luaState);
+	std::map<std::string, IOProcessor> ioProcs = this->_callbacks->getIOProcessors();
+	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcs.begin();
+	while (ioProcIter != ioProcs.end()) {
+		Data ioProcData = ioProcIter->second.getDataModelVariables();
+		ioProcTable[ioProcIter->first] = getDataAsLua(this->_luaState, ioProcData);
+		ioProcIter++;
+	}
+	luabridge::setGlobal(this->_luaState, ioProcTable, "_ioprocessors");
+
+	luabridge::LuaRef invTable = luabridge::newTable(this->_luaState);
+	std::map<std::string, Invoker> invokers = this->_callbacks->getInvokers();
+	std::map<std::string, Invoker>::const_iterator invIter = invokers.begin();
+	while (invIter != invokers.end()) {
+		Data invData = invIter->second.getDataModelVariables();
+		invTable[invIter->first] = getDataAsLua(this->_luaState, invData);
+		invIter++;
+	}
+	luabridge::setGlobal(this->_luaState, invTable, "_invokers");
+
+	luabridge::setGlobal(this->_luaState, this->_callbacks->getName(), "_name");
+	luabridge::setGlobal(this->_luaState, this->_callbacks->getSessionId(), "_sessionid");
 }
 
 void LuaDataModel::addExtension(DataModelExtension* ext) {
@@ -484,6 +489,7 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 //        JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getNodeAsValue(data.node), 0, &exception);
 	} else {
 
+#if 0
 		// trigger error.execution for undefined locations, test286 test311
 		int retVals = luaEval(_luaState, location + " = " + location);
 		lua_pop(_luaState, retVals);
@@ -504,9 +510,14 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 
 		if (idPath.size() == 0)
 			return;
+#endif
 
 		luabridge::LuaRef lua = getDataAsLua(_luaState, data);
 
+		luabridge::setGlobal(_luaState, lua, "__tmpAssign");
+		evalAsScript(location + "= __tmpAssign");
+
+#if 0
 		if (idPath.size() == 1) {
 			// trivial case where we reference a simple toplevel identifier
 			luabridge::setGlobal(_luaState, lua, location.c_str());
@@ -559,7 +570,7 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 			}
 
 		}
-
+#endif
 //        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
 	}
 }

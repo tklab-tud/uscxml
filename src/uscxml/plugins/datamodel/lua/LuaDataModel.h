@@ -91,6 +91,8 @@ protected:
 	static int luaInFunction(lua_State * l);
 
 	lua_State* _luaState;
+
+	void doCreate(DataModelCallbacks* callbacks);
 };
 
 #ifdef BUILD_AS_PLUGINS
