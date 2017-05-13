@@ -211,24 +211,17 @@ int LuaDataModel::luaInFunction(lua_State * l) {
 
 std::shared_ptr<DataModelImpl> LuaDataModel::create(DataModelCallbacks* callbacks) {
 	std::shared_ptr<LuaDataModel> dm(new LuaDataModel());
-
-	dm->doCreate(callbacks);
-
+	dm->_callbacks = callbacks;
+	dm->setup();
 	return dm;
 }
 
-LuaDataModel::~LuaDataModel() {
-	if (_luaState != NULL)
-		lua_close(_luaState);
-}
-
-void LuaDataModel::doCreate(DataModelCallbacks* callbacks) {
-	this->_callbacks = callbacks;
-	this->_luaState = luaL_newstate();
-	luaL_openlibs(this->_luaState);
+void LuaDataModel::setup() {
+	_luaState = luaL_newstate();
+	luaL_openlibs(_luaState);
 
 	try {
-		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(this->_luaState, "require");
+		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(_luaState, "require");
 		if (requireFunc.isFunction()) {
 			const luabridge::LuaRef& resultLxp = requireFunc("lxp");
 			const luabridge::LuaRef& resultLxpLOM = requireFunc("lxp.lom");
@@ -236,42 +229,47 @@ void LuaDataModel::doCreate(DataModelCallbacks* callbacks) {
 			// MSVC compiler bug with implicit cast operators, see comments in LuaRef class
 			if ((bool)resultLxp && (bool)resultLxpLOM) {
 				_luaHasXMLParser = true;
-				luabridge::setGlobal(this->_luaState, resultLxp, "lxp");
-				luabridge::setGlobal(this->_luaState, resultLxpLOM, "lxp.lom");
+				luabridge::setGlobal(_luaState, resultLxp, "lxp");
+				luabridge::setGlobal(_luaState, resultLxpLOM, "lxp.lom");
 			}
 		}
+	} catch (luabridge::LuaException e) {
+		LOG(_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
 	}
-	catch (luabridge::LuaException e) {
-		LOG(this->_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
-	}
 
-	luabridge::getGlobalNamespace(this->_luaState).beginClass<LuaDataModel>("DataModel").endClass();
-	luabridge::setGlobal(this->_luaState, this, "__datamodel");
+	luabridge::getGlobalNamespace(_luaState).beginClass<LuaDataModel>("DataModel").endClass();
+	luabridge::setGlobal(_luaState, this, "__datamodel");
 
-	luabridge::getGlobalNamespace(this->_luaState).addCFunction("In", luaInFunction);
+	luabridge::getGlobalNamespace(_luaState).addCFunction("In", luaInFunction);
 
-	luabridge::LuaRef ioProcTable = luabridge::newTable(this->_luaState);
-	std::map<std::string, IOProcessor> ioProcs = this->_callbacks->getIOProcessors();
+	luabridge::LuaRef ioProcTable = luabridge::newTable(_luaState);
+	std::map<std::string, IOProcessor> ioProcs = _callbacks->getIOProcessors();
 	std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcs.begin();
-	while (ioProcIter != ioProcs.end()) {
+	while(ioProcIter != ioProcs.end()) {
 		Data ioProcData = ioProcIter->second.getDataModelVariables();
-		ioProcTable[ioProcIter->first] = getDataAsLua(this->_luaState, ioProcData);
+		ioProcTable[ioProcIter->first] = getDataAsLua(_luaState, ioProcData);
 		ioProcIter++;
 	}
-	luabridge::setGlobal(this->_luaState, ioProcTable, "_ioprocessors");
+	luabridge::setGlobal(_luaState, ioProcTable, "_ioprocessors");
 
-	luabridge::LuaRef invTable = luabridge::newTable(this->_luaState);
-	std::map<std::string, Invoker> invokers = this->_callbacks->getInvokers();
+	luabridge::LuaRef invTable = luabridge::newTable(_luaState);
+	std::map<std::string, Invoker> invokers = _callbacks->getInvokers();
 	std::map<std::string, Invoker>::const_iterator invIter = invokers.begin();
-	while (invIter != invokers.end()) {
+	while(invIter != invokers.end()) {
 		Data invData = invIter->second.getDataModelVariables();
-		invTable[invIter->first] = getDataAsLua(this->_luaState, invData);
+		invTable[invIter->first] = getDataAsLua(_luaState, invData);
 		invIter++;
 	}
-	luabridge::setGlobal(this->_luaState, invTable, "_invokers");
+	luabridge::setGlobal(_luaState, invTable, "_invokers");
 
-	luabridge::setGlobal(this->_luaState, this->_callbacks->getName(), "_name");
-	luabridge::setGlobal(this->_luaState, this->_callbacks->getSessionId(), "_sessionid");
+	luabridge::setGlobal(_luaState, _callbacks->getName(), "_name");
+	luabridge::setGlobal(_luaState, _callbacks->getSessionId(), "_sessionid");
+
+}
+
+LuaDataModel::~LuaDataModel() {
+	if (_luaState != NULL)
+		lua_close(_luaState);
 }
 
 void LuaDataModel::addExtension(DataModelExtension* ext) {
@@ -369,9 +367,7 @@ Data LuaDataModel::evalAsData(const std::string& content) {
 	return data;
 }
 
-void LuaDataModel::evalAsScript(const std::string& content) {
-	Data data;
-
+void LuaDataModel::eval(const std::string& content) {
 	std::string trimmedExpr = boost::trim_copy(content);
 
 	int retVals = luaEval(_luaState, trimmedExpr);
@@ -489,88 +485,13 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 //        JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getNodeAsValue(data.node), 0, &exception);
 	} else {
 
-#if 0
-		// trigger error.execution for undefined locations, test286 test311
-		int retVals = luaEval(_luaState, location + " = " + location);
-		lua_pop(_luaState, retVals);
-
-		std::list<std::pair<std::string, bool> > idPath;
-		size_t start = 0;
-		for (size_t i = 0; i < location.size(); i++) {
-			if (location[i] == '.' || location[i] == '[') {
-				idPath.push_back(std::make_pair(location.substr(start, i - start), false));
-				start = i + 1;
-			} else if (location[i] == ']') {
-				idPath.push_back(std::make_pair(location.substr(start, i - start), true));
-				start = i + 1;
-			}
-		}
-		if (start < location.size())
-			idPath.push_back(std::make_pair(location.substr(start, location.size() - start), false));
-
-		if (idPath.size() == 0)
-			return;
-#endif
 
 		luabridge::LuaRef lua = getDataAsLua(_luaState, data);
 
 		luabridge::setGlobal(_luaState, lua, "__tmpAssign");
-		evalAsScript(location + "= __tmpAssign");
+		eval(location + "= __tmpAssign");
 
-#if 0
-		if (idPath.size() == 1) {
-			// trivial case where we reference a simple toplevel identifier
-			luabridge::setGlobal(_luaState, lua, location.c_str());
 
-		} else {
-			auto globalId = idPath.front();
-			idPath.pop_front();
-
-			auto field = idPath.back();
-			idPath.pop_back();
-
-			luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.first.c_str());
-			luabridge::LuaRef value = topValue;
-
-			for (auto ident : idPath) {
-				if (!value.isTable())
-					value = luabridge::newTable(_luaState);
-
-				if (ident.second) {
-					luabridge::LuaRef tmp = value[strTo<long>(ident.first)];
-				} else {
-					luabridge::LuaRef tmp = value[ident];
-					value = tmp;
-				}
-			}
-			if (field.second) {
-				if (field.first.length() == 0) {
-					ERROR_EXECUTION_THROW("Subscript operator is empty");
-				}
-
-				if (!isNumeric(field.first.c_str(), 10) && field.first[0] != '"' && field.first[0] != '\'') {
-					// evaluate subscript as variable
-					Data subscript = evalAsData(field.first);
-					if (subscript.atom.length() > 0) {
-						field.first = subscript.atom;
-					} else {
-						ERROR_EXECUTION_THROW("Evaluated subscript operator '" + subscript.asJSON() + "' is invalid");
-					}
-				}
-
-				if (isNumeric(field.first.c_str(), 10)) {
-					// numeric array subscript
-					value[strTo<long>(field.first)] = lua;
-				} else {
-					// string array subscript
-					value[field.first] = lua;
-				}
-			} else {
-				value[field.first] = lua;
-			}
-
-		}
-#endif
 //        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
 	}
 }
