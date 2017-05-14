@@ -7,7 +7,7 @@ _event.data.  -->
   </datamodel>
   <state id="s0">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="3000" event="timeout"/>
+      <send event="timeout" delay="3s"/>
       <!-- in this case, 'test' will be placed in _scxmleventname.  The <param> should
  be used to populate _event.data -->
       <send event="test" targetexpr="_ioprocessors.basichttp.location" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">

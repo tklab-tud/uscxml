@@ -7,7 +7,7 @@ expression, it must raise an error -->
   </datamodel>
   <state id="s0">
     <onentry>
-      <assign location="Var1" expr="return"/>
+      <assign location="Var1" expr="return#"/>
       <raise event="foo"/>
     </onentry>
     <transition event="error.execution" target="pass"/>

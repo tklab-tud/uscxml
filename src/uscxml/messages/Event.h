@@ -23,13 +23,14 @@
 #include "uscxml/messages/Data.h"
 #include "uscxml/util/UUID.h"
 
-#define ERROR_PLATFORM_THROW(msg) \
+#define ERROR_PLATFORM_THROW(cause) \
 	uscxml::ErrorEvent e; \
 	e.name = "error.platform"; \
-	e.data.compound["cause"] = uscxml::Data(msg, uscxml::Data::VERBATIM); \
+	e.data.compound["cause"] = uscxml::Data(cause, uscxml::Data::VERBATIM); \
     e.data.compound["file"] = uscxml::Data(uscxml::toStr(__FILE__), uscxml::Data::VERBATIM); \
     e.data.compound["line"] = uscxml::Data(uscxml::toStr(__LINE__), uscxml::Data::INTERPRETED); \
-	throw e; \
+    e.eventType = uscxml::Event::PLATFORM; \
+	throw e;
 
 #define ERROR_EXECUTION(identifier, cause) \
 	uscxml::ErrorEvent identifier; \
@@ -77,10 +78,9 @@
 	throw exc;\
 }
 
-#define ERROR_EXECUTION_THROW3(evt,caption,node) \
+#define ERROR_EXECUTION_RETHROW(exc, caption, node) \
 {\
-	auto it = evt.data.compound.find("cause");	\
-	ERROR_EXECUTION2(exc,it!=evt.data.compound.end() ? it->second.atom : "",node); \
+    exc.data.compound["xpath"] = uscxml::Data(DOMUtils::xPathForNode(node), uscxml::Data::VERBATIM); \
 	exc.data.compound["caption"] = uscxml::Data(caption, uscxml::Data::VERBATIM); \
 	throw exc;\
 }

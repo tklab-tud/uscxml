@@ -15,7 +15,7 @@ it should not raise an error until it gets to s03 and evaluates the illegal expr
     </state>
     <state id="s03">
       <onentry>
-        <assign location="Var1" expr="return"/>
+        <assign location="Var1" expr="return#"/>
         <raise event="foo"/>
       </onentry>
       <transition event="error.execution" target="pass"/>

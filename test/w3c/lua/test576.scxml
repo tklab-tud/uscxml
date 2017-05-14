@@ -7,7 +7,7 @@ test that both are entered. -->
   </state>
   <state id="s1">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout" delay="1s"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <state id="s11" initial="s111">

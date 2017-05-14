@@ -73,7 +73,7 @@ transition to s1's default deep history state. We should end up in s122, generat
   </state>
   <state id="s3">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout" delay="1s"/>
     </onentry>
     <transition target="s0HistShallow"/>
   </state>

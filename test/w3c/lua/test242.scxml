@@ -4,7 +4,7 @@ either we get done.invoke in both cases or in neither case (in which case we tim
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout1" delay="1s"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <invoke type="http://www.w3.org/TR/scxml/" src="file:test242sub1.scxml"/>
@@ -13,7 +13,7 @@ either we get done.invoke in both cases or in neither case (in which case we tim
   </state>
   <state id="s02">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout2" delay="1s"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/">
       <!-- identical to test242sub1.scxml.  -->
@@ -29,7 +29,7 @@ either we get done.invoke in both cases or in neither case (in which case we tim
   </state>
   <state id="s03">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout3" delay="1s"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/">
       <!-- identical to test242sub1.scxml.  -->

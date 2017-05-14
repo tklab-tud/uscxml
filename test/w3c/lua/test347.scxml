@@ -17,7 +17,7 @@ and its parent process -->
       </content>
     </invoke>
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="20000" event="timeout"/>
+      <send delay="20s" event="timeout"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <state id="s01">

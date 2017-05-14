@@ -5,7 +5,7 @@ state machine is entered  -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0" initial="s01p">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout" delay="1s"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <parallel id="s01p">

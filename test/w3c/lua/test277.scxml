@@ -3,7 +3,7 @@
  we can assign to it later in state s1.  -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <datamodel>
-    <data id="Var1" expr="return"/>
+    <data id="Var1" expr="return#"/>
   </datamodel>
   <state id="s0">
     <onentry>

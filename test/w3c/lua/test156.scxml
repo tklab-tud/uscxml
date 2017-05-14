@@ -14,7 +14,7 @@ should cause an error, so var1 should be incremented only once -->
       <foreach item="Var2" array="Var3">
         <assign xmlns:scxml="http://www.w3.org/2005/07/scxml" location="Var1" expr="Var1 + 1"/>
         <!-- assign an illegal value to a non-existent var -->
-        <assign location="Var5" expr="return"/>
+        <assign location="Var5" expr="return#"/>
       </foreach>
     </onentry>
     <transition cond="Var1==1" target="pass"/>

@@ -3,7 +3,7 @@
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" datamodel="lua" version="1.0">
   <state id="s0">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="30000" event="timeout"/>
+      <send event="timeout" delay="30s"/>
       <send targetexpr="_ioprocessors.basichttp.location" type="http://www.w3.org/TR/scxml/#BasicHTTPEventProcessor">
         <content>this is some content</content>
       </send>

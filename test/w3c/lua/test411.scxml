@@ -6,7 +6,7 @@ timeout also indicates failure  -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <state id="s0" initial="s01">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="1000" event="timeout"/>
+      <send event="timeout" delay="1s"/>
       <if cond="In('s01')">
         <raise event="event1"/>
       </if>

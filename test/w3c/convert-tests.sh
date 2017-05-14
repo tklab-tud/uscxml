@@ -8,6 +8,13 @@ ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 cd $DIR
 
+if [ "$#" -lt 1 ]; then
+    echo "At least one datamodel needs to be specified:"
+    echo "   $0 ecma c89 lua jexl namespace xpath promela prolog"
+    exit 1
+fi
+
+
 while [ "$1" != "" ]; do
 	case $1 in
 		ecma )
@@ -83,6 +90,10 @@ if [ "$LUA" != "" ]; then
 
 	# x-www-form-urlencode will not preserve the type and we default to string
 	sed -i.orig 's/Var1==2/tonumber(Var1)==2/g' ./lua/test567.scxml
+  
+	# we can pass test562 even though it it ecmascript specific
+	sed -i.orig 's/datamodel=\"ecmascript\"/datamodel=\"lua\"/g' ./lua/test562.scxml
+  
 fi
 
 if [ "$NAMESPACE" != "" ]; then

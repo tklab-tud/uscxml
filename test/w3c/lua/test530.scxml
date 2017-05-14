@@ -13,7 +13,7 @@ is evaluated at the right time, we should get invoke.done, otherwise an error  -
           <final/>
         </scxml>
       </assign>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2s" event="timeout"/>
+      <send event="timeout" delay="2s"/>
     </onentry>
     <invoke type="http://www.w3.org/TR/scxml/">
       <content expr="Var1"/>

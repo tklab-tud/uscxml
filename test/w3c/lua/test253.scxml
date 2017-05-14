@@ -9,7 +9,7 @@ this process uses the scxml processor to send the message to it, otherwise failu
   </datamodel>
   <state id="s0" initial="s01">
     <onentry>
-      <send xmlns:scxml="http://www.w3.org/2005/07/scxml" delay="2000" event="timeout"/>
+      <send event="timeout" delay="2s"/>
     </onentry>
     <transition event="timeout" target="fail"/>
     <invoke type="scxml" id="foo">
