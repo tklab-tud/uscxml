@@ -700,8 +700,7 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool a
 					Data d = _callbacks->getAsData(contentSS.str());
 					if (!d.empty())
 						return d;
-				}
-				catch (ErrorEvent &) {
+				} catch (ErrorEvent &) {
 					return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
 				}
 			}

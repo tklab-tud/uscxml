@@ -173,10 +173,13 @@ public:
 	virtual Data evalAsData(const std::string& content) = 0;
 
 	/**
-	* evaluating script content without return
-	* @param mostly used in script content.
-	*/
-	virtual void eval(const std::string& content) { evalAsData(content); }
+	 * Evaluating an expression
+	 * We need an explicit 'eval' function for the LuaDataModel, see issue 118
+	 * @param expr An expression in the data-model's language.
+	 */
+	virtual void eval(const std::string& content) {
+		evalAsData(content);
+	}
 
 	/**
 	 * Evaluate a given expression as a boolean.

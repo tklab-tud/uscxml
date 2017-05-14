@@ -82,7 +82,7 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		// we are creating __tmpFunc
 		// then it will be assigned to data variable
 		luabridge::setGlobal(_luaState, lua, "__tmpFunc");
-		
+
 		data.atom = "__tmpFunc";
 		data.type = Data::INTERPRETED;
 	} else if(lua.isLightUserdata() || lua.isUserdata()) {
