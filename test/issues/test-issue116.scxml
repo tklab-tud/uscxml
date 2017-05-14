@@ -1,0 +1,17 @@
+<scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+	<datamodel>
+		<data expr="0" id="Var1"/>
+		<data id="ChangeVar1">
+function ()
+    print(&quot;We must not see it!&quot;)
+    Var1 = 555
+end
+		</data>
+	</datamodel>
+	<state id="StateShape1">
+		<transition cond="Var1==0" target="Pass"/>
+		<transition cond="Var1==555" target="Fail"/>
+	</state>
+	<final id="Pass"/>
+	<final id="Fail"/>
+</scxml>
