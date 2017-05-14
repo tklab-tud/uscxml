@@ -258,7 +258,7 @@ std::list<InterpreterIssue> Interpreter::validate() {
 static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
 	for (auto nIter = nodes.begin(); nIter != nodes.end(); nIter++) {
-        LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, kXMLCharId) ? ATTR(*nIter, kXMLCharId) : DOMUtils::xPathForNode(*nIter));
+		LOG(logger, USCXML_VERBATIM) << seperator << (HAS_ATTR(*nIter, kXMLCharId) ? ATTR(*nIter, kXMLCharId) : DOMUtils::xPathForNode(*nIter));
 		seperator = ", ";
 	}
 }

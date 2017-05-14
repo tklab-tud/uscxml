@@ -778,7 +778,7 @@ void JSCDataModel::handleException(JSValueRef exception) {
 	buffer.resize(maxSize);
 	JSStringGetUTF8CString(exceptionStringRef, &buffer[0], maxSize);
 	JSStringRelease(exceptionStringRef);
-	std::string exceptionMsg(buffer);
+	std::string exceptionMsg(buffer.c_str());
 
 	ERROR_EXECUTION_THROW(exceptionMsg);
 }
@@ -842,7 +842,7 @@ bool JSCDataModel::jsIOProcessorHasProp(JSContextRef ctx, JSObjectRef object, JS
 	std::string buffer;
 	buffer.resize(maxSize);
 	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
-	std::string prop(buffer);
+	std::string prop(buffer.c_str());
 
 	return ioProcessors.find(prop) != ioProcessors.end();
 }
@@ -856,7 +856,7 @@ JSValueRef JSCDataModel::jsIOProcessorGetProp(JSContextRef ctx, JSObjectRef obje
 	std::string buffer;
 	buffer.resize(maxSize);
 	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
-	std::string prop(buffer);
+	std::string prop(buffer.c_str());
 
 	if (ioProcessors.find(prop) != ioProcessors.end()) {
 		return INSTANCE->getDataAsValue(ioProcessors.find(prop)->second.getDataModelVariables());
@@ -886,7 +886,7 @@ bool JSCDataModel::jsInvokerHasProp(JSContextRef ctx, JSObjectRef object, JSStri
 	std::string buffer;
 	buffer.resize(maxSize);
 	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
-	std::string prop(buffer);
+	std::string prop(buffer.c_str());
 
 	return invokers.find(prop) != invokers.end();
 }
@@ -900,7 +900,7 @@ JSValueRef JSCDataModel::jsInvokerGetProp(JSContextRef ctx, JSObjectRef object, 
 	std::string buffer;
 	buffer.resize(maxSize);
 	JSStringGetUTF8CString(propertyName, &buffer[0], maxSize);
-	std::string prop(buffer);
+	std::string prop(buffer.c_str());
 
 	if (invokers.find(prop) != invokers.end()) {
 		return INSTANCE->getDataAsValue(invokers.find(prop)->second.getDataModelVariables());

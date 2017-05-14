@@ -66,7 +66,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 		} else if (HAS_ATTR(element, kXMLCharEvent)) {
 			sendEvent.name = ATTR(element, kXMLCharEvent);
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element eventexpr", element);
 	}
 
@@ -77,7 +77,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 		} else if (HAS_ATTR(element, kXMLCharTarget)) {
 			target = ATTR(element, kXMLCharTarget);
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e,"Syntax error in send element targetexpr", element);
 	}
 
@@ -88,7 +88,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 		} else if (HAS_ATTR(element, kXMLCharType)) {
 			type = ATTR(element, kXMLCharType);
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element typeexpr", element);
 	}
 
@@ -123,7 +123,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 				sendEvent.hideSendId = true;
 			}
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element idlocation", element);
 	}
 
@@ -147,14 +147,14 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 				LOG(_callbacks->getLogger(), USCXML_ERROR) << "Cannot make sense of delay value " << delay << ": does not end in 's' or 'ms'" << std::endl;
 			}
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element delayexpr", element);
 	}
 
 	try {
 		// namelist
 		processNameLists(sendEvent.namelist, element);
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element namelist", element);
 	}
 
@@ -162,7 +162,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 	try {
 		// params
 		processParams(sendEvent.params, element);
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element param expr", element);
 	}
 
@@ -172,7 +172,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 		if (contents.size() > 0) {
 			sendEvent.data = elementAsData(contents.front());
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element content", element);
 	}
 
@@ -430,14 +430,14 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		invokeId[invokeEvent.invokeid.size()] = 0;
 
 		element->setUserData(kXMLCharInvokeId, (void*)invokeId, NULL);
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in invoke element idlocation", element);
 	}
 
 	try {
 		// namelist
 		processNameLists(invokeEvent.namelist, element);
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element namelist", element);
 	}
 
@@ -445,7 +445,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 	try {
 		// params
 		processParams(invokeEvent.params, element);
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in send element param expr", element);
 	}
 
@@ -466,7 +466,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 			}
 #endif
 		}
-	} catch (Event e) {
+	} catch (ErrorEvent e) {
 		ERROR_EXECUTION_RETHROW(e, "Syntax error in invoke element content", element);
 	}
 
@@ -542,10 +542,10 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 			_callbacks->enqueueInternal(e);
 			//        std::cout << exc << std::endl;
 			//        throw e;
-        } catch (Event e) {
-            ERROR_EXECUTION_RETHROW(e, "Error in donedata element", doneData);
-        }
-        
+		} catch (Event e) {
+			ERROR_EXECUTION_RETHROW(e, "Error in donedata element", doneData);
+		}
+
 	}
 
 	_callbacks->enqueueInternal(doneEvent);
