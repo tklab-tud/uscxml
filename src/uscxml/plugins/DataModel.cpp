@@ -42,6 +42,10 @@ Data DataModel::evalAsData(const std::string& content) {
 	return _impl->evalAsData(content);
 }
 
+void DataModel::eval(const std::string& content) {
+	_impl->eval(content);
+}
+
 bool DataModel::evalAsBool(const std::string& expr) {
 	return _impl->evalAsBool(expr);
 }
