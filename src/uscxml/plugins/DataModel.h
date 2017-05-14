@@ -54,6 +54,8 @@ public:
 	virtual Data getAsData(const std::string& content);
 	/// @copydoc DataModelImpl::evalAsData()
 	virtual Data evalAsData(const std::string& content);
+	/// @copydoc DataModelImpl::eval()
+	virtual void eval(const std::string& content);
 	/// @copydoc DataModelImpl::evalAsBool()
 	virtual bool evalAsBool(const std::string& expr);
 

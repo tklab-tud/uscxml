@@ -23,6 +23,7 @@
 #include "uscxml/config.h"
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/interpreter/BasicEventQueue.h"
+#include "uscxml/interpreter/LoggingImpl.h"
 
 #include "uscxml/plugins/InvokerImpl.h"
 

@@ -67,7 +67,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			sendEvent.name = ATTR(element, kXMLCharEvent);
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element eventexpr", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element eventexpr", element);
 	}
 
 	try {
@@ -78,7 +78,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			target = ATTR(element, kXMLCharTarget);
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element targetexpr", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element targetexpr", element);
 	}
 
 	try {
@@ -89,7 +89,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			type = ATTR(element, kXMLCharType);
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element typeexpr", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element typeexpr", element);
 	}
 
 	try {
@@ -124,7 +124,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			}
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element idlocation", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element idlocation", element);
 	}
 
 	try {
@@ -148,14 +148,14 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			}
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element delayexpr", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element delayexpr", element);
 	}
 
 	try {
 		// namelist
 		processNameLists(sendEvent.namelist, element);
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element namelist", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element namelist", element);
 	}
 
 
@@ -163,7 +163,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 		// params
 		processParams(sendEvent.params, element);
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element param expr", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element param expr", element);
 	}
 
 	try {
@@ -173,7 +173,7 @@ void BasicContentExecutor::processSend(XERCESC_NS::DOMElement* element) {
 			sendEvent.data = elementAsData(contents.front());
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element content", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element content", element);
 	}
 
 	//        if (sendReq->dom) {
@@ -291,7 +291,7 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
 	// download as necessary
 	std::string scriptContent(X(content->getTextContent()));
-	_callbacks->evalAsData(scriptContent);
+	_callbacks->eval(scriptContent);
 
 }
 
@@ -431,14 +431,14 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 
 		element->setUserData(kXMLCharInvokeId, (void*)invokeId, NULL);
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in invoke element idlocation", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in invoke element idlocation", element);
 	}
 
 	try {
 		// namelist
 		processNameLists(invokeEvent.namelist, element);
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element namelist", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element namelist", element);
 	}
 
 
@@ -446,7 +446,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		// params
 		processParams(invokeEvent.params, element);
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in send element param expr", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in send element param expr", element);
 	}
 
 	try {
@@ -467,7 +467,7 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 #endif
 		}
 	} catch (Event e) {
-		ERROR_EXECUTION_THROW2("Syntax error in invoke element content", element);
+		ERROR_EXECUTION_THROW3(e,"Syntax error in invoke element content", element);
 	}
 
 	// autoforward
@@ -513,7 +513,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 				// namelist
 				processNameLists(doneEvent.namelist, doneData);
 			} catch (Event e) {
-				ERROR_EXECUTION_THROW2("Syntax error in donedata element namelist", doneData);
+				ERROR_EXECUTION_THROW3(e,"Syntax error in donedata element namelist", doneData);
 			}
 
 
@@ -521,7 +521,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 				// params
 				processParams(doneEvent.params, doneData);
 			} catch (Event e) {
-				ERROR_EXECUTION_THROW2("Syntax error in donedata element param expr", doneData);
+				ERROR_EXECUTION_THROW3(e,"Syntax error in donedata element param expr", doneData);
 			}
 
 			try {
@@ -531,7 +531,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 					doneEvent.data = elementAsData(contents.front());
 				}
 			} catch (Event e) {
-				ERROR_EXECUTION_THROW2("Syntax error in donedata element content", doneData);
+				ERROR_EXECUTION_THROW3(e,"Syntax error in donedata element content", doneData);
 			}
 
 		} catch (ErrorEvent exc) {
@@ -691,9 +691,19 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool a
 				contentSS << X((*textIter)->getNodeValue());
 			}
 
+			// this must be handled in getAsData
 			// test294, test562
 			if (LOCALNAME(element) == "content") {
-				return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
+				// need first try getAsData because how to pass 179 ?
+				try {
+					// test153, we need to throw for test150 in promela
+					Data d = _callbacks->getAsData(contentSS.str());
+					if (!d.empty())
+						return d;
+				}
+				catch (ErrorEvent &) {
+					return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
+				}
 			}
 
 			if (asExpression) // not actually used, but likely expected

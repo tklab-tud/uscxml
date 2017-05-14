@@ -79,9 +79,12 @@ static int luaEval(lua_State* luaState, const std::string& expr) {
 static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 	Data data;
 	if (lua.isFunction()) {
-		// TODO: this might lead to a stack-overflow
-		luabridge::LuaRef luaEvald = lua();
-		return getLuaAsData(_luaState, luaEvald);
+		// we are creating __tmpFunc
+		// then it will be assigned to data variable
+		luabridge::setGlobal(_luaState, lua, "__tmpFunc");
+		
+		data.atom = "__tmpFunc";
+		data.type = Data::INTERPRETED;
 	} else if(lua.isLightUserdata() || lua.isUserdata()) {
 		// not sure what to do
 	} else if(lua.isThread()) {
@@ -353,49 +356,23 @@ void LuaDataModel::setEvent(const Event& event) {
 
 Data LuaDataModel::evalAsData(const std::string& content) {
 	Data data;
-	ErrorEvent originalError;
 
 	std::string trimmedExpr = boost::trim_copy(content);
 
-	try {
-		int retVals = luaEval(_luaState, "return(" + trimmedExpr + ")");
-		if (retVals == 1) {
-			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
-		}
-		lua_pop(_luaState, retVals);
-		return data;
-	} catch (ErrorEvent e) {
-		originalError = e;
+	int retVals = luaEval(_luaState, "return(" + trimmedExpr + ")");
+	if (retVals == 1) {
+		data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
 	}
-
-	int retVals = 0;
-	try {
-		// evaluate again without the return()
-		retVals = luaEval(_luaState, trimmedExpr);
-	} catch (ErrorEvent e) {
-		throw originalError; // we will assume syntax error and throw
-	}
-
-#if 1
-	// Note: Empty result is not an error test302, but how to do test488?
-	if (retVals == 0 && !isValidSyntax(trimmedExpr)) {
-		throw originalError; // we will assume syntax error and throw
-	}
-#endif
-
-	try {
-		if (retVals == 1) {
-			data = getLuaAsData(_luaState, luabridge::LuaRef::fromStack(_luaState, -1));
-		}
-		lua_pop(_luaState, retVals);
-		return data;
-
-	} catch (ErrorEvent e) {
-		throw e; // we will assume syntax error and throw
-	}
-
-
+	lua_pop(_luaState, retVals);
 	return data;
+}
+
+void LuaDataModel::eval(const std::string& content) {
+	std::string trimmedExpr = boost::trim_copy(content);
+
+	int retVals = luaEval(_luaState, trimmedExpr);
+
+	lua_pop(_luaState, retVals);
 }
 
 bool LuaDataModel::isValidSyntax(const std::string& expr) {
@@ -508,81 +485,12 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 //        JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getNodeAsValue(data.node), 0, &exception);
 	} else {
 
-		// trigger error.execution for undefined locations, test286 test311
-		int retVals = luaEval(_luaState, location + " = " + location);
-		lua_pop(_luaState, retVals);
-
-		std::list<std::pair<std::string, bool> > idPath;
-		size_t start = 0;
-		for (size_t i = 0; i < location.size(); i++) {
-			if (location[i] == '.' || location[i] == '[') {
-				idPath.push_back(std::make_pair(location.substr(start, i - start), false));
-				start = i + 1;
-			} else if (location[i] == ']') {
-				idPath.push_back(std::make_pair(location.substr(start, i - start), true));
-				start = i + 1;
-			}
-		}
-		if (start < location.size())
-			idPath.push_back(std::make_pair(location.substr(start, location.size() - start), false));
-
-		if (idPath.size() == 0)
-			return;
 
 		luabridge::LuaRef lua = getDataAsLua(_luaState, data);
 
-		if (idPath.size() == 1) {
-			// trivial case where we reference a simple toplevel identifier
-			luabridge::setGlobal(_luaState, lua, location.c_str());
+		luabridge::setGlobal(_luaState, lua, "__tmpAssign");
+		eval(location + "= __tmpAssign");
 
-		} else {
-			auto globalId = idPath.front();
-			idPath.pop_front();
-
-			auto field = idPath.back();
-			idPath.pop_back();
-
-			luabridge::LuaRef topValue = luabridge::getGlobal(_luaState, globalId.first.c_str());
-			luabridge::LuaRef value = topValue;
-
-			for (auto ident : idPath) {
-				if (!value.isTable())
-					value = luabridge::newTable(_luaState);
-
-				if (ident.second) {
-					luabridge::LuaRef tmp = value[strTo<long>(ident.first)];
-				} else {
-					luabridge::LuaRef tmp = value[ident];
-					value = tmp;
-				}
-			}
-			if (field.second) {
-				if (field.first.length() == 0) {
-					ERROR_EXECUTION_THROW("Subscript operator is empty");
-				}
-
-				if (!isNumeric(field.first.c_str(), 10) && field.first[0] != '"' && field.first[0] != '\'') {
-					// evaluate subscript as variable
-					Data subscript = evalAsData(field.first);
-					if (subscript.atom.length() > 0) {
-						field.first = subscript.atom;
-					} else {
-						ERROR_EXECUTION_THROW("Evaluated subscript operator '" + subscript.asJSON() + "' is invalid");
-					}
-				}
-
-				if (isNumeric(field.first.c_str(), 10)) {
-					// numeric array subscript
-					value[strTo<long>(field.first)] = lua;
-				} else {
-					// string array subscript
-					value[field.first] = lua;
-				}
-			} else {
-				value[field.first] = lua;
-			}
-
-		}
 
 //        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
 	}

@@ -77,6 +77,14 @@
 	throw exc;\
 }
 
+#define ERROR_EXECUTION_THROW3(evt,caption,node) \
+{\
+	auto it = evt.data.compound.find("cause");	\
+	ERROR_EXECUTION2(exc,it!=evt.data.compound.end() ? it->second.atom : "",node); \
+	exc.data.compound["caption"] = uscxml::Data(caption, uscxml::Data::VERBATIM); \
+	throw exc;\
+}
+
 #define ERROR_COMMUNICATION_THROW(cause) \
 {\
 	ERROR_COMMUNICATION(exc, cause); \
