@@ -9,9 +9,9 @@ end
 		</data>
 	</datamodel>
 	<state id="StateShape1">
-		<transition cond="Var1==0" target="Pass"/>
-		<transition cond="Var1==555" target="Fail"/>
+		<transition cond="Var1==0" target="pass"/>
+		<transition cond="Var1==555" target="fail"/>
 	</state>
-	<final id="Pass"/>
-	<final id="Fail"/>
+	<final id="pass"/>
+	<final id="fail"/>
 </scxml>

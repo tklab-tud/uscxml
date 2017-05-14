@@ -409,6 +409,10 @@ void PromelaDataModel::setEvent(const Event& event) {
 		case PML_NAME: {
 			Data d = getVariable(node);
 			if (d.atom.size() != 0)
+                // fixes issue 127
+                if (isNumeric(d.atom.c_str(), 10)) {
+                    return Data(d.atom, Data::VERBATIM);
+                }
 				return Data(d.asJSON(), Data::VERBATIM);
 			if (d.type == Data::INTERPRETED && d.atom[0] == '\'' && d.atom[d.atom.size() - 1] == '\'')
 				return Data(d.atom.substr(1, d.atom.size() - 2), Data::VERBATIM);

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s01" version="1.0" datamodel="promela">
+	<datamodel>
+		<data id="var1" type="int" expr="0"/>
+		<data id="var2" type="int" expr="2"/>
+		<data id="var3" type="int" expr="2"/>
+	</datamodel>
+		<state id="s01">
+			<onentry>
+			<assign location="var1" type="int" expr="var3"/>  <!--on substituting expr = "var3 + 0 ". SCXML will pass-->
+			<log label="var1" expr="var1"/>
+			<assign location="var2" type="int" expr="var3 + 1"/>
+			<log label="var2" expr="var2"/>
+			</onentry>
+			<transition cond="var1 == 2"  target="pass" />	
+			<transition target="fail" />	
+		</state>
+	<final id="pass">
+	<onentry>
+		<log label="result" expr="'pass'"/>
+	</onentry>
+	</final>
+	<final id="fail">
+	<onentry>
+		<log label="result" expr="'fail'"/>
+	</onentry>
+	</final>
+</scxml>
+	

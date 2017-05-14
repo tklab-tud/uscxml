@@ -512,7 +512,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 			try {
 				// namelist
 				processNameLists(doneEvent.namelist, doneData);
-			} catch (Event e) {
+			} catch (ErrorEvent e) {
 				ERROR_EXECUTION_RETHROW(e, "Syntax error in donedata element namelist", doneData);
 			}
 
@@ -520,7 +520,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 			try {
 				// params
 				processParams(doneEvent.params, doneData);
-			} catch (Event e) {
+			} catch (ErrorEvent e) {
 				ERROR_EXECUTION_RETHROW(e, "Syntax error in donedata element param expr", doneData);
 			}
 
@@ -530,7 +530,7 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 				if (contents.size() > 0) {
 					doneEvent.data = elementAsData(contents.front());
 				}
-			} catch (Event e) {
+			} catch (ErrorEvent e) {
 				ERROR_EXECUTION_RETHROW(e, "Syntax error in donedata element content", doneData);
 			}
 
@@ -542,7 +542,10 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 			_callbacks->enqueueInternal(e);
 			//        std::cout << exc << std::endl;
 			//        throw e;
-		}
+        } catch (Event e) {
+            ERROR_EXECUTION_RETHROW(e, "Error in donedata element", doneData);
+        }
+        
 	}
 
 	_callbacks->enqueueInternal(doneEvent);
