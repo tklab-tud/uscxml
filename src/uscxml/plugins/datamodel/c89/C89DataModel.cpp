@@ -25,7 +25,6 @@
 
 #include "uscxml/messages/Event.h"
 #include "uscxml/util/DOM.h"
-#include <easylogging++.h>
 
 namespace uscxml {
 
@@ -38,7 +37,7 @@ std::shared_ptr<DataModelImpl> C89DataModel::create(DataModelCallbacks* callback
 	return dm;
 }
 
-C89DataModel::setup() {
+void C89DataModel::setup() {
 	PicocInitialise(&_pc, PICOC_STACK_SIZE);
 	PicocIncludeAllSystemHeaders(&_pc);
 
@@ -79,10 +78,14 @@ bool C89DataModel::isDeclared(const std::string& expr) {
 }
 
 
-void C89DataModel::assign(const std::string& location, const Data& data) {
+void C89DataModel::assign(const std::string& location,
+                          const Data& data,
+                          const std::map<std::string, std::string>& attr) {
 }
 
-void C89DataModel::init(const std::string& location, const Data& data) {
+void C89DataModel::init(const std::string& location,
+                        const Data& data,
+                        const std::map<std::string, std::string>& attr) {
 }
 
 bool C89DataModel::evalAsBool(const std::string& expr) {

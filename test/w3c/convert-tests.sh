@@ -122,6 +122,10 @@ find ./prolog -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./prolog -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
 find ./prolog -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
 
+find ./c89 -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+find ./c89 -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+find ./c89 -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+
 find ./lua -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./lua -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
 find ./lua -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv

@@ -23,7 +23,10 @@
 #include "uscxml/plugins/DataModelImpl.h"
 #include <list>
 
+#ifndef WIN32
 #define UNIX_HOST
+#endif
+
 #define PICOC_STACK_SIZE (128*1024)              /* space for the the stack */
 
 extern "C" {
@@ -80,8 +83,13 @@ public:
 
 	virtual bool isDeclared(const std::string& expr);
 
-	virtual void assign(const std::string& location, const Data& data);
-	virtual void init(const std::string& location, const Data& data);
+	virtual void assign(const std::string& location,
+	                    const Data& data,
+	                    const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
+
+	virtual void init(const std::string& location,
+	                  const Data& data,
+	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 	virtual std::string andExpressions(std::list<std::string>);
 
