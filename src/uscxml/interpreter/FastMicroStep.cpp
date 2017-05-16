@@ -725,6 +725,9 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 				for (auto invIter = USCXML_GET_STATE(i).invoke.begin(); invIter != USCXML_GET_STATE(i).invoke.end(); invIter++) {
 					try {
 						_callbacks->invoke(*invIter);
+					} catch (ErrorEvent e) {
+						LOG(_callbacks->getLogger(), USCXML_WARN) << e;
+						// TODO: Shall we deliver the event into the interpreter runtime?
 					} catch (...) {
 					}
 				}
