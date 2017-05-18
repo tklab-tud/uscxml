@@ -34,7 +34,13 @@ BasicEventQueue::~BasicEventQueue() {
 Event BasicEventQueue::dequeue(size_t blockMs) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
-	if (blockMs > 0) {
+	if (blockMs == std::numeric_limits<size_t>::max()) {
+		// handle "forever" explicitly, see comments below
+		while (_queue.empty()) {
+			_cond.wait(_mutex);
+		}
+
+	} else if (blockMs > 0) {
 		using namespace std::chrono;
 
 		// TODO: do read http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2661.htm
@@ -43,6 +49,15 @@ Event BasicEventQueue::dequeue(size_t blockMs) {
 
 		// now + milliseconds(blockMs) may not have fitted into a duration type - limit to maximum duration
 		if (blockMs > (size_t)(system_clock::duration::max().count() - duration_cast<milliseconds>(now.time_since_epoch()).count())) {
+			/**
+			 * Some compilers do not like to wait_until system_clock::time_point::max():
+			 * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58931
+			 * http://stackoverflow.com/questions/39041450/stdcondition-variable-wait-until-surprising-behaviour
+			 *
+			 * See also:
+			 * https://github.com/tklab-tud/uscxml/issues/101
+			 * https://github.com/tklab-tud/uscxml/issues/132
+			 */
 			endTime = system_clock::time_point::max();
 		}
 
