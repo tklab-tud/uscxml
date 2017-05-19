@@ -20,6 +20,7 @@
 #include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <mutex>
 
 #include "UUID.h"
 
@@ -27,8 +28,13 @@ namespace uscxml {
 
 // hide from public header
 boost::uuids::random_generator uuidGen;
+std::mutex uuidMutex;
 
 std::string UUID::getUUID() {
+	// boost.random objects are not guaranteed to be thread-safe
+	// see issue 131
+	std::lock_guard<std::mutex> lock(uuidMutex);
+
 	boost::uuids::uuid uuid = uuidGen();
 	std::ostringstream os;
 	os << uuid;

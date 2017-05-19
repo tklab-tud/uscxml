@@ -1,11 +1,12 @@
 #!/bin/sh
+set -e
 
 ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 CWD=`pwd`
 
 BOOST_DIR=$1
-if [ ! -d ${BOOST_DIR} ]; then
+if [ ! -d "$BOOST_DIR" ] || [ ! -x "$BOOST_DIR" ]; then
 	echo "First argument is supposed to be the path to the boost source code"
 	exit
 fi
