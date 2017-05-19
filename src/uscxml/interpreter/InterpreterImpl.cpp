@@ -295,6 +295,29 @@ SCXML_STOP_SEARCH:
 			_name = _baseURL.pathComponents().back();
 		}
 
+		// download all script, see issue 134
+		std::list<DOMElement*> scripts = DOMUtils::filterChildElements(_xmlPrefix + "script", _scxml, true);
+		for (auto script : scripts) {
+			if (HAS_ATTR(script, kXMLCharSource)) {
+				std::string src = ATTR(script, kXMLCharSource);
+				std::string contents;
+				if (src.size() > 0) {
+					URL url(src);
+					if (!url.isAbsolute()) {
+						url = URL::resolve(url, _baseURL);
+					}
+					contents = url.getInContent();
+				} else {
+					ERROR_COMMUNICATION2(exc, "Empty source attribute", script);
+					throw exc;
+				}
+
+				XERCESC_NS::DOMText* scriptText = _document->createTextNode(X(contents));
+				XERCESC_NS::DOMNode* newNode = _document->importNode(scriptText, true);
+				script->appendChild(newNode);
+			}
+		}
+
 		_binding = (HAS_ATTR(_scxml, kXMLCharBinding) && iequals(ATTR(_scxml, kXMLCharBinding), "late") ? LATE : EARLY);
 
 	}

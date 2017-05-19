@@ -1,0 +1,14 @@
+<scxml datamodel="ecmascript">
+	<datamodel>
+		<data id="Var1" expr="0" />
+	</datamodel>
+	<state id="s0">
+		<onentry>
+			<script src="test-issue134.js"/>
+		</onentry>
+		<transition cond="Var1 == 1" target="pass" />
+		<transition cond="Var1 != 1" target="fail" />
+	</state>
+	<final id="pass" />
+	<final id="fail" />
+</scxml>

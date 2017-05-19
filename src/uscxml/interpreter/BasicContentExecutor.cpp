@@ -289,7 +289,7 @@ void BasicContentExecutor::processLog(XERCESC_NS::DOMElement* content) {
 }
 
 void BasicContentExecutor::processScript(XERCESC_NS::DOMElement* content) {
-	// download as necessary
+	// contents were already downloaded in setupDOM, see to SCXML rec 5.8
 	std::string scriptContent(X(content->getTextContent()));
 	_callbacks->eval(scriptContent);
 
