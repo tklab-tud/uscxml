@@ -939,6 +939,9 @@ void URLFetcher::perform() {
 			if (err != CURLM_OK) {
 				LOGD(USCXML_WARN) << "curl_multi_timeout: " << curl_multi_strerror(err) << std::endl;
 			}
+			// select on windows return -1, but this will make progress, see
+			// https://curl.haxx.se/mail/lib-2006-10/0100.html
+			while(CURLM_CALL_MULTI_PERFORM == curl_multi_perform(_multiHandle, &stillRunning));
 		}
 
 		if(curlTimeOut >= 0) {
@@ -964,6 +967,8 @@ void URLFetcher::perform() {
 		switch(rc) {
 		case -1: {
 			/* select error */
+#if 0
+            // this is not an actual error - there was just nothing to process
 #ifdef _WIN32
 			char *s = NULL;
 			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -972,6 +977,7 @@ void URLFetcher::perform() {
 			              (LPSTR)&s, 0, NULL);
 			LOGD(USCXML_WARN) << "select: " << s << std::endl;
 			LocalFree(s);
+#endif
 #endif
 			break;
 		}
