@@ -369,6 +369,23 @@ void BasicContentExecutor::process(XERCESC_NS::DOMElement* block) {
 			processLog(block);
 		} else if (iequals(tagName, xmlPrefix + "script")) {
 			processScript(block);
+		} else if (Factory::getInstance()->hasExecutableContent(LOCALNAME(block), X(block->getNamespaceURI()))) {
+			// custom executable content, ask the factory about it!
+			if (_customExecContent.find(block) == _customExecContent.end()) {
+				_customExecContent[block] = _callbacks->createExecutableContent(LOCALNAME(block), X(block->getNamespaceURI()));
+			}
+			_customExecContent[block].enterElement(block);
+
+			// process custom element's children?
+			if (_customExecContent[block].processChildren()) {
+				std::list<DOMNode*> childElems = DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, block, false);
+				if(childElems.size() > 0) {
+					for(auto elemIter = childElems.begin(); elemIter != childElems.end(); elemIter++) {
+						process(static_cast<DOMElement*>(*elemIter));
+					}
+				}
+			}
+			_customExecContent[block].exitElement(block);
 		} else {
 			LOG(_callbacks->getLogger(), USCXML_ERROR) << tagName << std::endl;
 			assert(false);

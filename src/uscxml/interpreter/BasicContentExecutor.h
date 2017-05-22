@@ -21,6 +21,7 @@
 #define BASICCONTENTEXECUTOR_H_B873199D
 
 #include "ContentExecutorImpl.h"
+#include "uscxml/plugins/ExecutableContent.h"
 
 namespace uscxml {
 
@@ -58,6 +59,7 @@ protected:
 	void processNameLists(std::map<std::string, Data>& nameMap, XERCESC_NS::DOMElement* element);
 	void processParams(std::multimap<std::string, Data>& paramMap, XERCESC_NS::DOMElement* element);
 
+	std::map<XERCESC_NS::DOMElement*, ExecutableContent> _customExecContent;
 };
 
 }

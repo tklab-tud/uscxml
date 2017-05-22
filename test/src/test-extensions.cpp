@@ -5,6 +5,7 @@
 #include "uscxml/interpreter/BasicDelayedEventQueue.h"
 #include "uscxml/PausableDelayedEventQueue.h"
 #include "uscxml/ExtendedLuaDataModel.h"
+#include "uscxml/CustomExecutableContent.h"
 
 #include <event2/util.h>                // for evutil_socket_t
 
@@ -27,6 +28,7 @@ class MyPausableDelayedEventQueue : public PausableDelayedEventQueue {
 		return nestedDelayQueue;
 	}
 };
+
 
 
 // from issue 96:
@@ -108,7 +110,6 @@ bool testPausableEventQueue() {
 
 }
 
-
 static const char *customLuaExtension =
     "<scxml datamodel=\"lua\">"
     "  <script>"
@@ -128,7 +129,69 @@ bool testLuaExtension() {
 	return true;
 }
 
+static const char *customExecContent =
+    "<scxml>"
+    "  <state>"
+    "    <onentry>"
+    "      <custom />"
+    "    </onentry>"
+    "  </state>"
+    "</scxml>"
+    ;
+
+bool testCustomExecContent() {
+	Factory::getInstance()->registerExecutableContent(new CustomExecutableContent());
+	Interpreter exContent = Interpreter::fromXML(customExecContent, "");
+	InterpreterState state;
+
+	while ((state = exContent.step(0)) != USCXML_IDLE) {}
+
+	return true;
+}
+
+class CustomExecutableContentNS : public ExecutableContentImpl {
+public:
+	~CustomExecutableContentNS() {};
+	virtual std::shared_ptr<ExecutableContentImpl> create(uscxml::InterpreterImpl* interpreter) {
+		return std::shared_ptr<ExecutableContentImpl>(new CustomExecutableContentNS());
+	}
+	virtual std::string getLocalName() {
+		return "custom";
+	}
+	virtual std::string getNamespace() {
+		return "http://www.example.com/custom";
+	}
+
+	virtual void enterElement(XERCESC_NS::DOMElement* node) {
+		std::cout << "Entering customNS element" << std::endl;
+	}
+	virtual void exitElement(XERCESC_NS::DOMElement* node) {
+		std::cout << "Exiting customNS element" << std::endl;
+	}
+};
+
+static const char *customExecContentNS =
+    "<scxml xmlns:custom=\"http://www.example.com/custom\">"
+    "  <state>"
+    "    <onentry>"
+    "      <custom:custom />"
+    "    </onentry>"
+    "  </state>"
+    "</scxml>"
+    ;
+
+bool testCustomExecContentNS() {
+	Factory::getInstance()->registerExecutableContent(new CustomExecutableContentNS());
+	Interpreter exContent = Interpreter::fromXML(customExecContentNS, "");
+	InterpreterState state;
+
+	while ((state = exContent.step(0)) != USCXML_IDLE) {}
+
+	return true;
+}
+
 int main(int argc, char** argv) {
-	testLuaExtension();
+//	testLuaExtension();
 //	testPausableEventQueue();
+	testCustomExecContentNS();
 }

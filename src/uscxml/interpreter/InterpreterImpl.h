@@ -33,6 +33,7 @@
 #include "uscxml/plugins/DataModelImpl.h"
 #include "uscxml/plugins/IOProcessorImpl.h"
 #include "uscxml/plugins/InvokerImpl.h"
+#include "uscxml/plugins/ExecutableContent.h"
 #include "uscxml/interpreter/MicroStepImpl.h"
 #include "uscxml/interpreter/ContentExecutorImpl.h"
 #include "uscxml/interpreter/EventQueue.h"
@@ -212,6 +213,11 @@ public:
 	virtual const Event& getCurrentEvent() {
 		return _currEvent;
 	}
+
+	virtual ExecutableContent createExecutableContent(const std::string& localName, const std::string& nameSpace) {
+		return Factory::getInstance()->createExecutableContent(localName, nameSpace, this);
+	}
+
 
 	/**
 	 IOProcessorCallbacks

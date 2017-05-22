@@ -25,6 +25,7 @@
 #include "uscxml/messages/Event.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
 #include "uscxml/interpreter/Logging.h"
+#include "uscxml/plugins/ExecutableContent.h"
 
 #include <string>
 #include <set>
@@ -77,6 +78,8 @@ public:
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
 	virtual Interpreter getInterpreter() = 0;
 	virtual Logger getLogger() = 0;
+
+	virtual ExecutableContent createExecutableContent(const std::string& localName, const std::string& nameSpace) = 0;
 
 };
 

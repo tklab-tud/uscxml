@@ -57,7 +57,9 @@ public:
 	}
 	virtual void enterElement(XERCESC_NS::DOMElement* node) = 0; ///< Invoked when entering the element as part of evaluating executable content.
 	virtual void exitElement(XERCESC_NS::DOMElement* node) = 0; ///< Invoked when exiting the element as part of evaluating executable content.
-	virtual bool processChildren() = 0; ///< Whether or not the interpreter should process this elements children.
+	virtual bool processChildren() {
+		return false;    ///< Whether or not the interpreter should process this elements children.
+	}
 
 protected:
 	InterpreterImpl* _interpreter;
