@@ -1507,7 +1507,7 @@ void ChartToC::writeElementInfoInvocation(std::ostream& stream) {
 				std::stringstream ss;
 				DOMNodeList* cChilds = contents.front()->getChildNodes();
 				for (size_t j = 0; j < cChilds->getLength(); j++) {
-					ss << cChilds->item(j);
+					ss << *(cChilds->item(j));
 				}
 				stream << "        /* content      */ ";
 				stream << (ss.str().size() > 0 ? "\"" + escape(ss.str()) + "\", " : "NULL, ") << std::endl;
