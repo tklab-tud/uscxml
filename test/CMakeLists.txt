@@ -12,6 +12,9 @@ endif()
 find_program(PERL_BIN perl)
 find_program(PYTHON_BIN python)
 find_program(GHDL_BIN ghdl)
+find_program(DMCS_BIN dmcs)
+find_program(MONO_BIN mono)
+find_program(CSC_BIN csc)
 
 set(GHDL_VERSION "0")
 if (GHDL_BIN)
@@ -91,6 +94,38 @@ endif ()
 add_executable(test-state-pass src/test-state-pass.cpp ${GETOPT_FILES})
 target_link_libraries(test-state-pass uscxml)
 set_target_properties(test-state-pass PROPERTIES FOLDER "Tests")
+
+if (TARGET csharp)
+	if (DMCS_BIN)
+		ADD_CUSTOM_TARGET(testStatePassCSharp ALL
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/csharp
+			COMMAND 
+				${DMCS_BIN}
+				${PROJECT_SOURCE_DIR}/contrib/csharp/bindings/TestStatePass.cs
+				-r:${CMAKE_BINARY_DIR}/lib/uscxmlCSharp.dll
+				-out:${CMAKE_BINARY_DIR}/bin/csharp/TestStatePass.exe
+			COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib/uscxmlCSharp.dll ${CMAKE_BINARY_DIR}/bin/csharp
+			COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib/csharp/* ${CMAKE_BINARY_DIR}/bin/csharp
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+			COMMENT "Compiling C# TestStatePass"
+		)
+		add_dependencies(testStatePassCSharp csharp)
+	else()
+		ADD_CUSTOM_TARGET(testStatePassCSharp ALL
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/csharp
+			COMMAND 
+				${CSC_BIN}
+				${PROJECT_SOURCE_DIR}/contrib/csharp/bindings/TestStatePass.cs
+				-r:${CMAKE_BINARY_DIR}/lib/uscxmlCSharp.dll
+				-out:${CMAKE_BINARY_DIR}/bin/csharp/TestStatePass.exe
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/lib/csharp ${CMAKE_BINARY_DIR}/bin/csharp
+			COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/lib/uscxmlCSharp.dll ${CMAKE_BINARY_DIR}/bin/csharp
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+			COMMENT "Compiling C# TestStatePass"
+		)
+		add_dependencies(testStatePassCSharp csharp)
+	endif()
+endif()
 
 if (WIN32 AND BUILD_SHARED_LIBS)
 	# do not build test-gen-c on windows with shared libraries active
@@ -273,6 +308,8 @@ if (NOT BUILD_MINIMAL)
 			# bindings
 			"binding/java/jexl"
 			"binding/python/ecma"
+			"binding/csharp/ecma"
+			"binding/csharp/lua"
 
 			# state-machine interpreters
 			# "fsm/ecma"
@@ -430,6 +467,31 @@ if (NOT BUILD_MINIMAL)
 						
 						set_property(TEST ${TEST_NAME} PROPERTY ENVIRONMENT "USCXML_PYTHON_PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 						set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
+						set(TEST_ADDED ON)
+					endif ()
+
+					if (TARGET csharp AND TEST_LANG STREQUAL "csharp")
+
+						if (MONO_BIN)
+							add_test(NAME "${TEST_NAME}"
+									COMMAND
+									${MONO_BIN}
+									${CMAKE_BINARY_DIR}/bin/csharp/TestStatePass.exe
+									${W3C_TEST}
+									${CMAKE_BINARY_DIR}/lib
+									WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/csharp)
+						else()
+							add_test(NAME "${TEST_NAME}"
+									COMMAND
+									${CMAKE_BINARY_DIR}/bin/csharp/TestStatePass.exe
+									${W3C_TEST}
+									${CMAKE_BINARY_DIR}/lib
+									WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/csharp)
+						endif()
+						set_property(TEST ${TEST_NAME} PROPERTY ENVIRONMENT "USCXML_PYTHON_PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+						set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT "USCXML_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lib/plugins")
+						set_property(TEST ${TEST_NAME} APPEND PROPERTY DEPENDS testStatePassCSharp)
+
 						set(TEST_ADDED ON)
 					endif ()
 

@@ -56,27 +56,30 @@ if (DMCS_EXECUTABLE OR CSC_EXECUTABLE)
 	
 	# build managed code part
 	if (CSC_EXECUTABLE)
-		ADD_CUSTOM_TARGET(csharp
+		ADD_CUSTOM_COMMAND( # ADD_CUSTOM_TARGET is always considered outdated
+			OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll
 			COMMAND ${CMAKE_COMMAND} -E 
 				copy ${CMAKE_CURRENT_SOURCE_DIR}/org/uscxml/InterpreterException.cs ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
 			COMMAND ${CSC_EXECUTABLE}
 				/target:library
 				/out:${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll
 				*.cs
-				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
-			COMMENT "Creating umundoCSharp.dll for C# ...")
+			WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
+			COMMENT "Creating uscxmlCSharp.dll for C# ...")
 	else()
-		ADD_CUSTOM_TARGET(csharp
+		ADD_CUSTOM_COMMAND(
+			OUTPUT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll
 			COMMAND ${CMAKE_COMMAND} -E 
 				copy ${CMAKE_CURRENT_SOURCE_DIR}/org/uscxml/InterpreterException.cs ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
 			COMMAND ${DMCS_EXECUTABLE}
 				-target:library
 				/out:${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll
 				*.cs
-				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
+			WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/src/bindings/swig/csharp/org/uscxml
 			COMMENT "Creating umundoCSharp.dll for Mono ...")
 	endif()
-	
+	ADD_CUSTOM_TARGET(csharp DEPENDS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/uscxmlCSharp.dll)
+
 	add_dependencies(csharp uscxmlNativeCSharp)
 	if (BUILD_TESTS)
 		add_dependencies(ALL_TESTS csharp)

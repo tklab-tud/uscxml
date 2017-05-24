@@ -178,7 +178,6 @@ WRAP_TO_STRING(uscxml::InterpreterIssue);
 // Beautify important classes
 //***********************************************
 
-
 // byte[] signature for Blob get/setData
 // see http://permalink.gmane.org/gmane.comp.programming.swig/5804
 
@@ -216,6 +215,9 @@ WRAP_TO_STRING(uscxml::InterpreterIssue);
   $result = (char *)result;
 }
 
+%include "../uscxml_beautify.i"
+
+#if 0
 
 
 %csmethodmodifiers uscxml::Event::getParamMap() "private";
@@ -228,7 +230,6 @@ WRAP_TO_STRING(uscxml::InterpreterIssue);
 %csmethodmodifiers uscxml::Interpreter::getIOProcessors() "private";
 %csmethodmodifiers uscxml::Data::getCompoundKeys() "private";
 
-%include "../uscxml_beautify.i"
 
 %typemap(csimports) uscxml::Interpreter %{
 using System;
@@ -241,7 +242,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, NativeIOProcessor> ioProcs = new Dictionary<string, NativeIOProcessor>();
 		StringVector keys = getIOProcessorKeys();
 		IOProcMap ioProcMap = getIOProcessorsNative();
-		for (size_t i = 0; i < keys.Count; i++) {
+		for (int i = 0; i < keys.Count; i++) {
 			ioProcs[keys[i]] = ioProcMap[keys[i]];
 		}
 		return ioProcs;
@@ -251,7 +252,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, NativeInvoker> invokers = new Dictionary<string, NativeInvoker>();
 		StringVector keys = getInvokerKeys();
 		InvokerMap invokerMap = getInvokersNative();
-		for (size_t i = 0; i < keys.Count; i++) {
+		for (int i = 0; i < keys.Count; i++) {
 			invokers[keys[i]] = invokerMap[keys[i]];
 		}
 		return invokers;
@@ -293,7 +294,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, Data> compound = new Dictionary<string, Data>();
 		DataMap dataMap = getCompoundNative();
 		StringVector dataMapKeys = getCompoundKeys();
-		for (size_t i = 0; i < dataMapKeys.Count; i++) {
+		for (int i = 0; i < dataMapKeys.Count; i++) {
 			compound[dataMapKeys[i]] = dataMap[dataMapKeys[i]];
 		}
 		return compound;
@@ -310,7 +311,7 @@ using System.Runtime.InteropServices;
 	public List<Data> getArray() {
 		List<Data> arr = new List<Data>();
 		DataList dataList = getArrayNative();
-		for (size_t i = 0; i < dataList.size(); i++) {
+		for (int i = 0; i < dataList.size(); i++) {
 			arr.Add(dataList.get(i));
 		}
 		return arr;
@@ -350,7 +351,7 @@ using System.Runtime.InteropServices;
 		foreach (KeyValuePair<string, DataList> entry in paramMap) {
 			DataList dataList = entry.Value;
 			List<Data> paramList = new List<Data>();
-			for (size_t i = 0; i < dataList.size(); i++) {
+			for (int i = 0; i < dataList.size(); i++) {
 				Data data = dataList.get(i);
 				paramList.Add(data);
 			}
@@ -375,7 +376,7 @@ using System.Runtime.InteropServices;
 		Dictionary<string, Data> nameList = new Dictionary<string, Data>();
 		DataMap nameListMap = getNameListNative();
 		StringVector nameListMapKeys = getNameListKeys();
-		for (size_t i = 0; i < nameListMapKeys.Count; i++) {
+		for (int i = 0; i < nameListMapKeys.Count; i++) {
 			nameList[nameListMapKeys[i]] = nameListMap[nameListMapKeys[i]];
 		}
 		return nameList;
@@ -389,6 +390,8 @@ using System.Runtime.InteropServices;
 		setNameListNative(dataMap);
 	}
 %}
+
+#endif
 
 //***********************************************
 // Parse the header file to generate wrappers
