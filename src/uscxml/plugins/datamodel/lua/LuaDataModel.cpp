@@ -31,8 +31,6 @@
 
 #include "LuaBridge.h"
 
-#include <fstream>
-
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -78,6 +76,7 @@ static int luaEval(lua_State* luaState, const std::string& expr) {
 	return postStack - preStack;
 }
 
+/* Converts from C string to Lua string (analog of lua 'string.format("%q",s)' */
 static std::string strToLuaStr(std::string s_text) {
 	std::size_t s = 0;
 	while (s<s_text.size())
@@ -104,6 +103,7 @@ static std::string strToLuaStr(std::string s_text) {
 	return '"' + s_text + '"';
 }
 
+/* Serializer of LuaRef. Supports only simple types (nil, boolean, number, table, string). Tables are copied!!! No references! */
 static void convertLuaStateToChunk(const luabridge::LuaRef& lua, std::ostream &out) {
 	if (lua.isFunction()) {
 		// functions are not supported for serialization
