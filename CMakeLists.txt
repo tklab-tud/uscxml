@@ -25,6 +25,10 @@ include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
 # use folders in the IDEs for the various targets
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# compile with fPIC if required
+# see https://stackoverflow.com/questions/38296756/what-is-the-idiomatic-way-in-cmake-to-add-the-fpic-compiler-option
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # use rpath with MacOSX
 set(CMAKE_MACOSX_RPATH 1)
 

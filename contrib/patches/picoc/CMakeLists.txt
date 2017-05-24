@@ -3,6 +3,8 @@ project(picoc)
 
 # include_directories(${PROJECT_SOURCE_DIR}/include)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 file(GLOB PICOC_FILES 
 	${PROJECT_SOURCE_DIR}/*.h
 	${PROJECT_SOURCE_DIR}/*.c
