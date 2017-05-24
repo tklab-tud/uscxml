@@ -31,6 +31,8 @@
 
 #include "LuaBridge.h"
 
+#include <fstream>
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -76,6 +78,94 @@ static int luaEval(lua_State* luaState, const std::string& expr) {
 	return postStack - preStack;
 }
 
+static std::string strToLuaStr(std::string s_text) {
+	std::size_t s = 0;
+	while (s<s_text.size())
+	{
+		if (s_text[s] == '"' || s_text[s] == '\\' || s_text[s] == '\n') {
+			s_text.insert(s, 1, '\\');
+			s += 2;
+		}
+		else if (s_text[s] == '\0' || iscntrl(unsigned char(s_text[s]))) {
+			char buff[10];
+			if ((s + 1 < s_text.size()) && isdigit(unsigned char(s_text[s + 1])))
+				sprintf(buff, "\\%03d", (int)(s_text[s]));
+			else
+				sprintf(buff, "\\%d", (int)(s_text[s]));
+
+			std::string s_buff(buff);
+			s_text.replace(s, 1, s_buff);
+			s += s_buff.size();
+		}
+		else {
+			s++;
+		}
+	}
+	return '"' + s_text + '"';
+}
+
+static void convertLuaStateToChunk(const luabridge::LuaRef& lua, std::ostream &out) {
+	if (lua.isFunction()) {
+		// functions are not supported for serialization
+	}
+	else if (lua.isLightUserdata() || lua.isUserdata()) {
+		// not supported
+	}
+	else if (lua.isThread()) {
+		// not supported
+	}
+	else if (lua.isNil()) {
+		out << "nil" << ";";
+	}
+	else if (lua.isNumber()) {
+		out << toStr(lua.cast<double>()) << ";";
+	}
+	else if (lua.isString()) {
+		out << strToLuaStr(lua.cast<std::string>()) << ";";
+	}
+	else if (lua.type() == LUA_TBOOLEAN) {
+		out << std::boolalpha << lua.cast<bool>() << ";";
+	}
+	else if (lua.isTable()) {
+		
+		/* Reasons to serialize table */
+		// 1) mixed indexes must be correctly evaluated by foreach
+		//		t_mixed_indexes = { [3]=3, [2]=2, [1]=1 }
+		//		t_mixed_indexes = { [2]=2, [3]=3, [1]=1 }
+		// 2) no garanty that even ordered table will be iterated propertly if we use 'lua_next'
+		//		t_no_garanty = { [1]=1, [2]=2 }
+		// first iterator can be either 1 or 2
+		// 3) compatible with Lua 5.1, 5.2, 5.3
+
+		out << "{";
+		auto L = lua.state();
+
+		const int iTop = lua_gettop(L);
+		
+		/* table is in the stack at index 't' */
+		lua_pushnil(L);  /* first key */		
+		while (lua_next(L, iTop) != 0) {
+			/* uses 'key' (at index -2) and 'value' (at index -1) */
+			
+			auto key = luabridge::LuaRef::fromStack(L, -2);
+			auto value = luabridge::LuaRef::fromStack(L, -1);
+
+			if (key.isNumber()) {
+				out << "[" << toStr(key.cast<double>()) << "]=" ;
+			}
+			else if (key.isString()) {
+				out << "[" << strToLuaStr(key.cast<std::string>()) << "]=";
+			}
+			
+			convertLuaStateToChunk(value, out);
+			
+			/* removes 'value'; keeps 'key' for next iteration */
+			lua_pop(L, 1);			
+		}
+		out << "}" << ";";
+	}	
+}
+
 static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 	Data data;
 	if (lua.isFunction()) {
@@ -92,29 +182,30 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 	} else if(lua.isNil()) {
 		data.atom = "nil";
 		data.type = Data::INTERPRETED;
-	} else if(lua.isNumber()) {
+	} else if (lua.type() == LUA_TBOOLEAN) {
+		data.atom = lua.cast<bool>() ? "true" : "false";
+		data.type = Data::INTERPRETED;
+	}
+	else if(lua.isNumber()) {
 		data.atom = toStr(lua.cast<double>());
 		data.type = Data::INTERPRETED;
 	} else if(lua.isString()) {
 		data.atom = lua.cast<std::string>();
 		data.type = Data::VERBATIM;
 	} else if(lua.isTable()) {
-//		bool isArray = false;
-//		bool isMap = false;
-		for (luabridge::Iterator iter (lua); !iter.isNil(); ++iter) {
-			luabridge::LuaRef luaKey = iter.key();
-			luabridge::LuaRef luaVal = *iter;
-			if (luaKey.isString()) {
-//				assert(!isArray);
-//				isMap = true;
-				// luaKey.tostring() is not working?! see issue84
-				data.compound[luaKey.cast<std::string>()] = getLuaAsData(_luaState, luaVal);
-			} else {
-//				assert(!isMap);
-//				isArray = true;
-				data.array.push_back(getLuaAsData(_luaState, luaVal));
-			}
-		}
+
+		const int preStack = lua_gettop(lua.state());
+
+		std::stringstream ss;
+		convertLuaStateToChunk(lua, ss);		
+		data.atom = ss.str();
+		data.type = Data::INTERPRETED;
+
+		// clean stack
+		lua_pop(lua.state(), lua_gettop(lua.state()) - preStack);
+	}	
+	else {
+		ERROR_EXECUTION_THROW("Lua type [" + std::to_string(lua.type()) + "] is not supported!");
 	}
 	return data;
 }
@@ -144,19 +235,15 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
 			compoundIter++;
 		}
-//		luaData["inspect"] = luaInspect;
 		return luaData;
 	}
 	if (data.array.size() > 0) {
 		luaData = luabridge::newTable(_luaState);
 		std::list<Data>::const_iterator arrayIter = data.array.begin();
-//		uint32_t index = 0;
 		while(arrayIter != data.array.end()) {
-//            luaData[index++] = getDataAsLua(_luaState, *arrayIter);
 			luaData.append(getDataAsLua(_luaState, *arrayIter));
 			arrayIter++;
 		}
-//		luaData["inspect"] = luaInspect;
 		return luaData;
 	}
 	if (data.atom.size() > 0) {
@@ -234,7 +321,9 @@ void LuaDataModel::setup() {
 			}
 		}
 	} catch (luabridge::LuaException e) {
+#if 0 // really annoying message, especially when there are a lot of invokers
 		LOG(_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
+#endif
 	}
 
 	luabridge::getGlobalNamespace(_luaState).beginClass<LuaDataModel>("DataModel").endClass();

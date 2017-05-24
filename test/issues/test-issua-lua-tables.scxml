@@ -1,0 +1,70 @@
+
+<scxml datamodel="lua" initial="StateShape1" name="ScxmlShape1" version="1.0" xmlns="http://www.w3.org/2005/07/scxml">
+	<datamodel>
+		<data id="t_DifficultTable">{
+    [2] = {
+        [1]={ 5,5,5,5 },
+        [2]={ 5,5,5,5 },
+        [3]= { 10,10 }
+    },
+    [1] = {
+        [1]= { 4,4,4,4,4,4,4,4 },
+        [2]= { 8,8,8,8 },
+        [3]= { 16,16 }
+    },    
+    [3] = {
+        [1]={ 2,2,2 },
+        test = false,
+        good = true,
+        xxx = 'asdf'
+    },
+    zzz = {
+        1,2,3,&quot;different types&quot;,
+        [[bbbbbbb\nbbbbbb]],
+        qq = &quot;asdf 'asdf' [[asdf]]&quot;
+    }
+}
+		</data>
+		<data expr="{
+    [3]=3,
+    [2]=2,
+    [1]=1
+}" id="t_mixed"/>
+	</datamodel>
+	<state id="StateShape1">
+		<onentry>
+			<script>function PrintTable(t_val, s_tab)
+	if type(t_val)==&quot;table&quot; then
+		for k,v in pairs(t_val) do
+			print(string.format(&quot;%sk=%s[%s],v=%s[%s]&quot;,s_tab,tostring(k),type(k),tostring(v),type(v)))
+			PrintTable(v,s_tab .. &quot;\t&quot;)
+		end
+	end
+end
+
+PrintTable(t_DifficultTable,&quot;&quot;)
+			</script>
+			<foreach array="t_mixed" index="s_index" item="s_item">
+				<log expr="s_item" label="s_item"/>
+				<log expr="s_index" label="s_index"/>
+			</foreach>
+		</onentry>
+		<transition cond="t_DifficultTable[2][3][1]==10 and
+#t_DifficultTable[1]==3 and
+t_DifficultTable[3][1][2]==2 and
+t_DifficultTable[3].test==false and
+t_DifficultTable[3].xxx==&quot;asdf&quot; and
+t_DifficultTable.zzz.qq==&quot;asdf 'asdf' [[asdf]]&quot; and
+t_DifficultTable.zzz[1]==1 and
+t_DifficultTable.zzz[2]==2 and
+t_DifficultTable.zzz[3]==3 and
+t_DifficultTable.zzz[4]==&quot;different types&quot; and
+t_DifficultTable.zzz[5]==[[bbbbbbb\nbbbbbb]]" target="pass"/>
+		<transition event="error.*" target="fail"/>
+		<transition target="fail"/>
+	</state>
+	<final id="pass"/>
+	<final id="fail">
+		<onentry/>
+	</final>
+</scxml>
