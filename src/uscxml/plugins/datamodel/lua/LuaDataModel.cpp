@@ -104,7 +104,7 @@ static std::string strToLuaStr(std::string s_text) {
 }
 
 /* Serializer of LuaRef. Supports only simple types (nil, boolean, number, table, string). Tables are copied!!! No references! */
-static void convertLuaStateToChunk(const luabridge::LuaRef& lua, std::ostream &out) {
+static void convertLuaStateToChunk(const luabridge::LuaRef& lua, std::ostream &out, const bool is_root) {
 	if (lua.isFunction()) {
 		// functions are not supported for serialization
 	}
@@ -157,12 +157,16 @@ static void convertLuaStateToChunk(const luabridge::LuaRef& lua, std::ostream &o
 				out << "[" << strToLuaStr(key.cast<std::string>()) << "]=";
 			}
 			
-			convertLuaStateToChunk(value, out);
+			convertLuaStateToChunk(value, out, false);
 			
 			/* removes 'value'; keeps 'key' for next iteration */
 			lua_pop(L, 1);			
 		}
-		out << "}" << ";";
+		out << "}";
+		if (!is_root) {
+			// we must prevent next situation: "return({[1]=32;[2]=32;};);"
+			out << ";";
+		}
 	}	
 }
 
@@ -197,7 +201,7 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		const int preStack = lua_gettop(lua.state());
 
 		std::stringstream ss;
-		convertLuaStateToChunk(lua, ss);		
+		convertLuaStateToChunk(lua, ss, true);		
 		data.atom = ss.str();
 		data.type = Data::INTERPRETED;
 
