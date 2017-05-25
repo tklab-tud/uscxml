@@ -61,11 +61,7 @@ void Data::merge(const Data& other) {
 		if (array.size() == 0) {
 			array = other.array;
 		} else {
-			std::list<Data>::const_iterator arrIter = other.array.begin();
-			while(arrIter != other.array.end()) {
-				array.push_back(*arrIter);
-				arrIter++;
-			}
+			array.insert(other.array.begin(), other.array.end());
 		}
 	}
 	if (other.atom.size() > 0) {
@@ -147,6 +143,7 @@ Data Data::fromJSON(const std::string& jsonString) {
 	dataStack.push_back(&data);
 
 	size_t currTok = 0;
+	int index = 0;
 	do {
 		// used for debugging
 //		jsmntok_t t2 = t[currTok];
@@ -194,8 +191,9 @@ Data Data::fromJSON(const std::string& jsonString) {
 		}
 		if (tokenStack.back().type == JSMN_ARRAY) {
 			// push new index
-			dataStack.back()->array.push_back(Data());
-			dataStack.push_back(&(dataStack.back()->array.back()));
+			dataStack.back()->array.insert(std::make_pair(index,Data()));
+			dataStack.push_back(&dataStack.back()->array[index]);
+			index++;
 		}
 
 	} while (true);
@@ -248,14 +246,13 @@ std::string Data::toJSON(const Data& data) {
 
 		std::string seperator;
 		os << std::endl << indent << "[";
-		std::list<Data>::const_iterator arrayIter = data.array.begin();
-		while(arrayIter != data.array.end()) {
+		for (auto it : data.array) {
 			_dataIndentation += 1;
-			os << seperator << *arrayIter;
+			os << seperator << it.second;
 			_dataIndentation -= 1;
 			seperator = ", ";
-			arrayIter++;
 		}
+
 		os << "]";
 	} else if (data.atom.size() > 0) {
 		// empty string is handled below

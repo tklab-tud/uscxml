@@ -334,10 +334,11 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	{
 		std::stringstream ss(request.data.compound["path"].atom);
 		std::string item;
+		int index = 0;
 		while(std::getline(ss, item, '/')) {
 			if (item.length() == 0)
 				continue;
-			request.data.compound["pathComponent"].array.push_back(Data(item, Data::VERBATIM));
+			request.data.compound["pathComponent"].array.insert(std::make_pair(index++,Data(item, Data::VERBATIM)));
 		}
 	}
 	// parse query string

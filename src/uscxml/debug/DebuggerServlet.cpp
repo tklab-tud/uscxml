@@ -224,6 +224,7 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 	Data replyData;
 
 	std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
+	int index = 0;
 	for (auto weakInstance : instances) {
 
 		std::shared_ptr<InterpreterImpl> instance = weakInstance.second.lock();
@@ -234,7 +235,7 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 			sessionData.compound["source"] = Data(instance->getBaseURL(), Data::VERBATIM);
 			sessionData.compound["xml"].node = instance->getDocument();
 
-			replyData.compound["sessions"].array.push_back(sessionData);
+			replyData.compound["sessions"].array.insert(std::make_pair(index++,sessionData));
 		}
 	}
 

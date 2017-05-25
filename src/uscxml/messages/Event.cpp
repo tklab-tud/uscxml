@@ -48,7 +48,7 @@ Event Event::fromData(const Data& data) {
 
 	if (data.hasKey("params")) {
 		for (auto param : data["params"].array) {
-			e.params.insert(std::make_pair(param.compound.begin()->first, param.compound.begin()->second));
+			e.params.insert(std::make_pair(param.second.compound.begin()->first, param.second.compound.begin()->second));
 		}
 	}
 	return e;
@@ -68,10 +68,11 @@ Event::operator Data() {
 	data["uuid"] = Data(uuid, Data::VERBATIM);
 	data["namelist"].compound = namelist;
 
+	int index=0;
 	for (auto param : params) {
 		Data entry;
 		entry.compound[param.first] = param.second;
-		data["params"].array.push_back(entry);
+		data["params"].array.insert(std::make_pair(index++,entry));
 	}
 
 	return data;

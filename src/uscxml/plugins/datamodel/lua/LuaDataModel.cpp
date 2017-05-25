@@ -197,7 +197,7 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		data.atom = lua.cast<std::string>();
 		data.type = Data::VERBATIM;
 	} else if(lua.isTable()) {
-
+#if 0
 		const int preStack = lua_gettop(lua.state());
 
 		std::stringstream ss;
@@ -207,6 +207,20 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 
 		// clean stack
 		lua_pop(lua.state(), lua_gettop(lua.state()) - preStack);
+#endif
+
+		for (luabridge::Iterator iter(lua); !iter.isNil(); ++iter) {
+			luabridge::LuaRef luaKey = iter.key();
+			luabridge::LuaRef luaVal = *iter;
+			if (luaKey.isString()) {
+				// luaKey.tostring() is not working?! see issue84
+				data.compound[luaKey.cast<std::string>()] = getLuaAsData(_luaState, luaVal);
+			}
+			else {
+				int i_key = luaKey.cast<double>();
+				data.array[i_key]=getLuaAsData(_luaState, luaVal);
+			}
+		}
 	}	
 	else {
 		ERROR_EXECUTION_THROW("Lua type [" + std::to_string(lua.type()) + "] is not supported!");
@@ -238,12 +252,9 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 	if (data.compound.size() > 0 || data.array.size() > 0) {
 		luaData = luabridge::newTable(_luaState);
 
-		std::list<Data>::const_iterator arrayIter = data.array.begin();
-		while (arrayIter != data.array.end()) {
-			luaData.append(getDataAsLua(_luaState, *arrayIter));
-			arrayIter++;
+		for (auto it : data.array) {
+			luaData[it.first] = getDataAsLua(_luaState, it.second);
 		}
-
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
 			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);

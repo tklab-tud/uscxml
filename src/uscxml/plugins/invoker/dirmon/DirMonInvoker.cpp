@@ -75,8 +75,9 @@ Data DirMonInvoker::getDataModelVariables() {
 	data.compound["dir"] = Data(_dir, Data::VERBATIM);
 
 	std::set<std::string>::iterator suffixIter = _suffixes.begin();
+	int index = 0;
 	while(suffixIter != _suffixes.end()) {
-		data.compound["suffixes"].array.push_back(Data(*suffixIter, Data::VERBATIM));
+		data.compound["suffixes"].array.insert(std::make_pair(index++,Data(*suffixIter, Data::VERBATIM)));
 		suffixIter++;
 	}
 

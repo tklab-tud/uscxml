@@ -141,12 +141,7 @@ public:
 	}
 
 	Data& operator[](const size_t index) {
-		while(array.size() < index) {
-			array.push_back(Data("", Data::VERBATIM));
-		}
-		std::list<Data>::iterator arrayIter = array.begin();
-		for (size_t i = 0; i < index; i++, arrayIter++) {}
-		return *arrayIter;
+		return array.at(index);
 	}
 #endif
 
@@ -162,10 +157,9 @@ public:
 	}
 
 	const Data item(const size_t index) const {
-		if (array.size() > index) {
-			std::list<Data>::const_iterator arrayIter = array.begin();
-			for (size_t i = 0; i < index; i++, arrayIter++) {}
-			return *arrayIter;
+		auto it = array.find(index);
+		if (it != array.end()) {
+			return it->second;
 		}
 		Data data;
 		return data;
@@ -195,7 +189,7 @@ public:
 		return compound;
 	}
 
-	operator std::list<Data>() {
+	operator std::map<int,Data>() {
 		return array;
 	}
 
@@ -203,10 +197,10 @@ public:
 	static std::string toJSON(const Data& data);
 	std::string asJSON() const;
 
-	std::list<Data> getArray() {
+	std::map<int,Data> getArray() {
 		return array;
 	}
-	void setArray(const std::list<Data>& array) {
+	void setArray(const std::map<int,Data>& array) {
 		this->array = array;
 	}
 
@@ -247,7 +241,7 @@ protected:
 	XERCESC_NS::DOMNode* node;
 //	std::shared_ptr<XERCESC_NS::DOMDocument> adoptedDoc;
 	std::map<std::string, Data> compound;
-	std::list<Data> array;
+	std::map<int,Data> array;
 	std::string atom;
 	Blob binary;
 	Type type;
