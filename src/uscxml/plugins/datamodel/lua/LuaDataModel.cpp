@@ -232,22 +232,23 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 			return luaData;
 		}
 	}
-	if (data.compound.size() > 0) {
+	
+	// lua tables can be mixed!
+	// tmp = { [1]=1,[2]=2,["test"]=5 }
+	if (data.compound.size() > 0 || data.array.size() > 0) {
 		luaData = luabridge::newTable(_luaState);
+
+		std::list<Data>::const_iterator arrayIter = data.array.begin();
+		while (arrayIter != data.array.end()) {
+			luaData.append(getDataAsLua(_luaState, *arrayIter));
+			arrayIter++;
+		}
+
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
 			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
 			compoundIter++;
-		}
-		return luaData;
-	}
-	if (data.array.size() > 0) {
-		luaData = luabridge::newTable(_luaState);
-		std::list<Data>::const_iterator arrayIter = data.array.begin();
-		while(arrayIter != data.array.end()) {
-			luaData.append(getDataAsLua(_luaState, *arrayIter));
-			arrayIter++;
-		}
+		}		
 		return luaData;
 	}
 	if (data.atom.size() > 0) {
