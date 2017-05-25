@@ -192,7 +192,7 @@ Data BasicDelayedEventQueue::serialize() {
 	}
 
 	Data serialized;
-
+	int index = 0;
 	for (auto event : _queue) {
 		struct callbackData cb = _callbackData[event.uuid];
 
@@ -210,7 +210,7 @@ Data BasicDelayedEventQueue::serialize() {
 		delayedEvent["event"] = event;
 		delayedEvent["delay"] = Data(delayMs, Data::INTERPRETED);
 
-		serialized["BasicDelayedEventQueue"].array.push_back(event);
+		serialized["BasicDelayedEventQueue"].array.insert(std::make_pair(index++,event));
 	}
 
 	start();
@@ -221,8 +221,8 @@ void BasicDelayedEventQueue::deserialize(const Data& data) {
 	if (data.hasKey("BasicDelayedEventQueue")) {
 		std::lock_guard<std::recursive_mutex> lock(_mutex);
 		for (auto event : data["BasicDelayedEventQueue"].array) {
-			Event e = Event::fromData(event["event"]);
-			enqueueDelayed(e, strTo<size_t>(event["delay"]), e.uuid);
+			Event e = Event::fromData(event.second["event"]);
+			enqueueDelayed(e, strTo<size_t>(event.second["delay"]), e.uuid);
 		}
 	}
 

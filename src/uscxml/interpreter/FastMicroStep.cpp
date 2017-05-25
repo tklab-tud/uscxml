@@ -294,16 +294,18 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	auto endState = cache.compound["states"].array.end();
 #endif
 
+	int index = 0;
 	for (i = 0; i < _states.size(); i++) {
 #ifdef WITH_CACHE_FILES
 		Data* cachedState = NULL;
 		if (withCache) {
 			if (currState != endState) {
-				cachedState = &(*currState);
+				cachedState = &(currState->second);
 				currState++;
 			} else {
-				cache.compound["states"].array.push_back(Data());
-				cachedState = &(*cache.compound["states"].array.rbegin());
+				cache.compound["states"].array.insert(std::make_pair(index,Data()));
+				cachedState = &(cache.compound["states"].array[index]);
+				index++;
 			}
 		}
 #endif
@@ -448,17 +450,19 @@ COMPLETION_STABLISHED:
 	auto endTrans = cache.compound["transitions"].array.end();
 #endif
 
+	int index1 = 0;
 	for (i = 0; i < _transitions.size(); i++) {
 
 #ifdef WITH_CACHE_FILES
 		Data* cachedTrans = NULL;
 		if (withCache) {
 			if (currTrans != endTrans) {
-				cachedTrans = &(*currTrans);
+				cachedTrans = &(currTrans->second);
 				currTrans++;
 			} else {
-				cache.compound["transitions"].array.push_back(Data());
-				cachedTrans = &(*cache.compound["transitions"].array.rbegin());
+				cache.compound["transitions"].array.insert(std::make_pair(index1,Data()));
+				cachedTrans = &(cache.compound["transitions"].array[index1]);
+				index1++;
 			}
 		}
 #endif

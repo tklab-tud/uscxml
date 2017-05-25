@@ -622,8 +622,9 @@ URLImpl::operator Data() const {
 
 	std::list<std::string> pathComps = pathComponents();
 	std::list<std::string>::const_iterator pathIter = pathComps.begin();
+	int index = 0;
 	while(pathIter != pathComps.end()) {
-		data.compound["pathComponent"].array.push_back(Data(*pathIter, Data::VERBATIM));
+		data.compound["pathComponent"].array.insert(std::make_pair(index++,Data(*pathIter, Data::VERBATIM)));
 		pathIter++;
 	}
 

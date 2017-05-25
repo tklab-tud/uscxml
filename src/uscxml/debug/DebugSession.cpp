@@ -75,11 +75,12 @@ void DebugSession::breakExecution(Data replyData) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
 	std::list<XERCESC_NS::DOMElement*> configuration = _interpreter.getConfiguration();
+	int index = 0;
 	for (auto state : configuration) {
 		if (HAS_ATTR(state, kXMLCharId)) {
-			replyData.compound["activeStates"].array.push_back(Data(ATTR(state, kXMLCharId), Data::VERBATIM));
+			replyData.compound["activeStates"].array.insert(std::make_pair(index++,Data(ATTR(state, kXMLCharId), Data::VERBATIM)));
 			if (isAtomic(state)) {
-				replyData.compound["basicStates"].array.push_back(Data(ATTR(state, kXMLCharId), Data::VERBATIM));
+				replyData.compound["basicStates"].array.insert(std::make_pair(index++,Data(ATTR(state, kXMLCharId), Data::VERBATIM)));
 			}
 		}
 	}
@@ -394,6 +395,7 @@ Data DebugSession::getIssues() {
 
 	std::list<InterpreterIssue> issues = _interpreter.validate();
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
+	int index = 0;
 	for (auto issue : issues) {
 		Data issueData;
 
@@ -414,8 +416,7 @@ Data DebugSession::getIssues() {
 		default:
 			break;
 		}
-
-		replyData.compound["issues"].array.push_back(issueData);
+		replyData.compound["issues"].array.insert(std::make_pair(index++,issueData));
 	}
 
 	return replyData;
@@ -482,18 +483,19 @@ void DebugSession::log(LogSeverity severity, const Event& event) {
 	// handle params
 	Data& params = d.compound["params"];
 	bool convertedToArray = false;
+	int index = 0;
 	for (auto param : event.params) {
 		if (params.compound.find(param.first) != d.compound.end()) {
 			// no such key, add as literal data
 			d.compound[param.first] = param.second;
 		} else if (params.compound[param.first].array.size() > 0 && convertedToArray) {
 			// key is already an array
-			params.compound[param.first].array.push_back(param.second);
+			params.compound[param.first].array.insert(std::make_pair(index++,param.second));
 		} else {
 			// key already given as literal data, move to array
 			Data& existingParam = params.compound[param.first];
-			params.compound[param.first].array.push_back(existingParam);
-			params.compound[param.first].array.push_back(param.second);
+			params.compound[param.first].array.insert(std::make_pair(index++,existingParam));
+			params.compound[param.first].array.insert(std::make_pair(index++, param.second));
 			params.compound[param.first].compound.clear();
 			convertedToArray = true;
 		}

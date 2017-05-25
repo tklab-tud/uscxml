@@ -92,8 +92,9 @@ Data BasicEventQueue::serialize() {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	Data serialized;
 
+	int index = 0;
 	for (auto event : _queue) {
-		serialized["BasicEventQueue"].array.push_back(event);
+		serialized["BasicEventQueue"].array.insert(std::make_pair(index++,event));
 	}
 	return serialized;
 }
@@ -102,7 +103,7 @@ void BasicEventQueue::deserialize(const Data& data) {
 	if (data.hasKey("BasicEventQueue")) {
 		std::lock_guard<std::recursive_mutex> lock(_mutex);
 		for (auto event : data["BasicEventQueue"].array) {
-			_queue.push_back(Event::fromData(event));
+			_queue.push_back(Event::fromData(event.second));
 		}
 	}
 }
