@@ -147,9 +147,15 @@ std::list<InterpreterIssue> InterpreterIssue::forInterpreter(InterpreterImpl* in
 	// some things we need to prepare first
 	if (interpreter->_factory == NULL)
 		interpreter->_factory = Factory::getInstance();
-	interpreter->setupDOM();
 
 	std::list<InterpreterIssue> issues;
+
+	try {
+		interpreter->setupDOM();
+	} catch(Event e) {
+		InterpreterIssue issue("Could not setup SCXML DOM: " + e.data.asJSON(), NULL, InterpreterIssue::USCXML_ISSUE_FATAL);
+		issues.push_back(issue);
+	}
 
 	if (!interpreter->_scxml) {
 		InterpreterIssue issue("No SCXML element to be found", NULL, InterpreterIssue::USCXML_ISSUE_FATAL);

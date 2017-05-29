@@ -351,6 +351,22 @@ bool attributeConstraints() {
 		}
 
 		{
+			// source with src and child content, not allowed
+			const char* xml =
+			    "<scxml>"
+			    "  <state id=\"start\">"
+			    "    <onentry>"
+			    "      <script src=\"test-validating\"/>"
+			    "    </onentry>"
+			    "  </state>"
+			    "</scxml>";
+
+			std::set<std::string> issueLocations = issueLocationsForXML(xml);
+			assert(issueLocations.size() == 0);
+		}
+
+
+		{
 			// invoke with namelist and param, not allowed
 			const char* xml =
 			    "<scxml>"
@@ -868,7 +884,7 @@ bool syntaxErrors() {
 int main(int argc, char** argv) {
 
 	factory = Factory::getInstance();
-	return EXIT_SUCCESS;
+//	return EXIT_SUCCESS;
 
 	try {
 		using namespace XERCESC_NS;

@@ -315,6 +315,7 @@ SCXML_STOP_SEARCH:
 				XERCESC_NS::DOMText* scriptText = _document->createTextNode(X(contents));
 				XERCESC_NS::DOMNode* newNode = _document->importNode(scriptText, true);
 				script->appendChild(newNode);
+				script->removeAttribute(kXMLCharSource); // remove attribute for validation: see issue 141
 			}
 		}
 

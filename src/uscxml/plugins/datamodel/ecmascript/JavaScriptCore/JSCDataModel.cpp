@@ -583,7 +583,7 @@ Data JSCDataModel::getValueAsData(const JSValueRef value) {
 			char* buf = new char[maxSize];
 			JSStringGetUTF8CString(stringValue, buf, maxSize);
 			std::string property(buf);
-			if (!isNumeric(property.c_str(), 10))
+			if (!isInteger(property.c_str(), 10))
 				isArray = false;
 			propertySet.insert(property);
 			//JSStringRelease(stringValue); // JSPropertyNameArrayRelease does the job it seems

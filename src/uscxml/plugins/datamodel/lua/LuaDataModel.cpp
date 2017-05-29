@@ -163,7 +163,7 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 		luaData = luabridge::newTable(_luaState);
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
-			if (isNumeric(compoundIter->first.c_str(), 10) && strTo<size_t>(compoundIter->first) > 0) {
+			if (isInteger(compoundIter->first.c_str(), 10) && strTo<size_t>(compoundIter->first) > 0) {
 				// it makes a difference whether we pass a numeric string or a proper number!
 				luaData[strTo<size_t>(compoundIter->first)] = getDataAsLua(_luaState, compoundIter->second);
 			} else {
