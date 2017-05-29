@@ -89,6 +89,14 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		// not sure what to do
 	} else if(lua.isThread()) {
 		// not sure what to do
+	} else if(lua.type() == LUA_TBOOLEAN) {
+		// why is there no isBoolean in luabridge?
+		if (lua) {
+			data.atom = "true";
+		} else {
+			data.atom = "false";
+		}
+		data.type = Data::INTERPRETED;
 	} else if(lua.isNil()) {
 		data.atom = "nil";
 		data.type = Data::INTERPRETED;
@@ -99,20 +107,34 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		data.atom = lua.cast<std::string>();
 		data.type = Data::VERBATIM;
 	} else if(lua.isTable()) {
-//		bool isArray = false;
-//		bool isMap = false;
+		// check whether it is to be interpreted as a map or an array
+		bool isArray = true;
+		std::map<std::string, luabridge::LuaRef> luaItems;
 		for (luabridge::Iterator iter (lua); !iter.isNil(); ++iter) {
 			luabridge::LuaRef luaKey = iter.key();
 			luabridge::LuaRef luaVal = *iter;
-			if (luaKey.isString()) {
-//				assert(!isArray);
-//				isMap = true;
-				// luaKey.tostring() is not working?! see issue84
-				data.compound[luaKey.cast<std::string>()] = getLuaAsData(_luaState, luaVal);
+
+			if (!luaKey.isNumber() || luaKey.cast<long>() <= 0)
+				isArray = false;
+			// this will implicitly sort the items
+			luaItems.insert(std::make_pair(luaKey.cast<std::string>(), luaVal));
+		}
+
+		size_t lastIndex = 0;
+		for (auto item : luaItems) {
+			if (isArray) {
+				// all indices are numeric -> array
+				size_t currIndex = strTo<size_t>(item.first);
+				while (currIndex > lastIndex + 1) {
+					data.array.push_back(Data("nil", Data::INTERPRETED));
+					lastIndex++;
+				}
+				data.array.push_back(getLuaAsData(_luaState, item.second));
+				lastIndex++;
 			} else {
-//				assert(!isMap);
-//				isArray = true;
-				data.array.push_back(getLuaAsData(_luaState, luaVal));
+				// there are some non-numeric indices -> map
+				data.compound[item.first] = getLuaAsData(_luaState, item.second);
+
 			}
 		}
 	}
@@ -141,7 +163,12 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 		luaData = luabridge::newTable(_luaState);
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
 		while(compoundIter != data.compound.end()) {
-			luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
+			if (isNumeric(compoundIter->first.c_str(), 10) && strTo<size_t>(compoundIter->first) > 0) {
+				// it makes a difference whether we pass a numeric string or a proper number!
+				luaData[strTo<size_t>(compoundIter->first)] = getDataAsLua(_luaState, compoundIter->second);
+			} else {
+				luaData[compoundIter->first] = getDataAsLua(_luaState, compoundIter->second);
+			}
 			compoundIter++;
 		}
 //		luaData["inspect"] = luaInspect;
@@ -492,7 +519,7 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 		eval(location + "= __tmpAssign");
 
 
-//        std::cout << Data::toJSON(evalAsData(location)) << std::endl;
+//        LOG(_callbacks->getLogger(), USCXML_INFO) << Data::toJSON(evalAsData(location)) << std::endl;
 	}
 }
 

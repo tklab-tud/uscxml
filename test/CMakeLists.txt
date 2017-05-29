@@ -64,6 +64,10 @@ USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/t
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
 
+if(WITH_DM_LUA)
+	USCXML_TEST_COMPILE(NAME test-lua-tables LABEL general/test-lua-tables FILES src/test-lua-tables.cpp)
+endif()
+
 if (NOT BUILD_AS_PLUGINS)
 	USCXML_TEST_COMPILE(
 		NAME test-serialization 
@@ -109,7 +113,6 @@ if (TARGET csharp)
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 			COMMENT "Compiling C# TestStatePass"
 		)
-		add_dependencies(testStatePassCSharp csharp)
 	else()
 		ADD_CUSTOM_TARGET(testStatePassCSharp ALL
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/csharp
@@ -123,8 +126,10 @@ if (TARGET csharp)
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 			COMMENT "Compiling C# TestStatePass"
 		)
-		add_dependencies(testStatePassCSharp csharp)
 	endif()
+	add_dependencies(testStatePassCSharp csharp)
+	set_target_properties(testStatePassCSharp PROPERTIES FOLDER "Tests")
+
 endif()
 
 if (WIN32 AND BUILD_SHARED_LIBS)
