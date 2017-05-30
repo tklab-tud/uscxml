@@ -253,6 +253,13 @@ else()
 	endif()
 endif()
 
+#OpenSSL
+find_package(OpenSSL)
+if (OPENSSL_FOUND)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
+endif()
+
 
 # XercesC
 CheckHasModule(XercesC)
@@ -328,13 +335,10 @@ if (UNIX)
 	list (APPEND USCXML_CORE_LIBS "pthread")
 endif()
 
-#OpenSSL
-find_package(OpenSSL)
-if (OPENSSL_FOUND)
-	include_directories(${OPENSSL_INCLUDE_DIR})
-	list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
-endif()
 
+if (OPENSSL_FOUND AND LIBEVENT_HAS_BEVCB AND EVENT_SSL_FOUND)
+	set(HTTPS_ENABLED ON)
+endif()
 
 
 # uriparser - part of contrib now

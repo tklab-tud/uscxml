@@ -51,7 +51,7 @@ extern "C" {
 //#include <arpa/inet.h>
 #endif
 
-#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND)
+#ifdef HTTPS_ENABLED
 extern "C" {
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -115,7 +115,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 		}
 	}
 
-#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND)
+#ifdef HTTPS_ENABLED
 	// have another look here https://github.com/ppelleti/https-example/blob/master/https-server.c
 
 	if (!sslConf) {
@@ -223,7 +223,7 @@ HTTPServer* HTTPServer::getInstance(unsigned short port, unsigned short wsPort, 
 		_instance = new HTTPServer(port, wsPort, sslConf);
 
 		// only start if we have something to do!
-#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
+#ifdef HTTPS_ENABLED
 		if (_instance->_httpHandle || _instance->_wsHandle || _instance->_sslHandle)
 #else
 		if (_instance->_httpHandle || _instance->_wsHandle)
@@ -297,7 +297,7 @@ void HTTPServer::httpRecvReqCallback(struct evhttp_request *req, void *callbackD
 	const char* wsConnection = evhttp_find_header(headers, "Connection");
 	if (wsUpgrade && wsConnection) {
 		if (iequals(wsUpgrade, "websocket") && iequals(wsConnection, "Upgrade")) {
-			// this is a websocket request! .. but we do not know how to decouple form evhttp
+			// this is a websocket request! .. but we do not know how to decouple from evhttp
 		}
 	}
 #endif
@@ -714,7 +714,7 @@ std::string HTTPServer::getBaseURL(ServerType type) {
 	case HTTP:
 		servletURL << "http://" << INSTANCE->_address << ":" << INSTANCE->_port;
 		break;
-#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND)
+#ifdef HTTPS_ENABLED
 	case HTTPS:
 		servletURL << "https://" << INSTANCE->_address << ":" << INSTANCE->_sslPort;
 		break;
@@ -748,7 +748,7 @@ void HTTPServer::determineAddress() {
 }
 
 
-#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND)
+#ifdef HTTPS_ENABLED
 // see https://github.com/ppelleti/https-example/blob/master/https-server.c
 struct bufferevent* HTTPServer::sslBufferEventCallback(struct event_base *base, void *arg) {
 	struct bufferevent* r;

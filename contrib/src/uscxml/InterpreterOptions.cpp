@@ -44,7 +44,7 @@ void InterpreterOptions::printUsageAndExit(const char* progName) {
 	printf(" [-p pluginPath]");
 #endif
 	printf(" [-tN]");
-#ifdef EVENT_SSL_FOUND
+#ifdef HTTPS_ENABLED
 	printf(" [-sN] [--certificate=FILE | --private-key=FILE --public-key=FILE] ");
 #endif
 	printf(" \\\n\t\t URL1 [--disable-http] [--option1=value1 --option2=value2]");

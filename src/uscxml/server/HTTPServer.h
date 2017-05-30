@@ -187,7 +187,7 @@ private:
 	friend class HTTPServlet;
 	friend class WebSocketServlet;
 
-#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND)
+#ifdef HTTPS_ENABLED
 	struct evhttp* _https;
 	struct evhttp_bound_socket* _sslHandle;
 	unsigned short _sslPort;
