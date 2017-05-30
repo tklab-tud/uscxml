@@ -295,10 +295,23 @@ find_package(LibEvent)
 if (LIBEVENT_FOUND)
 	include_directories(${LIBEVENT_INCLUDE_DIR})
 	list (APPEND USCXML_CORE_LIBS ${LIBEVENT_LIBRARIES})
+
+	include(CheckCXXSourceCompiles)
+	set(CMAKE_REQUIRED_INCLUDES ${LIBEVENT_INCLUDE_DIR})
+	set(CMAKE_REQUIRED_LIBRARIES ${LIBEVENT_LIBRARIES})
+	check_cxx_source_compiles("
+		#include <event2/http.h>
+		struct bufferevent* cb(struct event_base *base, void *arg) { return NULL; }
+		int main(){ evhttp_set_bevcb((struct evhttp*)NULL, cb, (void*)NULL); }
+	" LIBEVENT_HAS_BEVCB)
+	if (NOT LIBEVENT_HAS_BEVCB)
+		message(STATUS "libevent (< 2.1) does not feature evhttp_set_bevcb, not building HTTPS support")
+	endif()
 else()
 	message(STATUS "--> will download and compile")
 	include("${CMAKE_MODULE_PATH}/BuildLibEvent.cmake")
 	if (LIBEVENT_BUILT)
+		SET(LIBEVENT_HAS_BEVCB YES)
 		include_directories(${LIBEVENT_INCLUDE_DIR})
 		list (APPEND USCXML_CORE_LIBS ${LIBEVENT_LIBRARIES})
 		list (APPEND USCXML_PREREQS libevent)
@@ -306,13 +319,25 @@ else()
 		message(FATAL_ERROR "Could neither find nor build libevent")
 	endif()
 endif()
+if (";${LIBEVENT_LIBRARIES};" MATCHES "openssl")
+	# see https://stackoverflow.com/a/23326955/990120
+	set(EVENT_SSL_FOUND ON)
+endif()
 
 if (UNIX)
 	list (APPEND USCXML_CORE_LIBS "pthread")
 endif()
 
+#OpenSSL
+find_package(OpenSSL)
+if (OPENSSL_FOUND)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
+endif()
 
-# uriparser
+
+
+# uriparser - part of contrib now
 # find_package(uriparser)
 # if(URIPARSER_FOUND)
 #     include_directories(${URIPARSER_INCLUDE_DIRS})

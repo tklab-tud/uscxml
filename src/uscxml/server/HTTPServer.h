@@ -187,13 +187,12 @@ private:
 	friend class HTTPServlet;
 	friend class WebSocketServlet;
 
-#if (defined EVENT_SSL_FOUND && defined OPENSSL_FOUND && defined OPENSSL_HAS_ELIPTIC_CURVES)
+#if (defined EVENT_SSL_FOUND && defined LIBEVENT_HAS_BEVCB && defined OPENSSL_FOUND)
 	struct evhttp* _https;
 	struct evhttp_bound_socket* _sslHandle;
 	unsigned short _sslPort;
 
 	static struct bufferevent* sslBufferEventCallback(struct event_base *base, void *arg);
-	static void sslGeneralBufferEventCallback (struct evhttp_request *req, void *arg);
 #endif
 };
 
