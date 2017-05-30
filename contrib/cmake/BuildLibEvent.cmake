@@ -7,8 +7,8 @@ include(ExternalProject)
 if (MSVC)
 	
 	externalproject_add(libevent
-		URL https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz
-		URL_MD5 f3eeaed018542963b7d2416ef1135ecc
+		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+		URL_MD5 c4c56f986aa985677ca1db89630a2e11
 		BUILD_IN_SOURCE 1
 		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
 		CONFIGURE_COMMAND ""
@@ -27,8 +27,8 @@ else ()
 	endif()
 
 	externalproject_add(libevent
-		URL https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz
-		URL_MD5 f3eeaed018542963b7d2416ef1135ecc
+		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+		URL_MD5 c4c56f986aa985677ca1db89630a2e11
 		BUILD_IN_SOURCE 0
 		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
 		PATCH_COMMAND
