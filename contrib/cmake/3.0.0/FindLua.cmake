@@ -187,7 +187,7 @@ if (LUA_LIBRARY)
     endif ()
 endif ()
 
-include(FindPackageHandleStandardArgs.cmake)
+include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LUA_FOUND to TRUE if
 # all listed variables are TRUE
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Lua
