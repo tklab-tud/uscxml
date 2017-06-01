@@ -16,6 +16,14 @@ matrix:
     - os: osx
       compiler: gcc
 
+# update cmake - mainly for FindLua
+# before_install:
+#   - mkdir $HOME/usr
+#   - export PATH="$HOME/usr/bin:$PATH"
+#   - wget https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.sh
+#   - chmod +x cmake-3.8.2-Linux-x86_64.sh
+#   - ./cmake-3.8.2-Linux-x86_64.sh --prefix=$HOME/usr --exclude-subdir --skip-license
+
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
   - if [ "$CXX" = "clang++" ] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX="clang++-3.6" CC="clang-3.6"; fi

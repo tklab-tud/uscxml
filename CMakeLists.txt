@@ -19,8 +19,14 @@ PROJECT(uSCXML)
 #################################################
 
 # where to find more cmake scripts
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/contrib/cmake)
-include("${CMAKE_MODULE_PATH}/USCXMLMacros.cmake")
+list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/contrib/cmake")
+
+# add modules that were introduced with later cmake versions if possible
+if (CMAKE_VERSION LESS 3.0.0)
+	list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/contrib/cmake/3.0.0")
+endif()
+
+include("${PROJECT_SOURCE_DIR}/contrib/cmake/USCXMLMacros.cmake")
 
 # use folders in the IDEs for the various targets
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
