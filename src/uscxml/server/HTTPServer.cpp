@@ -49,6 +49,10 @@ extern "C" {
 #include <unistd.h>                     // for gethostname
 //#include <netdb.h>
 //#include <arpa/inet.h>
+#else
+#ifdef HTTPS_ENABLED
+#define EVENT__HAVE_OPENSSL
+#endif
 #endif
 
 #ifdef HTTPS_ENABLED
@@ -125,6 +129,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 
 		SSL_library_init ();
 		SSL_load_error_strings ();
+        ERR_load_crypto_strings();
 		OpenSSL_add_all_algorithms ();
 
 		SSL_CTX *ctx = SSL_CTX_new (SSLv23_server_method ());
@@ -135,31 +140,26 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 
 		EC_KEY *ecdh = EC_KEY_new_by_curve_name (NID_X9_62_prime256v1);
 		if (! ecdh) {
-			LOGD(USCXML_ERROR) << ("EC_KEY_new_by_curve_name");
-			ERR_print_errors_fp(stderr);
+			LOGD(USCXML_ERROR) << ("EC_KEY_new_by_curve_name") << ERR_error_string(ERR_get_error(), NULL);
 			goto FAIL_SSL_SETUP;
 		}
 		if (1 != SSL_CTX_set_tmp_ecdh (ctx, ecdh)) {
-			LOGD(USCXML_ERROR) << ("SSL_CTX_set_tmp_ecdh");
-			ERR_print_errors_fp(stderr);
+            LOGD(USCXML_ERROR) << ("SSL_CTX_set_tmp_ecdh") << ERR_error_string(ERR_get_error(), NULL);
 			goto FAIL_SSL_SETUP;
 		}
 
 		if (1 != SSL_CTX_use_certificate_chain_file(ctx, sslConf->publicKey.c_str())) {
-			LOGD(USCXML_ERROR) <<  ("SSL_CTX_use_certificate_chain_file");
-			ERR_print_errors_fp(stderr);
+			LOGD(USCXML_ERROR) <<  ("SSL_CTX_use_certificate_chain_file") << ERR_error_string(ERR_get_error(), NULL);
 			goto FAIL_SSL_SETUP;
 		}
 
 		if (1 != SSL_CTX_use_PrivateKey_file(ctx, sslConf->privateKey.c_str(), SSL_FILETYPE_PEM)) {
-			LOGD(USCXML_ERROR) <<  ("SSL_CTX_use_PrivateKey_file");
-			ERR_print_errors_fp(stderr);
+			LOGD(USCXML_ERROR) <<  ("SSL_CTX_use_PrivateKey_file") << ERR_error_string(ERR_get_error(), NULL);
 			goto FAIL_SSL_SETUP;
 		}
 
 		if (1 != SSL_CTX_check_private_key(ctx)) {
-			LOGD(USCXML_ERROR) <<  ("SSL_CTX_check_private_key");
-			ERR_print_errors_fp(stderr);
+			LOGD(USCXML_ERROR) <<  ("SSL_CTX_check_private_key") << ERR_error_string(ERR_get_error(), NULL);
 			goto FAIL_SSL_SETUP;
 		}
 

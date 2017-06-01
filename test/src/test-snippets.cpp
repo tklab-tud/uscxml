@@ -32,6 +32,11 @@ void microstep_snippet() {
 }
 
 int main(int argc, char** argv) {
-	Logger::getDefault().log(USCXML_FATAL) << "Foo!" << " BAR?" << std::endl;
-	microstep_snippet();
+	try {
+		Logger::getDefault().log(USCXML_FATAL) << "Foo!" << " BAR?" << std::endl;
+		microstep_snippet();
+	}
+	catch (...) {
+		exit(EXIT_FAILURE);
+	}
 }

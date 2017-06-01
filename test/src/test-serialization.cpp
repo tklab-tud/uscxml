@@ -30,7 +30,7 @@ class StatusMonitor : public uscxml::StateTransitionMonitor {
 void printUsageAndExit() {
 	printf("test-serialization version " USCXML_VERSION " (" CMAKE_BUILD_TYPE " build - " CMAKE_COMPILER_STRING ")\n");
 	printf("Usage\n");
-	printf("\ttest-stress");
+	printf("\ttest-serialization");
 #ifdef BUILD_AS_PLUGINS
 	printf(" [-p pluginPath]");
 #endif

@@ -253,8 +253,10 @@ else()
 	endif()
 endif()
 
+
 #OpenSSL
 find_package(OpenSSL)
+# https://slproweb.com/products/Win32OpenSSL.html
 if (OPENSSL_FOUND)
 	include_directories(${OPENSSL_INCLUDE_DIR})
 	list (APPEND USCXML_CORE_LIBS ${OPENSSL_LIBRARIES})
@@ -330,6 +332,7 @@ if (";${LIBEVENT_LIBRARIES};" MATCHES "openssl")
 	# see https://stackoverflow.com/a/23326955/990120
 	set(EVENT_SSL_FOUND ON)
 endif()
+
 
 if (UNIX)
 	list (APPEND USCXML_CORE_LIBS "pthread")
@@ -413,10 +416,13 @@ OPTION(WITH_DM_LUA "Do search for the Lua libraries" ON)
 if (WITH_DM_LUA)
 	if (WIN32)
 		# LuaForWindows https://code.google.com/archive/p/luaforwindows/downloads
-		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
+		# set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
+		
+		# http://luabinaries.sourceforge.net/download.html
+		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.3/")
 	endif()
-	find_package(Lua51)
-	if (LUA51_FOUND)
+	find_package(Lua)
+	if (LUA_FOUND)
 		include_directories (${LUA_INCLUDE_DIR})
 		include_directories(${PROJECT_SOURCE_DIR}/contrib/src/LuaBridge)
 		list (APPEND USCXML_OPT_LIBS ${LUA_LIBRARIES})

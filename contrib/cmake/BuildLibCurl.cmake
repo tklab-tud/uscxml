@@ -26,27 +26,20 @@ if (MSVC)
 		set(VC_VERSION 12)
 	endif()
 		
+	SET(MACHINE_ARCH "x86")
 	if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-		externalproject_add(libcurl
-			URL https://curl.haxx.se/download/curl-7.48.0.tar.gz
-			URL_MD5 b2cac71029d28cb989150bac72aafab5
-			BUILD_IN_SOURCE 1
-			PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
-			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd winbuild && nmake /f Makefile.vc mode=static MACHINE=x64 VC=${VC_VERSION}
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc${VC_VERSION}-x64-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
-		)
-	else()
-		externalproject_add(libcurl
-			URL https://curl.haxx.se/download/curl-7.48.0.tar.gz
-			URL_MD5 b2cac71029d28cb989150bac72aafab5
-			BUILD_IN_SOURCE 1
-			PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
-			CONFIGURE_COMMAND ""
-			BUILD_COMMAND cd winbuild && nmake /f Makefile.vc mode=static MACHINE=x86 VC=${VC_VERSION}
-			INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc${VC_VERSION}-x86-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
-		)
+		SET(MACHINE_ARCH "x64")
 	endif()
+
+	externalproject_add(libcurl
+		URL https://curl.haxx.se/download/curl-7.48.0.tar.gz
+		URL_MD5 b2cac71029d28cb989150bac72aafab5
+		BUILD_IN_SOURCE 1
+		PREFIX ${CMAKE_BINARY_DIR}/deps/libcurl
+		CONFIGURE_COMMAND ""
+		BUILD_COMMAND cd winbuild && nmake /f Makefile.vc mode=static MACHINE=${MACHINE_ARCH} VC=${VC_VERSION}
+		INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory builds/libcurl-vc${VC_VERSION}-${MACHINE_ARCH}-release-static-ipv6-sspi-winssl ${CMAKE_BINARY_DIR}/deps/libcurl/
+	)
 else()
 	externalproject_add(libcurl
 		URL https://curl.haxx.se/download/curl-7.48.0.tar.gz

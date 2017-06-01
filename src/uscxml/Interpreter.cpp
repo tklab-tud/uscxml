@@ -98,7 +98,7 @@ Interpreter Interpreter::fromXML(const std::string& xml, const std::string& base
 
 Interpreter Interpreter::fromElement(XERCESC_NS::DOMElement* scxml, const std::string& baseURL) {
 	URL absUrl = normalizeURL(baseURL);
-
+    
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
 
@@ -147,6 +147,13 @@ Interpreter Interpreter::fromDocument(XERCESC_NS::DOMDocument* dom, const std::s
 Interpreter Interpreter::fromURL(const std::string& url) {
 	URL absUrl = normalizeURL(url);
 
+#ifdef _WIN32
+    // Xercesc is hard to build with SSL on windows, whereas curl uses winssl
+    if (absUrl.scheme() == "https") {
+        return fromXML(absUrl.getInContent(), absUrl);
+    }
+#endif
+    
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
 

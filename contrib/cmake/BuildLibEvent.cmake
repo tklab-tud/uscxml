@@ -2,24 +2,36 @@
 # see http://tools.cinemapub.be/opendcp/opendcp-0.19-src/contrib/CMakeLists.txt
 
 find_package(OpenSSL)
+if (OPENSSL_FOUND)
+	string(REGEX REPLACE "/include$" "" OPENSSL_ROOT_DIR ${OPENSSL_INCLUDE_DIR})
+	set(OPENSSL_ROOT_DIR "OPENSSL_DIR=${OPENSSL_ROOT_DIR}")
+	set(COPY_LIBEVENT_SSL "libevent_openssl.lib")
+else()
+	# essentially a noop to work around externalproject_add syntax
+	set(COPY_LIBEVENT_SSL "libevent.lib")
+endif()
 
 include(ExternalProject)
 if (MSVC)
 	
 	externalproject_add(libevent
-		URL https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
-		URL_MD5 c4c56f986aa985677ca1db89630a2e11
+		URL https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz
+		URL_MD5 f3eeaed018542963b7d2416ef1135ecc
 		BUILD_IN_SOURCE 1
 		PREFIX ${CMAKE_BINARY_DIR}/deps/libevent
 		CONFIGURE_COMMAND ""
-		BUILD_COMMAND nmake -f Makefile.nmake
+		PATCH_COMMAND
+			${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/contrib/patches/libevent/Makefile.nmake" <SOURCE_DIR>/Makefile.nmake
+
+		BUILD_COMMAND nmake ${OPENSSL_ROOT_DIR} -f Makefile.nmake
 		INSTALL_COMMAND
 			${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/deps/libevent/lib && 
 			${CMAKE_COMMAND} -E copy libevent.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
 			${CMAKE_COMMAND} -E copy libevent_core.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
 			${CMAKE_COMMAND} -E copy libevent_extras.lib ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
+			${CMAKE_COMMAND} -E copy ${COPY_LIBEVENT_SSL} ${CMAKE_BINARY_DIR}/deps/libevent/lib/ && 
 			${CMAKE_COMMAND} -E copy_directory include ${CMAKE_BINARY_DIR}/deps/libevent/include &&
-			${CMAKE_COMMAND} -E copy Win32-Code/event2/event-config.h ${CMAKE_BINARY_DIR}/deps/libevent/include/event2/
+			${CMAKE_COMMAND} -E copy Win32-Code/nmake/event2/event-config.h ${CMAKE_BINARY_DIR}/deps/libevent/include/event2/
 	)
 else ()
 	if (UNIX)
@@ -57,6 +69,10 @@ elseif (UNIX)
 	endif()
 elseif(WIN32)
 	set(LIBEVENT_LIBRARIES ${CMAKE_BINARY_DIR}/deps/libevent/lib/libevent.lib)
+	if (OPENSSL_FOUND)
+		list (APPEND LIBEVENT_LIBRARIES ${CMAKE_BINARY_DIR}/deps/libevent/lib/libevent_openssl.lib)
+	endif()
+
 else()
 	message(FATAL_ERROR "Unknown platform!")
 endif()
