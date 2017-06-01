@@ -415,11 +415,13 @@ endif()
 OPTION(WITH_DM_LUA "Do search for the Lua libraries" ON)
 if (WITH_DM_LUA)
 	if (WIN32)
-		# LuaForWindows https://code.google.com/archive/p/luaforwindows/downloads
-		# set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
+		# LuaForWindows:
+		# https://code.google.com/archive/p/luaforwindows/downloads
+		# https://github.com/rjpcomputing/luaforwindows/releases
+		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
 		
 		# http://luabinaries.sourceforge.net/download.html
-		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.3/")
+		# set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.3/")
 	endif()
 	find_package(Lua)
 	if (LUA_FOUND)

@@ -1,8 +1,8 @@
 # generate JNI library and create a jar
 # Make from within Eclipse fails miserably with the whole thing
 
-find_package(Lua51)
-if(LUA51_FOUND)
+find_package(Lua)
+if (LUA_FOUND)
 	include_directories(${LUA_INCLUDE_DIR})
 else()
 	message(STATUS "No Lua headers found - not building Lua wrappers")
