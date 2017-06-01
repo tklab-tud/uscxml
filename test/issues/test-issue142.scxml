@@ -1,0 +1,13 @@
+<scxml name="Test_SM" initial="InitialState" xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript">
+	<datamodel>
+		<data id="testData" src="test-issue142.json"/>
+	</datamodel>
+	<state id="InitialState">
+		<transition target="pass"/>
+	</state>
+	<final id="pass">
+		<onentry>
+			<log expr="testData"/>
+		</onentry>
+	</final>
+</scxml>
