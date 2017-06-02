@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
 	try {
 		Logger::getDefault().log(USCXML_FATAL) << "Foo!" << " BAR?" << std::endl;
 		microstep_snippet();
-	}
-	catch (...) {
+	} catch (...) {
 		exit(EXIT_FAILURE);
 	}
 }

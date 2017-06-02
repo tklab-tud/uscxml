@@ -390,6 +390,7 @@ find_package(SWIG)
 
 
 # JavaScriptCore
+# https://github.com/Lichtso/JSC-Standalone
 OPTION(WITH_DM_ECMA_JSC "Do search for JavaScriptCore" ON)
 if (WITH_DM_ECMA_JSC)
 	find_package(JSC)

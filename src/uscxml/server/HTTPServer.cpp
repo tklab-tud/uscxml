@@ -129,7 +129,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 
 		SSL_library_init ();
 		SSL_load_error_strings ();
-        ERR_load_crypto_strings();
+		ERR_load_crypto_strings();
 		OpenSSL_add_all_algorithms ();
 
 		SSL_CTX *ctx = SSL_CTX_new (SSLv23_server_method ());
@@ -144,7 +144,7 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 			goto FAIL_SSL_SETUP;
 		}
 		if (1 != SSL_CTX_set_tmp_ecdh (ctx, ecdh)) {
-            LOGD(USCXML_ERROR) << ("SSL_CTX_set_tmp_ecdh") << ERR_error_string(ERR_get_error(), NULL);
+			LOGD(USCXML_ERROR) << ("SSL_CTX_set_tmp_ecdh") << ERR_error_string(ERR_get_error(), NULL);
 			goto FAIL_SSL_SETUP;
 		}
 
