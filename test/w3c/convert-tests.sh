@@ -47,7 +47,7 @@ while [ "$1" != "" ]; do
 	esac
 done
 
-TXMLS=`ls txml/*.txml`
+TXMLS=`ls txml/*.txml contrib/*.txml`
 TRANSFORM="java -jar /Users/sradomski/Developer/Applications/SaxonHE9-4-0-7J/saxon9he.jar"
 
 # see http://saxon.sourceforge.net/saxon6.5.1/using-xsl.html
