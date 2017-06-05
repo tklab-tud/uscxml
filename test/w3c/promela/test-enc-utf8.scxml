@@ -6,7 +6,11 @@
     <data id="Var2" type="string" expr="'ü'"/>
   </datamodel>
   <state id="s0">
-    <transition cond="Var1==Var2" target="pass"/>
+    <transition cond="Var1==Var2" target="s1"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s1">
+    <transition cond="Var1=='ü'" target="pass"/>
     <transition target="fail"/>
   </state>
   <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">

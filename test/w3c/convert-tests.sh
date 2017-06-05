@@ -8,14 +8,14 @@ ME=`basename $0`
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 cd $DIR
 
-if [ "$#" -lt 1 ]; then
+if [ "$#" -lt 2 ]; then
     echo "At least one datamodel needs to be specified:"
-    echo "   $0 ecma c89 lua jexl namespace xpath promela prolog"
+    echo "   $0 ecma c89 lua jexl namespace xpath promela prolog [pattern]"
     exit 1
 fi
 
 
-while [ "$1" != "" ]; do
+while [ "$2" != "" ]; do
 	case $1 in
 		ecma )
 			ECMA=$1 
@@ -47,7 +47,7 @@ while [ "$1" != "" ]; do
 	esac
 done
 
-TXMLS=`ls txml/*.txml contrib/*.txml`
+TXMLS=`ls txml/$1.txml contrib/$1.txml`
 TRANSFORM="java -jar /Users/sradomski/Developer/Applications/SaxonHE9-4-0-7J/saxon9he.jar"
 
 # see http://saxon.sourceforge.net/saxon6.5.1/using-xsl.html
@@ -133,6 +133,18 @@ find ./lua -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
 find ./jexl -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
 find ./jexl -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
 find ./jexl -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+
+# create other encoding tests from the utf8 one
+for ENC in ISO-8859-15 CP1250;
+do
+	export ENC=$ENC
+	find . -name "test-enc-UTF8.scxml" -exec sh -c 'sed "s/UTF-8/${ENC}/g" {} > $(dirname {})/test-enc-${ENC}.tmp.scxml' \;
+	find . -name "test-enc-${ENC}.tmp.scxml" -exec sh -c 'iconv -f UTF-8 -t ${ENC} {} > $(dirname {})/test-enc-${ENC}.scxml' \;
+	find . -name "test-enc-${ENC}.tmp.scxml" -exec rm {} \;
+done
+
+# find . -name "tmp.scxml" -exec rm {} \;
+# find . -name "tmp.scxml.orig" -exec rm {} \;
 
 # test436 is the null datamodel
 mv ./ecma/test436.scxml ./null

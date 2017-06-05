@@ -8,7 +8,12 @@
   </datamodel>
   
 <state id="s0">
-  <transition conf:VarEqVar="1 2" conf:targetpass=""/>
+  <transition conf:VarEqVar="1 2" target="s1"/>
+  <transition conf:targetfail=""/>
+ </state>
+
+<state id="s1">
+  <transition conf:idQuoteVal="1=ü" conf:targetpass=""/>
   <transition conf:targetfail=""/>
  </state>
 

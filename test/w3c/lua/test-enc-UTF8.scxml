@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- test that neither if clause executes, so that bat is the only event raised. -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
+  <datamodel>
+    <data id="Var1" expr="'ü'"/>
+    <data id="Var2" expr="'ü'"/>
+  </datamodel>
+  <state id="s0">
+    <transition cond="Var1==Var2" target="s1"/>
+    <transition target="fail"/>
+  </state>
+  <state id="s1">
+    <transition cond="Var1=='ü'" target="pass"/>
+    <transition target="fail"/>
+  </state>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="pass">
+    <onentry>
+      <log label="Outcome" expr="'pass'"/>
+    </onentry>
+  </final>
+  <final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+    <onentry>
+      <log label="Outcome" expr="'fail'"/>
+    </onentry>
+  </final>
+</scxml>
