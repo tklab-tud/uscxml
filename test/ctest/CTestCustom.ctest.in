@@ -34,6 +34,8 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"w3c/ecma/test301.scxml" # Invalid script URL - PASSED
 	"w3c/ecma/test436.scxml" # Tests NULL datamodel - PASSED
 
+  "w3c/namespace/test301.scxml" # Invalid script URL - PASSED
+
 
   ### Just ignore the XPath datamodel tests that hang, most of the rest fails as well
 	"w3c/xpath/test178.scxml" # Manual - PASSED
