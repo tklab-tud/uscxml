@@ -84,6 +84,51 @@ done
 
 # make sure substitutions are idempotent!
 
+if [ "$ECMA" != "" ]; then
+	cp txml/*.txt ecma/
+	find ./ecma -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	mv ./ecma/test436.scxml ./null
+fi
+
+if [ "$NAMESPACE" != "" ]; then
+	# unnamespace embedded xml in namespace tests
+	sed -i.orig 's/scxml:book/book/g' ./namespace/test557.scxml
+	sed -i.orig 's/scxml:book/book/g' ./namespace/test561.scxml
+	cp txml/*.txt namespace/
+	find ./namespace -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	rm ./namespace/test436.scxml
+fi
+
+if [ "$XPATH" != "" ]; then
+	cp txml/*.txt xpath/
+	find ./xpath -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+	rm ./xpath/test436.scxml
+fi
+
+if [ "$PROMELA" != "" ]; then
+	cp txml/*.txt promela/
+	find ./promela -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	find ./promela -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+	find ./promela -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+	rm ./promela/test436.scxml
+fi
+
+if [ "$PROLOG" != "" ]; then
+	cp txml/*.txt prolog/
+	find ./prolog -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	find ./prolog -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+	find ./prolog -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+	rm ./prolog/test436.scxml
+fi
+
+if [ "$C89" != "" ]; then
+	cp txml/*.txt c89/
+	find ./c89 -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	find ./c89 -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+	find ./c89 -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+	rm ./c89/test436.scxml
+fi
+
 if [ "$LUA" != "" ]; then
 	# percent needs to be escaped in lua patterns
 	sed -i.orig 's/this%20is%20some%20content/this%%20is%%20some%%20content/g' ./lua/test520.scxml
@@ -93,49 +138,26 @@ if [ "$LUA" != "" ]; then
   
 	# we can pass test562 even though it it ecmascript specific
 	sed -i.orig 's/datamodel=\"ecmascript\"/datamodel=\"lua\"/g' ./lua/test562.scxml
-  
+
+	cp txml/*.txt lua/
+	find ./lua -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	find ./lua -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+	find ./lua -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+	rm ./lua/test436.scxml
 fi
 
-if [ "$NAMESPACE" != "" ]; then
-	# unnamespace embedded xml in namespace tests
-	sed -i.orig 's/scxml:book/book/g' ./namespace/test557.scxml
-	sed -i.orig 's/scxml:book/book/g' ./namespace/test561.scxml
+if [ "$JEXL" != "" ]; then
+	cp txml/*.txt jexl/
+	find ./jexl -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
+	find ./jexl -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
+	find ./jexl -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
+	rm ./jexl/test436.scxml
 fi
-
-cp txml/*.txt ecma/
-cp txml/*.txt namespace/
-cp txml/*.txt xpath/
-cp txml/*.txt promela/
-cp txml/*.txt prolog/
-cp txml/*.txt lua/
-cp txml/*.txt jexl/
-
-find ./ecma -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./namespace -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./xpath -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
-
-find ./promela -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./promela -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
-find ./promela -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
-
-find ./prolog -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./prolog -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
-find ./prolog -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
-
-find ./c89 -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./c89 -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
-find ./c89 -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
-
-find ./lua -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./lua -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
-find ./lua -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
-
-find ./jexl -type f -exec grep -Ili 'datamodel="xpath"' {} \; |xargs rm -fv
-find ./jexl -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
-find ./jexl -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
 
 # create other encoding tests from the utf8 one
-for ENC in ISO-8859-15 WINDOWS-1252;
+# https://xerces.apache.org/xerces-c/faq-parse-3.html#faq-16
+
+for ENC in UTF-16 ISO-8859-1 WINDOWS-1252
 do
 	export ENC=$ENC
 	find . -name "test-enc-UTF8.scxml" -exec sh -c 'sed "s/UTF-8/${ENC}/g" {} > $(dirname {})/test-enc-${ENC}.tmp.scxml' \;
@@ -145,15 +167,6 @@ done
 
 # find . -name "tmp.scxml" -exec rm {} \;
 # find . -name "tmp.scxml.orig" -exec rm {} \;
-
-# test436 is the null datamodel
-mv ./ecma/test436.scxml ./null
-rm ./namespace/test436.scxml
-rm ./xpath/test436.scxml
-rm ./promela/test436.scxml
-rm ./prolog/test436.scxml
-rm ./lua/test436.scxml
-rm ./jexl/test436.scxml
 
 # format all SCXML files
 SCXMLS=`find . -type f -name '*.scxml'`
