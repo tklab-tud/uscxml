@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="CP1250"?>
+<?xml version="1.0" encoding="WINDOWS-1252"?>
 <!-- test that neither if clause executes, so that bat is the only event raised. -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="lua">
   <datamodel>

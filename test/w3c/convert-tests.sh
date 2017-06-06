@@ -135,7 +135,7 @@ find ./jexl -type f -exec grep -Ili 'datamodel="ecmascript"' {} \; |xargs rm -fv
 find ./jexl -type f -exec grep -Ili 'datamodel="null"' {} \; |xargs rm -fv
 
 # create other encoding tests from the utf8 one
-for ENC in ISO-8859-15 CP1250 CP1252;
+for ENC in ISO-8859-15 WINDOWS-1252;
 do
 	export ENC=$ENC
 	find . -name "test-enc-UTF8.scxml" -exec sh -c 'sed "s/UTF-8/${ENC}/g" {} > $(dirname {})/test-enc-${ENC}.tmp.scxml' \;
