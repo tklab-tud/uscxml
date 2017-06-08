@@ -1,16 +1,159 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- test that neither if clause executes, so that bat is the only event raised. -->
-<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="s0" version="1.0" datamodel="c89">
+<!-- http://www.cl.cam.ac.uk/~mgk25/ucs/examples/quickbrown.txt -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" initial="init" version="1.0" datamodel="c89">
   <datamodel>
-    <data id="Var1" expr="&amp;ü&amp;"/>
-    <data id="Var2" expr="&amp;ü&amp;"/>
+    <data id="VarTmp"/>
+    <data id="Var1" expr="&amp;Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Wolther spillede på xylofon.&amp;"/>
+    <data id="Var2" expr="&amp;Heizölrückstoßabdämpfung&amp;"/>
+    <data id="Var3" expr="&amp;         &amp;"/>
+    <data id="Var4" expr="&amp;The quick brown fox jumps over the lazy dog&amp;"/>
+    <data id="Var5" expr="&amp;El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío, añoraba a su querido cachorro&amp;"/>
+    <data id="Var6" expr="&amp;Le cur déçu mais l`âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälström où brûlent les novæ&amp;"/>
+    <data id="Var7" expr="&amp;D`fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh&amp;"/>
+    <data id="Var8" expr="&amp;Árvíztr tükörfúrógép&amp;"/>
+    <data id="Var9" expr="&amp;Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa&amp;"/>
+    <data id="Var10" expr="&amp;   &amp;"/>
+    <data id="Var11" expr="&amp;       &amp;"/>
+    <data id="Var12" expr="&amp;?           &amp;"/>
+    <data id="Var13" expr="&amp;Pchn w t ód jea lub om skrzy fig&amp;"/>
+    <data id="Var14" expr="&amp;     ? ,   !&amp;"/>
+    <data id="Var15" expr="&amp;          &amp;"/>
+    <data id="Var16" expr="&amp;Pijamal hasta, yaz oföre çabucak güvendi&amp;"/>
   </datamodel>
-  <state id="s0">
-    <transition cond="Var1===Var2" target="s1"/>
+  <state id="init">
+    <onentry>
+      <send event="danish" namelist="Var1"/>
+      <send event="german" namelist="Var2"/>
+      <send event="greek" namelist="Var3"/>
+      <send event="english" namelist="Var4"/>
+      <send event="spanish" namelist="Var5"/>
+      <send event="french" namelist="Var6"/>
+      <send event="gaelic" namelist="Var7"/>
+      <send event="hungarian" namelist="Var8"/>
+      <send event="icelandic" namelist="Var9"/>
+      <send event="hiragana" namelist="Var10"/>
+      <send event="katakana" namelist="Var11"/>
+      <send event="hebrew" namelist="Var12"/>
+      <send event="polish" namelist="Var13"/>
+      <send event="russian" namelist="Var14"/>
+      <send event="thai" namelist="Var15"/>
+      <send event="turkish" namelist="Var16"/>
+      <send event="done"/>
+    </onentry>
+    <transition target="idle"/>
+  </state>
+  <state id="idle"/>
+  <transition event="done" target="pass"/>
+  <transition event="danish" cond="Var1=='Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Wolther spillede på xylofon.'" target="danish">
+    <assign location="VarTmp" expr="_event.data.Var1"/>
+  </transition>
+  <state id="danish">
+    <transition cond="" target="idle"/>
     <transition target="fail"/>
   </state>
-  <state id="s1">
-    <transition cond="Var1=='ü'" target="pass"/>
+  <transition event="german" cond="Var2=='Heizölrückstoßabdämpfung'" target="german">
+    <assign location="VarTmp" expr="_event.data.Var2"/>
+  </transition>
+  <state id="german">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="greek" cond="Var3=='         '" target="greek">
+    <assign location="VarTmp" expr="_event.data.Var3"/>
+  </transition>
+  <state id="greek">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="english" cond="Var4=='The quick brown fox jumps over the lazy dog'" target="english">
+    <assign location="VarTmp" expr="_event.data.Var4"/>
+  </transition>
+  <state id="english">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="spanish" cond="Var5=='El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío, añoraba a su querido cachorro'" target="spanish">
+    <assign location="VarTmp" expr="_event.data.Var5"/>
+  </transition>
+  <state id="spanish">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="french" cond="Var6=='Le cur déçu mais l`âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälström où brûlent les novæ'" target="french">
+    <assign location="VarTmp" expr="_event.data.Var6"/>
+  </transition>
+  <state id="french">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="gaelic" cond="Var7=='D`fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh'" target="gaelic">
+    <assign location="VarTmp" expr="_event.data.Var7"/>
+  </transition>
+  <state id="gaelic">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="hungarian" cond="Var8=='Árvíztr tükörfúrógép'" target="hungarian">
+    <assign location="VarTmp" expr="_event.data.Var8"/>
+  </transition>
+  <state id="hungarian">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="icelandic" cond="Var9=='Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa'" target="icelandic">
+    <assign location="VarTmp" expr="_event.data.Var9"/>
+  </transition>
+  <state id="icelandic">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="hiragana" cond="Var10=='   '" target="hiragana">
+    <assign location="VarTmp" expr="_event.data.Var10"/>
+  </transition>
+  <state id="hiragana">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="katakana" cond="Var11=='       '" target="katakana">
+    <assign location="VarTmp" expr="_event.data.Var11"/>
+  </transition>
+  <state id="katakana">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="hebrew" cond="Var12=='?           '" target="hebrew">
+    <assign location="VarTmp" expr="_event.data.Var12"/>
+  </transition>
+  <state id="hebrew">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="polish" cond="Var13=='Pchn w t ód jea lub om skrzy fig'" target="polish">
+    <assign location="VarTmp" expr="_event.data.Var13"/>
+  </transition>
+  <state id="polish">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="russian" cond="Var14=='     ? ,   !'" target="russian">
+    <assign location="VarTmp" expr="_event.data.Var14"/>
+  </transition>
+  <state id="russian">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="thai" cond="Var15=='          '" target="thai">
+    <assign location="VarTmp" expr="_event.data.Var15"/>
+  </transition>
+  <state id="thai">
+    <transition cond="" target="idle"/>
+    <transition target="fail"/>
+  </state>
+  <transition event="turkish" cond="Var16=='Pijamal hasta, yaz oföre çabucak güvendi'" target="turkish">
+    <assign location="VarTmp" expr="_event.data.Var16"/>
+  </transition>
+  <state id="turkish">
+    <transition cond="" target="idle"/>
     <transition target="fail"/>
   </state>
   <final id="pass">

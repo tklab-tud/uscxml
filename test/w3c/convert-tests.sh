@@ -161,7 +161,7 @@ for ENC in UTF-16 ISO-8859-1 WINDOWS-1252
 do
 	export ENC=$ENC
 	find . -name "test-enc-UTF8.scxml" -exec sh -c 'sed "s/UTF-8/${ENC}/g" {} > $(dirname {})/test-enc-${ENC}.tmp.scxml' \;
-	find . -name "test-enc-${ENC}.tmp.scxml" -exec sh -c 'iconv -f UTF-8 -t ${ENC} {} > $(dirname {})/test-enc-${ENC}.scxml' \;
+	find . -name "test-enc-${ENC}.tmp.scxml" -exec sh -c 'iconv -c -f UTF-8 -t ${ENC} {} > $(dirname {})/test-enc-${ENC}.scxml' \;
 	find . -name "test-enc-${ENC}.tmp.scxml" -exec rm {} \;
 done
 

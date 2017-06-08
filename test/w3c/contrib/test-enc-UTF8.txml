@@ -1,24 +1,231 @@
 <?xml version="1.0"?>
-<!-- test that neither if clause executes, so that bat is the only event raised. -->
+<!-- http://www.cl.cam.ac.uk/~mgk25/ucs/examples/quickbrown.txt -->
 
-<scxml initial="s0" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+<scxml initial="init" version="1.0" conf:datamodel=""  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
 <datamodel>
-  <data conf:id="1" conf:quoteExpr="ü"/>
-  <data conf:id="2" conf:quoteExpr="ü"/>
-  </datamodel>
-  
-<state id="s0">
-  <transition conf:VarEqVar="1 2" target="s1"/>
-  <transition conf:targetfail=""/>
- </state>
+	<data conf:id="Tmp" />
+  <data conf:id="1" conf:quoteExpr="Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Wolther spillede på xylofon."/>
+  <data conf:id="2" conf:quoteExpr="Heizölrückstoßabdämpfung"/>
+  <data conf:id="3" conf:quoteExpr="Γαζέες καὶ μυρτιὲς δὲν θὰ βρῶ πιὰ στὸ χρυσαφὶ ξέφωτο"/>
+  <data conf:id="4" conf:quoteExpr="The quick brown fox jumps over the lazy dog"/>
+  <data conf:id="5" conf:quoteExpr="El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío, añoraba a su querido cachorro"/>
+  <data conf:id="6" conf:quoteExpr="Le cœur déçu mais l`âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälström où brûlent les novæ"/>
+  <data conf:id="7" conf:quoteExpr="D`fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh"/>
+  <data conf:id="8" conf:quoteExpr="Árvíztűrő tükörfúrógép"/>
+  <data conf:id="9" conf:quoteExpr="Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa"/>
+  <data conf:id="10" conf:quoteExpr="いろはにほへとちりぬるを わかよたれそつねならむ うゐのおくやまけふこえて あさきゆめみしゑひもせす"/>
+  <data conf:id="11" conf:quoteExpr="イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム ウヰノオクヤマ ケフコエテ アサキユメミシ ヱヒモセスン"/>
+  <data conf:id="12" conf:quoteExpr="? דג סקרן שט בים מאוכזב ולפתע מצא לו חברה איך הקליטה"/>
+  <data conf:id="13" conf:quoteExpr="Pchnąć w tę łódź jeża lub ośm skrzyń fig"/>
+  <data conf:id="14" conf:quoteExpr="В чащах юга жил бы цитрус? Да, но фальшивый экземпляр!"/>
+  <data conf:id="15" conf:quoteExpr="เป็นมนุษย์สุดประเสริฐเลิศคุณค่า กว่าบรรดาฝูงสัตว์เดรัจฉาน จงฝ่าฟันพัฒนาวิชาการ อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า หัดอภัยเหมือนกีฬาอัชฌาสัย ปฏิบัติประพฤติกฎกำหนดใจ พูดจาให้จ๊ะๆ จ๋าๆ น่าฟังเอย ฯ"/>
+  <data conf:id="16" conf:quoteExpr="Pijamalı hasta, yağız şoföre çabucak güvendi"/>
+</datamodel>
 
-<state id="s1">
-  <transition conf:idQuoteVal="1=ü" conf:targetpass=""/>
-  <transition conf:targetfail=""/>
- </state>
+<state id="init">
+	<onentry>
+		<send event="danish" conf:namelist="1"/>
+		<send event="german" conf:namelist="2"/>
+		<send event="greek" conf:namelist="3"/>
+		<send event="english" conf:namelist="4"/>
+		<send event="spanish" conf:namelist="5"/>
+		<send event="french" conf:namelist="6"/>
+		<send event="gaelic" conf:namelist="7"/>
+		<send event="hungarian" conf:namelist="8"/>
+		<send event="icelandic" conf:namelist="9"/>
+		<send event="hiragana" conf:namelist="10"/>
+		<send event="katakana" conf:namelist="11"/>
+		<send event="hebrew" conf:namelist="12"/>
+		<send event="polish" conf:namelist="13"/>
+		<send event="russian" conf:namelist="14"/>
+		<send event="thai" conf:namelist="15"/>
+		<send event="turkish" conf:namelist="16"/>
+		<send event="done"/>
+	</onentry>
+	<transition target="idle" />
+</state>
 
-  
-   <conf:pass/>
-   <conf:fail/>
+<state id="idle" />
+<transition event="done" conf:targetpass="" />
+
+<transition event="danish"
+						conf:idQuoteVal="1=Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Wolther spillede på xylofon." 
+						target="danish">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="1"/>
+</transition>
+
+<state id="danish">
+  <transition conf:VarEqVar="1 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="german"
+						conf:idQuoteVal="2=Heizölrückstoßabdämpfung" 
+						target="german">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="2"/>
+</transition>
+
+<state id="german">
+  <transition conf:VarEqVar="2 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="greek"
+						conf:idQuoteVal="3=Γαζέες καὶ μυρτιὲς δὲν θὰ βρῶ πιὰ στὸ χρυσαφὶ ξέφωτο" 
+						target="greek">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="3"/>
+</transition>
+
+<state id="greek">
+  <transition conf:VarEqVar="3 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="english"
+						conf:idQuoteVal="4=The quick brown fox jumps over the lazy dog" 
+						target="english">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="4"/>
+</transition>
+
+<state id="english">
+  <transition conf:VarEqVar="4 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="spanish"
+						conf:idQuoteVal="5=El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío, añoraba a su querido cachorro" 
+						target="spanish">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="5"/>
+</transition>
+
+<state id="spanish">
+  <transition conf:VarEqVar="5 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="french"
+						conf:idQuoteVal="6=Le cœur déçu mais l`âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälström où brûlent les novæ"
+						target="french">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="6"/>
+</transition>
+
+<state id="french">
+  <transition conf:VarEqVar="6 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="gaelic"
+						conf:idQuoteVal="7=D`fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh" 
+						target="gaelic">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="7"/>
+</transition>
+
+<state id="gaelic">
+  <transition conf:VarEqVar="7 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="hungarian"
+						conf:idQuoteVal="8=Árvíztűrő tükörfúrógép" 
+						target="hungarian">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="8"/>
+</transition>
+
+<state id="hungarian">
+  <transition conf:VarEqVar="8 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="icelandic"
+						conf:idQuoteVal="9=Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa" 
+						target="icelandic">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="9"/>
+</transition>
+
+<state id="icelandic">
+  <transition conf:VarEqVar="9 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="hiragana"
+						conf:idQuoteVal="10=いろはにほへとちりぬるを わかよたれそつねならむ うゐのおくやまけふこえて あさきゆめみしゑひもせす" 
+						target="hiragana">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="10"/>
+</transition>
+
+<state id="hiragana">
+  <transition conf:VarEqVar="10 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="katakana"
+						conf:idQuoteVal="11=イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム ウヰノオクヤマ ケフコエテ アサキユメミシ ヱヒモセスン" 
+						target="katakana">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="11"/>
+</transition>
+
+<state id="katakana">
+  <transition conf:VarEqVar="11 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="hebrew"
+						conf:idQuoteVal="12=? דג סקרן שט בים מאוכזב ולפתע מצא לו חברה איך הקליטה" 
+						target="hebrew">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="12"/>
+</transition>
+
+<state id="hebrew">
+  <transition conf:VarEqVar="12 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="polish"
+						conf:idQuoteVal="13=Pchnąć w tę łódź jeża lub ośm skrzyń fig" 
+						target="polish">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="13"/>
+</transition>
+
+<state id="polish">
+  <transition conf:VarEqVar="13 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="russian"
+						conf:idQuoteVal="14=В чащах юга жил бы цитрус? Да, но фальшивый экземпляр!" 
+						target="russian">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="14"/>
+</transition>
+
+<state id="russian">
+  <transition conf:VarEqVar="14 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="thai"
+						conf:idQuoteVal="15=เป็นมนุษย์สุดประเสริฐเลิศคุณค่า กว่าบรรดาฝูงสัตว์เดรัจฉาน จงฝ่าฟันพัฒนาวิชาการ อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า หัดอภัยเหมือนกีฬาอัชฌาสัย ปฏิบัติประพฤติกฎกำหนดใจ พูดจาให้จ๊ะๆ จ๋าๆ น่าฟังเอย ฯ" 
+						target="thai">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="15"/>
+</transition>
+
+<state id="thai">
+  <transition conf:VarEqVar="15 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+<transition event="turkish"
+						conf:idQuoteVal="16=Pijamalı hasta, yağız şoföre çabucak güvendi" 
+						target="turkish">
+	<assign conf:location="Tmp" conf:eventDataNamelistValue="16"/>
+</transition>
+
+<state id="turkish">
+  <transition conf:VarEqVar="16 Tmp" target="idle"/>
+  <transition conf:targetfail=""/>
+</state>
+
+
+<conf:pass/>
+<conf:fail/>
 
 </scxml>

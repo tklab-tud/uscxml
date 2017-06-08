@@ -1,16 +1,159 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- test that neither if clause executes, so that bat is the only event raised. -->
-<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="ecmascript">
+<!-- http://www.cl.cam.ac.uk/~mgk25/ucs/examples/quickbrown.txt -->
+<scxml:scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" xmlns:scxml="http://www.w3.org/2005/07/scxml" initial="init" version="1.0" datamodel="ecmascript">
   <scxml:datamodel>
-    <scxml:data id="Var1" expr="'ü'"/>
-    <scxml:data id="Var2" expr="'ü'"/>
+    <scxml:data id="VarTmp"/>
+    <scxml:data id="Var1" expr="'Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Wolther spillede på xylofon.'"/>
+    <scxml:data id="Var2" expr="'Heizölrückstoßabdämpfung'"/>
+    <scxml:data id="Var3" expr="'Γαζέες καὶ μυρτιὲς δὲν θὰ βρῶ πιὰ στὸ χρυσαφὶ ξέφωτο'"/>
+    <scxml:data id="Var4" expr="'The quick brown fox jumps over the lazy dog'"/>
+    <scxml:data id="Var5" expr="'El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío, añoraba a su querido cachorro'"/>
+    <scxml:data id="Var6" expr="'Le cœur déçu mais l`âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälström où brûlent les novæ'"/>
+    <scxml:data id="Var7" expr="'D`fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh'"/>
+    <scxml:data id="Var8" expr="'Árvíztűrő tükörfúrógép'"/>
+    <scxml:data id="Var9" expr="'Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa'"/>
+    <scxml:data id="Var10" expr="'いろはにほへとちりぬるを わかよたれそつねならむ うゐのおくやまけふこえて あさきゆめみしゑひもせす'"/>
+    <scxml:data id="Var11" expr="'イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム ウヰノオクヤマ ケフコエテ アサキユメミシ ヱヒモセスン'"/>
+    <scxml:data id="Var12" expr="'? דג סקרן שט בים מאוכזב ולפתע מצא לו חברה איך הקליטה'"/>
+    <scxml:data id="Var13" expr="'Pchnąć w tę łódź jeża lub ośm skrzyń fig'"/>
+    <scxml:data id="Var14" expr="'В чащах юга жил бы цитрус? Да, но фальшивый экземпляр!'"/>
+    <scxml:data id="Var15" expr="'เป็นมนุษย์สุดประเสริฐเลิศคุณค่า กว่าบรรดาฝูงสัตว์เดรัจฉาน จงฝ่าฟันพัฒนาวิชาการ อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า หัดอภัยเหมือนกีฬาอัชฌาสัย ปฏิบัติประพฤติกฎกำหนดใจ พูดจาให้จ๊ะๆ จ๋าๆ น่าฟังเอย ฯ'"/>
+    <scxml:data id="Var16" expr="'Pijamalı hasta, yağız şoföre çabucak güvendi'"/>
   </scxml:datamodel>
-  <scxml:state id="s0">
-    <scxml:transition cond="Var1===Var2" target="s1"/>
+  <scxml:state id="init">
+    <scxml:onentry>
+      <scxml:send event="danish" namelist="Var1"/>
+      <scxml:send event="german" namelist="Var2"/>
+      <scxml:send event="greek" namelist="Var3"/>
+      <scxml:send event="english" namelist="Var4"/>
+      <scxml:send event="spanish" namelist="Var5"/>
+      <scxml:send event="french" namelist="Var6"/>
+      <scxml:send event="gaelic" namelist="Var7"/>
+      <scxml:send event="hungarian" namelist="Var8"/>
+      <scxml:send event="icelandic" namelist="Var9"/>
+      <scxml:send event="hiragana" namelist="Var10"/>
+      <scxml:send event="katakana" namelist="Var11"/>
+      <scxml:send event="hebrew" namelist="Var12"/>
+      <scxml:send event="polish" namelist="Var13"/>
+      <scxml:send event="russian" namelist="Var14"/>
+      <scxml:send event="thai" namelist="Var15"/>
+      <scxml:send event="turkish" namelist="Var16"/>
+      <scxml:send event="done"/>
+    </scxml:onentry>
+    <scxml:transition target="idle"/>
+  </scxml:state>
+  <scxml:state id="idle"/>
+  <scxml:transition event="done" target="pass"/>
+  <scxml:transition event="danish" cond="Var1=='Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Wolther spillede på xylofon.'" target="danish">
+    <scxml:assign location="VarTmp" expr="_event.data.Var1"/>
+  </scxml:transition>
+  <scxml:state id="danish">
+    <scxml:transition cond="" target="idle"/>
     <scxml:transition target="fail"/>
   </scxml:state>
-  <scxml:state id="s1">
-    <scxml:transition cond="Var1=='ü'" target="pass"/>
+  <scxml:transition event="german" cond="Var2=='Heizölrückstoßabdämpfung'" target="german">
+    <scxml:assign location="VarTmp" expr="_event.data.Var2"/>
+  </scxml:transition>
+  <scxml:state id="german">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="greek" cond="Var3=='Γαζέες καὶ μυρτιὲς δὲν θὰ βρῶ πιὰ στὸ χρυσαφὶ ξέφωτο'" target="greek">
+    <scxml:assign location="VarTmp" expr="_event.data.Var3"/>
+  </scxml:transition>
+  <scxml:state id="greek">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="english" cond="Var4=='The quick brown fox jumps over the lazy dog'" target="english">
+    <scxml:assign location="VarTmp" expr="_event.data.Var4"/>
+  </scxml:transition>
+  <scxml:state id="english">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="spanish" cond="Var5=='El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío, añoraba a su querido cachorro'" target="spanish">
+    <scxml:assign location="VarTmp" expr="_event.data.Var5"/>
+  </scxml:transition>
+  <scxml:state id="spanish">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="french" cond="Var6=='Le cœur déçu mais l`âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälström où brûlent les novæ'" target="french">
+    <scxml:assign location="VarTmp" expr="_event.data.Var6"/>
+  </scxml:transition>
+  <scxml:state id="french">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="gaelic" cond="Var7=='D`fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh'" target="gaelic">
+    <scxml:assign location="VarTmp" expr="_event.data.Var7"/>
+  </scxml:transition>
+  <scxml:state id="gaelic">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="hungarian" cond="Var8=='Árvíztűrő tükörfúrógép'" target="hungarian">
+    <scxml:assign location="VarTmp" expr="_event.data.Var8"/>
+  </scxml:transition>
+  <scxml:state id="hungarian">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="icelandic" cond="Var9=='Kæmi ný öxi hér ykist þjófum nú bæði víl og ádrepa'" target="icelandic">
+    <scxml:assign location="VarTmp" expr="_event.data.Var9"/>
+  </scxml:transition>
+  <scxml:state id="icelandic">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="hiragana" cond="Var10=='いろはにほへとちりぬるを わかよたれそつねならむ うゐのおくやまけふこえて あさきゆめみしゑひもせす'" target="hiragana">
+    <scxml:assign location="VarTmp" expr="_event.data.Var10"/>
+  </scxml:transition>
+  <scxml:state id="hiragana">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="katakana" cond="Var11=='イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム ウヰノオクヤマ ケフコエテ アサキユメミシ ヱヒモセスン'" target="katakana">
+    <scxml:assign location="VarTmp" expr="_event.data.Var11"/>
+  </scxml:transition>
+  <scxml:state id="katakana">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="hebrew" cond="Var12=='? דג סקרן שט בים מאוכזב ולפתע מצא לו חברה איך הקליטה'" target="hebrew">
+    <scxml:assign location="VarTmp" expr="_event.data.Var12"/>
+  </scxml:transition>
+  <scxml:state id="hebrew">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="polish" cond="Var13=='Pchnąć w tę łódź jeża lub ośm skrzyń fig'" target="polish">
+    <scxml:assign location="VarTmp" expr="_event.data.Var13"/>
+  </scxml:transition>
+  <scxml:state id="polish">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="russian" cond="Var14=='В чащах юга жил бы цитрус? Да, но фальшивый экземпляр!'" target="russian">
+    <scxml:assign location="VarTmp" expr="_event.data.Var14"/>
+  </scxml:transition>
+  <scxml:state id="russian">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="thai" cond="Var15=='เป็นมนุษย์สุดประเสริฐเลิศคุณค่า กว่าบรรดาฝูงสัตว์เดรัจฉาน จงฝ่าฟันพัฒนาวิชาการ อย่าล้างผลาญฤๅเข่นฆ่าบีฑาใคร ไม่ถือโทษโกรธแช่งซัดฮึดฮัดด่า หัดอภัยเหมือนกีฬาอัชฌาสัย ปฏิบัติประพฤติกฎกำหนดใจ พูดจาให้จ๊ะๆ จ๋าๆ น่าฟังเอย ฯ'" target="thai">
+    <scxml:assign location="VarTmp" expr="_event.data.Var15"/>
+  </scxml:transition>
+  <scxml:state id="thai">
+    <scxml:transition cond="" target="idle"/>
+    <scxml:transition target="fail"/>
+  </scxml:state>
+  <scxml:transition event="turkish" cond="Var16=='Pijamalı hasta, yağız şoföre çabucak güvendi'" target="turkish">
+    <scxml:assign location="VarTmp" expr="_event.data.Var16"/>
+  </scxml:transition>
+  <scxml:state id="turkish">
+    <scxml:transition cond="" target="idle"/>
     <scxml:transition target="fail"/>
   </scxml:state>
   <scxml:final id="pass">
