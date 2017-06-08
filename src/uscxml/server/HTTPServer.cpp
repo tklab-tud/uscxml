@@ -736,7 +736,9 @@ void HTTPServer::start() {
 void HTTPServer::run(void* instance) {
 	HTTPServer* INSTANCE = (HTTPServer*)instance;
 	while(INSTANCE->_isRunning) {
-		event_base_dispatch(INSTANCE->_base);
+		// getting this to be non-polling is somewhat tricky and changes among versions
+		event_base_loop(INSTANCE->_base, EVLOOP_ONCE | EVLOOP_NO_EXIT_ON_EMPTY);
+//		event_base_dispatch(INSTANCE->_base);
 	}
 	LOGD(USCXML_INFO) << "HTTP Server stopped" << std::endl;
 }

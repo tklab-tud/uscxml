@@ -507,15 +507,15 @@ Event InterpreterImpl::dequeueExternal(size_t blockMs) {
 void InterpreterImpl::enqueue(const std::string& type, const std::string& target, size_t delayMs, const Event& sendEvent) {
 	std::lock_guard<std::recursive_mutex> lock(_delayMutex);
 
-	assert(sendEvent.uuid.length() > 0);
-	assert(_delayedEventTargets.find(sendEvent.uuid) == _delayedEventTargets.end());
+	assert(sendEvent.getUUID().length() > 0);
+	assert(_delayedEventTargets.find(sendEvent.getUUID()) == _delayedEventTargets.end());
 
-	_delayedEventTargets[sendEvent.uuid] = std::tuple<std::string, std::string, std::string>(sendEvent.sendid, type, target);
+	_delayedEventTargets[sendEvent.getUUID()] = std::tuple<std::string, std::string, std::string>(sendEvent.sendid, type, target);
 	if (delayMs == 0) {
 		Event copy(sendEvent);
-		return eventReady(copy, sendEvent.uuid);
+		return eventReady(copy, sendEvent.getUUID());
 	} else {
-		return _delayQueue.enqueueDelayed(sendEvent, delayMs, sendEvent.uuid);
+		return _delayQueue.enqueueDelayed(sendEvent, delayMs, sendEvent.getUUID());
 	}
 }
 

@@ -21,6 +21,12 @@
 
 namespace uscxml {
 
+Event::Event() : eventType(INTERNAL), hideSendId(false) {
+}
+
+Event::Event(const std::string& name, Type type) : name(name), eventType(type), hideSendId(false) {
+}
+
 Event Event::fromData(const Data& data) {
 	Event e;
 	if (data.hasKey("data"))

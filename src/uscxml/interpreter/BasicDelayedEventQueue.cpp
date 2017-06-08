@@ -194,7 +194,7 @@ Data BasicDelayedEventQueue::serialize() {
 	Data serialized;
 
 	for (auto event : _queue) {
-		struct callbackData cb = _callbackData[event.uuid];
+		struct callbackData cb = _callbackData[event.getUUID()];
 
 		struct timeval delay = {0, 0};
 		struct timeval now = {0, 0};
@@ -222,7 +222,7 @@ void BasicDelayedEventQueue::deserialize(const Data& data) {
 		std::lock_guard<std::recursive_mutex> lock(_mutex);
 		for (auto event : data["BasicDelayedEventQueue"].array) {
 			Event e = Event::fromData(event["event"]);
-			enqueueDelayed(e, strTo<size_t>(event["delay"]), e.uuid);
+			enqueueDelayed(e, strTo<size_t>(event["delay"]), e.getUUID());
 		}
 	}
 

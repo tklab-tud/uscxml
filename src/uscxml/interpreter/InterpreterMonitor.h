@@ -34,16 +34,19 @@ catch (...) { LOG(USCXML_ERROR) << "An exception occurred when calling " #callba
 if (_state == USCXML_DESTROYED) { throw std::bad_weak_ptr(); }
 
 #define USCXML_MONITOR_CALLBACK(callbacks, function) { \
+if (callbacks.size() > 0) {\
 Interpreter inptr = _callbacks->getInterpreter(); \
-for (auto callback : callbacks) { callback->function(inptr); } }
+for (auto callback : callbacks) { callback->function(inptr); } } }
 
 #define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) { \
+if (callbacks.size() > 0) {\
 Interpreter inptr = _callbacks->getInterpreter(); \
-for (auto callback : callbacks) { callback->function(inptr, arg1); } }
+for (auto callback : callbacks) { callback->function(inptr, arg1); } } }
 
 #define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) { \
+if (callbacks.size() > 0) {\
 Interpreter inptr = _callbacks->getInterpreter(); \
-for (auto callback : callbacks) { callback->function(inptr, arg1, arg2); } }
+for (auto callback : callbacks) { callback->function(inptr, arg1, arg2); } } }
 
 // forward declare
 namespace XERCESC_NS {

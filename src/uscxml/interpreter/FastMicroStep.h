@@ -149,6 +149,14 @@ private:
 
 	CachedPredicates _cache;
 
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _exitSet;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _entrySet;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _targetSet;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _tmpStates;
+
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _conflicts;
+	boost::dynamic_bitset<BITSET_BLOCKTYPE> _transSet;
+
 #ifdef USCXML_VERBOSE
 	void printStateNames(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
 #endif

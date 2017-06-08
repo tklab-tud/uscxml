@@ -107,8 +107,8 @@ public:
 		PLATFORM = 3
 	};
 
-	Event() : eventType(INTERNAL), hideSendId(false), uuid(UUID::getUUID()) {}
-	explicit Event(const std::string& name, Type type = INTERNAL) : name(name), eventType(type), hideSendId(false) {}
+	Event();
+	explicit Event(const std::string& name, Type type = INTERNAL);
 	static Event fromData(const Data& data);
 
 	bool operator< (const Event& other) const     {
@@ -197,6 +197,14 @@ public:
 		return false;
 	}
 
+	const std::string& getUUID() const {
+		// this is expensive - lazy initialization
+		if (uuid.length() == 0) {
+			uuid = UUID::getUUID();
+		}
+		return uuid;
+	}
+
 	std::string raw;
 	std::string name;
 	Type eventType;
@@ -208,7 +216,9 @@ public:
 	Data data;
 	std::map<std::string, Data> namelist;
 	std::multimap<std::string, Data> params;
-	std::string uuid; // the sendid is not necessarily unique!
+
+private:
+	mutable std::string uuid; // the sendid is not necessarily unique!
 
 	friend USCXML_API std::ostream& operator<< (std::ostream& os, const Event& event);
 };

@@ -589,6 +589,15 @@ TARGET_SET_ESTABLISHED:
 		}
 	}
 	_cache.exitSet.clear();
+
+	// initialize bitarrays for step()
+	_exitSet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);
+	_entrySet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);
+	_targetSet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);
+	_tmpStates = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);
+	_conflicts = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_transitions.size(), false);
+	_transSet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_transitions.size(), false);
+
 	_isInitialized = true;
 
 }
@@ -632,15 +641,16 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 		return USCXML_INITIALIZED;
 	}
 
+	std::set<InterpreterMonitor*> monitors = _callbacks->getMonitors();
 	size_t i, j, k;
 
-	boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet(_states.size(), false);
-	boost::dynamic_bitset<BITSET_BLOCKTYPE> entrySet(_states.size(), false);
-	boost::dynamic_bitset<BITSET_BLOCKTYPE> targetSet(_states.size(), false);
-	boost::dynamic_bitset<BITSET_BLOCKTYPE> tmpStates(_states.size(), false);
+	_exitSet.reset();
+	_entrySet.reset();
+	_targetSet.reset();
+	_tmpStates.reset();
 
-	boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts(_transitions.size(), false);
-	boost::dynamic_bitset<BITSET_BLOCKTYPE> transSet(_transitions.size(), false);
+	_conflicts.reset();
+	_transSet.reset();
 
 #ifdef USCXML_VERBOSE
 	std::cerr << "Config: ";
@@ -651,7 +661,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 		return USCXML_FINISHED;
 
 	if (_flags & USCXML_CTX_TOP_LEVEL_FINAL) {
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeCompletion);
+		USCXML_MONITOR_CALLBACK(monitors, beforeCompletion);
 
 		/* exit all remaining states */
 		i = USCXML_NUMBER_STATES;
@@ -682,7 +692,7 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 		_flags |= USCXML_CTX_FINISHED;
 
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), afterCompletion);
+		USCXML_MONITOR_CALLBACK(monitors, afterCompletion);
 
 		return USCXML_FINISHED;
 	}
@@ -690,9 +700,9 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 	if (_flags == USCXML_CTX_PRISTINE) {
 
-		targetSet |= USCXML_GET_STATE(0).completion;
+		_targetSet |= USCXML_GET_STATE(0).completion;
 		_flags |= USCXML_CTX_SPONTANEOUS | USCXML_CTX_INITIALIZED;
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeMicroStep);
+		USCXML_MONITOR_CALLBACK(monitors, beforeMicroStep);
 
 		goto ESTABLISH_ENTRYSET;
 	}
@@ -704,11 +714,44 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 
 
 	if ((_event = _callbacks->dequeueInternal())) {
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeProcessingEvent, _event);
+		USCXML_MONITOR_CALLBACK1(monitors, beforeProcessingEvent, _event);
 		goto SELECT_TRANSITIONS;
 	}
 
+#if 1
+	/* manage uninvocations */
+	i = _invocations.find_first();
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+		/* uninvoke */
+		if (!BIT_HAS(i, _configuration) && USCXML_GET_STATE(i).invoke.size() > 0) {
+			for (auto invIter = USCXML_GET_STATE(i).invoke.begin(); invIter != USCXML_GET_STATE(i).invoke.end(); invIter++) {
+				_callbacks->uninvoke(*invIter);
+			}
+			BIT_CLEAR(i, _invocations);
+		}
+		i = _invocations.find_next(i);
+	}
+
 	/* manage invocations */
+	i = _configuration.find_first();
+	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+		/* invoke */
+		if (!BIT_HAS(i, _invocations) && USCXML_GET_STATE(i).invoke.size() > 0) {
+			for (auto invIter = USCXML_GET_STATE(i).invoke.begin(); invIter != USCXML_GET_STATE(i).invoke.end(); invIter++) {
+				try {
+					_callbacks->invoke(*invIter);
+				} catch (ErrorEvent e) {
+					LOG(_callbacks->getLogger(), USCXML_WARN) << e;
+					// TODO: Shall we deliver the event into the interpreter runtime?
+				} catch (...) {
+				}
+			}
+			BIT_SET_AT(i, _invocations)
+		}
+		i = _configuration.find_next(i);
+	}
+#else
+
 	for (i = 0; i < USCXML_NUMBER_STATES; i++) {
 		/* uninvoke */
 		if (!BIT_HAS(i, _configuration) && BIT_HAS(i, _invocations)) {
@@ -735,17 +778,18 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 			BIT_SET_AT(i, _invocations)
 		}
 	}
+#endif
 
 	// we dequeued all internal events and ought to signal stable configuration
 	if (!(_flags & USCXML_CTX_STABLE)) {
-		USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), onStableConfiguration);
+		USCXML_MONITOR_CALLBACK(monitors, onStableConfiguration);
 		_microstepConfigurations.clear();
 		_flags |= USCXML_CTX_STABLE;
 		return USCXML_MACROSTEPPED;
 	}
 
 	if ((_event = _callbacks->dequeueExternal(blockMs))) {
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeProcessingEvent, _event);
+		USCXML_MONITOR_CALLBACK1(monitors, beforeProcessingEvent, _event);
 		goto SELECT_TRANSITIONS;
 	}
 
@@ -773,7 +817,7 @@ SELECT_TRANSITIONS:
 		/* is the transition active? */
 		if (BIT_HAS(USCXML_GET_TRANS(i).source, _configuration)) {
 			/* is it non-conflicting? */
-			if (!BIT_HAS(i, conflicts)) {
+			if (!BIT_HAS(i, _conflicts)) {
 				/* is it spontaneous with an event or vice versa? */
 				if ((USCXML_GET_TRANS(i).event.size() == 0 && !_event) ||
 				        (USCXML_GET_TRANS(i).event.size() != 0 && _event)) {
@@ -785,15 +829,15 @@ SELECT_TRANSITIONS:
 						_flags |= USCXML_CTX_TRANSITION_FOUND;
 
 						/* transitions that are pre-empted */
-						conflicts |= USCXML_GET_TRANS(i).conflicts;
+						_conflicts |= USCXML_GET_TRANS(i).conflicts;
 
 						/* states that are directly targeted (resolve as entry-set later) */
-						targetSet |= USCXML_GET_TRANS(i).target;
+						_targetSet |= USCXML_GET_TRANS(i).target;
 
 						/* states that will be left */
-						exitSet |= USCXML_GET_TRANS(i).exitSet;
+						_exitSet |= USCXML_GET_TRANS(i).exitSet;
 
-						BIT_SET_AT(i, transSet);
+						BIT_SET_AT(i, _transSet);
 					}
 				}
 			}
@@ -805,7 +849,7 @@ SELECT_TRANSITIONS:
 	printStateNames(exitSet);
 #endif
 
-	exitSet &= _configuration;
+	_exitSet &= _configuration;
 
 	if (_flags & USCXML_CTX_TRANSITION_FOUND) {
 		// trigger more sppontaneuous transitions
@@ -817,7 +861,7 @@ SELECT_TRANSITIONS:
 		return USCXML_MICROSTEPPED;
 	}
 
-	USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), beforeMicroStep);
+	USCXML_MONITOR_CALLBACK(monitors, beforeMicroStep);
 
 #ifdef USCXML_VERBOSE
 	std::cerr << "Targets: ";
@@ -840,17 +884,17 @@ SELECT_TRANSITIONS:
 		if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_HISTORY_SHALLOW ||
 		            USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_HISTORY_DEEP) {
 			/* a history state whose parent is about to be exited */
-			if unlikely(BIT_HAS(USCXML_GET_STATE(i).parent, exitSet)) {
-				tmpStates = USCXML_GET_STATE(i).completion;
+			if unlikely(BIT_HAS(USCXML_GET_STATE(i).parent, _exitSet)) {
+				_tmpStates = USCXML_GET_STATE(i).completion;
 
 				/* set those states who were enabled */
-				tmpStates &= _configuration;
+				_tmpStates &= _configuration;
 
 				/* clear current history with completion mask */
 				_history &= ~(USCXML_GET_STATE(i).completion);
 
 				/* set history */
-				_history |= tmpStates;
+				_history |= _tmpStates;
 
 			}
 		}
@@ -858,19 +902,18 @@ SELECT_TRANSITIONS:
 
 ESTABLISH_ENTRYSET:
 	/* calculate new entry set */
-	entrySet = targetSet;
+	_entrySet = _targetSet;
 
 	/* iterate for ancestors */
-	i = entrySet.find_first();
+	i = _entrySet.find_first();
 	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
-		entrySet |= USCXML_GET_STATE(i).ancestors;
-		i = entrySet.find_next(i);
+		_entrySet |= USCXML_GET_STATE(i).ancestors;
+		i = _entrySet.find_next(i);
 	}
 
 	/* iterate for descendants */
-	i = entrySet.find_first();
+	i = _entrySet.find_first();
 	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
-
 
 		switch (USCXML_STATE_MASK(USCXML_GET_STATE(i).type)) {
 		case USCXML_STATE_FINAL:
@@ -878,7 +921,7 @@ ESTABLISH_ENTRYSET:
 			break;
 
 		case USCXML_STATE_PARALLEL: {
-			entrySet |= USCXML_GET_STATE(i).completion;
+			_entrySet |= USCXML_GET_STATE(i).completion;
 			break;
 		}
 
@@ -890,32 +933,32 @@ ESTABLISH_ENTRYSET:
 				/* nothing set for history, look for a default transition */
 				for (j = 0; j < _transitions.size(); j++) {
 					if unlikely(USCXML_GET_TRANS(j).source == i) {
-						entrySet |= USCXML_GET_TRANS(j).target;
+						_entrySet |= USCXML_GET_TRANS(j).target;
 
 						if(USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_HISTORY_DEEP &&
 						        !BIT_HAS_AND(USCXML_GET_TRANS(j).target, USCXML_GET_STATE(i).children)) {
 							for (k = i + 1; k < _states.size(); k++) {
 								if (BIT_HAS(k, USCXML_GET_TRANS(j).target)) {
-									entrySet |= USCXML_GET_STATE(k).ancestors;
+									_entrySet |= USCXML_GET_STATE(k).ancestors;
 									break;
 								}
 							}
 						}
-						BIT_SET_AT(j, transSet);
+						BIT_SET_AT(j, _transSet);
 						break;
 					}
 					/* Note: SCXML mandates every history to have a transition! */
 				}
 			} else {
-				tmpStates = USCXML_GET_STATE(i).completion;
-				tmpStates &= _history;
-				entrySet |= tmpStates;
+				_tmpStates = USCXML_GET_STATE(i).completion;
+				_tmpStates &= _history;
+				_entrySet |= _tmpStates;
 
 				if (USCXML_GET_STATE(i).type == (USCXML_STATE_HAS_HISTORY | USCXML_STATE_HISTORY_DEEP)) {
 					/* a deep history state with nested histories -> more completion */
 					for (j = i + 1; j < USCXML_NUMBER_STATES; j++) {
 						if (BIT_HAS(j, USCXML_GET_STATE(i).completion) &&
-						        BIT_HAS(j, entrySet) &&
+						        BIT_HAS(j, _entrySet) &&
 						        (USCXML_GET_STATE(j).type & USCXML_STATE_HAS_HISTORY)) {
 							for (k = j + 1; k < USCXML_NUMBER_STATES; k++) {
 								/* add nested history to entry_set */
@@ -923,7 +966,7 @@ ESTABLISH_ENTRYSET:
 								        USCXML_STATE_MASK(USCXML_GET_STATE(k).type) == USCXML_STATE_HISTORY_SHALLOW) &&
 								        BIT_HAS(k, USCXML_GET_STATE(j).children)) {
 									/* a nested history state */
-									BIT_SET_AT(k, entrySet);
+									BIT_SET_AT(k, _entrySet);
 								}
 							}
 						}
@@ -936,12 +979,12 @@ ESTABLISH_ENTRYSET:
 		case USCXML_STATE_INITIAL: {
 			for (j = 0; j < USCXML_NUMBER_TRANS; j++) {
 				if (USCXML_GET_TRANS(j).source == i) {
-					BIT_SET_AT(j, transSet);
-					BIT_CLEAR(i, entrySet);
-					entrySet |= USCXML_GET_TRANS(j).target;
+					BIT_SET_AT(j, _transSet);
+					BIT_CLEAR(i, _entrySet);
+					_entrySet |= USCXML_GET_TRANS(j).target;
 					for (k = i + 1; k < USCXML_NUMBER_STATES; k++) {
 						if (BIT_HAS(k, USCXML_GET_TRANS(j).target)) {
-							entrySet |= USCXML_GET_STATE(k).ancestors;
+							_entrySet |= USCXML_GET_STATE(k).ancestors;
 						}
 					}
 				}
@@ -949,15 +992,15 @@ ESTABLISH_ENTRYSET:
 			break;
 		}
 		case USCXML_STATE_COMPOUND: { /* we need to check whether one child is already in entry_set */
-			if (!BIT_HAS_AND(entrySet, USCXML_GET_STATE(i).children) &&
+			if (!BIT_HAS_AND(_entrySet, USCXML_GET_STATE(i).children) &&
 			        (!BIT_HAS_AND(_configuration, USCXML_GET_STATE(i).children) ||
-			         BIT_HAS_AND(exitSet, USCXML_GET_STATE(i).children))) {
-				entrySet |= USCXML_GET_STATE(i).completion;
+			         BIT_HAS_AND(_exitSet, USCXML_GET_STATE(i).children))) {
+				_entrySet |= USCXML_GET_STATE(i).completion;
 				if (!BIT_HAS_AND(USCXML_GET_STATE(i).completion, USCXML_GET_STATE(i).children)) {
 					/* deep completion */
 					for (j = i + 1; j < USCXML_NUMBER_STATES; j++) {
 						if (BIT_HAS(j, USCXML_GET_STATE(i).completion)) {
-							entrySet |= USCXML_GET_STATE(j).ancestors;
+							_entrySet |= USCXML_GET_STATE(j).ancestors;
 							break; /* completion of compound is single state */
 						}
 					}
@@ -966,7 +1009,7 @@ ESTABLISH_ENTRYSET:
 			break;
 		}
 		}
-		i = entrySet.find_next(i);
+		i = _entrySet.find_next(i);
 
 	}
 
@@ -979,9 +1022,9 @@ ESTABLISH_ENTRYSET:
 	/* we cannot use find_first due to ordering */
 	i = USCXML_NUMBER_STATES;
 	while(i-- > 0) {
-		if (BIT_HAS(i, exitSet) && BIT_HAS(i, _configuration)) {
+		if (BIT_HAS(i, _exitSet) && BIT_HAS(i, _configuration)) {
 
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeExitingState, USCXML_GET_STATE(i).element);
+			USCXML_MONITOR_CALLBACK1(monitors, beforeExitingState, USCXML_GET_STATE(i).element);
 
 			/* call all on exit handlers */
 			for (auto exitIter = USCXML_GET_STATE(i).onExit.begin(); exitIter != USCXML_GET_STATE(i).onExit.end(); exitIter++) {
@@ -993,16 +1036,16 @@ ESTABLISH_ENTRYSET:
 			}
 			BIT_CLEAR(i, _configuration);
 
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterExitingState, USCXML_GET_STATE(i).element);
+			USCXML_MONITOR_CALLBACK1(monitors, afterExitingState, USCXML_GET_STATE(i).element);
 
 		}
 	}
 
 	/* TAKE_TRANSITIONS: */
-	i = transSet.find_first();
+	i = _transSet.find_first();
 	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 		if ((USCXML_GET_TRANS(i).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) == 0) {
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeTakingTransition, USCXML_GET_TRANS(i).element);
+			USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, USCXML_GET_TRANS(i).element);
 
 			if (USCXML_GET_TRANS(i).onTrans != NULL) {
 
@@ -1014,10 +1057,10 @@ ESTABLISH_ENTRYSET:
 				}
 			}
 
-			USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterTakingTransition, USCXML_GET_TRANS(i).element);
+			USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, USCXML_GET_TRANS(i).element);
 
 		}
-		i = transSet.find_next(i);
+		i = _transSet.find_next(i);
 	}
 
 #ifdef USCXML_VERBOSE
@@ -1027,12 +1070,12 @@ ESTABLISH_ENTRYSET:
 
 
 	/* ENTER_STATES: */
-	i = entrySet.find_first();
+	i = _entrySet.find_first();
 	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 
 		if (BIT_HAS(i, _configuration)) {
 			// already active
-			i = entrySet.find_next(i);
+			i = _entrySet.find_next(i);
 			continue;
 		}
 
@@ -1040,11 +1083,11 @@ ESTABLISH_ENTRYSET:
 		if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_HISTORY_DEEP ||
 		            USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_HISTORY_SHALLOW ||
 		            USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_INITIAL) {
-			i = entrySet.find_next(i);
+			i = _entrySet.find_next(i);
 			continue;
 		}
 
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeEnteringState, USCXML_GET_STATE(i).element);
+		USCXML_MONITOR_CALLBACK1(monitors, beforeEnteringState, USCXML_GET_STATE(i).element);
 
 		BIT_SET_AT(i, _configuration);
 
@@ -1065,15 +1108,16 @@ ESTABLISH_ENTRYSET:
 			}
 		}
 
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterEnteringState, USCXML_GET_STATE(i).element);
+		USCXML_MONITOR_CALLBACK1(monitors, afterEnteringState, USCXML_GET_STATE(i).element);
 
 		/* take history and initial transitions */
+#if 0
 		for (j = 0; j < USCXML_NUMBER_TRANS; j++) {
-			if unlikely(BIT_HAS(j, transSet) &&
+			if unlikely(BIT_HAS(j, _transSet) &&
 			            (USCXML_GET_TRANS(j).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) &&
 			            USCXML_GET_STATE(USCXML_GET_TRANS(j).source).parent == i) {
 
-				USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), beforeTakingTransition, USCXML_GET_TRANS(j).element);
+				USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, USCXML_GET_TRANS(j).element);
 
 				/* call executable content in transition */
 				if (USCXML_GET_TRANS(j).onTrans != NULL) {
@@ -1084,10 +1128,33 @@ ESTABLISH_ENTRYSET:
 					}
 				}
 
-				USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(), afterTakingTransition, USCXML_GET_TRANS(j).element);
+				USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, USCXML_GET_TRANS(j).element);
 
 			}
 		}
+#else
+		j = _transSet.find_first();
+		while(j != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+			if unlikely((USCXML_GET_TRANS(j).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) &&
+			            USCXML_GET_STATE(USCXML_GET_TRANS(j).source).parent == i) {
+
+				USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, USCXML_GET_TRANS(j).element);
+
+				/* call executable content in transition */
+				if (USCXML_GET_TRANS(j).onTrans != NULL) {
+					try {
+						_callbacks->process(USCXML_GET_TRANS(j).onTrans);
+					} catch (...) {
+						// do nothing and continue with next block
+					}
+				}
+
+				USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, USCXML_GET_TRANS(j).element);
+			}
+
+			j = _transSet.find_next(j);
+		}
+#endif
 
 		/* handle final states */
 		if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_FINAL) {
@@ -1106,30 +1173,56 @@ ESTABLISH_ENTRYSET:
 			 * 3. Iterate all active final states and remove their ancestors
 			 * 4. If a state remains, not all children of a parallel are final
 			 */
+#if 0
 			for (j = 0; j < USCXML_NUMBER_STATES; j++) {
 				if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(j).type) == USCXML_STATE_PARALLEL &&
 				            BIT_HAS(j, USCXML_GET_STATE(i).ancestors)) {
-					tmpStates.reset();
+					_tmpStates.reset();
 					k = _configuration.find_first();
 					while (k != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 						if (BIT_HAS(j, USCXML_GET_STATE(k).ancestors)) {
 							if (USCXML_STATE_MASK(USCXML_GET_STATE(k).type) == USCXML_STATE_FINAL) {
-								tmpStates ^= USCXML_GET_STATE(k).ancestors;
+								_tmpStates ^= USCXML_GET_STATE(k).ancestors;
 							} else {
-								BIT_SET_AT(k, tmpStates);
+								BIT_SET_AT(k, _tmpStates);
 							}
 						}
 						k = _configuration.find_next(k);
 					}
-					if (!tmpStates.any()) {
+					if (!_tmpStates.any()) {
 						// raise done for state j
 						_callbacks->raiseDoneEvent(USCXML_GET_STATE(j).element, USCXML_GET_STATE(j).doneData);
 					}
 				}
 			}
+#else
+			j = USCXML_GET_STATE(i).ancestors.find_first();
+			while(j != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+				if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(j).type) == USCXML_STATE_PARALLEL) {
+					_tmpStates.reset();
+					k = _configuration.find_first();
+					while (k != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+						if (BIT_HAS(j, USCXML_GET_STATE(k).ancestors)) {
+							if (USCXML_STATE_MASK(USCXML_GET_STATE(k).type) == USCXML_STATE_FINAL) {
+								_tmpStates ^= USCXML_GET_STATE(k).ancestors;
+							} else {
+								BIT_SET_AT(k, _tmpStates);
+							}
+						}
+						k = _configuration.find_next(k);
+					}
+					if (!_tmpStates.any()) {
+						// raise done for state j
+						_callbacks->raiseDoneEvent(USCXML_GET_STATE(j).element, USCXML_GET_STATE(j).doneData);
+					}
+				}
+
+				j = USCXML_GET_STATE(i).ancestors.find_next(j);
+			}
+#endif
 		}
 	}
-	USCXML_MONITOR_CALLBACK(_callbacks->getMonitors(), afterMicroStep);
+	USCXML_MONITOR_CALLBACK(monitors, afterMicroStep);
 
 	// are we running in circles?
 	if (_microstepConfigurations.find(_configuration) != _microstepConfigurations.end()) {
@@ -1137,7 +1230,7 @@ ESTABLISH_ENTRYSET:
 		                       NULL,
 		                       InterpreterIssue::USCXML_ISSUE_WARNING);
 
-		USCXML_MONITOR_CALLBACK1(_callbacks->getMonitors(),
+		USCXML_MONITOR_CALLBACK1(monitors,
 		                         reportIssue,
 		                         issue);
 	}

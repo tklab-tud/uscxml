@@ -570,11 +570,11 @@ public:
 			e.invokeid = USER_DATA(ctx)->invokeId;
 		}
 
-		USER_DATA(ctx)->sendUUIDs[e.uuid] = std::make_tuple(e.sendid, target, type);
+		USER_DATA(ctx)->sendUUIDs[e.getUUID()] = std::make_tuple(e.sendid, target, type);
 		if (delayMs > 0) {
-			USER_DATA(ctx)->delayQueue.enqueueDelayed(e, delayMs, e.uuid);
+			USER_DATA(ctx)->delayQueue.enqueueDelayed(e, delayMs, e.getUUID());
 		} else {
-			USER_DATA(ctx)->eventReady(e, e.uuid);
+			USER_DATA(ctx)->eventReady(e, e.getUUID());
 		}
 
 		return USCXML_ERR_OK;
@@ -840,9 +840,9 @@ public:
 
 		//std::make_tuple(e.sendid, target, type);
 
-		std::string sendid = std::get<0>(sendUUIDs[e.uuid]);
-		std::string target = std::get<1>(sendUUIDs[e.uuid]);
-		std::string type = std::get<2>(sendUUIDs[e.uuid]);
+		std::string sendid = std::get<0>(sendUUIDs[e.getUUID()]);
+		std::string target = std::get<1>(sendUUIDs[e.getUUID()]);
+		std::string type = std::get<2>(sendUUIDs[e.getUUID()]);
 
 		if (target == "#_internal") {
 			e.eventType = Event::INTERNAL;
