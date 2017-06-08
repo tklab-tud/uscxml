@@ -2,6 +2,7 @@
 #include "uscxml/Interpreter.h"
 #include <sys/time.h>
 
+#include <chrono>
 #include <iostream>
 
 using namespace uscxml;

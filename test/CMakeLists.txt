@@ -62,11 +62,6 @@ endif()
 USCXML_TEST_COMPILE(NAME test-url LABEL general/test-url FILES src/test-url.cpp)
 USCXML_TEST_COMPILE(NAME test-utf8 LABEL general/test-utf8 FILES src/test-utf8.cpp)
 USCXML_TEST_COMPILE(BUILD_ONLY NAME test-performance LABEL general/test-performance FILES src/test-performance.cpp)
-
-# std::chrono not available otherwise with gcc
-set_property(TARGET test-performance PROPERTY CXX_STANDARD 11)
-set_property(TARGET test-performance PROPERTY CXX_STANDARD_REQUIRED ON)
-
 USCXML_TEST_COMPILE(NAME test-lifecycle LABEL general/test-lifecycle FILES src/test-lifecycle.cpp)
 USCXML_TEST_COMPILE(NAME test-validating LABEL general/test-validating FILES src/test-validating.cpp)
 USCXML_TEST_COMPILE(NAME test-snippets LABEL general/test-snippets FILES src/test-snippets.cpp)
