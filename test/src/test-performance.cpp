@@ -1,6 +1,5 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include <sys/time.h>
 
 #include <chrono>
 #include <iostream>
