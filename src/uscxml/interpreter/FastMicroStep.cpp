@@ -718,7 +718,6 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 		goto SELECT_TRANSITIONS;
 	}
 
-#if 1
 	/* manage uninvocations */
 	i = _invocations.find_first();
 	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
@@ -750,35 +749,6 @@ InterpreterState FastMicroStep::step(size_t blockMs) {
 		}
 		i = _configuration.find_next(i);
 	}
-#else
-
-	for (i = 0; i < USCXML_NUMBER_STATES; i++) {
-		/* uninvoke */
-		if (!BIT_HAS(i, _configuration) && BIT_HAS(i, _invocations)) {
-			if (USCXML_GET_STATE(i).invoke.size() > 0) {
-				for (auto invIter = USCXML_GET_STATE(i).invoke.begin(); invIter != USCXML_GET_STATE(i).invoke.end(); invIter++) {
-					_callbacks->uninvoke(*invIter);
-				}
-			}
-			BIT_CLEAR(i, _invocations)
-		}
-		/* invoke */
-		if (BIT_HAS(i, _configuration) && !BIT_HAS(i, _invocations)) {
-			if (USCXML_GET_STATE(i).invoke.size() > 0) {
-				for (auto invIter = USCXML_GET_STATE(i).invoke.begin(); invIter != USCXML_GET_STATE(i).invoke.end(); invIter++) {
-					try {
-						_callbacks->invoke(*invIter);
-					} catch (ErrorEvent e) {
-						LOG(_callbacks->getLogger(), USCXML_WARN) << e;
-						// TODO: Shall we deliver the event into the interpreter runtime?
-					} catch (...) {
-					}
-				}
-			}
-			BIT_SET_AT(i, _invocations)
-		}
-	}
-#endif
 
 	// we dequeued all internal events and ought to signal stable configuration
 	if (!(_flags & USCXML_CTX_STABLE)) {
@@ -1111,28 +1081,6 @@ ESTABLISH_ENTRYSET:
 		USCXML_MONITOR_CALLBACK1(monitors, afterEnteringState, USCXML_GET_STATE(i).element);
 
 		/* take history and initial transitions */
-#if 0
-		for (j = 0; j < USCXML_NUMBER_TRANS; j++) {
-			if unlikely(BIT_HAS(j, _transSet) &&
-			            (USCXML_GET_TRANS(j).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) &&
-			            USCXML_GET_STATE(USCXML_GET_TRANS(j).source).parent == i) {
-
-				USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, USCXML_GET_TRANS(j).element);
-
-				/* call executable content in transition */
-				if (USCXML_GET_TRANS(j).onTrans != NULL) {
-					try {
-						_callbacks->process(USCXML_GET_TRANS(j).onTrans);
-					} catch (...) {
-						// do nothing and continue with next block
-					}
-				}
-
-				USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, USCXML_GET_TRANS(j).element);
-
-			}
-		}
-#else
 		j = _transSet.find_first();
 		while(j != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 			if unlikely((USCXML_GET_TRANS(j).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) &&
@@ -1154,7 +1102,6 @@ ESTABLISH_ENTRYSET:
 
 			j = _transSet.find_next(j);
 		}
-#endif
 
 		/* handle final states */
 		if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(i).type) == USCXML_STATE_FINAL) {
@@ -1173,29 +1120,6 @@ ESTABLISH_ENTRYSET:
 			 * 3. Iterate all active final states and remove their ancestors
 			 * 4. If a state remains, not all children of a parallel are final
 			 */
-#if 0
-			for (j = 0; j < USCXML_NUMBER_STATES; j++) {
-				if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(j).type) == USCXML_STATE_PARALLEL &&
-				            BIT_HAS(j, USCXML_GET_STATE(i).ancestors)) {
-					_tmpStates.reset();
-					k = _configuration.find_first();
-					while (k != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
-						if (BIT_HAS(j, USCXML_GET_STATE(k).ancestors)) {
-							if (USCXML_STATE_MASK(USCXML_GET_STATE(k).type) == USCXML_STATE_FINAL) {
-								_tmpStates ^= USCXML_GET_STATE(k).ancestors;
-							} else {
-								BIT_SET_AT(k, _tmpStates);
-							}
-						}
-						k = _configuration.find_next(k);
-					}
-					if (!_tmpStates.any()) {
-						// raise done for state j
-						_callbacks->raiseDoneEvent(USCXML_GET_STATE(j).element, USCXML_GET_STATE(j).doneData);
-					}
-				}
-			}
-#else
 			j = USCXML_GET_STATE(i).ancestors.find_first();
 			while(j != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 				if unlikely(USCXML_STATE_MASK(USCXML_GET_STATE(j).type) == USCXML_STATE_PARALLEL) {
@@ -1219,7 +1143,6 @@ ESTABLISH_ENTRYSET:
 
 				j = USCXML_GET_STATE(i).ancestors.find_next(j);
 			}
-#endif
 		}
 	}
 	USCXML_MONITOR_CALLBACK(monitors, afterMicroStep);
@@ -1410,8 +1333,6 @@ bool FastMicroStep::hasLegalConfiguration() {
 			return false;
 		}
 	}
-
-
 
 	// When the configuration contains an atomic state, it contains all of its <state> and <parallel> ancestors.
 	for (size_t i = 0; i < config.size(); i++) {

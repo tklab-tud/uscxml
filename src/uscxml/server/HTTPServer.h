@@ -169,6 +169,7 @@ private:
 	struct event_base* _base;
 	struct evhttp* _http;
 	struct evws* _evws;
+    struct event* _dummyEvent;
 
 	struct evhttp_bound_socket* _httpHandle;
 	evutil_socket_t _wsHandle;

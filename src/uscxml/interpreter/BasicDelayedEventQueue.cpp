@@ -137,7 +137,7 @@ void BasicDelayedEventQueue::run(void* instance) {
 		/**
 		 * EVLOOP_NO_EXIT_ON_EMPTY was removed in libevent2.1 - we are
 		 * using the event in the far future approach to get blocking
-		 * behavior back (see comments in contructor)
+		 * behavior back (see comments in constructor)
 		 */
 
 		// #ifndef EVLOOP_NO_EXIT_ON_EMPTY
