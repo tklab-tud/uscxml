@@ -46,6 +46,10 @@ public:
 	virtual bool isValidTarget(const std::string& target);
 
 
+	/// Return the shared pointer to the implementation
+	virtual std::shared_ptr<IOProcessorImpl> getImpl() {
+		return _impl;
+	}
 protected:
 	std::shared_ptr<IOProcessorImpl> _impl;
 	friend class InterpreterImpl;

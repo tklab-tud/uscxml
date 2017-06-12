@@ -26,6 +26,7 @@ if (WITH_IOPROC_BASICHTTP)
 	set(USCXML_IOPROCESSORS "basichttp ${USCXML_IOPROCESSORS}")
 	file(GLOB_RECURSE BASICHTTP_IOPROCESSOR
 		basichttp/*.cpp
+		http/*.cpp
 		basichttp/*.h
 	)
 	if (BUILD_AS_PLUGINS)
@@ -42,6 +43,30 @@ if (WITH_IOPROC_BASICHTTP)
 	endif()
 endif()
 
+
+OPTION(WITH_IOPROC_HTTP "Build the http i/o processor" ON)
+if (WITH_IOPROC_HTTP)
+	SET(WITH_IOPROC_HTTP_TIMEOUT 10)
+	set(USCXML_IOPROCESSORS "http ${USCXML_IOPROCESSORS}")
+	file(GLOB_RECURSE HTTP_IOPROCESSOR
+		http/*.cpp
+		http/*.h
+	)
+	if (BUILD_AS_PLUGINS)
+		source_group("" FILES ${HTTP_IOPROCESSOR})
+		add_library(ioproc_http SHARED ${HTTP_IOPROCESSOR} "../Plugins.cpp")
+		target_link_libraries(ioproc_http 
+			uscxml
+		)
+		set_target_properties(ioproc_http PROPERTIES FOLDER "Plugins//IO Processors")
+		set_target_properties(ioproc_http PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
+		set_target_properties(ioproc_http PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")
+	else()
+		list (APPEND USCXML_FILES ${HTTP_IOPROCESSOR})
+	endif()
+endif()
+
+set(WITH_IOPROC_HTTP_TIMEOUT ${WITH_IOPROC_HTTP_TIMEOUT} PARENT_SCOPE)
 set(USCXML_INCLUDE_DIRS ${USCXML_INCLUDE_DIRS} PARENT_SCOPE)
 set(USCXML_OPT_LIBS ${USCXML_OPT_LIBS} PARENT_SCOPE)
 set(USCXML_FILES ${USCXML_FILES} PARENT_SCOPE)

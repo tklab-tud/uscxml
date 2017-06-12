@@ -144,6 +144,34 @@ std::string URL::getTempDir(bool shared) {
 #endif
 }
 
+std::map<std::string, std::string> URL::mimeTypes;
+std::string URL::getMimeType(const std::string extension, std::string magic) {
+	if (mimeTypes.empty()) {
+		mimeTypes["txt"] = "text/plain";
+		mimeTypes["c"] = "text/plain";
+		mimeTypes["h"] = "text/plain";
+		mimeTypes["html"] = "text/html";
+		mimeTypes["htm"] = "text/htm";
+		mimeTypes["css"] = "text/css";
+		mimeTypes["bmp"] = "image/bmp";
+		mimeTypes["gif"] = "image/gif";
+		mimeTypes["jpg"] = "image/jpeg";
+		mimeTypes["jpeg"] = "image/jpeg";
+		mimeTypes["mpg"] = "video/mpeg";
+		mimeTypes["mov"] = "video/quicktime";
+		mimeTypes["png"] = "image/png";
+		mimeTypes["pdf"] = "application/pdf";
+		mimeTypes["ps"] = "application/postscript";
+		mimeTypes["tif"] = "image/tiff";
+		mimeTypes["tiff"] = "image/tiff";
+	}
+
+	if (mimeTypes.find(extension) != mimeTypes.end()) {
+		return mimeTypes[extension];
+	}
+	return "application/octet-stream";
+}
+
 // Version for MacOSX in URL.mm
 #if (!defined APPLE && !defined IOS)
 std::string URL::getResourceDir() {

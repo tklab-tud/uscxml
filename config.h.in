@@ -65,7 +65,11 @@
 #cmakedefine WITH_INV_DIRMON
 
 #cmakedefine WITH_IOPROC_BASICHTTP
+#cmakedefine WITH_IOPROC_HTTP
+#cmakedefine WITH_IOPROC_HTTP_TIMEOUT @WITH_IOPROC_HTTP_TIMEOUT@
 #cmakedefine WITH_IOPROC_SCXML
+
+#cmakedefine WITH_ELEMENT_RESPOND
 
 #cmakedefine WITH_DM_ECMA_V8
 #cmakedefine WITH_DM_ECMA_JSC

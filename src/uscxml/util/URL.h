@@ -149,6 +149,8 @@ public:
 	 */
 	static std::string getTempDir(bool shared = true);
 
+	static std::string getMimeType(const std::string extension, std::string magic = "");
+
 	bool isAbsolute() {
 		return _impl->isAbsolute();
 	}
@@ -253,6 +255,7 @@ public:
 
 protected:
 	std::shared_ptr<URLImpl> _impl;
+	static std::map<std::string, std::string> mimeTypes;
 	friend class URLFetcher;
 	static std::string currTmpDir;
 

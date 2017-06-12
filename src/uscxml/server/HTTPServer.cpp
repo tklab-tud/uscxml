@@ -72,12 +72,12 @@ extern "C" {
 namespace uscxml {
 
 static void dummyCallback(evutil_socket_t fd, short what, void *arg) {
-    // see comments in BasicDelayedEventQueue::run
-    timeval tv;
-    tv.tv_sec = 365 * 24 * 3600;
-    tv.tv_usec = 0;
-    event *ev = *(event **)arg;
-    evtimer_add(ev, &tv);
+	// see comments in BasicDelayedEventQueue::run
+	timeval tv;
+	tv.tv_sec = 365 * 24 * 3600;
+	tv.tv_usec = 0;
+	event *ev = *(event **)arg;
+	evtimer_add(ev, &tv);
 }
 
 HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* sslConf) {
@@ -88,11 +88,11 @@ HTTPServer::HTTPServer(unsigned short port, unsigned short wsPort, SSLConfig* ss
 	_thread = NULL;
 	_httpHandle = NULL;
 
-    timeval tv;
-    tv.tv_sec = 365 * 24 * 3600;
-    tv.tv_usec = 0;
-    _dummyEvent = evtimer_new(_base, dummyCallback, &_dummyEvent);
-    evtimer_add(_dummyEvent, &tv);
+	timeval tv;
+	tv.tv_sec = 365 * 24 * 3600;
+	tv.tv_usec = 0;
+	_dummyEvent = evtimer_new(_base, dummyCallback, &_dummyEvent);
+	evtimer_add(_dummyEvent, &tv);
 
 #ifdef _WIN32
 	_wsHandle = NULL;
@@ -755,10 +755,10 @@ void HTTPServer::run(void* instance) {
 //		event_base_loop(INSTANCE->_base, EVLOOP_ONCE | EVLOOP_NO_EXIT_ON_EMPTY);
 //		event_base_dispatch(INSTANCE->_base);
 
-        // BasicDelayedEventQueue::run
-        event_base_loop(INSTANCE->_base, EVLOOP_ONCE);
+		// BasicDelayedEventQueue::run
+		event_base_loop(INSTANCE->_base, EVLOOP_ONCE);
 
-    }
+	}
 	LOGD(USCXML_INFO) << "HTTP Server stopped" << std::endl;
 }
 
