@@ -47,10 +47,6 @@ public:
 	virtual ~ExecutableContentImpl() {};
 	virtual std::shared_ptr<ExecutableContentImpl> create(InterpreterImpl* interpreter) = 0;
 
-	virtual void setInterpreter(InterpreterImpl* interpreter) {
-		_interpreter = interpreter;
-	}
-
 	virtual std::string getLocalName() = 0; ///< The name of the element.
 	virtual std::string getNamespace() {
 		return "http://www.w3.org/2005/07/scxml";    ///< The namespace of the element.

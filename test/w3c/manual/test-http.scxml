@@ -1,0 +1,14 @@
+<scxml version="1.0" datamodel="ecmascript"  xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance">
+	<state id="start">
+		<onentry>
+			<log label="Listening at" expr="_ioprocessors['http']['location']" />
+		</onentry>
+		<state id="loop">
+			<transition event="http" target="loop">
+				<log expr="_event" />
+				<respond status="200" to="_event.origin" />
+			</transition>
+		</state>
+	</state>
+	<final id="final" />
+</scxml>

@@ -25,23 +25,25 @@ int main(int argc, char** argv) {
 		InterpreterOptions::printUsageAndExit(argv[0]);
 	}
 
-	// setup HTTP server
-	HTTPServer::SSLConfig* sslConf = NULL;
-	if (options.certificate.length() > 0) {
-		sslConf = new HTTPServer::SSLConfig();
-		sslConf->privateKey = options.certificate;
-		sslConf->publicKey = options.certificate;
-		sslConf->port = options.httpsPort;
+    if (!options.validate) {
+        // setup HTTP server
+        HTTPServer::SSLConfig* sslConf = NULL;
+        if (options.certificate.length() > 0) {
+            sslConf = new HTTPServer::SSLConfig();
+            sslConf->privateKey = options.certificate;
+            sslConf->publicKey = options.certificate;
+            sslConf->port = options.httpsPort;
 
-	} else if (options.privateKey.length() > 0 && options.publicKey.length() > 0) {
-		sslConf = new HTTPServer::SSLConfig();
-		sslConf->privateKey = options.privateKey;
-		sslConf->publicKey = options.publicKey;
-		sslConf->port = options.httpsPort;
+        } else if (options.privateKey.length() > 0 && options.publicKey.length() > 0) {
+            sslConf = new HTTPServer::SSLConfig();
+            sslConf->privateKey = options.privateKey;
+            sslConf->publicKey = options.publicKey;
+            sslConf->port = options.httpsPort;
 
-	}
-	HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
-
+        }
+        HTTPServer::getInstance(options.httpPort, options.wsPort, sslConf);
+    }
+    
     if (options.pluginPath.length() > 0) {
         Factory::setDefaultPluginPath(options.pluginPath);
     }
@@ -55,7 +57,7 @@ int main(int argc, char** argv) {
 	for(size_t i = 0; i < options.interpreters.size(); i++) {
 
 //		InterpreterOptions* currOptions = options.interpreters[0].second;
-		std::string documentURL = options.interpreters[0].first;
+		std::string documentURL = options.interpreters[i].first;
 
 		LOGD(USCXML_INFO) << "Processing " << documentURL << std::endl;
 
@@ -71,7 +73,7 @@ int main(int argc, char** argv) {
 					if (issues.size() == 0) {
 						LOGD(USCXML_DEBUG) << "No issues found" << std::endl;
 					}
-
+                    
 				}
 
 				if (options.verbose) {
@@ -90,6 +92,10 @@ int main(int argc, char** argv) {
 		}
 	}
 
+    if (options.validate) {
+        return EXIT_SUCCESS;
+    }
+    
     if (options.withDebugger) {
         DebuggerServlet* debugger;
         debugger = new DebuggerServlet();

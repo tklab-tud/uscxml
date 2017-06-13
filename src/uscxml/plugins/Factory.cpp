@@ -56,6 +56,14 @@
 #   include "uscxml/plugins/ioprocessor/basichttp/BasicHTTPIOProcessor.h"
 #endif
 
+#ifdef WITH_IOPROC_HTTP
+#   include "uscxml/plugins/ioprocessor/http/HTTPIOProcessor.h"
+#endif
+
+#ifdef WITH_ELEMENT_RESPOND
+#   include "uscxml/plugins/element/respond/RespondElement.h"
+#endif
+
 #include "uscxml/plugins/datamodel/null/NullDataModel.h"
 
 #if defined WITH_DM_ECMA_V8
@@ -179,6 +187,21 @@ void Factory::registerPlugins() {
 		BasicHTTPIOProcessor* ioProcessor = new BasicHTTPIOProcessor();
 		registerIOProcessor(ioProcessor);
 	}
+#endif
+
+#ifdef WITH_IOPROC_HTTP
+	{
+		HTTPIOProcessor* ioProcessor = new HTTPIOProcessor();
+		registerIOProcessor(ioProcessor);
+	}
+#endif
+
+#ifdef WITH_ELEMENT_RESPOND
+	{
+		RespondElement* element = new RespondElement();
+		registerExecutableContent(element);
+	}
+
 #endif
 
 #ifdef WITH_DM_ECMA_V8
@@ -458,7 +481,6 @@ std::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const st
 	std::string actualNameSpace = (nameSpace.length() == 0 ? "http://www.w3.org/2005/07/scxml" : nameSpace);
 	if (_executableContent.find(std::make_pair(localName, actualNameSpace)) != _executableContent.end()) {
 		std::shared_ptr<ExecutableContentImpl> execContent = _executableContent[std::make_pair(localName, actualNameSpace)]->create(interpreter);
-		execContent->setInterpreter(interpreter);
 		return execContent;
 	}
 

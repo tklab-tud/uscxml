@@ -88,10 +88,11 @@ if (BUILD_AS_PLUGINS)
 endif()
 
 add_subdirectory(plugins/datamodel)
-# add_subdirectory(plugins/element)
+add_subdirectory(plugins/element)
 add_subdirectory(plugins/invoker)
 add_subdirectory(plugins/ioprocessor)
 
+SET(WITH_IOPROC_HTTP_TIMEOUT ${WITH_IOPROC_HTTP_TIMEOUT} PARENT_SCOPE)
 SET(USCXML_INVOKERS ${USCXML_INVOKERS} PARENT_SCOPE)
 SET(USCXML_IOPROCESSORS ${USCXML_IOPROCESSORS} PARENT_SCOPE)
 SET(USCXML_ELEMENTS ${USCXML_ELEMENTS} PARENT_SCOPE)

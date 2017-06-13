@@ -325,6 +325,8 @@ DOMElement* getState(const std::string& stateId, const DOMElement* root) {
 		stateStack.insert(stateStack.end(), children.begin(), children.end());
 	}
 
+	// no state with such an id in document!
+	assert(false);
 	return NULL;
 }
 
