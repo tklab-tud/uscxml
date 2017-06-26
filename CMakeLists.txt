@@ -2,10 +2,12 @@
 cmake_minimum_required(VERSION 2.8.7 FATAL_ERROR)
 
 # build type has to be set before the project definition
-if (NOT CMAKE_BUILD_TYPE)
-    message(STATUS "No build type selected, default to Release, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
-    set(CMAKE_BUILD_TYPE "Release")
-endif()
+SET(BUILD_TYPE_HELP "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug, Release, RelWithDebInfo, MinSizeRel.")
+IF(DEFINED CMAKE_BUILD_TYPE)
+   SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING ${BUILD_TYPE_HELP})
+ELSE()
+   SET(CMAKE_BUILD_TYPE Release CACHE STRING ${BUILD_TYPE_HELP})
+ENDIF()
 
 # swig_add_module complains quite verbosly on newer cmake versions
 SET(CMAKE_WARN_DEPRECATED OFF)
