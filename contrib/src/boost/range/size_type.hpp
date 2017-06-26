@@ -83,6 +83,11 @@ namespace boost
         detail::range_size<T>
     { };
 
+    template< class T >
+    struct range_size<const T > :
+        detail::range_size<T>
+    { };
+
 } // namespace boost
 
 
