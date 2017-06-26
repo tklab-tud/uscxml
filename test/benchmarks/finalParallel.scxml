@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<scxml seed="681439801" name="findLCCA" initial="id20 id40 id60 id80 id100 id120 id140 id160 id180 id200 id220 id240 id260 id280 id300 id320 id340 id360 id380 id400 ">
+<scxml seed="681439801" name="finalParallel">
   <parallel id="p0">
     <state id="id1">
       <state id="id2">
@@ -20,9 +20,7 @@
                                     <state id="id17">
                                       <state id="id18">
                                         <state id="id19">
-                                          <state id="id20">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id20"/>
                                         </state>
                                       </state>
                                     </state>
@@ -61,9 +59,7 @@
                                     <state id="id37">
                                       <state id="id38">
                                         <state id="id39">
-                                          <state id="id40">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id40"/>
                                         </state>
                                       </state>
                                     </state>
@@ -102,9 +98,7 @@
                                     <state id="id57">
                                       <state id="id58">
                                         <state id="id59">
-                                          <state id="id60">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id60"/>
                                         </state>
                                       </state>
                                     </state>
@@ -143,9 +137,7 @@
                                     <state id="id77">
                                       <state id="id78">
                                         <state id="id79">
-                                          <state id="id80">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id80"/>
                                         </state>
                                       </state>
                                     </state>
@@ -184,9 +176,7 @@
                                     <state id="id97">
                                       <state id="id98">
                                         <state id="id99">
-                                          <state id="id100">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id100"/>
                                         </state>
                                       </state>
                                     </state>
@@ -225,9 +215,7 @@
                                     <state id="id117">
                                       <state id="id118">
                                         <state id="id119">
-                                          <state id="id120">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id120"/>
                                         </state>
                                       </state>
                                     </state>
@@ -266,9 +254,7 @@
                                     <state id="id137">
                                       <state id="id138">
                                         <state id="id139">
-                                          <state id="id140">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id140"/>
                                         </state>
                                       </state>
                                     </state>
@@ -307,9 +293,7 @@
                                     <state id="id157">
                                       <state id="id158">
                                         <state id="id159">
-                                          <state id="id160">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id160"/>
                                         </state>
                                       </state>
                                     </state>
@@ -348,9 +332,7 @@
                                     <state id="id177">
                                       <state id="id178">
                                         <state id="id179">
-                                          <state id="id180">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id180"/>
                                         </state>
                                       </state>
                                     </state>
@@ -389,9 +371,7 @@
                                     <state id="id197">
                                       <state id="id198">
                                         <state id="id199">
-                                          <state id="id200">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id200"/>
                                         </state>
                                       </state>
                                     </state>
@@ -430,9 +410,7 @@
                                     <state id="id217">
                                       <state id="id218">
                                         <state id="id219">
-                                          <state id="id220">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id220"/>
                                         </state>
                                       </state>
                                     </state>
@@ -471,9 +449,7 @@
                                     <state id="id237">
                                       <state id="id238">
                                         <state id="id239">
-                                          <state id="id240">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id240"/>
                                         </state>
                                       </state>
                                     </state>
@@ -512,9 +488,7 @@
                                     <state id="id257">
                                       <state id="id258">
                                         <state id="id259">
-                                          <state id="id260">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id260"/>
                                         </state>
                                       </state>
                                     </state>
@@ -553,9 +527,7 @@
                                     <state id="id277">
                                       <state id="id278">
                                         <state id="id279">
-                                          <state id="id280">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id280"/>
                                         </state>
                                       </state>
                                     </state>
@@ -594,9 +566,7 @@
                                     <state id="id297">
                                       <state id="id298">
                                         <state id="id299">
-                                          <state id="id300">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id300"/>
                                         </state>
                                       </state>
                                     </state>
@@ -635,9 +605,7 @@
                                     <state id="id317">
                                       <state id="id318">
                                         <state id="id319">
-                                          <state id="id320">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id320"/>
                                         </state>
                                       </state>
                                     </state>
@@ -676,9 +644,7 @@
                                     <state id="id337">
                                       <state id="id338">
                                         <state id="id339">
-                                          <state id="id340">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id340"/>
                                         </state>
                                       </state>
                                     </state>
@@ -717,9 +683,7 @@
                                     <state id="id357">
                                       <state id="id358">
                                         <state id="id359">
-                                          <state id="id360">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id360"/>
                                         </state>
                                       </state>
                                     </state>
@@ -758,9 +722,7 @@
                                     <state id="id377">
                                       <state id="id378">
                                         <state id="id379">
-                                          <state id="id380">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id380"/>
                                         </state>
                                       </state>
                                     </state>
@@ -799,9 +761,7 @@
                                     <state id="id397">
                                       <state id="id398">
                                         <state id="id399">
-                                          <state id="id400">
-                                            <transition target="id401"/>
-                                          </state>
+                                          <final id="id400"/>
                                         </state>
                                       </state>
                                     </state>
@@ -821,8 +781,6 @@
         </state>
       </state>
     </state>
+    <transition target="p0" event="done.state.p0"/>
   </parallel>
-  <state id="id401">
-    <transition target="id20 id40 id60 id80 id100 id120 id140 id160 id180 id200 id220 id240 id260 id280 id300 id320 id340 id360 id380 id400 "/>
-  </state>
 </scxml>

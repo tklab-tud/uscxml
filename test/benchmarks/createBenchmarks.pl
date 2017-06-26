@@ -74,17 +74,57 @@ sub createFindLCCANestedCompounds {
 
 		push @{$$where}, $state;
 	}
+}
+
+sub createFinalParallelBenchmark {
+	my $where = shift;
+
+	my $nestingDepth = 20;
+	my $finalStates = 20;
+
+	$$where->{'name'} = 'finalParallel';
+	$$where->{'type'} = 'scxml';
+	$$where->{'intial'} = "";
+
+	$$where->{'children'}[0]->{'type'} = 'parallel';
+	$$where->{'children'}[0]->{'id'} = "p0";
+
+	$$where->{'children'}[0]->{'transitions'}[0]->{'event'} = 'done.state.p0';
+	$$where->{'children'}[0]->{'transitions'}[0]->{'target'} = 'p0';
+
+	for (my $i = 0; $i < $finalStates; $i++) {
+		createFinalParallelNestedFinals(\$$where->{'children'}[0]->{'children'}, $nestingDepth);
+	}
 
 
 }
 
+sub createFinalParallelNestedFinals {
+	my $where = shift;
+	my $amount = shift;
+
+	if ($amount > 0) {
+		my $state;		
+		if ($amount == 1) {
+			$state->{'type'} = "final";
+		} else {
+			$state->{'type'} = "state";
+		}
+		$state->{'id'} = "id".$stateId++;
+		
+		createFinalParallelNestedFinals(\$state->{'children'}, $amount - 1);
+
+		push @{$$where}, $state;
+	}
+
+}
 
 sub writeState {
 	my $state = shift;
 	my $fh = shift;
 
 	print $fh '<'.$state->{'type'};
-	print $fh ' id="'.$state->{'id'} . '"';
+	print $fh ' id="'.$state->{'id'} . '"' if $state->{'id'};
 	print $fh ' type="deep"' if exists $state->{'deep'};
 	print $fh '>';
 
@@ -156,4 +196,12 @@ sub xmllint {
 	# print Dumper($machine);
 	writeMachine($machine, "findLCCA.scxml");
 	xmllint("findLCCA.scxml");
+
+
+	$machine = {};
+	$stateId = 1;
+	createFinalParallelBenchmark(\$machine);
+	writeMachine($machine, "finalParallel.scxml");
+	xmllint("finalParallel.scxml");
+
 }
