@@ -216,6 +216,10 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
     resortStates(_scxml, _xmlPrefix);
 
+    std::map<std::string, int> stateIds;
+    std::map<XERCESC_NS::DOMElement*, State*> stateElements;
+    std::map<XERCESC_NS::DOMElement*, Transition*> transElements;
+
     
     /** -- All things states -- */
     
@@ -236,7 +240,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     for (i = 0; i < _states.size(); i++) {
         _states[i] = new State(i);
         _states[i]->element = tmp.front();
-        _stateElements[_states[i]->element] = _states[i];
+        stateElements[_states[i]->element] = _states[i];
         tmp.pop_front();
     }
     assert(tmp.size() == 0);
@@ -258,7 +262,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     for (i = 0; i < _states.size(); i++) {
         // collect states with an id attribute
         if (HAS_ATTR(_states[i]->element, kXMLCharId)) {
-            _stateIds[ATTR(_states[i]->element, kXMLCharId)] = i;
+            stateIds[ATTR(_states[i]->element, kXMLCharId)] = i;
         }
         
         // check for executable content and datamodels
@@ -317,7 +321,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
         std::list<DOMElement*> completionList = getCompletion(_states[i]->element);
         
         for (j = 0; completionList.size() > 0; j++) {
-            _states[i]->completion.insert(_stateElements[completionList.front()]);
+            _states[i]->completion.insert(stateElements[completionList.front()]);
             completionList.pop_front();
         }
         assert(completionList.size() == 0);
@@ -330,14 +334,14 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
         // set the states parent
         DOMNode* parent = _states[i]->element->getParentNode();
         if (parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
-            _states[i]->parent = _stateElements[(DOMElement*)parent];
+            _states[i]->parent = stateElements[(DOMElement*)parent];
         }
         
         // set the states children
         std::list<State*> childList;
         for (auto childElem = _states[i]->element->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
             if (isState(childElem, false)) {
-                childList.push_back(_stateElements[childElem]);
+                childList.push_back(stateElements[childElem]);
             }
         }
         _states[i]->children = { std::make_move_iterator(std::begin(childList)), std::make_move_iterator(std::end(childList))};
@@ -360,7 +364,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     for (i = 0; i < _transitions.size(); i++) {
         _transitions[i] = new Transition(i);
         _transitions[i]->element = tmp.front();
-        _transElements[_transitions[i]->element] = _transitions[i];
+        transElements[_transitions[i]->element] = _transitions[i];
         tmp.pop_front();
     }
     assert(tmp.size() == 0);
@@ -375,7 +379,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
             auto elemIter = exitList.begin();
             for (size_t j = 0; j < exitList.size(); j++) {
-                _transitions[i]->exitSet.insert(_stateElements[*elemIter++]);
+                _transitions[i]->exitSet.insert(stateElements[*elemIter++]);
             }
         }
 
@@ -391,7 +395,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
                 (DOMUtils::hasIntersection(getExitSet(t1, _scxml), getExitSet(t2, _scxml)))) {
             } else {
                 // compatible
-                conflictList.push_back(_transElements[t2]);
+                conflictList.push_back(transElements[t2]);
             }
         }
         _transitions[i]->compatible = {std::make_move_iterator(std::begin(conflictList)), std::make_move_iterator(std::end(conflictList))};
@@ -403,8 +407,8 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
         {
             std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, kXMLCharTarget));
             for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
-                if (_stateIds.find(*tIter) != _stateIds.end()) {
-                    targetList.push_back(_stateElements[getState(*tIter, _scxml)]);
+                if (stateIds.find(*tIter) != stateIds.end()) {
+                    targetList.push_back(stateElements[getState(*tIter, _scxml)]);
                 }
             }
         }
@@ -452,8 +456,8 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
         for (auto i = 0; transList.size() > 0; i++) {
             auto trans = transList.front();
             transList.pop_front();
-            _transElements[trans]->source = state;
-            state->transitions[i] = _transElements[trans];
+            transElements[trans]->source = state;
+            state->transitions[i] = transElements[trans];
         }
         assert(transList.size() == 0);
     }
@@ -1055,13 +1059,16 @@ bool LargeMicroStep::isInFinal(const State* state) {
 
         case USCXML_STATE_COMPOUND:
             for (auto child : state->children) {
-                if (_configuration.find(child) != _configuration.end())
+                if (_configuration.find(child) != _configuration.end()) {
                     return isInFinal(child);
+                    break;
+                }
             }
             return true;
 
         default:
-            assert(false);
+            // history
+            return true;
             break;
     }
     return false;

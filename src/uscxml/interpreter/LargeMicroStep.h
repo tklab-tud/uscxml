@@ -82,10 +82,6 @@ protected:
     boost::container::flat_set<State*, StateOrder> _history;
     boost::container::flat_set<State*, StateOrder> _initializedData;
 
-    std::map<std::string, int> _stateIds;
-    std::map<XERCESC_NS::DOMElement*, State*> _stateElements;
-    std::map<XERCESC_NS::DOMElement*, Transition*> _transElements;
-
 	class Transition {
 	public:
         Transition(uint32_t postFixOrder) : postFixOrder(postFixOrder) {}
