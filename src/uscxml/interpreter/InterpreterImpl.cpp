@@ -40,6 +40,7 @@
 #include <mutex>
 
 #include "uscxml/interpreter/FastMicroStep.h"
+#include "uscxml/interpreter/LargeMicroStep.h"
 #include "uscxml/interpreter/BasicContentExecutor.h"
 
 #include <xercesc/dom/DOM.hpp>
@@ -384,7 +385,7 @@ void InterpreterImpl::init() {
 	}
 
 	if (!_microStepper) {
-		_microStepper = MicroStep(std::shared_ptr<MicroStepImpl>(new FastMicroStep(this)));
+		_microStepper = MicroStep(std::shared_ptr<MicroStepImpl>(new LargeMicroStep(this)));
 	}
 	_microStepper.init(_scxml);
 

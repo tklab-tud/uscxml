@@ -21,7 +21,6 @@
 #ifndef BOOST_TT_IS_CONST_HPP_INCLUDED
 #define BOOST_TT_IS_CONST_HPP_INCLUDED
 
-#include <cstddef> // size_t
 #include <boost/type_traits/integral_constant.hpp>
 
 namespace boost {
@@ -36,7 +35,7 @@ namespace boost {
    template <class T>
    struct is_const : public false_type {};
    template <class T> struct is_const<T const> : public true_type{};
-   template <class T, std::size_t N> struct is_const<T const[N]> : public true_type{};
+   template <class T, size_t N> struct is_const<T const[N]> : public true_type{};
    template <class T> struct is_const<T const[]> : public true_type{};
 
 #endif
