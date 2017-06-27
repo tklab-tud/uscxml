@@ -39,25 +39,14 @@
 #  define BOOST_NO_TYPEID
 #endif
 
-#if !__has_feature(cxx_thread_local)
-#  define BOOST_NO_CXX11_THREAD_LOCAL
-#endif
-
-#ifdef __is_identifier
-#if !__is_identifier(__int64) && !defined(__GNUC__)
+#if defined(__int64) && !defined(__GNUC__)
 #  define BOOST_HAS_MS_INT64
 #endif
-#endif
-
-#if __has_include(<stdint.h>)
-#  define BOOST_HAS_STDINT_H
-#endif
-
 
 #define BOOST_HAS_NRVO
 
 // Branch prediction hints
-#if !defined (__c2__) && defined(__has_builtin)
+#if defined(__has_builtin)
 #if __has_builtin(__builtin_expect)
 #define BOOST_LIKELY(x) __builtin_expect(x, 1)
 #define BOOST_UNLIKELY(x) __builtin_expect(x, 0)
@@ -118,14 +107,9 @@
 //
 // Currently clang on Windows using VC++ RTL does not support C++11's char16_t or char32_t
 //
-#if (defined(_MSC_VER) && (_MSC_VER < 1900)) || !(defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L)
+#if defined(_MSC_VER) || !(defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L)
 #  define BOOST_NO_CXX11_CHAR16_T
 #  define BOOST_NO_CXX11_CHAR32_T
-#endif
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1800) && !defined(__GNUC__)
-#define BOOST_HAS_EXPM1
-#define BOOST_HAS_LOG1P
 #endif
 
 #if !__has_feature(cxx_constexpr)
@@ -280,10 +264,6 @@
 
 #if !__has_feature(__cxx_variable_templates__)
 #  define BOOST_NO_CXX14_VARIABLE_TEMPLATES
-#endif
-
-#if __cplusplus < 201103L
-#define BOOST_NO_CXX11_SFINAE_EXPR
 #endif
 
 #if __cplusplus < 201400

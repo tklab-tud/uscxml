@@ -53,8 +53,8 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(other), _topMostM
 	_allMachines.push_back(this);
 	_hasNativeDataModel = HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native";
 
-	prepare();
 	findNestedMachines();
+    prepare();
 
 	if (_extensions.find("prefix") != _extensions.end()) {
 		_prefixes = new std::list<std::string>();
@@ -382,8 +382,15 @@ void ChartToC::prepare() {
 	setStateCompletion();
 
 	// how many bits do we need to represent the state array?
+    size_t largestStateSpace = 0;
+    size_t largestTransSpace = 0;
+    for (auto machine : _allMachines) {
+        largestStateSpace = (machine->_states.size() > largestStateSpace ? machine->_states.size() : largestStateSpace);
+        largestTransSpace = (machine->_transitions.size() > largestTransSpace ? machine->_transitions.size() : largestTransSpace);
+    }
+    
 	std::string seperator;
-	_stateCharArraySize = ceil((float)_states.size() / (float)8);
+	_stateCharArraySize = ceil((float)largestStateSpace / (float)8);
 	_stateCharArrayInit = "{";
 	for (size_t i = 0; i < _stateCharArraySize; i++) {
 		_stateCharArrayInit += seperator + "0";
@@ -392,18 +399,18 @@ void ChartToC::prepare() {
 	_stateCharArrayInit += "}";
 
 	if (false) {
-	} else if (_states.size() < (1UL << 8)) {
+	} else if (largestStateSpace < (1UL << 8)) {
 		_stateDataType = "uint8_t";
-	} else if (_states.size() < (1UL << 16)) {
+	} else if (largestStateSpace < (1UL << 16)) {
 		_stateDataType = "uint16_t";
-	} else if (_states.size() < (1UL << 32)) {
+	} else if (largestStateSpace < (1UL << 32)) {
 		_stateDataType = "uint32_t";
 	} else {
 		_stateDataType = "uint64_t";
 	}
 
 	seperator = "";
-	_transCharArraySize = ceil((float)_transitions.size() / (float)8);
+	_transCharArraySize = ceil((float)largestTransSpace / (float)8);
 	_transCharArrayInit = "{";
 	for (size_t i = 0; i < _transCharArraySize; i++) {
 		_transCharArrayInit += seperator + "0";
@@ -412,11 +419,11 @@ void ChartToC::prepare() {
 	_transCharArrayInit += "}";
 
 	if (false) {
-	} else if (_transitions.size() < (1UL << 8)) {
+	} else if (largestTransSpace < (1UL << 8)) {
 		_transDataType = "uint8_t";
-	} else if (_transitions.size() < (1UL << 16)) {
+	} else if (largestTransSpace < (1UL << 16)) {
 		_transDataType = "uint16_t";
-	} else if (_transitions.size() < (1UL << 32)) {
+	} else if (largestTransSpace < (1UL << 32)) {
 		_transDataType = "uint32_t";
 	} else {
 		_transDataType = "uint64_t";
@@ -1663,11 +1670,13 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		size_t i = 0;
 		for (auto iter = params.begin(); iter != params.end(); iter++, i++) {
 			DOMElement* param = *iter;
+            // TODO: Index is wrong for multiple params!
 			if (param->getParentNode() != parent) {
-				static_cast<DOMElement*>(param->getParentNode())->setAttribute(X("paramIndex"), X(toStr(i)));
 				if (i > 0) {
 					stream << "    { NULL, NULL, NULL }," << std::endl;
+                    i++;
 				}
+                static_cast<DOMElement*>(param->getParentNode())->setAttribute(X("paramIndex"), X(toStr(i)));
 				parent = param->getParentNode();
 			}
 			stream << "    { ";

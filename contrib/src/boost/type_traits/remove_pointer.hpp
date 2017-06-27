@@ -18,7 +18,7 @@
 
 namespace boost {
 
-#if BOOST_WORKAROUND(BOOST_MSVC, < 1900)
+#ifdef BOOST_MSVC
 
 namespace detail{
 

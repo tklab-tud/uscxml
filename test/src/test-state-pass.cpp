@@ -79,7 +79,10 @@ int main(int argc, char** argv) {
 			while(state != USCXML_FINISHED) {
 				state = interpreter.step();
 			}
-			assert(interpreter.isInState("pass"));
+			if (interpreter.isInState("pass"))
+                return EXIT_SUCCESS;
+            return EXIT_FAILURE;
+
 		} catch (Event e) {
 			std::cerr << "Thrown Event out of Interpreter: " << e;
 			return EXIT_FAILURE;

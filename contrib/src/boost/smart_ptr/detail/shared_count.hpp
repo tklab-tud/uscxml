@@ -249,8 +249,18 @@ public:
 
         try
         {
-            pi_ = a2.allocate( 1 );
+#if !defined( BOOST_NO_CXX11_ALLOCATOR )
+
+            impl_type * pi = std::allocator_traits<A2>::allocate( a2, 1 );
+            pi_ = pi;
+            std::allocator_traits<A2>::construct( a2, pi, p, d, a );
+
+#else
+
+            pi_ = a2.allocate( 1, static_cast< impl_type* >( 0 ) );
             ::new( static_cast< void* >( pi_ ) ) impl_type( p, d, a );
+
+#endif
         }
         catch(...)
         {
@@ -266,11 +276,28 @@ public:
 
 #else
 
-        pi_ = a2.allocate( 1 );
+#if !defined( BOOST_NO_CXX11_ALLOCATOR )
+
+        impl_type * pi = std::allocator_traits<A2>::allocate( a2, 1 );
+        pi_ = pi;
+
+#else
+
+        pi_ = a2.allocate( 1, static_cast< impl_type* >( 0 ) );
+
+#endif
 
         if( pi_ != 0 )
         {
+#if !defined( BOOST_NO_CXX11_ALLOCATOR )
+
+            std::allocator_traits<A2>::construct( a2, pi, p, d, a );
+
+#else
+
             ::new( static_cast< void* >( pi_ ) ) impl_type( p, d, a );
+
+#endif
         }
         else
         {
@@ -306,8 +333,18 @@ public:
 
         try
         {
-            pi_ = a2.allocate( 1 );
+#if !defined( BOOST_NO_CXX11_ALLOCATOR )
+
+            impl_type * pi = std::allocator_traits<A2>::allocate( a2, 1 );
+            pi_ = pi;
+            std::allocator_traits<A2>::construct( a2, pi, p, a );
+
+#else
+
+            pi_ = a2.allocate( 1, static_cast< impl_type* >( 0 ) );
             ::new( static_cast< void* >( pi_ ) ) impl_type( p, a );
+
+#endif
         }
         catch(...)
         {
@@ -323,11 +360,28 @@ public:
 
 #else
 
-        pi_ = a2.allocate( 1 );
+#if !defined( BOOST_NO_CXX11_ALLOCATOR )
+
+        impl_type * pi = std::allocator_traits<A2>::allocate( a2, 1 );
+        pi_ = pi;
+
+#else
+
+        pi_ = a2.allocate( 1, static_cast< impl_type* >( 0 ) );
+
+#endif
 
         if( pi_ != 0 )
         {
+#if !defined( BOOST_NO_CXX11_ALLOCATOR )
+
+            std::allocator_traits<A2>::construct( a2, pi, p, a );
+
+#else
+
             ::new( static_cast< void* >( pi_ ) ) impl_type( p, a );
+
+#endif
         }
         else
         {

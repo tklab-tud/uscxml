@@ -12,7 +12,7 @@
 #define BOOST_TT_REMOVE_CONST_HPP_INCLUDED
 
 #include <boost/config.hpp>
-#include <cstddef> // size_t
+#include <cstddef>
 #include <boost/detail/workaround.hpp>
 
 namespace boost {
