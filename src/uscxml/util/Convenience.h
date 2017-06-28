@@ -32,6 +32,7 @@ inline bool isnan(double x);
 template <typename T> std::string toStr(T tmp) {
 	std::ostringstream outSS;
 	outSS.precision(std::numeric_limits<double>::digits10 + 1);
+	outSS.imbue(std::locale("C"));
 	outSS << tmp;
 	return outSS.str();
 }
@@ -39,6 +40,7 @@ template <typename T> std::string toStr(T tmp) {
 template <typename T> T strTo(std::string tmp) {
 	T output;
 	std::istringstream in(tmp);
+	in.imbue(std::locale("C"));
 	in >> output;
 	return output;
 }
