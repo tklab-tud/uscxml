@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<scxml seed="681439801" name="finalParallel">
+<scxml xmlns="http://www.w3.org/2005/07/scxml" datamodel="null" seed="117612236" name="finalParallel" version="1.0">
   <parallel id="p0">
     <state id="id1">
       <state id="id2">

@@ -40,6 +40,7 @@ sub createFindLCCABenchmark {
 
 	$$where->{'name'} = 'findLCCA';
 	$$where->{'type'} = 'scxml';
+	$$where->{'datamodel'} = 'null';
 	$$where->{'intial'} = "";
 	for (my $i = 1; $i <= $parallelStates; $i++) {
 		$$where->{'initial'} .= "id" . ($i*$nestingDepth) . " ";
@@ -84,6 +85,7 @@ sub createFinalParallelBenchmark {
 
 	$$where->{'name'} = 'finalParallel';
 	$$where->{'type'} = 'scxml';
+	$$where->{'datamodel'} = 'null';
 	$$where->{'intial'} = "";
 
 	$$where->{'children'}[0]->{'type'} = 'parallel';
@@ -111,7 +113,7 @@ sub createFinalParallelNestedFinals {
 			$state->{'type'} = "state";
 		}
 		$state->{'id'} = "id".$stateId++;
-		
+
 		createFinalParallelNestedFinals(\$state->{'children'}, $amount - 1);
 
 		push @{$$where}, $state;
@@ -172,6 +174,8 @@ sub writeMachine {
 	print $fh ' seed="' . $seed . '"';
 	print $fh ' name="' . $machine->{'name'} . '"' if $machine->{'name'};
 	print $fh ' initial="' . $machine->{'initial'} . '"' if $machine->{'initial'};
+	print $fh ' xmlns="http://www.w3.org/2005/07/scxml"';
+	print $fh ' version="1.0"';
 	print $fh '>';
 	
 	foreach (@{$machine->{'children'}}) {
