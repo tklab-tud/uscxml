@@ -501,9 +501,9 @@ void BasicContentExecutor::invoke(XERCESC_NS::DOMElement* element) {
 		finalize = finalizes.front();
 	}
 
-	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), beforeUninvoking, element, invokeEvent.invokeid);
+	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), beforeInvoking, element, invokeEvent.invokeid);
 	_callbacks->invoke(type, source, autoForward, finalize, invokeEvent);
-	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), afterUninvoking, element, invokeEvent.invokeid);
+	USCXML_MONITOR_CALLBACK2(_callbacks->getMonitors(), afterInvoking, element, invokeEvent.invokeid);
 }
 
 void BasicContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
