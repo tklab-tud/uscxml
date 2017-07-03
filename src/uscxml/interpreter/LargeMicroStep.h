@@ -22,7 +22,6 @@
 #ifndef LARGEMICROSTEP_H_2573547
 #define LARGEMICROSTEP_H_2573547
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/util/DOM.h" // X
 
@@ -30,19 +29,27 @@
 #include "uscxml/util/String.h"
 #include "uscxml/interpreter/InterpreterMonitor.h"
 
-/* flat_set is 10 times faster than std::set here */
 #include <boost/container/flat_set.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 #include <vector>
 #include <list>
 #include <map>
 #include "MicroStepImpl.h"
 
+#ifdef _WIN32
+#define BITSET_BLOCKTYPE size_t
+#else
+#define BITSET_BLOCKTYPE
+#endif
+
 namespace uscxml {
 
 /**
  * @ingroup microstep
  * @ingroup impl
+ *
+ * MicroStep implementation with a more economic growth of data-structures for large state-charts.
  */
 class LargeMicroStep : public MicroStepImpl {
 public:
@@ -50,6 +57,8 @@ public:
 	LargeMicroStep(MicroStepCallbacks* callbacks);
 	virtual ~LargeMicroStep();
 	virtual std::shared_ptr<MicroStepImpl> create(MicroStepCallbacks* callbacks);
+
+    std::string getName() { return "large"; }
 
 	virtual InterpreterState step(size_t blockMs);
 	virtual void reset();
@@ -61,12 +70,18 @@ public:
     virtual Data serialize() { return Data(); }
 
 protected:
+    LargeMicroStep() {} // only for the factory
+    
 	class State;
 	class Transition;
 
     struct StateOrder
     {
         bool operator()(const State* lhs, const State* rhs) const  { return lhs->documentOrder < rhs->documentOrder; }
+    };
+    struct StateOrderPostFix
+    {
+        bool operator()(const State* lhs, const State* rhs) const  { return lhs->postFixOrder < rhs->postFixOrder; }
     };
 
     struct TransitionOrder
@@ -78,6 +93,7 @@ protected:
     std::vector<Transition*> _transitions; ///< Transitions in reverse post-order
 
     boost::container::flat_set<State*, StateOrder> _configuration;
+    boost::container::flat_set<State*, StateOrderPostFix> _configurationPostFix;
     boost::container::flat_set<State*, StateOrder> _invocations;
     boost::container::flat_set<State*, StateOrder> _history;
     boost::container::flat_set<State*, StateOrder> _initializedData;
@@ -88,8 +104,9 @@ protected:
         const uint32_t postFixOrder; // making these const increases performance somewhat
 
 		XERCESC_NS::DOMElement* element = NULL;
-		boost::container::flat_set<Transition*, TransitionOrder> compatible;
-		boost::container::flat_set<State*, StateOrder> exitSet;
+        boost::container::flat_set<uint32_t> compatible;
+        boost::container::flat_set<uint32_t> conflicting;
+		std::pair<uint32_t, uint32_t> exitSet;
 
 		State* source = NULL;
 		std::vector<State*> target;
@@ -107,9 +124,11 @@ protected:
 	public:
         State(uint32_t documentOrder) : documentOrder(documentOrder) {}
         const uint32_t documentOrder;
+        uint32_t postFixOrder;
 
 		XERCESC_NS::DOMElement* element;
 		boost::container::flat_set<State*, StateOrder> completion;
+        boost::container::flat_set<State*, StateOrder> ancestors; // TODO: leverage!
 		std::vector<State*> children;
 		State* parent = NULL;
 
@@ -152,7 +171,9 @@ private:
     boost::container::flat_set<State*, StateOrder> _targetSet;
     boost::container::flat_set<State*, StateOrder> _tmpStates;
     
-    boost::container::flat_set<Transition*, TransitionOrder> _compatible;
+    boost::dynamic_bitset<BITSET_BLOCKTYPE> _compatible;
+    boost::dynamic_bitset<BITSET_BLOCKTYPE> _conflicting;
+    
     boost::container::flat_set<Transition*, TransitionOrder> _transSet;
 
     // adapted from http://www.cplusplus.com/reference/algorithm/set_intersection/
@@ -173,6 +194,11 @@ private:
     bool isInFinal(const State* state);
     void printStateNames(const boost::container::flat_set<LargeMicroStep::State*, LargeMicroStep::StateOrder>& a);
 
+    uint32_t getTransitionDomain(const Transition* transition);
+    std::pair<uint32_t, uint32_t> getExitSet(const Transition* transition);
+    std::map<uint32_t, std::pair<uint32_t, uint32_t> > _exitSetCache;
+
+    friend class Factory;
 };
 
 }

@@ -1,4 +1,2 @@
-Plugins
-HTTPS
-respond element
 Arraybuffers
+PGO

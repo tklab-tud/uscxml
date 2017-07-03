@@ -21,7 +21,7 @@
 #define INVOKERIMPL_H_8A15A102
 
 
-#include "uscxml/config.h"
+//#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/plugins/EventHandler.h"
 #include "uscxml/messages/Event.h"

@@ -22,7 +22,6 @@
 
 //#define USCXML_VERBOSE 1
 
-#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/util/DOM.h" // X
 
@@ -46,6 +45,8 @@ namespace uscxml {
 /**
  * @ingroup microstep
  * @ingroup impl
+ *
+ * MicroStep implementation backed by indexed bit-arrays.
  */
 class FastMicroStep : public MicroStepImpl {
 public:
@@ -53,6 +54,8 @@ public:
 	virtual ~FastMicroStep();
 	virtual std::shared_ptr<MicroStepImpl> create(MicroStepCallbacks* callbacks);
 
+    std::string getName() { return "fast"; }
+    
 	virtual InterpreterState step(size_t blockMs);
 	virtual void reset();
 	virtual bool isInState(const std::string& stateId);
@@ -63,6 +66,8 @@ public:
 	virtual Data serialize();
 
 protected:
+    FastMicroStep() {}; // only for factory
+    
 	class Transition {
 	public:
 		Transition() : element(NULL), source(0), onTrans(NULL), type(0) {}
@@ -161,6 +166,7 @@ private:
 	void printStateNames(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
 #endif
 
+    friend class Factory;
 };
 
 }

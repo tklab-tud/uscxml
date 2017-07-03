@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <memory>
 #include <mutex>
+#include <cstdio> // remove
 
 #include "uscxml/interpreter/FastMicroStep.h"
 #include "uscxml/interpreter/LargeMicroStep.h"
@@ -337,11 +338,15 @@ void InterpreterImpl::init() {
 		// try to open chached data from resource directory
 		std::string sharedTemp = URL::getTempDir(true);
 		std::ifstream dataFS(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache");
-		if (dataFS.is_open()) {
-			std::string cacheStr((std::istreambuf_iterator<char>(dataFS)),
-			                     std::istreambuf_iterator<char>());
-			_cache = Data::fromJSON(cacheStr);
-		}
+        try {
+            if (dataFS.is_open()) {
+                std::string cacheStr((std::istreambuf_iterator<char>(dataFS)),
+                                     std::istreambuf_iterator<char>());
+                _cache = Data::fromJSON(cacheStr);
+            }
+        } catch (...) {
+            remove(std::string(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache").c_str());
+        }
 
 		// get md5 of current document
 		std::stringstream ss;

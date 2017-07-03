@@ -91,7 +91,11 @@ public:
 	virtual void deserialize(const Data& encodedState) = 0;
 	virtual Data serialize() = 0;
 
+    /// To register at the factory
+    virtual std::string getName() = 0;
+
 protected:
+    MicroStepImpl() {};
 	MicroStepCallbacks* _callbacks;
 
 };

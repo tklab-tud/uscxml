@@ -20,6 +20,7 @@
 #undef USCXML_VERBOSE
 //#undef WITH_CACHE_FILES
 
+#include "uscxml/config.h"
 #include "FastMicroStep.h"
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/String.h"

@@ -45,6 +45,12 @@ class InterpreterMonitor;
 class InterpreterImpl;
 class InterpreterIssue;
 
+class MicroStepCallbacks;
+class DataModelCallbacks;
+class IOProcessorCallbacks;
+class ContentExecutorCallbacks;
+class DelayedEventQueueCallbacks;
+class InvokerCallbacks;
 
 /**
  * @ingroup interpreter
@@ -223,6 +229,14 @@ public:
 		return _impl;
 	}
 
+    explicit operator MicroStepCallbacks*() { return (MicroStepCallbacks*)(_impl.get()); }
+    explicit operator DataModelCallbacks*() { return (DataModelCallbacks*)(_impl.get()); }
+    explicit operator IOProcessorCallbacks*() { return (IOProcessorCallbacks*)(_impl.get()); }
+    explicit operator ContentExecutorCallbacks*() { return (ContentExecutorCallbacks*)(_impl.get()); }
+    explicit operator DelayedEventQueueCallbacks*() { return (DelayedEventQueueCallbacks*)(_impl.get()); }
+    explicit operator InvokerCallbacks*() { return (InvokerCallbacks*)(_impl.get()); }
+
+    
 protected:
 	std::shared_ptr<InterpreterImpl> _impl;
 

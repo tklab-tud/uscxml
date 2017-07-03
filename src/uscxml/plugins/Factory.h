@@ -44,6 +44,8 @@ class DataModelCallbacks;
 class InvokerImpl;
 class InvokerCallbacks;
 class ExecutableContentImpl;
+class MicroStepImpl;
+class MicroStepCallbacks;
 
 class USCXML_API Factory {
 public:
@@ -51,21 +53,31 @@ public:
 	Factory(const std::string& pluginPath, Factory* parentFactory);
 
 	void registerIOProcessor(IOProcessorImpl* ioProcessor);
-	void registerDataModel(DataModelImpl* dataModel);
-	void registerInvoker(InvokerImpl* invoker);
-	void registerExecutableContent(ExecutableContentImpl* executableContent);
+    bool hasIOProcessor(const std::string& type);
+    std::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, IOProcessorCallbacks* callbacks);
 
-	std::shared_ptr<DataModelImpl> createDataModel(const std::string& type, DataModelCallbacks* callbacks);
-	std::shared_ptr<IOProcessorImpl> createIOProcessor(const std::string& type, IOProcessorCallbacks* callbacks);
-	std::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InvokerCallbacks* interpreter);
-	std::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
+    void registerDataModel(DataModelImpl* dataModel);
+    bool hasDataModel(const std::string& type);
+    std::shared_ptr<DataModelImpl> createDataModel(const std::string& type, DataModelCallbacks* callbacks);
 
-	bool hasDataModel(const std::string& type);
-	bool hasIOProcessor(const std::string& type);
-	bool hasInvoker(const std::string& type);
-	bool hasExecutableContent(const std::string& localName, const std::string& nameSpace);
+    void registerInvoker(InvokerImpl* invoker);
+    bool hasInvoker(const std::string& type);
+    std::shared_ptr<InvokerImpl> createInvoker(const std::string& type, InvokerCallbacks* interpreter);
 
-	std::map<std::string, IOProcessorImpl*> getIOProcessors();
+    void registerExecutableContent(ExecutableContentImpl* executableContent);
+    bool hasExecutableContent(const std::string& localName, const std::string& nameSpace);
+    std::shared_ptr<ExecutableContentImpl> createExecutableContent(const std::string& localName, const std::string& nameSpace, InterpreterImpl* interpreter);
+
+
+
+
+#ifndef FEATS_ON_CMD
+    void registerMicrostepper(MicroStepImpl* microStepper);
+    bool hasMicroStepper(const std::string& name);
+    std::shared_ptr<MicroStepImpl> createMicroStepper(const std::string& name, MicroStepCallbacks* callbacks);
+#endif
+
+    std::map<std::string, IOProcessorImpl*> getIOProcessors();
 
 	void listComponents();
 
@@ -83,6 +95,9 @@ protected:
 	std::map<std::string, std::string> _invokerAliases;
 	std::map<std::pair<std::string, std::string>, ExecutableContentImpl*> _executableContent;
 
+#ifndef FEATS_ON_CMD
+    std::map<std::string, MicroStepImpl*> _microSteppers;
+#endif
 
 #ifdef BUILD_AS_PLUGINS
 	pluma::Pluma pluma;
@@ -98,7 +113,6 @@ protected:
 	static Factory* _instance;
 
 };
-
 
 }
 

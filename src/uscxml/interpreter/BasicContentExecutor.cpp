@@ -728,12 +728,14 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool a
 			if (asExpression) // not actually used, but likely expected
 				return Data(contentSS.str(), Data::INTERPRETED);
 
-			// test153, we need to throw for test150 in promela
-			Data d = _callbacks->getAsData(contentSS.str());
-			if (!d.empty())
-				return d;
+			// test153, we need to throw for test150 in promela, but we need to space normalize for test558
+            try {
+                Data d = _callbacks->getAsData(contentSS.str());
+                if (!d.empty())
+                    return d;
+            } catch ( ... ) {}
 
-			// never actually occurs with the w3c tests
+			// test558
 			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
 		}
 	}
