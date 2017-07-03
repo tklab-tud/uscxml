@@ -1,26 +1,11 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/plugins/Factory.h"
-#include "uscxml/debug/Benchmark.h"
 
 #include <chrono>
 #include <iostream>
 
 using namespace uscxml;
 using namespace std::chrono;
-
-class InterpreterCallbacks {
-public:
-    InterpreterCallbacks() {}
-    void beforeEnterState(const std::string& stateName, std::function<void (const std::string& sessionId)> function) {
-        _beforeEnterStates.push_back(function);
-    }
-    
-    void operator() {
-    }
-    
-    std::list<std::function<void (const std::string& sessionId)> > _beforeEnterStates;
-};
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -30,17 +15,6 @@ int main(int argc, char** argv) {
 
 	Interpreter interpreter = Interpreter::fromURL(argv[1]);
 
-    ActionLanguage al;
-    al.microStepper = Factory::getInstance()->createMicroStepper("large", (MicroStepCallbacks*)interpreter);
-    interpreter.setActionLanguage(al);
-    
-    InterpreterCallbacks callbacks;
-    callbacks.beforeEnterState("mark", [](const std::string& sessionId) {
-        std::cout << "foo";
-    });
-    
-    
-    
 	InterpreterState state;
 	system_clock::time_point start = system_clock::now();
 
@@ -69,5 +43,4 @@ int main(int argc, char** argv) {
 			iterations = 0;
 		}
 	}
-    Benchmark::report(std::cout);
 }
