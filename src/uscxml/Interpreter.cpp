@@ -23,6 +23,7 @@
 #include "uscxml/interpreter/InterpreterImpl.h"
 #include "uscxml/util/DOM.h"
 #include "uscxml/util/URL.h"
+#include "uscxml/util/MD5.hpp"
 
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/framework/MemBufInputSource.hpp>
@@ -81,6 +82,7 @@ Interpreter Interpreter::fromXML(const std::string& xml, const std::string& base
 
 		interpreterImpl->_document = parser->adoptDocument();
 		interpreterImpl->_baseURL = absUrl;
+        interpreterImpl->_md5 = md5(xml);
 		InterpreterImpl::addInstance(interpreterImpl);
 
 	} catch (const XERCESC_NS::SAXParseException& toCatch) {
@@ -147,12 +149,10 @@ Interpreter Interpreter::fromDocument(XERCESC_NS::DOMDocument* dom, const std::s
 Interpreter Interpreter::fromURL(const std::string& url) {
 	URL absUrl = normalizeURL(url);
 
-#ifdef _WIN32
+#if 1
 	// Xercesc is hard to build with SSL on windows, whereas curl uses winssl
-	if (absUrl.scheme() == "https") {
-		return fromXML(absUrl.getInContent(), absUrl);
-	}
-#endif
+    return fromXML(absUrl.getInContent(), absUrl);
+#else
 
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
 	Interpreter interpreter(interpreterImpl);
@@ -187,6 +187,7 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 	}
 
 	return interpreter;
+#endif
 
 }
 

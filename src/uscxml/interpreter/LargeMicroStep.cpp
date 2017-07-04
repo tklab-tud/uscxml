@@ -19,8 +19,10 @@
 
 #include "LargeMicroStep.h"
 #include "uscxml/debug/Benchmark.h"
+#include "uscxml/util/Predicates.h"
 
 #include <algorithm>
+#include <iostream>
 
 #define USCXML_CTX_PRISTINE           0x00
 #define USCXML_CTX_SPONTANEOUS        0x01
@@ -113,6 +115,7 @@ void LargeMicroStep::reset() {
     _isCancelled = false;
     _flags = USCXML_CTX_PRISTINE;
     _configuration.clear();
+    _configurationPostFix.clear();
     _history.clear();
     _initializedData.clear();
     _invocations.clear();
@@ -214,12 +217,12 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
         _xmlPrefix = std::string(_xmlPrefix) + ":";
     }
 
-    resortStates(_scxml, _xmlPrefix);
+    {
+        BENCHMARK("init resort states")
+        resortStates(_scxml, _xmlPrefix);
+    }
 
-    std::map<std::string, int> stateIds;
-    std::map<XERCESC_NS::DOMElement*, State*> stateElements;
-    std::map<XERCESC_NS::DOMElement*, Transition*> transElements;
-
+    std::set<std::string> stateIds;
     
     /** -- All things states -- */
     
@@ -240,7 +243,7 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     for (i = 0; i < _states.size(); i++) {
         _states[i] = new State(i);
         _states[i]->element = tmp.front();
-        stateElements[_states[i]->element] = _states[i];
+        _states[i]->element->setUserData(X("uscxmlState"), _states[i], NULL);
         tmp.pop_front();
     }
     assert(tmp.size() == 0);
@@ -262,11 +265,16 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     for (i = 0; i < _states.size(); i++) {
         // collect states with an id attribute
         if (HAS_ATTR(_states[i]->element, kXMLCharId)) {
-            stateIds[ATTR(_states[i]->element, kXMLCharId)] = i;
+            stateIds.insert(ATTR(_states[i]->element, kXMLCharId));
         }
+        
+        // TODO: Reserve space for ancestors? => Measure performance!
         
         // check for executable content and datamodels
         if (_states[i]->element->getChildElementCount() > 0) {
+            // not every child element will be a child state, but we can shrink later
+            _states[i]->children.reserve(_states[i]->element->getChildElementCount());
+            
             std::list<XERCESC_NS::DOMElement*> entryList = DOMUtils::filterChildElements(_xmlPrefix.str() + "onentry", _states[i]->element);
             std::list<XERCESC_NS::DOMElement*> exitList = DOMUtils::filterChildElements(_xmlPrefix.str() + "onexit", _states[i]->element);
             std::list<XERCESC_NS::DOMElement*> invokeList = DOMUtils::filterChildElements(_xmlPrefix.str() + "invoke", _states[i]->element);
@@ -311,17 +319,14 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
             _states[i]->type = USCXML_STATE_ATOMIC;
         } else if (isParallel(_states[i]->element)) {
             _states[i]->type = USCXML_STATE_PARALLEL;
-        } else if (isCompound(_states[i]->element)) {
-            _states[i]->type = USCXML_STATE_COMPOUND;
-        } else { // <scxml>
+        } else { // <scxml> and any other state
             _states[i]->type = USCXML_STATE_COMPOUND;
         }
 
         // establish the states' completion
         std::list<DOMElement*> completionList = getCompletion(_states[i]->element);
-        
         for (j = 0; completionList.size() > 0; j++) {
-            _states[i]->completion.insert(stateElements[completionList.front()]);
+            _states[i]->completion.insert((State*)completionList.front()->getUserData(X("uscxmlState")));
             completionList.pop_front();
         }
         assert(completionList.size() == 0);
@@ -331,20 +336,16 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
             _states[i]->type |= USCXML_STATE_HAS_HISTORY;
         }
 
-        // set the states parent
+        // set the states parent and add us as a children
         DOMNode* parent = _states[i]->element->getParentNode();
         if (parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
-            _states[i]->parent = stateElements[(DOMElement*)parent];
-        }
-        
-        // set the states children
-        std::list<State*> childList;
-        for (auto childElem = _states[i]->element->getFirstElementChild(); childElem; childElem = childElem->getNextElementSibling()) {
-            if (isState(childElem, false)) {
-                childList.push_back(stateElements[childElem]);
+            _states[i]->parent = (State*)parent->getUserData(X("uscxmlState"));
+            if (_states[i]->parent != NULL) {
+                _states[i]->parent->children.push_back(_states[i]);
+                _states[i]->ancestors.insert(_states[i]->parent);
+                _states[i]->ancestors.insert(_states[i]->parent->ancestors.begin(), _states[i]->parent->ancestors.end());
             }
         }
-        _states[i]->children = { std::make_move_iterator(std::begin(childList)), std::make_move_iterator(std::end(childList))};
     }
     
     /** -- All things transitions -- */
@@ -360,59 +361,30 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     tmp = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "transition", tmp);
     
     _transitions.resize(tmp.size());
+    _conflicting.resize(tmp.size());
+    _compatible.resize(tmp.size());
     
     for (i = 0; i < _transitions.size(); i++) {
         _transitions[i] = new Transition(i);
         _transitions[i]->element = tmp.front();
-        transElements[_transitions[i]->element] = _transitions[i];
+        _transitions[i]->element->setUserData(X("uscxmlTrans"), _transitions[i], NULL);
         tmp.pop_front();
     }
     assert(tmp.size() == 0);
 
     
     for (i = 0; i < _transitions.size(); i++) {
-        // establish the transitions' exit set
-        assert(_transitions[i]->element != NULL);
-        
-        {
-            std::list<DOMElement*> exitList = getExitSet(_transitions[i]->element, _scxml);
-
-            auto elemIter = exitList.begin();
-            for (size_t j = 0; j < exitList.size(); j++) {
-                _transitions[i]->exitSet.insert(stateElements[*elemIter++]);
-            }
-        }
-
-        // establish the transitions' conflict set
-        std::list<Transition*> conflictList;
-
-        for (j = 0; j < _transitions.size(); j++) {
-            DOMElement* t1 = _transitions[i]->element;
-            DOMElement* t2 = _transitions[j]->element;
-            if ((getSourceState(t1) == getSourceState(t2)) ||
-                (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2))) ||
-                (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1))) ||
-                (DOMUtils::hasIntersection(getExitSet(t1, _scxml), getExitSet(t2, _scxml)))) {
-            } else {
-                // compatible
-                conflictList.push_back(transElements[t2]);
-            }
-        }
-        _transitions[i]->compatible = {std::make_move_iterator(std::begin(conflictList)), std::make_move_iterator(std::end(conflictList))};
-        
-
         // establish the transitions' target set
-        std::list<State*> targetList;
-
         {
             std::list<std::string> targets = tokenize(ATTR(_transitions[i]->element, kXMLCharTarget));
+            _transitions[i]->target.reserve(targets.size());
+            
             for (auto tIter = targets.begin(); tIter != targets.end(); tIter++) {
                 if (stateIds.find(*tIter) != stateIds.end()) {
-                    targetList.push_back(stateElements[getState(*tIter, _scxml)]);
+                    _transitions[i]->target.push_back((State*)getState(*tIter, _scxml)->getUserData(X("uscxmlState")));
                 }
             }
         }
-        _transitions[i]->target = {std::make_move_iterator(std::begin(targetList)), std::make_move_iterator(std::end(targetList))};
         
         // the transition's type
         if (!HAS_ATTR(_transitions[i]->element, kXMLCharTarget)) {
@@ -451,14 +423,30 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
     /* Connect states and transitions */
     for (auto state : _states) {
         std::list<XERCESC_NS::DOMElement*> transList = DOMUtils::filterChildElements(_xmlPrefix.str() + "transition", state->element);
-        state->transitions.resize(transList.size());
-
-        for (auto i = 0; transList.size() > 0; i++) {
-            auto trans = transList.front();
-            transList.pop_front();
-            transElements[trans]->source = state;
-            state->transitions[i] = transElements[trans];
+        if (transList.size() > 0) {
+            state->transitions.resize(transList.size());
+            for (auto i = 0; transList.size() > 0; i++) {
+                auto trans = transList.front();
+                transList.pop_front();
+                Transition* uscxmlTrans = ((Transition*)trans->getUserData(X("uscxmlTrans")));
+                uscxmlTrans->source = state;
+                // save some memory? => Measure performance!
+//                uscxmlTrans->compatible.shrink_to_fit();
+//                uscxmlTrans->exitSet.shrink_to_fit();
+                
+                state->transitions[i] = uscxmlTrans;
+            }
+            // we need the postfix order for iterating transitions of active states
+            state->postFixOrder = (*(state->transitions.begin()))->postFixOrder;
+        } else {
+            state->postFixOrder = std::numeric_limits<uint32_t>::max();
         }
+
+        // save some memory? => Measure performance!
+//        state->ancestors.shrink_to_fit();
+        state->children.shrink_to_fit();
+//        state->completion.shrink_to_fit();
+        
         assert(transList.size() == 0);
     }
     
@@ -472,15 +460,15 @@ InterpreterState LargeMicroStep::step(size_t blockMs) {
     }
     
     std::set<InterpreterMonitor*> monitors = _callbacks->getMonitors();
-    
+
     _exitSet.clear();
     _entrySet.clear();
     _targetSet.clear();
     _tmpStates.clear();
     
     _compatible.clear();
+    _conflicting.clear();
     _transSet.clear();
-    boost::container::flat_set<State*> erase;
     
     if (_flags & USCXML_CTX_FINISHED)
         return USCXML_FINISHED;
@@ -591,68 +579,156 @@ InterpreterState LargeMicroStep::step(size_t blockMs) {
     return USCXML_IDLE;
     
 SELECT_TRANSITIONS:
-    
+
     // we read an event - unset stable to signal onstable again later
     _flags &= ~USCXML_CTX_STABLE;
     
     {
         BENCHMARK("select transitions");
-        for (auto transition : _transitions) { // we need to iterate over all for ordering
+        
+        // iterate active states in postfix order and find transitions
+        for (auto stateIter = _configurationPostFix.begin(); stateIter != _configurationPostFix.end();) {
+            State* state = *stateIter++;
+//            std::cout << (HAS_ATTR(state->element, kXMLCharId) ? ATTR(state->element, kXMLCharId) : "?");
+//            std::cout << ": " << state->documentOrder << " - " << state->postFixOrder << std::endl;
             
-            /* never select history or initial transitions automatically */
-            if unlikely(transition->type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL))
-                continue;
-            
-            /* is it even active */
-            if (_configuration.find(transition->source) == _configuration.end())
-                continue;
-            
-            /* is it spontaneous with an event or vice versa? */
-            if ((transition->event.size() == 0 && _event) ||
-                (transition->event.size() != 0 && !_event))
-                continue;
+            for (auto transIter = state->transitions.begin(); transIter != state->transitions.end();) {
+                Transition* transition = *transIter++;
 
-            /* is it non-conflicting? */
-            if ((_flags & USCXML_CTX_TRANSITION_FOUND) && _compatible.find(transition) == _compatible.end())
-                continue;
-            
-            /* is it matched? */
-            if (_event && !_callbacks->isMatched(_event, transition->event))
-                continue;
-            
-            /* is it enabled? */
-            if (transition->cond.size() > 0 && !_callbacks->isTrue(transition->cond))
-                continue;
+                /* never select history or initial transitions automatically */
+                if unlikely(transition->type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL))
+                    continue;
 
-            /* transitions that are pre-empted */
-            if (_flags & USCXML_CTX_TRANSITION_FOUND) {
-                for (auto compIter = _compatible.begin(); compIter != _compatible.end();) {
-                    if (transition->compatible.find(*compIter) == transition->compatible.end()) {
-                        compIter = _compatible.erase(compIter);
-                    } else {
-                        compIter++;
+                /* is it spontaneous with an event or vice versa? */
+                if ((transition->event.size() == 0 && _event) ||
+                    (transition->event.size() != 0 && !_event))
+                    continue;
+
+                /* check whether it is explicitly conflicting or compatible, calculate if neither */
+                if (_flags & USCXML_CTX_TRANSITION_FOUND) {
+                    BENCHMARK("select transitions conflict & compatible calc");
+
+                    if (_conflicting[transition->postFixOrder]) {
+                        // this transition is explicitly conflicting
+                        continue;
+                    }
+                    if (!_compatible[transition->postFixOrder]) {
+                        // it is not explicitly compatible, we know nothing!
+                        BENCHMARK("select transitions conflict & compatible calc no entry");
+
+                        bool conflicts = false;
+                        for (auto enabledTrans : _transSet) {
+                            if (enabledTrans->compatible.find(transition->postFixOrder) != enabledTrans->compatible.end() ||
+                                (enabledTrans->conflicting.find(transition->postFixOrder) != enabledTrans->conflicting.end())) {
+                                continue;
+                            }
+                            
+                            std::pair<uint32_t, uint32_t> exit1 = getExitSet(transition);
+                            std::pair<uint32_t, uint32_t> exit2 = getExitSet(enabledTrans);
+                            
+                            if (exit1.first != 0 && exit2.first != 0 && // empty domain
+                                ((exit1.first <= exit2.first && exit1.second >= exit2.first) ||
+                                 (exit2.first <= exit1.first && exit2.second >= exit1.first))) {
+                                // it is conflicting!
+//                                assert(uscxml::conflicts(t1, t2, _scxml));
+                                transition->conflicting.insert(enabledTrans->postFixOrder);
+                                enabledTrans->conflicting.insert(transition->postFixOrder);
+                                conflicts = true;
+                                break;
+                            } else {
+//                                assert(!uscxml::conflicts(t1, t2, _scxml));
+                                transition->compatible.insert(enabledTrans->postFixOrder);
+                                enabledTrans->compatible.insert(transition->postFixOrder);
+                            }
+                        }
+                        if (conflicts)
+                            continue;
                     }
                 }
-            } else {
-                _compatible = transition->compatible;
-            }
-            
-            /* remember that we found a transition */
-            _flags |= USCXML_CTX_TRANSITION_FOUND;
+                
+                /* is it matched? */
+                if (_event && !_callbacks->isMatched(_event, transition->event))
+                    continue;
+                
+                /* is it enabled? */
+                if (transition->cond.size() > 0 && !_callbacks->isTrue(transition->cond))
+                    continue;
+                
+                // This transition is fine and ought to be taken!
 
-            /* states that are directly targeted (resolve as entry-set later) */
-            _targetSet.insert(transition->target.begin(), transition->target.end());
-            
-            /* states that will be left */
-            for (auto config : _configuration) {
-                if (transition->exitSet.find(config) != transition->exitSet.end()) {
-                    _exitSet.insert(config);
+                /* update conflicting and compatible transitions */
+                if (_flags & USCXML_CTX_TRANSITION_FOUND) {
+                    BENCHMARK("select transitions conflict & compatible update");
+
+                    /* remove all compatible transitions not listed in ours */
+                    size_t i = _compatible.find_first();
+                    while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+                        if (transition->compatible.find(i) == transition->compatible.end()) {
+                            _compatible[i] = false;
+                        }
+                        i = _compatible.find_next(i);
+                    }
+
+                    /* add all conflicting transitions listed in ours */
+                    for (auto conflict : transition->conflicting) {
+                        _conflicting[conflict] = true;
+                    }
+                    
+                } else {
+                    /* Very first transition added to optimally transition set */
+                    for (auto compatible : transition->compatible) {
+                        _compatible[compatible] = true;
+                    }
+                    for (auto conflict : transition->conflicting) {
+                        _conflicting[conflict] = true;
+                    }
                 }
+                
+                /* remember that we found a transition */
+                _flags |= USCXML_CTX_TRANSITION_FOUND;
+                
+                /* states that are directly targeted (complete as entry-set later) */
+                _targetSet.insert(transition->target.begin(), transition->target.end());
+                
+                /* lazily initialize exit set */
+                if (transition->exitSet.first == 0 && transition->exitSet.second == 0) {
+//                    DOMElement* tmp = getTransitionDomain(transition->element, _scxml);
+//                    State* domain1 = tmp == NULL ? NULL : (State*)tmp->getUserData(X("uscxmlState"));
+//                    uint32_t domain2 = getTransitionDomain(transition);
+//                    assert(domain1 == NULL ? domain2 == std::numeric_limits<uint32_t>::max() : domain1->documentOrder == domain2);
+                    
+//                    std::pair<uint32_t, uint32_t> orig = getExitSetCached(transition->element, _scxml);
+                    transition->exitSet = getExitSet(transition);
+//                    assert(transition->exitSet == orig);
+                }
+                
+                /* states that will be left */
+                for (auto config : _configuration) {
+                    if (config->documentOrder >= transition->exitSet.first && config->documentOrder <= transition->exitSet.second) {
+                        _exitSet.insert(config);
+                    }
+                }
+                _transSet.insert(transition);
+                
+                // break and exit loop if we are at the end
+                if (stateIter == _configurationPostFix.end())
+                    break;
+                
+                /* move to next possible state that can have optimally enabled transitions */
+                auto nextIter = stateIter;
+                nextIter++; // advance by one
+                while(nextIter != _configurationPostFix.end() && *nextIter == (*stateIter)->parent) {
+                    // advance until we found a non-ancestor
+                    nextIter++;
+                    stateIter++;
+                }
+                
+                break; // next state
             }
-            
-            _transSet.insert(transition);
         }
+//        std::cout << "." << iters << std::flush;
     }
+
     if (_flags & USCXML_CTX_TRANSITION_FOUND) {
         // trigger more sppontaneuous transitions
         _flags |= USCXML_CTX_SPONTANEOUS;
@@ -761,11 +837,15 @@ ESTABLISH_ENTRYSET:
 
                                 // add all the target's ancestors
                                 for (auto target : transition->target) {
+#if 1
+                                    _entrySet.insert(target->ancestors.begin(), target->ancestors.end());
+#else
                                     State* anc = target->parent;
                                     while(anc != NULL && _entrySet.find(anc) == _entrySet.end()) {
                                         _entrySet.insert(anc);
                                         anc = anc->parent;
                                     }
+#endif
                                 }
                             }
                             _transSet.insert(transition);
@@ -812,11 +892,15 @@ ESTABLISH_ENTRYSET:
                         for (auto target : transition->target) {
                             _entrySet.insert(target);
                             // add all states between target and this state
+#if 1
+                            _entrySet.insert(target->ancestors.begin(), target->ancestors.end());
+#else
                             State* anc = target->parent;
                             while(anc != NULL && anc != state) {
                                 _entrySet.insert(anc);
                                 anc = anc->parent;
                             }
+#endif
                         }
                     }
                     break;
@@ -838,23 +922,27 @@ ESTABLISH_ENTRYSET:
                         }
                     }
                     
-                    assert(state->completion.size() == 1);
-                    State* completion = *(state->completion.begin());
-
-                    _entrySet.insert(completion);
+                    // completion of a compound maybe multiple states via initial attribute
+                    _entrySet.insert(state->completion.begin(), state->completion.end());
 
                     /* deep completion */
                     {
                         BENCHMARK("add descendants compound deep completion");
+                        for (auto completion : state->completion) {
 
-                        if (std::binary_search(state->children.begin(), state->children.end(), completion))
-                            goto NEXT_DESCENDANT;
+                            if (std::binary_search(state->children.begin(), state->children.end(), completion))
+                                continue;
 
-                        // add deep completions ancestors
-                        State* anc = completion->parent;
-                        while(anc != NULL && anc != state) {
-                            _entrySet.insert(anc);
-                            anc = anc->parent;
+                            // add deep completions ancestors
+#if 1
+                            _entrySet.insert(completion->ancestors.begin(), completion->ancestors.end());
+#else
+                            State* anc = completion->parent;
+                            while(anc != NULL && anc != state) {
+                                _entrySet.insert(anc);
+                                anc = anc->parent;
+                            }
+#endif
                         }
                     }
                     break;
@@ -888,6 +976,7 @@ ESTABLISH_ENTRYSET:
             }
             
             _configuration.erase(state);
+            _configurationPostFix.erase(state);
             USCXML_MONITOR_CALLBACK1(monitors, afterExitingState, state->element);
 
         }
@@ -936,7 +1025,8 @@ ESTABLISH_ENTRYSET:
             USCXML_MONITOR_CALLBACK1(monitors, beforeEnteringState, state->element);
             
             _configuration.insert(state);
-
+            _configurationPostFix.insert(state);
+            
             /* initialize data */
             if (state->data.size() > 0) {
                 if (_initializedData.find(state) == _initializedData.end()) {
@@ -1009,10 +1099,12 @@ ESTABLISH_ENTRYSET:
 
                     State* anc = state->parent;
                     while(anc != NULL) {
-                        if (USCXML_STATE_MASK(anc->type) == USCXML_STATE_PARALLEL &&
-                            isInFinal(anc)) {
-                            _callbacks->raiseDoneEvent(anc->element, anc->doneData);
-                            break; // ancestors cannot be final either
+                        if (USCXML_STATE_MASK(anc->type) == USCXML_STATE_PARALLEL) {
+                            if (isInFinal(anc)) {
+                                _callbacks->raiseDoneEvent(anc->element, anc->doneData);
+                            } else {
+                                break; // ancestors cannot be final either
+                            }
                         }
                         anc = anc->parent;
                     }
@@ -1140,4 +1232,75 @@ void LargeMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
     }
 }
 
+std::pair<uint32_t, uint32_t> LargeMicroStep::getExitSet(const Transition* transition) {
+    if (_exitSetCache.find(transition->postFixOrder) == _exitSetCache.end()) {
+        std::pair<uint32_t, uint32_t> statesToExit;
+        uint32_t domain = getTransitionDomain(transition);
+        if (domain == std::numeric_limits<uint32_t>::max())
+            return statesToExit;
+        
+        State* domainState = _states[domain];
+        
+        // start of exit set
+        statesToExit.first = domainState->documentOrder + 1; // do not include domain itself
+
+        // end of exit set
+        XERCESC_NS::DOMElement* sibling = domainState->element->getNextElementSibling();
+        while(sibling && !isState(sibling))
+            sibling = sibling->getNextElementSibling();
+        if (sibling) {
+            State* siblingState = (State*)sibling->getUserData(X("uscxmlState"));
+            statesToExit.second = siblingState->documentOrder - 1;
+        } else {
+            statesToExit.second = _states.size() - 1;
+        }
+        _exitSetCache[transition->postFixOrder] = statesToExit;
+        return statesToExit;
+    }
+    return _exitSetCache[transition->postFixOrder];
+}
+
+uint32_t LargeMicroStep::getTransitionDomain(const Transition* transition) {
+    if (transition->target.size() == 0)
+        return std::numeric_limits<uint32_t>::max();
+    
+    bool internal = (HAS_ATTR(transition->element, kXMLCharType) ? ATTR(transition->element, kXMLCharType) == "internal" : false);
+    if (internal && USCXML_STATE_MASK(transition->source->type) == USCXML_STATE_COMPOUND) {
+        for (auto target : transition->target) {
+            if (target->ancestors.find(transition->source) == target->ancestors.end()) {
+                goto BREAK_LOOP;
+            }
+        }
+        return transition->source->documentOrder;
+    }
+BREAK_LOOP:
+    
+    // find LCCA
+    uint32_t ancestor = std::numeric_limits<uint32_t>::max();
+    
+    // reverse walk up!
+    for(auto ancIter = transition->source->ancestors.rbegin(); ancIter != transition->source->ancestors.rend(); ancIter++) {
+        State* anc = *ancIter;
+        
+        // LCCA has to be a compound
+        if (!(USCXML_STATE_MASK(anc->type) == USCXML_STATE_COMPOUND))
+            continue;
+        
+        // that contains all states
+        for (auto target : transition->target) {
+            if (target->ancestors.find(anc) == target->ancestors.end()) {
+                goto NEXT_ANCESTOR;
+            }
+        }
+        ancestor = anc->documentOrder;
+        break;
+    NEXT_ANCESTOR:;
+    }
+    
+    // none found - take uppermost root as ancestor
+    if (ancestor == std::numeric_limits<uint32_t>::max())
+        return 0;
+    return ancestor;
+}
+    
 }

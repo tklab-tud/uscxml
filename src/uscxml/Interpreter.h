@@ -45,6 +45,12 @@ class InterpreterMonitor;
 class InterpreterImpl;
 class InterpreterIssue;
 
+class MicroStepCallbacks;
+class DataModelCallbacks;
+class IOProcessorCallbacks;
+class ContentExecutorCallbacks;
+class DelayedEventQueueCallbacks;
+class InvokerCallbacks;
 
 /**
  * @ingroup interpreter
@@ -222,7 +228,16 @@ public:
 	std::shared_ptr<InterpreterImpl> getImpl() const {
 		return _impl;
 	}
-
+#if 0
+    // "Ambiguous user-defined-conversion" with operator bool() on MSVC from Visual Studio 12
+    explicit operator MicroStepCallbacks*() { return (MicroStepCallbacks*)(_impl.get()); }
+    explicit operator DataModelCallbacks*() { return (DataModelCallbacks*)(_impl.get()); }
+    explicit operator IOProcessorCallbacks*() { return (IOProcessorCallbacks*)(_impl.get()); }
+    explicit operator ContentExecutorCallbacks*() { return (ContentExecutorCallbacks*)(_impl.get()); }
+    explicit operator DelayedEventQueueCallbacks*() { return (DelayedEventQueueCallbacks*)(_impl.get()); }
+    explicit operator InvokerCallbacks*() { return (InvokerCallbacks*)(_impl.get()); }
+#endif
+    
 protected:
 	std::shared_ptr<InterpreterImpl> _impl;
 

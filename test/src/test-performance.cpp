@@ -1,6 +1,5 @@
 #include "uscxml/config.h"
 #include "uscxml/Interpreter.h"
-#include "uscxml/debug/Benchmark.h"
 
 #include <chrono>
 #include <iostream>
@@ -44,5 +43,4 @@ int main(int argc, char** argv) {
 			iterations = 0;
 		}
 	}
-    Benchmark::report(std::cout);
 }
