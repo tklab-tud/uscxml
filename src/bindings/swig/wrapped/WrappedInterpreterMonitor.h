@@ -44,34 +44,38 @@ public:
 	WrappedInterpreterMonitor();
 	virtual ~WrappedInterpreterMonitor();
 
-	virtual void beforeProcessingEvent(Interpreter& interpreter, const Event& event) {}
-	virtual void beforeMicroStep(Interpreter& interpreter) {}
+	virtual void beforeProcessingEvent(const std::string& sessionId, const Event& event) {}
+	virtual void beforeMicroStep(const std::string& sessionId) {}
 
-	void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+	void beforeExitingState(const std::string& sessionId,
+	                        const std::string& stateId,
+	                        const XERCESC_NS::DOMElement* state);
 	virtual void beforeExitingState(const std::string& stateId,
 	                                const std::string& xpath,
 	                                const std::string& stateXML) {}
 
 
-	void afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
+	void afterExitingState(const std::string& sessionId,
+	                       const std::string& stateId,
+	                       const XERCESC_NS::DOMElement* state);
 	virtual void afterExitingState(const std::string& stateId,
 	                               const std::string& xpath,
 	                               const std::string& stateXML) {}
 
 
-	void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* content);
+	void beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* content);
 	virtual void beforeExecutingContent(const std::string& tagName,
 	                                    const std::string& xpath,
 	                                    const std::string& contentXML) {}
 
 
-	void afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* content);
+	void afterExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* content);
 	virtual void afterExecutingContent(const std::string& tagName,
 	                                   const std::string& xpath,
 	                                   const std::string& contentXML) {}
 
 
-	void beforeUninvoking(Interpreter& interpreter,
+	void beforeUninvoking(const std::string& sessionId,
 	                      const XERCESC_NS::DOMElement* invoker,
 	                      const std::string& invokeid);
 	virtual void beforeUninvoking(const std::string& xpath,
@@ -79,7 +83,7 @@ public:
 	                              const std::string& invokerXML) {}
 
 
-	void afterUninvoking(Interpreter& interpreter,
+	void afterUninvoking(const std::string& sessionId,
 	                     const XERCESC_NS::DOMElement* invoker,
 	                     const std::string& invokeid);
 	virtual void afterUninvoking(const std::string& xpath,
@@ -87,14 +91,14 @@ public:
 	                             const std::string& invokerXML) {}
 
 
-	void beforeTakingTransition(Interpreter& interpreter,
+	void beforeTakingTransition(const std::string& sessionId,
 	                            const XERCESC_NS::DOMElement* transition);
 	virtual void beforeTakingTransition(const std::string& xpath,
 	                                    const std::string& source,
 	                                    const std::list<std::string>& targets,
 	                                    const std::string& transitionXML) {}
 
-	void afterTakingTransition(Interpreter& interpreter,
+	void afterTakingTransition(const std::string& sessionId,
 	                           const XERCESC_NS::DOMElement* transition);
 	virtual void afterTakingTransition(const std::string& xpath,
 	                                   const std::string& source,
@@ -102,41 +106,43 @@ public:
 	                                   const std::string& transitionXML) {}
 
 
-	void beforeEnteringState(Interpreter& interpreter,
+	void beforeEnteringState(const std::string& sessionId,
+	                         const std::string& stateId,
 	                         const XERCESC_NS::DOMElement* state);
 	virtual void beforeEnteringState(const std::string& stateId,
 	                                 const std::string& xpath,
 	                                 const std::string& stateXML) {}
 
 
-	void afterEnteringState(Interpreter& interpreter,
+	void afterEnteringState(const std::string& sessionId,
+	                        const std::string& stateId,
 	                        const XERCESC_NS::DOMElement* state);
 	virtual void afterEnteringState(const std::string& stateId,
 	                                const std::string& xpath,
 	                                const std::string& stateXML) {}
 
 
-	void beforeInvoking(Interpreter& interpreter,
+	void beforeInvoking(const std::string& sessionId,
 	                    const XERCESC_NS::DOMElement* invoker,
 	                    const std::string& invokeid);
 	virtual void beforeInvoking(const std::string& xpath,
 	                            const std::string& invokeid,
 	                            const std::string& invokerXML) {}
 
-	void afterInvoking(Interpreter& interpreter,
+	void afterInvoking(const std::string& sessionId,
 	                   const XERCESC_NS::DOMElement* invoker,
 	                   const std::string& invokeid);
 	virtual void afterInvoking(const std::string& xpath,
 	                           const std::string& invokeid,
 	                           const std::string& invokerXML) {}
 
-	virtual void afterMicroStep(Interpreter& interpreter) {}
-	virtual void onStableConfiguration(Interpreter& interpreter) {}
+	virtual void afterMicroStep(const std::string& sessionId) {}
+	virtual void onStableConfiguration(const std::string& sessionId) {}
 
-	virtual void beforeCompletion(Interpreter& interpreter) {}
-	virtual void afterCompletion(Interpreter& interpreter) {}
+	virtual void beforeCompletion(const std::string& sessionId) {}
+	virtual void afterCompletion(const std::string& sessionId) {}
 
-	virtual void reportIssue(Interpreter& interpreter,
+	virtual void reportIssue(const std::string& sessionId,
 	                         const InterpreterIssue& issue) {}
 };
 

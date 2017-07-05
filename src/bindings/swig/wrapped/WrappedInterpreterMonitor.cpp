@@ -30,31 +30,31 @@ using namespace XERCESC_NS;
 WrappedInterpreterMonitor::WrappedInterpreterMonitor() {}
 WrappedInterpreterMonitor::~WrappedInterpreterMonitor() {}
 
-void WrappedInterpreterMonitor::beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+void WrappedInterpreterMonitor::beforeExitingState(const std::string& sessionId, const std::string& stateId, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	beforeExitingState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
+	beforeExitingState(stateId, DOMUtils::xPathForNode(state), ss.str());
 }
 
-void WrappedInterpreterMonitor::afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+void WrappedInterpreterMonitor::afterExitingState(const std::string& sessionId, const std::string& stateId, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	afterExitingState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
+	afterExitingState(stateId, DOMUtils::xPathForNode(state), ss.str());
 }
 
-void WrappedInterpreterMonitor::beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* content) {
+void WrappedInterpreterMonitor::beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* content) {
 	std::stringstream ss;
 	ss << *content;
 	beforeExecutingContent(TAGNAME(content), DOMUtils::xPathForNode(content), ss.str());
 }
 
-void WrappedInterpreterMonitor::afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* content) {
+void WrappedInterpreterMonitor::afterExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* content) {
 	std::stringstream ss;
 	ss << *content;
 	afterExecutingContent(TAGNAME(content), DOMUtils::xPathForNode(content), ss.str());
 }
 
-void WrappedInterpreterMonitor::beforeUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
+void WrappedInterpreterMonitor::beforeUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
@@ -65,7 +65,7 @@ void WrappedInterpreterMonitor::beforeUninvoking(Interpreter& interpreter, const
 	beforeUninvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
 }
 
-void WrappedInterpreterMonitor::afterUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
+void WrappedInterpreterMonitor::afterUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
@@ -76,7 +76,7 @@ void WrappedInterpreterMonitor::afterUninvoking(Interpreter& interpreter, const 
 	afterUninvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
 }
 
-void WrappedInterpreterMonitor::beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+void WrappedInterpreterMonitor::beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
 	XERCESC_NS::DOMElement* sourceState = getSourceState(transition);
 	const XERCESC_NS::DOMElement* root = DOMUtils::getNearestAncestor(transition, "scxml");
 
@@ -93,7 +93,7 @@ void WrappedInterpreterMonitor::beforeTakingTransition(Interpreter& interpreter,
 	beforeTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, kXMLCharId), targets, ss.str());
 }
 
-void WrappedInterpreterMonitor::afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+void WrappedInterpreterMonitor::afterTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
 	XERCESC_NS::DOMElement* sourceState = getSourceState(transition);
 	const XERCESC_NS::DOMElement* root = DOMUtils::getNearestAncestor(transition, "scxml");
 
@@ -110,19 +110,19 @@ void WrappedInterpreterMonitor::afterTakingTransition(Interpreter& interpreter, 
 	afterTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, kXMLCharId), targets, ss.str());
 }
 
-void WrappedInterpreterMonitor::beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+void WrappedInterpreterMonitor::beforeEnteringState(const std::string& sessionId, const std::string& stateId, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	beforeEnteringState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
+	beforeEnteringState(stateId, DOMUtils::xPathForNode(state), ss.str());
 }
 
-void WrappedInterpreterMonitor::afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+void WrappedInterpreterMonitor::afterEnteringState(const std::string& sessionId, const std::string& stateId, const XERCESC_NS::DOMElement* state) {
 	std::stringstream ss;
 	ss << *state;
-	afterEnteringState(ATTR(state, kXMLCharId), DOMUtils::xPathForNode(state), ss.str());
+	afterEnteringState(stateId, DOMUtils::xPathForNode(state), ss.str());
 }
 
-void WrappedInterpreterMonitor::beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
+void WrappedInterpreterMonitor::beforeInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;
@@ -133,7 +133,7 @@ void WrappedInterpreterMonitor::beforeInvoking(Interpreter& interpreter, const X
 	beforeInvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
 }
 
-void WrappedInterpreterMonitor::afterInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
+void WrappedInterpreterMonitor::afterInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invoker, const std::string& invokeid) {
 	std::stringstream ss;
 	ss << *invoker;
 	std::string invokeId;

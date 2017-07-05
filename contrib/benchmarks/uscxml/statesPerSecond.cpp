@@ -18,8 +18,8 @@ system_clock::time_point endTime;
 
 class PerfMon : public InterpreterMonitor {
 	public: 
-	virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
-		if (HAS_ATTR(state, X("id")) && ATTR(state, X("id")) == "mark") {
+	virtual void beforeEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {
+		if (stateName == "mark") {
 			iterations++;
 			now = system_clock::now();
 			if (now > report) {
@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
 	ActionLanguage al;
 	if (argc > 2) {
 		if (std::string(argv[2]) == "large") {
-	    al.microStepper = Factory::getInstance()->createMicroStepper("large", (MicroStepCallbacks*)sc);
+	    al.microStepper = Factory::getInstance()->createMicroStepper("large", (MicroStepCallbacks*)(sc.getImpl().get()));
 		} else {
-  	  al.microStepper = Factory::getInstance()->createMicroStepper("fast", (MicroStepCallbacks*)sc);
+  	  al.microStepper = Factory::getInstance()->createMicroStepper("fast", (MicroStepCallbacks*)(sc.getImpl().get()));
 		}
   }
 	sc.setActionLanguage(al);

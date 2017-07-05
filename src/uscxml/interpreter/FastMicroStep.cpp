@@ -269,6 +269,9 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 		_states[i] = new State();
 		_states[i]->documentOrder = i;
 		_states[i]->element = tmp.front();
+		if (HAS_ATTR(_states[i]->element, kXMLCharId)) {
+			_states[i]->name = ATTR(_states[i]->element, kXMLCharId);
+		}
 		_states[i]->element->setUserData(X("uscxmlState"), _states[i], NULL);
 		_states[i]->completion.resize(_states.size());
 		_states[i]->ancestors.resize(_states.size());
@@ -995,7 +998,7 @@ ESTABLISH_ENTRYSET:
 	while(i-- > 0) {
 		if (BIT_HAS(i, _exitSet) && BIT_HAS(i, _configuration)) {
 
-			USCXML_MONITOR_CALLBACK1(monitors, beforeExitingState, USCXML_GET_STATE(i).element);
+			USCXML_MONITOR_CALLBACK2(monitors, beforeExitingState, USCXML_GET_STATE(i).name, USCXML_GET_STATE(i).element);
 
 			/* call all on exit handlers */
 			for (auto exitIter = USCXML_GET_STATE(i).onExit.begin(); exitIter != USCXML_GET_STATE(i).onExit.end(); exitIter++) {
@@ -1007,7 +1010,7 @@ ESTABLISH_ENTRYSET:
 			}
 			BIT_CLEAR(i, _configuration);
 
-			USCXML_MONITOR_CALLBACK1(monitors, afterExitingState, USCXML_GET_STATE(i).element);
+			USCXML_MONITOR_CALLBACK2(monitors, afterExitingState, USCXML_GET_STATE(i).name, USCXML_GET_STATE(i).element);
 
 		}
 	}
@@ -1058,7 +1061,7 @@ ESTABLISH_ENTRYSET:
 			continue;
 		}
 
-		USCXML_MONITOR_CALLBACK1(monitors, beforeEnteringState, USCXML_GET_STATE(i).element);
+		USCXML_MONITOR_CALLBACK2(monitors, beforeEnteringState, USCXML_GET_STATE(i).name, USCXML_GET_STATE(i).element);
 
 		BIT_SET_AT(i, _configuration);
 
@@ -1079,7 +1082,7 @@ ESTABLISH_ENTRYSET:
 			}
 		}
 
-		USCXML_MONITOR_CALLBACK1(monitors, afterEnteringState, USCXML_GET_STATE(i).element);
+		USCXML_MONITOR_CALLBACK2(monitors, afterEnteringState, USCXML_GET_STATE(i).name, USCXML_GET_STATE(i).element);
 
 		/* take history and initial transitions */
 		j = _transSet.find_first();

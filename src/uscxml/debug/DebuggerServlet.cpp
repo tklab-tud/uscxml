@@ -210,7 +210,7 @@ void DebuggerServlet::processDisconnect(const HTTPServer::Request& request) {
 		replyData.compound["reason"] = Data("No such session", Data::VERBATIM);
 	} else {
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
-		detachSession(_sessionForId[sessionId]->getInterpreter().getImpl().get());
+		detachSession(sessionId);
 		_sessionForId[sessionId]->debugStop(request.data["content"]);
 		_clientConns.erase(_sessionForId[sessionId]);
 		_sendQueues.erase(_sessionForId[sessionId]);

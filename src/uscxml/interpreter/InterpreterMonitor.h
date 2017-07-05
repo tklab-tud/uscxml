@@ -35,17 +35,17 @@ if (_state == USCXML_DESTROYED) { throw std::bad_weak_ptr(); }
 
 #define USCXML_MONITOR_CALLBACK(callbacks, function) { \
 if (callbacks.size() > 0) {\
-Interpreter inptr = _callbacks->getInterpreter(); \
+const std::string& inptr = _callbacks->getSessionId(); \
 for (auto callback : callbacks) { callback->function(inptr); } } }
 
 #define USCXML_MONITOR_CALLBACK1(callbacks, function, arg1) { \
 if (callbacks.size() > 0) {\
-Interpreter inptr = _callbacks->getInterpreter(); \
+const std::string& inptr = _callbacks->getSessionId(); \
 for (auto callback : callbacks) { callback->function(inptr, arg1); } } }
 
 #define USCXML_MONITOR_CALLBACK2(callbacks, function, arg1, arg2) { \
 if (callbacks.size() > 0) {\
-Interpreter inptr = _callbacks->getInterpreter(); \
+const std::string& inptr = _callbacks->getSessionId(); \
 for (auto callback : callbacks) { callback->function(inptr, arg1, arg2); } } }
 
 // forward declare
@@ -65,34 +65,34 @@ public:
 	InterpreterMonitor(Logger logger) : _copyToInvokers(false), _logger(logger) {}
 	virtual ~InterpreterMonitor() {}
 
-	virtual void beforeProcessingEvent(Interpreter& interpreter, const Event& event) {}
-	virtual void beforeMicroStep(Interpreter& interpreter) {}
+	virtual void beforeProcessingEvent(const std::string& sessionId, const Event& event) {}
+	virtual void beforeMicroStep(const std::string& sessionId) {}
 
-	virtual void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
-	virtual void afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
+	virtual void beforeExitingState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {}
+	virtual void afterExitingState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {}
 
-	virtual void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent) {}
-	virtual void afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* execContent) {}
+	virtual void beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* execContent) {}
+	virtual void afterExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* execContent) {}
 
-	virtual void beforeUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
-	virtual void afterUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void beforeUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void afterUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
 
-	virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {}
-	virtual void afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {}
+	virtual void beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {}
+	virtual void afterTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {}
 
-	virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
-	virtual void afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {}
+	virtual void beforeEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {}
+	virtual void afterEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {}
 
-	virtual void beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
-	virtual void afterInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void beforeInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
+	virtual void afterInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {}
 
-	virtual void afterMicroStep(Interpreter& interpreter) {}
-	virtual void onStableConfiguration(Interpreter& interpreter) {}
+	virtual void afterMicroStep(const std::string& sessionId) {}
+	virtual void onStableConfiguration(const std::string& sessionId) {}
 
-	virtual void beforeCompletion(Interpreter& interpreter) {}
-	virtual void afterCompletion(Interpreter& interpreter) {}
+	virtual void beforeCompletion(const std::string& sessionId) {}
+	virtual void afterCompletion(const std::string& sessionId) {}
 
-	virtual void reportIssue(Interpreter& interpreter, const InterpreterIssue& issue) {}
+	virtual void reportIssue(const std::string& sessionId, const InterpreterIssue& issue) {}
 
 	void copyToInvokers(bool copy) {
 		_copyToInvokers = copy;
@@ -112,13 +112,13 @@ public:
 	StateTransitionMonitor(std::string prefix = "") : _logPrefix(prefix) {}
 	virtual ~StateTransitionMonitor() {}
 
-	virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition);
-	virtual void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* element);
-	virtual void onStableConfiguration(Interpreter& interpreter);
-	virtual void beforeProcessingEvent(Interpreter& interpreter, const uscxml::Event& event);
-	virtual void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
-	virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state);
-	virtual void beforeMicroStep(Interpreter& interpreter);
+	virtual void beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition);
+	virtual void beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* element);
+	virtual void onStableConfiguration(const std::string& sessionId);
+	virtual void beforeProcessingEvent(const std::string& sessionId, const uscxml::Event& event);
+	virtual void beforeExitingState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state);
+	virtual void beforeEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state);
+	virtual void beforeMicroStep(const std::string& sessionId);
 
 protected:
 	static std::recursive_mutex _mutex;

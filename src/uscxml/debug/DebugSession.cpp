@@ -119,7 +119,7 @@ Data DebugSession::debugPrepare(const Data& data) {
 	if (_interpreter) {
 		// register ourself as a monitor
 		_interpreter.addMonitor(_debugger);
-		_debugger->attachSession(_interpreter.getImpl().get(), shared_from_this());
+		_debugger->attachSession(_interpreter.getImpl()->getSessionId(), shared_from_this());
 
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	} else {
@@ -149,7 +149,7 @@ Data DebugSession::debugAttach(const Data& data) {
 		std::shared_ptr<InterpreterImpl> instance = weakInstance.second.lock();
 		if (instance && instance->getSessionId() == interpreterId) {
 			_interpreter = instance;
-			_debugger->attachSession(_interpreter.getImpl().get(), shared_from_this());
+			_debugger->attachSession(_interpreter.getImpl()->getSessionId(), shared_from_this());
 			interpreterFound = true;
 			break;
 		}
@@ -170,7 +170,7 @@ Data DebugSession::debugDetach(const Data& data) {
 	Data replyData;
 	_isAttached = false;
 
-	_debugger->detachSession(_interpreter.getImpl().get());
+	_debugger->detachSession(_interpreter.getImpl()->getSessionId());
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
 	return replyData;
 }
@@ -223,7 +223,7 @@ Data DebugSession::debugStop(const Data& data) {
 
 	if (_interpreter) {
 		// detach from old intepreter
-		_debugger->detachSession(_interpreter.getImpl().get());
+		_debugger->detachSession(_interpreter.getImpl()->getSessionId());
 	}
 
 	if (_isRunning && _interpreterThread != NULL) {

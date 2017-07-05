@@ -212,6 +212,10 @@ public :
 		_deallocOther = true;
 	}
 
+	bool operator==(const XMLCh* other) const {
+		return XERCESC_NS::XMLString::compareString(other, _unicodeForm) == 0;
+	}
+
 	bool operator==(const X& other) const {
 		return (_unicodeForm == other._unicodeForm) != 0;
 	}
