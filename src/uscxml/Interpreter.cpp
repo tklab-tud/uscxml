@@ -82,7 +82,7 @@ Interpreter Interpreter::fromXML(const std::string& xml, const std::string& base
 
 		interpreterImpl->_document = parser->adoptDocument();
 		interpreterImpl->_baseURL = absUrl;
-        interpreterImpl->_md5 = md5(xml);
+		interpreterImpl->_md5 = md5(xml);
 		InterpreterImpl::addInstance(interpreterImpl);
 
 	} catch (const XERCESC_NS::SAXParseException& toCatch) {
@@ -151,7 +151,7 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 
 #if 1
 	// Xercesc is hard to build with SSL on windows, whereas curl uses winssl
-    return fromXML(absUrl.getInContent(), absUrl);
+	return fromXML(absUrl.getInContent(), absUrl);
 #else
 
 	std::shared_ptr<InterpreterImpl> interpreterImpl(new InterpreterImpl());
@@ -189,6 +189,15 @@ Interpreter Interpreter::fromURL(const std::string& url) {
 	return interpreter;
 #endif
 
+}
+
+Interpreter Interpreter::fromSessionId(const std::string& sessionId) {
+	std::lock_guard<std::recursive_mutex> lock(InterpreterImpl::_instanceMutex);
+	std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
+	if (instances.find(sessionId) != instances.end()) {
+		return Interpreter(instances[sessionId].lock());
+	}
+	return Interpreter();
 }
 
 void Interpreter::reset() {
@@ -274,19 +283,20 @@ static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*
 
 std::recursive_mutex StateTransitionMonitor::_mutex;
 
-void StateTransitionMonitor::beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+void StateTransitionMonitor::beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	LOG(_logger, USCXML_VERBATIM) << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }
 
-void StateTransitionMonitor::onStableConfiguration(Interpreter& interpreter) {
+void StateTransitionMonitor::onStableConfiguration(const std::string& sessionId) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	Interpreter interpreter = Interpreter::fromSessionId(sessionId);
 	LOG(_logger, USCXML_VERBATIM) << "Stable Config: { ";
 	printNodeSet(_logger, interpreter.getConfiguration());
 	LOG(_logger, USCXML_VERBATIM) << " }" << std::endl;
 }
 
-void StateTransitionMonitor::beforeProcessingEvent(Interpreter& interpreter, const uscxml::Event& event) {
+void StateTransitionMonitor::beforeProcessingEvent(const std::string& sessionId, const uscxml::Event& event) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	switch (event.eventType) {
 	case uscxml::Event::INTERNAL:
@@ -301,24 +311,29 @@ void StateTransitionMonitor::beforeProcessingEvent(Interpreter& interpreter, con
 	}
 }
 
-void StateTransitionMonitor::beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* element) {
+void StateTransitionMonitor::beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* element) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	LOG(_logger, USCXML_VERBATIM) << "Executable Content: " << DOMUtils::xPathForNode(element) << std::endl;
 }
 
-void StateTransitionMonitor::beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+void StateTransitionMonitor::beforeExitingState(const std::string& sessionId,
+        const std::string& stateName,
+        const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	LOG(_logger, USCXML_VERBATIM) << "Exiting: " << (HAS_ATTR(state, kXMLCharId) ? ATTR(state, kXMLCharId) : DOMUtils::xPathForNode(state)) << std::endl;
 }
 
-void StateTransitionMonitor::beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+void StateTransitionMonitor::beforeEnteringState(const std::string& sessionId,
+        const std::string& stateName,
+        const XERCESC_NS::DOMElement* state) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	LOG(_logger, USCXML_VERBATIM) << "Entering: " << (HAS_ATTR(state, kXMLCharId) ? ATTR(state, kXMLCharId) : DOMUtils::xPathForNode(state)) << std::endl;
 
 }
 
-void StateTransitionMonitor::beforeMicroStep(Interpreter& interpreter) {
+void StateTransitionMonitor::beforeMicroStep(const std::string& sessionId) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	Interpreter interpreter = Interpreter::fromSessionId(sessionId);
 	LOG(_logger, USCXML_VERBATIM) << "Microstep in config: {";
 	printNodeSet(_logger, interpreter.getConfiguration());
 	LOG(_logger, USCXML_VERBATIM) << "}" << std::endl;

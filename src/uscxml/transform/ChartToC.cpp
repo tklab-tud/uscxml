@@ -54,7 +54,7 @@ ChartToC::ChartToC(const Interpreter& other) : TransformerImpl(other), _topMostM
 	_hasNativeDataModel = HAS_ATTR(_scxml, kXMLCharDataModel) && ATTR(_scxml, kXMLCharDataModel) == "native";
 
 	findNestedMachines();
-    prepare();
+	prepare();
 
 	if (_extensions.find("prefix") != _extensions.end()) {
 		_prefixes = new std::list<std::string>();
@@ -382,13 +382,13 @@ void ChartToC::prepare() {
 	setStateCompletion();
 
 	// how many bits do we need to represent the state array?
-    size_t largestStateSpace = 0;
-    size_t largestTransSpace = 0;
-    for (auto machine : _allMachines) {
-        largestStateSpace = (machine->_states.size() > largestStateSpace ? machine->_states.size() : largestStateSpace);
-        largestTransSpace = (machine->_transitions.size() > largestTransSpace ? machine->_transitions.size() : largestTransSpace);
-    }
-    
+	size_t largestStateSpace = 0;
+	size_t largestTransSpace = 0;
+	for (auto machine : _allMachines) {
+		largestStateSpace = (machine->_states.size() > largestStateSpace ? machine->_states.size() : largestStateSpace);
+		largestTransSpace = (machine->_transitions.size() > largestTransSpace ? machine->_transitions.size() : largestTransSpace);
+	}
+
 	std::string seperator;
 	_stateCharArraySize = ceil((float)largestStateSpace / (float)8);
 	_stateCharArrayInit = "{";
@@ -1670,13 +1670,13 @@ void ChartToC::writeElementInfo(std::ostream& stream) {
 		size_t i = 0;
 		for (auto iter = params.begin(); iter != params.end(); iter++, i++) {
 			DOMElement* param = *iter;
-            // TODO: Index is wrong for multiple params!
+			// TODO: Index is wrong for multiple params!
 			if (param->getParentNode() != parent) {
 				if (i > 0) {
 					stream << "    { NULL, NULL, NULL }," << std::endl;
-                    i++;
+					i++;
 				}
-                static_cast<DOMElement*>(param->getParentNode())->setAttribute(X("paramIndex"), X(toStr(i)));
+				static_cast<DOMElement*>(param->getParentNode())->setAttribute(X("paramIndex"), X(toStr(i)));
 				parent = param->getParentNode();
 			}
 			stream << "    { ";

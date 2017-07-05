@@ -133,10 +133,10 @@ Factory::~Factory() {
 void Factory::registerPlugins() {
 
 #ifndef FEATS_ON_CMD
-    registerMicrostepper(new LargeMicroStep());
-    registerMicrostepper(new FastMicroStep());
+	registerMicrostepper(new LargeMicroStep());
+	registerMicrostepper(new FastMicroStep());
 #endif
-    
+
 	/*** PLUGINS ***/
 #ifdef BUILD_AS_PLUGINS
 
@@ -507,36 +507,36 @@ std::shared_ptr<ExecutableContentImpl> Factory::createExecutableContent(const st
 #ifndef FEATS_ON_CMD
 
 bool Factory::hasMicroStepper(const std::string& name) {
-    if (_microSteppers.find(name) != _microSteppers.end()) {
-        return true;
-    } else if(_parentFactory) {
-        return _parentFactory->hasMicroStepper(name);
-    }
-    return false;
+	if (_microSteppers.find(name) != _microSteppers.end()) {
+		return true;
+	} else if(_parentFactory) {
+		return _parentFactory->hasMicroStepper(name);
+	}
+	return false;
 }
 
-    
+
 void Factory::registerMicrostepper(MicroStepImpl* microStepper) {
-    _microSteppers[microStepper->getName()] = microStepper;
+	_microSteppers[microStepper->getName()] = microStepper;
 }
 
 std::shared_ptr<MicroStepImpl> Factory::createMicroStepper(const std::string& name, MicroStepCallbacks* callbacks) {
-    if (_microSteppers.find(name) != _microSteppers.end()) {
-        std::shared_ptr<MicroStepImpl> microStepper = _microSteppers[name]->create(callbacks);
-        return microStepper;
-    }
-    
-    if (_parentFactory) {
-        return _parentFactory->createMicroStepper(name, callbacks);
-    } else {
-        ERROR_EXECUTION_THROW("No Microstepper '" + name + "' known");
-    }
+	if (_microSteppers.find(name) != _microSteppers.end()) {
+		std::shared_ptr<MicroStepImpl> microStepper = _microSteppers[name]->create(callbacks);
+		return microStepper;
+	}
 
-    return std::shared_ptr<MicroStepImpl>();
+	if (_parentFactory) {
+		return _parentFactory->createMicroStepper(name, callbacks);
+	} else {
+		ERROR_EXECUTION_THROW("No Microstepper '" + name + "' known");
+	}
+
+	return std::shared_ptr<MicroStepImpl>();
 
 }
 #endif
-    
+
 void DataModelImpl::addExtension(DataModelExtension* ext) {
 	ERROR_EXECUTION_THROW("DataModel does not support extensions");
 }

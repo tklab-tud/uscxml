@@ -54,8 +54,10 @@ public:
 	virtual ~FastMicroStep();
 	virtual std::shared_ptr<MicroStepImpl> create(MicroStepCallbacks* callbacks);
 
-    std::string getName() { return "fast"; }
-    
+	std::string getName() {
+		return "fast";
+	}
+
 	virtual InterpreterState step(size_t blockMs);
 	virtual void reset();
 	virtual bool isInState(const std::string& stateId);
@@ -66,8 +68,8 @@ public:
 	virtual Data serialize();
 
 protected:
-    FastMicroStep() {}; // only for factory
-    
+	FastMicroStep() {}; // only for factory
+
 	class Transition {
 	public:
 		Transition() : element(NULL), source(0), onTrans(NULL), type(0) {}
@@ -104,6 +106,7 @@ protected:
 		std::list<XERCESC_NS::DOMElement*> onEntry;
 		std::list<XERCESC_NS::DOMElement*> onExit;
 		XERCESC_NS::DOMElement* doneData;
+		std::string name;
 
 		unsigned char type;
 	};
@@ -166,7 +169,7 @@ private:
 	void printStateNames(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
 #endif
 
-    friend class Factory;
+	friend class Factory;
 };
 
 }

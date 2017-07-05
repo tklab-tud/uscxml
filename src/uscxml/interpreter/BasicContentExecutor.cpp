@@ -729,11 +729,11 @@ Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool a
 				return Data(contentSS.str(), Data::INTERPRETED);
 
 			// test153, we need to throw for test150 in promela, but we need to space normalize for test558
-            try {
-                Data d = _callbacks->getAsData(contentSS.str());
-                if (!d.empty())
-                    return d;
-            } catch ( ... ) {}
+			try {
+				Data d = _callbacks->getAsData(contentSS.str());
+				if (!d.empty())
+					return d;
+			} catch ( ... ) {}
 
 			// test558
 			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);

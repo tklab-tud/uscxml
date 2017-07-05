@@ -58,7 +58,7 @@ public:
 
 	/** Monitoring */
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
-	virtual Interpreter getInterpreter() = 0;
+	virtual const std::string& getSessionId() = 0;
 	virtual Logger getLogger() = 0;
 
 	/** Cache Data */
@@ -91,11 +91,11 @@ public:
 	virtual void deserialize(const Data& encodedState) = 0;
 	virtual Data serialize() = 0;
 
-    /// To register at the factory
-    virtual std::string getName() = 0;
+	/// To register at the factory
+	virtual std::string getName() = 0;
 
 protected:
-    MicroStepImpl() {};
+	MicroStepImpl() {};
 	MicroStepCallbacks* _callbacks;
 
 };

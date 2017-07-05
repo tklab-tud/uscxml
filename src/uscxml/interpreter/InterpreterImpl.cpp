@@ -338,15 +338,15 @@ void InterpreterImpl::init() {
 		// try to open chached data from resource directory
 		std::string sharedTemp = URL::getTempDir(true);
 		std::ifstream dataFS(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache");
-        try {
-            if (dataFS.is_open()) {
-                std::string cacheStr((std::istreambuf_iterator<char>(dataFS)),
-                                     std::istreambuf_iterator<char>());
-                _cache = Data::fromJSON(cacheStr);
-            }
-        } catch (...) {
-            remove(std::string(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache").c_str());
-        }
+		try {
+			if (dataFS.is_open()) {
+				std::string cacheStr((std::istreambuf_iterator<char>(dataFS)),
+				                     std::istreambuf_iterator<char>());
+				_cache = Data::fromJSON(cacheStr);
+			}
+		} catch (...) {
+			remove(std::string(sharedTemp + PATH_SEPERATOR + md5(_baseURL) + ".uscxml.cache").c_str());
+		}
 
 		// get md5 of current document
 		std::stringstream ss;
@@ -390,7 +390,7 @@ void InterpreterImpl::init() {
 	}
 
 	if (!_microStepper) {
-		_microStepper = MicroStep(std::shared_ptr<MicroStepImpl>(new LargeMicroStep(this)));
+		_microStepper = MicroStep(std::shared_ptr<MicroStepImpl>(new FastMicroStep(this)));
 	}
 	_microStepper.init(_scxml);
 

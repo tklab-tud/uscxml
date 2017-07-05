@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
 				state = interpreter.step();
 			}
 			if (interpreter.isInState("pass"))
-                return EXIT_SUCCESS;
-            return EXIT_FAILURE;
+				return EXIT_SUCCESS;
+			return EXIT_FAILURE;
 
 		} catch (Event e) {
 			std::cerr << "Thrown Event out of Interpreter: " << e;

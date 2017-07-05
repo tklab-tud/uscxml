@@ -76,7 +76,7 @@ public:
 
 	/** Monitoring */
 	virtual std::set<InterpreterMonitor*> getMonitors() = 0;
-	virtual Interpreter getInterpreter() = 0;
+	virtual const std::string& getSessionId() = 0;
 	virtual Logger getLogger() = 0;
 
 	virtual ExecutableContent createExecutableContent(const std::string& localName, const std::string& nameSpace) = 0;

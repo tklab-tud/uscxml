@@ -34,12 +34,12 @@ class USCXML_API Benchmark {
 public:
 	Benchmark(const std::string& domain);
 	~Benchmark();
-    
-    static std::ostream& report(std::ostream& stream);
+
+	static std::ostream& report(std::ostream& stream);
 protected:
-    std::string domain;
-    std::chrono::time_point<std::chrono::system_clock> started;
-    
+	std::string domain;
+	std::chrono::time_point<std::chrono::system_clock> started;
+
 	static std::map<std::string, size_t> benchmarks;
 	static std::mutex benchMutex;
 };
