@@ -21,13 +21,13 @@ public class JexlDataModelTest {
 		}
 
 		System.load(uSCXMLLibPath);
-		String testUri = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/jexl/test144.scxml";
+		String testUri = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/jexl/test-enc-ISO-8859-1.scxml";
 //		String testUri = "/Users/sradomski/Desktop/stopwatch.xml";
 
 		
-//		if (args.length > 0) {
-//			testUri = args[0];
-//		}
+		if (args.length > 0) {
+			testUri = args[0];
+		}
 
 		{
 			JexlDataModel jdm = new JexlDataModel();
