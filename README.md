@@ -107,7 +107,7 @@ When exiting a state via a transition, the least-common compound ancestor (LCCA)
 
 uSCXML with either microstep implementation is consistently the fastest with the exception of the Transitions benchmark, where the compiled `scxmlcc` is degenerating slower for more complex state-charts. This may be due to compiler optimizations (or an incomplete implementation) and it would be interesting to compare `scxmlcc` against the transpiled ANSI-C code from `uscxml-transform`. However, the limiting factor here becomes the time required to transpile the state-chart or to compile the generated source file into an executable binary respectively. With regard to huge state-charts, the large microstep implementation of `uSCXML` performs best and retains acceptable performance throughout the range of benchmarks, only surpassed by the fast implementation for smaller complexities.
 
-# Changes {#changes}
+## Changes
 
  * **[bfefa5fd44b9ed1491612f26b099db8ad624247b](https://github.com/tklab-tud/uscxml/pull/155/commits/bfefa5fd44b9ed1491612f26b099db8ad624247b):**
 
