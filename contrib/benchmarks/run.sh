@@ -111,9 +111,7 @@ function run-uscxml {
 	SC_NAME=$2
 
 	cd uscxml
-	timeout 600s ./statesPerSecond ${BENCHMARK} fast
 	timeout ${TIMEOUT} ./statesPerSecond ${BENCHMARK} fast |tee ../logs/${SC_NAME}-uscxml-fast.log
-	USCXML_NOCACHE_FILES=YES \
 	timeout ${TIMEOUT} ./statesPerSecond ${BENCHMARK} large |tee ../logs/${SC_NAME}-uscxml-large.log
 	cd ..
 }
@@ -207,7 +205,7 @@ function run-scxmlcc {
 
 	cd scxmlcc
 	rm test
-	timeout 600s ./scxmlcc/src/scxmlcc -i ${BENCHMARK} -o ./test.h
+	timeout ${TIMEOUT} ./scxmlcc/src/scxmlcc -i ${BENCHMARK} -o ./test.h
 	timeout ${TIMEOUT} g++ -DMACHINE_NAME=sc_benchmark ./statesPerSecond.cpp -o test
 	timeout ${TIMEOUT} ./test |tee ../logs/${SC_NAME}-scxmlcc.log
 
