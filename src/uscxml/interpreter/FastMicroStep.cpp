@@ -17,8 +17,6 @@
  *  @endcond
  */
 
-#undef USCXML_VERBOSE
-//#undef WITH_CACHE_FILES
 
 #include "uscxml/config.h"
 #include "FastMicroStep.h"
@@ -30,6 +28,12 @@
 #include "uscxml/interpreter/InterpreterMonitor.h"
 
 #include "uscxml/interpreter/Logging.h"
+
+#include <stdlib.h> // strtol
+#include <iostream>
+
+#undef USCXML_VERBOSE
+#undef WITH_CACHE_FILES
 
 #define BIT_ANY_SET(b) (!b.none())
 #define BIT_HAS(idx, bitset) (bitset[idx])
@@ -201,32 +205,88 @@ void FastMicroStep::resortStates(DOMElement* element, const X& xmlPrefix) {
 	}
 }
 
-std::list<XERCESC_NS::DOMElement*> FastMicroStep::getExitSetCached(const XERCESC_NS::DOMElement* transition,
-        const XERCESC_NS::DOMElement* root) {
+std::pair<uint32_t, uint32_t> FastMicroStep::getExitSet(const Transition* transition) {
+	if (_exitSetCache.find(transition->postFixOrder) == _exitSetCache.end()) {
+		std::pair<uint32_t, uint32_t> statesToExit;
+		uint32_t domain = getTransitionDomain(transition);
+		if (domain == std::numeric_limits<uint32_t>::max())
+			return statesToExit;
 
-	if (_cache.exitSet.find(transition) == _cache.exitSet.end()) {
-		_cache.exitSet[transition] = getExitSet(transition, root);
+		State* domainState = _states[domain];
+
+		// start of exit set
+		statesToExit.first = domainState->documentOrder + 1; // do not include domain itself
+
+		// end of exit set
+		XERCESC_NS::DOMElement* sibling = domainState->element->getNextElementSibling();
+		while(sibling && !isState(sibling))
+			sibling = sibling->getNextElementSibling();
+		if (sibling) {
+			State* siblingState = (State*)sibling->getUserData(X("uscxmlState"));
+			statesToExit.second = siblingState->documentOrder - 1;
+		} else {
+			statesToExit.second = _states.size() - 1;
+		}
+		_exitSetCache[transition->postFixOrder] = statesToExit;
+		return statesToExit;
+	}
+	return _exitSetCache[transition->postFixOrder];
+}
+
+uint32_t FastMicroStep::getTransitionDomain(const Transition* transition) {
+	size_t i, j;
+	if (!transition->target.any())
+		return std::numeric_limits<uint32_t>::max();
+
+	bool internal = (HAS_ATTR(transition->element, kXMLCharType) ? ATTR(transition->element, kXMLCharType) == "internal" : false);
+	if (internal && USCXML_STATE_MASK(_states[transition->source]->type) == USCXML_STATE_COMPOUND) {
+		i = transition->target.find_first();
+		while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+			if(!(_states[i]->ancestors[transition->source])) {
+				goto BREAK_LOOP;
+			}
+			i = transition->target.find_next(i);
+
+		}
+		return _states[transition->source]->documentOrder;
+	}
+BREAK_LOOP:
+
+	// find LCCA
+	uint32_t ancestor = std::numeric_limits<uint32_t>::max();
+
+	// reverse walk up!
+	i = _states[transition->source]->parent;
+	State* anc = _states[i];
+
+	while(anc) {
+		if (USCXML_STATE_MASK(anc->type) != USCXML_STATE_COMPOUND) {
+			// LCCA has to be a compound
+			anc = _states[anc->parent];
+			continue;
+		}
+
+		j = transition->target.find_first();
+		while(j != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
+			if (!(_states[j]->ancestors[anc->documentOrder])) {
+				goto NEXT_ANCESTOR;
+			}
+			j = transition->target.find_next(j);
+		}
+
+		ancestor = anc->documentOrder;
+		break;
+NEXT_ANCESTOR:
+		anc = _states[anc->parent];
+		if (anc->documentOrder == 0)
+			break;
 	}
 
-	return _cache.exitSet[transition];
+	// none found - take uppermost root as ancestor
+	if (ancestor == std::numeric_limits<uint32_t>::max())
+		return 0;
+	return ancestor;
 }
-
-bool FastMicroStep::conflictsCached(const DOMElement* t1, const DOMElement* t2, const DOMElement* root) {
-	if (getSourceState(t1) == getSourceState(t2))
-		return true;
-
-	if (DOMUtils::isDescendant(getSourceState(t1), getSourceState(t2)))
-		return true;
-
-	if (DOMUtils::isDescendant(getSourceState(t2), getSourceState(t1)))
-		return true;
-
-	if (DOMUtils::hasIntersection(getExitSetCached(t1, root), getExitSetCached(t2, root)))
-		return true;
-
-	return false;
-}
-
 
 void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
@@ -266,8 +326,7 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 	_invocations.resize(tmp.size());
 
 	for (i = 0; i < _states.size(); i++) {
-		_states[i] = new State();
-		_states[i]->documentOrder = i;
+		_states[i] = new State(i);
 		_states[i]->element = tmp.front();
 		if (HAS_ATTR(_states[i]->element, kXMLCharId)) {
 			_states[i]->name = ATTR(_states[i]->element, kXMLCharId);
@@ -391,12 +450,24 @@ void FastMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 			cachedState->compound["completion"] = Data(toBase64(_states[i]->completion));
 COMPLETION_STABLISHED:
 #endif
+
+
+#ifdef WITH_CACHE_FILES
+		if (withCache && cachedState->compound.find("hasHistoryChild") != cachedState->compound.end()) {
+			_states[i]->element->setUserData(X("hasHistoryChild"), _states[strTo<uint32_t>(cachedState->compound["hasHistoryChild"])], NULL);
+		}
+#endif
+
 		// this is set when establishing the completion
 		if (_states[i]->element->getUserData(X("hasHistoryChild")) == _states[i]) {
 			_states[i]->type |= USCXML_STATE_HAS_HISTORY;
+#ifdef WITH_CACHE_FILES
+			if (withCache)
+				cachedState->compound["hasHistoryChild"] = Data(((State*)_states[i]->element->getUserData(X("hasHistoryChild")))->documentOrder);
+#endif
 		}
 
-		// establish the states' ancestors
+		// parent relation
 		DOMNode* parent = _states[i]->element->getParentNode();
 		if (parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 			State* uscxmlState = (State*)parent->getUserData(X("uscxmlState"));
@@ -406,6 +477,7 @@ COMPLETION_STABLISHED:
 			}
 		}
 
+		// establish the states' ancestors
 		while(parent && parent->getNodeType() == DOMNode::ELEMENT_NODE) {
 			State* uscxmlState = (State*)parent->getUserData(X("uscxmlState"));
 
@@ -436,12 +508,12 @@ COMPLETION_STABLISHED:
 	tmp = DOMUtils::filterChildElements(XML_PREFIX(_scxml).str() + "transition", tmp);
 
 	_transitions.resize(tmp.size());
+	_exitSets.resize(tmp.size());
 
 	for (i = 0; i < _transitions.size(); i++) {
-		_transitions[i] = new Transition();
+		_transitions[i] = new Transition(i);
 		_transitions[i]->element = tmp.front();
 		_transitions[i]->conflicts.resize(_transitions.size());
-		_transitions[i]->exitSet.resize(_states.size());
 		_transitions[i]->target.resize(_states.size());
 		tmp.pop_front();
 	}
@@ -467,69 +539,6 @@ COMPLETION_STABLISHED:
 		}
 #endif
 
-		// establish the transitions' exit set
-		assert(_transitions[i]->element != NULL);
-
-#ifdef WITH_CACHE_FILES
-		if (withCache && cachedTrans->compound.find("exitset") != cachedTrans->compound.end()) {
-			boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet = fromBase64(cachedTrans->compound["exitset"]);
-			if (exitSet.size() != _states.size()) {
-				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition exit set has wrong size: Cache corrupted" << std::endl;
-			} else {
-				_transitions[i]->exitSet = exitSet;
-				goto EXIT_SET_ESTABLISHED;
-			}
-		}
-#endif
-		{
-			std::list<DOMElement*> exitList = getExitSetCached(_transitions[i]->element, _scxml);
-
-			for (j = 0; j < _states.size(); j++) {
-				if (!exitList.empty() && _states[j]->element == exitList.front()) {
-					_transitions[i]->exitSet[j] = true;
-					exitList.pop_front();
-				} else {
-					_transitions[i]->exitSet[j] = false;
-				}
-			}
-			assert(exitList.size() == 0);
-		}
-#ifdef WITH_CACHE_FILES
-		if (withCache)
-			cachedTrans->compound["exitset"] = Data(toBase64(_transitions[i]->exitSet));
-EXIT_SET_ESTABLISHED:
-#endif
-
-		// establish the transitions' conflict set
-#ifdef WITH_CACHE_FILES
-		if (withCache && cachedTrans->compound.find("conflicts") != cachedTrans->compound.end()) {
-			boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts = fromBase64(cachedTrans->compound["conflicts"]);
-			if (conflicts.size() != _transitions.size()) {
-				LOG(_callbacks->getLogger(), USCXML_WARN) << "Transition conflicts has wrong size: Cache corrupted" << std::endl;
-			} else {
-				_transitions[i]->conflicts = conflicts;
-				goto CONFLICTS_ESTABLISHED;
-			}
-		}
-#endif
-		for (j = i; j < _transitions.size(); j++) {
-			if (conflictsCached(_transitions[i]->element, _transitions[j]->element, _scxml)) {
-				_transitions[i]->conflicts[j] = true;
-			} else {
-				_transitions[i]->conflicts[j] = false;
-			}
-			//            std::cout << ".";
-		}
-
-		// conflicts matrix is symmetric
-		for (j = 0; j < i; j++) {
-			_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
-		}
-#ifdef WITH_CACHE_FILES
-		if (withCache)
-			cachedTrans->compound["conflicts"] = Data(toBase64(_transitions[i]->conflicts));
-CONFLICTS_ESTABLISHED:
-#endif
 		// establish the transitions' target set
 #ifdef WITH_CACHE_FILES
 		if (withCache && cachedTrans->compound.find("target") != cachedTrans->compound.end()) {
@@ -591,8 +600,80 @@ TARGET_SET_ESTABLISHED:
 		if (_transitions[i]->element->getChildElementCount() > 0) {
 			_transitions[i]->onTrans = _transitions[i]->element;
 		}
+
+		// establish the transitions' exit set
+		assert(_transitions[i]->element != NULL);
+
+		{
+			_exitSets[i] = getExitSet(_transitions[i]);
+		}
+
 	}
-	_cache.exitSet.clear();
+
+	/**
+	 * This bound by cache locality!
+	 * Before you change anything, do benchmark!
+	 */
+
+#define anc1 _states[_transitions[i]->source]->ancestors
+#define exit1 _exitSets[i]
+#define exit2 _exitSets[j]
+
+	for (i = 0; i < _transitions.size(); i++) {
+		anc1 = _states[_transitions[i]->source]->ancestors;
+		const uint32_t source1 = _transitions[i]->source;
+
+		for (j = i + 1; j < _transitions.size(); j++) {
+
+			if (exit1.first == 0 && exit2.first == 0) {
+				goto COMPATIBLE_TRANS;
+			}
+
+			if (exit1.first <= exit2.first && exit1.second >= exit2.first) {
+				goto CONFLICTING_TRANS;
+			}
+
+			if (exit2.first <= exit1.first && exit2.second >= exit1.first) {
+				goto CONFLICTING_TRANS;
+			}
+
+COMPATIBLE_TRANS:
+			if (_transitions[j]->source == source1) {
+				goto CONFLICTING_TRANS;
+			}
+
+			if (anc1[_transitions[j]->source]) {
+				goto CONFLICTING_TRANS;
+			}
+
+			if (_states[_transitions[j]->source]->ancestors[source1]) {
+				goto CONFLICTING_TRANS;
+			}
+
+			_transitions[i]->conflicts[j] = false;
+//            _transitions[j]->conflicts[i] = false;
+			continue;
+CONFLICTING_TRANS:
+			_transitions[i]->conflicts[j] = true;
+//            _transitions[j]->conflicts[i] = true;
+
+			continue;
+
+		}
+#if 0 // moved down for cache locality
+		// conflicts matrix is symmetric
+		for (j = 0; j < i; j++) {
+			_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
+		}
+#endif
+	}
+
+	for (i = 0; i < _transitions.size(); i++) {
+		// conflicts matrix is symmetric
+		for (j = 0; j < i; j++) {
+			_transitions[i]->conflicts[j] = _transitions[j]->conflicts[i];
+		}
+	}
 
 	// initialize bitarrays for step()
 	_exitSet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);
@@ -809,7 +890,11 @@ SELECT_TRANSITIONS:
 						_targetSet |= USCXML_GET_TRANS(i).target;
 
 						/* states that will be left */
-						_exitSet |= USCXML_GET_TRANS(i).exitSet;
+						for (auto documentOrder = _exitSets[i].first;
+						        documentOrder <= _exitSets[i].second;
+						        documentOrder++) {
+							_exitSet[documentOrder] = true;
+						}
 
 						BIT_SET_AT(i, _transSet);
 					}

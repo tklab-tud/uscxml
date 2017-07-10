@@ -201,6 +201,10 @@ public :
 		return _localForm;
 	}
 
+	int iequals(const XMLCh* const other) const {
+		return XERCESC_NS::XMLString::compareIString(_unicodeForm, other);
+	}
+
 	operator XMLCh* () const {
 		assert(_unicodeForm != NULL); // constructor with XMLCh
 		return _unicodeForm;
@@ -217,7 +221,7 @@ public :
 	}
 
 	bool operator==(const X& other) const {
-		return (_unicodeForm == other._unicodeForm) != 0;
+		return (_localForm == other._localForm) != 0;
 	}
 
 	bool operator!=(const X& other) const {

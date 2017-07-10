@@ -48,67 +48,67 @@ std::list<CallbackType> callBackSeq;
 
 
 class SequenceCheckingMonitor : public InterpreterMonitor {
-	virtual void beforeProcessingEvent(Interpreter& interpreter, const Event& event) {
+	virtual void beforeProcessingEvent(const std::string& sessionId, const Event& event) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREPROCESSINGEVENT);
 	}
-	virtual void beforeMicroStep(Interpreter& interpreter) {
+	virtual void beforeMicroStep(const std::string& sessionId) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREMICROSTEP);
 	}
 
-	virtual void beforeExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	virtual void beforeExitingState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXITINGSTATE);
 	}
-	virtual void afterExitingState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	virtual void afterExitingState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTEREXITINGSTATE);
 	}
 
-	virtual void beforeExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* element) {
+	virtual void beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* element) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREEXECUTINGCONTENT);
 	}
-	virtual void afterExecutingContent(Interpreter& interpreter, const XERCESC_NS::DOMElement* element) {
+	virtual void afterExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* element) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTEREXECUTINGCONTENT);
 	}
 
-	virtual void beforeUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void beforeUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREUNINVOKING);
 	}
-	virtual void afterUninvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void afterUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERUNINVOKING);
 	}
 
-	virtual void beforeTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+	virtual void beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFORETAKINGTRANSITION);
 	}
-	virtual void afterTakingTransition(Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+	virtual void afterTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERTAKINGTRANSITION);
 	}
 
-	virtual void beforeEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	virtual void beforeEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREENTERINGSTATE);
 	}
-	virtual void afterEnteringState(Interpreter& interpreter, const XERCESC_NS::DOMElement* state) {
+	virtual void afterEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERENTERINGSTATE);
 	}
 
-	virtual void beforeInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void beforeInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFOREINVOKING);
 	}
-	virtual void afterInvoking(Interpreter& interpreter, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
+	virtual void afterInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERINVOKING);
 	}
 
-	virtual void afterMicroStep(Interpreter& interpreter) {
+	virtual void afterMicroStep(const std::string& sessionId) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERMICROSTEP);
 	}
 
-	virtual void onStableConfiguration(Interpreter& interpreter) {
+	virtual void onStableConfiguration(const std::string& sessionId) {
 		CHECK_CALLBACK_TYPE(USCXML_ONSTABLECONFIGURATION);
 	}
 
-	virtual void beforeCompletion(Interpreter& interpreter) {
+	virtual void beforeCompletion(const std::string& sessionId) {
 		CHECK_CALLBACK_TYPE(USCXML_BEFORECOMPLETION);
 	}
-	virtual void afterCompletion(Interpreter& interpreter) {
+	virtual void afterCompletion(const std::string& sessionId) {
 		CHECK_CALLBACK_TYPE(USCXML_AFTERCOMPLETION);
 	}
 

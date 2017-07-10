@@ -183,21 +183,23 @@ bool isState(const DOMElement* state, bool properOnly) {
 	if (!state)
 		return false;
 
-	std::string localName = LOCALNAME(state);
-	if (iequals("state", localName))
+	// comparison with XMLCh* is faster than transcoding each
+	const XMLCh* localname = state->getLocalName();
+
+	if (kXMLCharState.iequals(localname) == 0)
 		return true;
-	if (iequals("scxml", localName))
+	if (kXMLCharScxml.iequals(localname) == 0)
 		return true;
-	if (iequals("parallel", localName))
+	if (kXMLCharParallel.iequals(localname) == 0)
 		return true;
-	if (iequals("final", localName))
+	if (kXMLCharFinal.iequals(localname) == 0)
 		return true;
 	if (properOnly)
 		return false;
 
-	if (iequals("history", localName))
+	if (kXMLCharHistory.iequals(localname) == 0)
 		return true;
-	if (iequals("initial", localName))
+	if (kXMLCharInitial.iequals(localname) == 0)
 		return true;
 
 	return false;

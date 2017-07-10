@@ -72,48 +72,43 @@ protected:
 
 	class Transition {
 	public:
-		Transition() : element(NULL), source(0), onTrans(NULL), type(0) {}
+		Transition(uint32_t postFixOrder) : postFixOrder(postFixOrder) {}
+		const uint32_t postFixOrder; // making these const increases performance somewhat
 
-		XERCESC_NS::DOMElement* element;
+		XERCESC_NS::DOMElement* element = NULL;
 		boost::dynamic_bitset<BITSET_BLOCKTYPE> conflicts;
-		boost::dynamic_bitset<BITSET_BLOCKTYPE> exitSet;
 
-		uint32_t source;
+		uint32_t source = 0;
 		boost::dynamic_bitset<BITSET_BLOCKTYPE> target;
 
-		XERCESC_NS::DOMElement* onTrans;
+		XERCESC_NS::DOMElement* onTrans = NULL;
 
 		std::string event;
 		std::string cond;
 
-		unsigned char type;
+		unsigned char type = 0;
 
 	};
 
 	class State {
 	public:
-		State() : element(NULL), parent(0), documentOrder(0), doneData(NULL), type(0) {}
+		State(uint32_t documentOrder) : documentOrder(documentOrder) {}
+		const uint32_t documentOrder;
 
-		XERCESC_NS::DOMElement* element;
+		XERCESC_NS::DOMElement* element = NULL;
 		boost::dynamic_bitset<BITSET_BLOCKTYPE> completion;
 		boost::dynamic_bitset<BITSET_BLOCKTYPE> children;
 		boost::dynamic_bitset<BITSET_BLOCKTYPE> ancestors;
-		uint32_t parent;
-		uint32_t documentOrder;
+		uint32_t parent = 0;
 
 		std::list<XERCESC_NS::DOMElement*> data;
 		std::list<XERCESC_NS::DOMElement*> invoke;
 		std::list<XERCESC_NS::DOMElement*> onEntry;
 		std::list<XERCESC_NS::DOMElement*> onExit;
-		XERCESC_NS::DOMElement* doneData;
+		XERCESC_NS::DOMElement* doneData = NULL;
 		std::string name;
 
-		unsigned char type;
-	};
-
-	class CachedPredicates {
-	public:
-		std::map<const XERCESC_NS::DOMElement*, std::list<XERCESC_NS::DOMElement*> > exitSet;
+		unsigned char type = 0;
 	};
 
 	virtual void init(XERCESC_NS::DOMElement* scxml);
@@ -147,20 +142,16 @@ private:
 	std::list<XERCESC_NS::DOMElement*> getHistoryCompletion(const XERCESC_NS::DOMElement* state);
 	void resortStates(XERCESC_NS::DOMElement* node, const X& xmlPrefix);
 
-	bool conflictsCached(const XERCESC_NS::DOMElement* t1, const XERCESC_NS::DOMElement* t2, const XERCESC_NS::DOMElement* root); ///< overrides implementation Predicates::conflicts for speed
-
 	std::string toBase64(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> fromBase64(const std::string& encoded);
-
-	std::list<XERCESC_NS::DOMElement*> getExitSetCached(const XERCESC_NS::DOMElement* transition,
-	        const XERCESC_NS::DOMElement* root);
-
-	CachedPredicates _cache;
 
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> _exitSet;
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> _entrySet;
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> _targetSet;
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> _tmpStates;
+
+	// per transition exit set, kept in a vector for cache locality (~25% faster than transition[i]->exitSet)
+	std::vector<std::pair<uint32_t, uint32_t> > _exitSets;
 
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> _conflicts;
 	boost::dynamic_bitset<BITSET_BLOCKTYPE> _transSet;
@@ -168,6 +159,10 @@ private:
 #ifdef USCXML_VERBOSE
 	void printStateNames(const boost::dynamic_bitset<BITSET_BLOCKTYPE>& bitset);
 #endif
+
+	uint32_t getTransitionDomain(const Transition* transition);
+	std::pair<uint32_t, uint32_t> getExitSet(const Transition* transition);
+	std::map<uint32_t, std::pair<uint32_t, uint32_t> > _exitSetCache;
 
 	friend class Factory;
 };

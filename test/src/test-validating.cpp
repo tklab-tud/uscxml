@@ -35,7 +35,7 @@ public:
 	IssueMonitor() {
 		runtimeIssues = 0;
 	}
-	void reportIssue(Interpreter& intrpreter, const InterpreterIssue& issue) {
+	void reportIssue(const std::string& sessionId, const InterpreterIssue& issue) {
 		runtimeIssues++;
 	}
 };
