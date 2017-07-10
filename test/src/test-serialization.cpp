@@ -21,7 +21,7 @@ int lastTransitionAt;
 
 //class StatusMonitor : public uscxml::InterpreterMonitor {
 class StatusMonitor : public uscxml::StateTransitionMonitor {
-	void beforeTakingTransition(uscxml::Interpreter& interpreter, const XERCESC_NS::DOMElement* transition) {
+	void beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
 		lastTransitionAt = time(NULL);
 	}
 
@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
 	}
 
 	DirectoryWatch* watcher = new DirectoryWatch(argv[optind], true);
+	watcher->setLogger(Logger::getDefault());
 	watcher->updateEntries(true);
 
 	std::map<std::string, struct stat> entries = watcher->getAllEntries();
@@ -92,7 +93,7 @@ int main(int argc, char** argv) {
 		lastTransitionAt = time(NULL);
 
 		std::string sourceXML = std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first;
-		sourceXML = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test557.scxml";
+//		sourceXML = "/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test557.scxml";
 
 		Interpreter interpreter = Interpreter::fromURL(sourceXML);
 		LOGD(USCXML_INFO) << "Processing " << interpreter.getImpl()->getBaseURL() << std::endl;

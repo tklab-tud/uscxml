@@ -68,10 +68,8 @@ public:
 	virtual std::list<XERCESC_NS::DOMElement*> getConfiguration();
 	void markAsCancelled();
 
-	virtual void deserialize(const Data& encodedState) {}
-	virtual Data serialize() {
-		return Data();
-	}
+	virtual void deserialize(const Data& encodedState);
+	virtual Data serialize();
 
 protected:
 	LargeMicroStep() {} // only for the factory
@@ -135,7 +133,7 @@ protected:
 
 		XERCESC_NS::DOMElement* element;
 		boost::container::flat_set<State*, StateOrder> completion;
-		boost::container::flat_set<State*, StateOrder> ancestors; // TODO: leverage!
+		boost::container::flat_set<State*, StateOrder> ancestors; // TODO: change to indices
 		std::vector<State*> children;
 		State* parent = NULL;
 

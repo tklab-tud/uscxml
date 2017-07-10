@@ -61,6 +61,10 @@ bool isInteger(const char* pszInput, int nNumberBase) {
 
 bool iequals(const std::string& a, const std::string& b) {
 	// this impementation beats boost::iequals 2700ms vs 2100ms for test-performance.scxml - we don't care for non-ascii yet
+#if 0
+	// not platform independent?
+	return strcasecmp(a.c_str(), b.c_str()) == 0;
+#else
 	unsigned int size = a.size();
 	if (b.size() != size)
 		return false;
@@ -68,6 +72,7 @@ bool iequals(const std::string& a, const std::string& b) {
 		if (tolower(a[i]) != tolower(b[i]))
 			return false;
 	return true;
+#endif
 }
 
 bool equals(const std::string& a, const std::string& b) {

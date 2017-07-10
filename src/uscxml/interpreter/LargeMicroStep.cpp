@@ -111,6 +111,71 @@ void LargeMicroStep::markAsCancelled() {
 	_isCancelled = true;
 }
 
+void LargeMicroStep::deserialize(const Data& encodedState) {
+	if (!encodedState.hasKey("configuration") ||
+	        !encodedState.hasKey("invocations") ||
+	        !encodedState.hasKey("histories") ||
+	        !encodedState.hasKey("intializedData")) {
+		ERROR_PLATFORM_THROW("Data does not contain required fields for deserialization ");
+	}
+
+	reset();
+
+	for (auto stateId : encodedState["configuration"].array) {
+		_configuration.insert(_states[strTo<uint32_t>(stateId.atom)]);
+		_configurationPostFix.insert(_states[strTo<uint32_t>(stateId.atom)]);
+	}
+
+	for (auto stateId : encodedState["invocations"].array) {
+		_invocations.insert(_states[strTo<uint32_t>(stateId.atom)]);
+	}
+
+	for (auto stateId : encodedState["histories"].array) {
+		_history.insert(_states[strTo<uint32_t>(stateId.atom)]);
+	}
+
+	for (auto stateId : encodedState["intializedData"].array) {
+		_initializedData.insert(_states[strTo<uint32_t>(stateId.atom)]);
+	}
+
+	for (auto invoked : _invocations) {
+		for (auto invoker : invoked->invoke) {
+			try {
+				_callbacks->invoke(invoker);
+			} catch (ErrorEvent e) {
+				LOG(_callbacks->getLogger(), USCXML_WARN) << e;
+			} catch (...) {
+			}
+		}
+	}
+
+	_flags |= USCXML_CTX_INITIALIZED;
+}
+
+Data LargeMicroStep::serialize() {
+	Data encodedState;
+
+	encodedState["configuration"] = Data();
+	encodedState["invocations"] = Data();
+	encodedState["histories"] = Data();
+	encodedState["intializedData"] = Data();
+
+	for (auto state : _configuration) {
+		encodedState["configuration"].array.push_back(Data(state->documentOrder));
+	}
+	for (auto state : _invocations) {
+		encodedState["invocations"].array.push_back(Data(state->documentOrder));
+	}
+	for (auto state : _history) {
+		encodedState["histories"].array.push_back(Data(state->documentOrder));
+	}
+	for (auto state : _initializedData) {
+		encodedState["intializedData"].array.push_back(Data(state->documentOrder));
+	}
+
+	return encodedState;
+}
+
 void LargeMicroStep::reset() {
 	_isCancelled = false;
 	_flags = USCXML_CTX_PRISTINE;
@@ -452,6 +517,11 @@ void LargeMicroStep::init(XERCESC_NS::DOMElement* scxml) {
 
 		assert(transList.size() == 0);
 	}
+
+//    for (i = 0; i < _transitions.size(); i++) {
+//        _transitions[i]->exitSet = getExitSet(_transitions[i]);
+//        LOGD(USCXML_DEBUG) << "" << _transitions[i]->exitSet.second << " / " << _transitions[i]->exitSet.first << std::endl;
+//    }
 
 	_isInitialized = true;
 }
