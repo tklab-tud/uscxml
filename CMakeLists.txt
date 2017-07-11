@@ -474,6 +474,20 @@ endif()
 add_subdirectory(src/uscxml)
 add_subdirectory(src/bindings)
 
+# https://gcc.gnu.org/onlinedocs/gcc-4.7.2/gcc/Optimize-Options.html#Optimize-Options
+# https://clang.llvm.org/docs/UsersManual.html#profile-guided-optimization
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+	# add_definitions("-fprofile-instr-generate")
+	# add_definitions("-fprofile-generate=profiling")
+	# no measureable effect
+	# set_property(SOURCE src/uscxml/interpreter/FastMicroStep.cpp APPEND_STRING PROPERTY COMPILE_FLAGS " -fprofile-instr-generate=foo")
+	# set_property(SOURCE src/uscxml/interpreter/FastMicroStep.cpp APPEND_STRING PROPERTY COMPILE_FLAGS " -Ofast")
+	# set_property(SOURCE src/uscxml/interpreter/LargeMicroStep.cpp APPEND_STRING PROPERTY COMPILE_FLAGS " -Ofast")
+	# set_property(SOURCE src/uscxml/interpreter/FastMicroStep.cpp APPEND_STRING PROPERTY COMPILE_FLAGS " -fomit-frame-pointer")
+	# set_property(SOURCE src/uscxml/interpreter/LargeMicroStep.cpp APPEND_STRING PROPERTY COMPILE_FLAGS " -fomit-frame-pointer")
+endif()
+
+
 if (BUILD_AS_PLUGINS)
 	file(GLOB USCXML_PLUGINS
 	  ${CMAKE_SOURCE_DIR}/contrib/src/Pluma/*.cpp

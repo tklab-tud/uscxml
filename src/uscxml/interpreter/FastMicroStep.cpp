@@ -30,7 +30,6 @@
 #include "uscxml/interpreter/Logging.h"
 
 #include <stdlib.h> // strtol
-#include <iostream>
 
 #undef USCXML_VERBOSE
 #undef WITH_CACHE_FILES
