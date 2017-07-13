@@ -328,7 +328,6 @@ DOMElement* getState(const std::string& stateId, const DOMElement* root) {
 	}
 
 	// no state with such an id in document!
-	assert(false);
 	return NULL;
 }
 

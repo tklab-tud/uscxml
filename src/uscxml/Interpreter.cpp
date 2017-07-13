@@ -271,6 +271,10 @@ std::list<InterpreterIssue> Interpreter::validate() {
 	return InterpreterIssue::forInterpreter(_impl.get());
 }
 
+LambdaMonitor& Interpreter::on() {
+    return _impl->on();
+}
+
 #if 1
 static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*> nodes) {
 	std::string seperator;
