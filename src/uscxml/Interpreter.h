@@ -34,6 +34,7 @@
 #include "uscxml/interpreter/ContentExecutor.h"
 #include "uscxml/interpreter/EventQueue.h"
 #include "uscxml/interpreter/InterpreterState.h"
+#include "uscxml/interpreter/InterpreterMonitor.h"
 
 #ifdef max
 #error define NOMINMAX or undefine the max macro please (https://support.microsoft.com/en-us/kb/143208)
@@ -42,6 +43,7 @@
 namespace uscxml {
 
 class InterpreterMonitor;
+class LambdaMonitor;
 class InterpreterImpl;
 class InterpreterIssue;
 
@@ -234,6 +236,9 @@ public:
 	std::shared_ptr<InterpreterImpl> getImpl() const {
 		return _impl;
 	}
+    
+    LambdaMonitor& on();
+    
 #if 0
 	// "Ambiguous user-defined-conversion" with operator bool() on MSVC from Visual Studio 12
 	explicit operator MicroStepCallbacks*() {

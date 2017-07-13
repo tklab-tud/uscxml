@@ -103,6 +103,9 @@ InterpreterImpl::~InterpreterImpl() {
 	if (_document)
 		delete _document;
 
+    if (_lambdaMonitor)
+        delete _lambdaMonitor;
+
 	{
 		std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
 		_instances.erase(getSessionId());
@@ -139,7 +142,7 @@ void InterpreterImpl::reset() {
 	if (_microStepper)
 		_microStepper.reset();
 
-	_isInitialized = false;
+//	_isInitialized = false;
 	_state = USCXML_INSTANTIATED;
 	//        _dataModel.reset();
 	if (_delayQueue)
@@ -620,6 +623,14 @@ void InterpreterImpl::enqueueAtParent(const Event& event) {
 		ERROR_COMMUNICATION_THROW("Sending to parent invoker, but none is set");
 	}
 
+}
+
+LambdaMonitor& InterpreterImpl::on() {
+    if (_lambdaMonitor == NULL) {
+        _lambdaMonitor = new LambdaMonitor();
+        addMonitor(_lambdaMonitor);
+    }
+    return *_lambdaMonitor;
 }
 
 }

@@ -146,6 +146,11 @@ set(CPACK_DEBIAN_PACKAGE_NAME "uscxml")
 set(CPACK_RPM_PACKAGE_NAME "uscxml")
 set(CPACK_RPM_PACKAGE_LICENSE "Simplified BSD")
 
+########################################
+# CMake Modules for clients
+########################################
+
+install(FILES ${PROJECT_SOURCE_DIR}/contrib/cmake/FindUSCXML.cmake DESTINATION share/uscxml/cmake COMPONENT library)
 
 ########################################
 # Describe layout of package

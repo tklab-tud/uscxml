@@ -269,9 +269,13 @@ public:
 		return _document;
 	}
 
+    LambdaMonitor& on();
+        
 protected:
 	static void addInstance(std::shared_ptr<InterpreterImpl> instance);
-
+        
+    LambdaMonitor* _lambdaMonitor = NULL;
+    
 	Binding _binding;
 	ActionLanguage _al;
 
