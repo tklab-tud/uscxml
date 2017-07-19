@@ -84,7 +84,7 @@ For more detailled information, refer to the [documentation](http://tklab-tud.gi
 
 ## Changes
 
- * **[]():**
+ * **[9db80409b3ca048c4b404a43d2c224f374c0090a](https://github.com/tklab-tud/uscxml/pull/163/commits/9db80409b3ca048c4b404a43d2c224f374c0090a):**
 
     We dropped support for Google's V8 ECMAScript engine. The API is changing too fast and there is no reliable way to get / build / identify older versions. The latest branch will not work with the wrappers generated from even SWIG 4.0 and I have no time to keep up with them. Use JavaScriptCore, its API is unchanged since we started to support it in 2012. If you feel capable to maintain the [](V8DataModel.cpp) send a push request. Everything will be left in place but we will ignore `libv8` at configure time. I may have another look when a number of Linux distribution settled on a more recent version, most are still shipping v8 in version 3.14.
 
