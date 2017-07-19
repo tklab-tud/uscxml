@@ -176,6 +176,7 @@ else()
 			COMMENT "Creating the DOM for JavaScriptCore (no XERCESC) ...")
 
 		# list (APPEND JSC_DATAMODEL ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/JavaScriptCore/JSCDOM.cpp.inc)
+		set_target_properties(jsc-bindings-noxercesc PROPERTIES FOLDER "Bindings")
 		set_target_properties(jsc-bindings PROPERTIES FOLDER "Bindings")
 	endif()
 
@@ -208,11 +209,12 @@ else()
 			COMMENT "Creating the DOM for V8 (no XERCESC) ...")
 
 		# list (APPEND V8_DATAMODEL ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/v8/V8DOM.cpp.inc)
+		set_target_properties(v8-bindings-noxercesc PROPERTIES FOLDER "Bindings")
 		set_target_properties(v8-bindings PROPERTIES FOLDER "Bindings")
 		
 	endif()
 
-	if (LUA51_FOUND)
+	if (LUA_FOUND)
 		add_custom_target(lua-bindings
 			COMMAND ${SWIG_EXECUTABLE}
 			-I${XercesC_INCLUDE_DIRS}
@@ -233,13 +235,14 @@ else()
 			-lua 
 			-DNO_XERCESC
 			-c++ 
-			-o ${CMAKE_CURRENT_SOURCE_DIR}/lua/LuaDOM.cpp.inc
+			-o ${CMAKE_CURRENT_SOURCE_DIR}/lua/LuaEvent.cpp.inc
 			lua/bindings.i
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-			COMMENT "Creating the DOM for Lua ...")
+			COMMENT "Creating the DOM for Lua (no XERCESC) ...")
 
 		# list (APPEND V8_DATAMODEL ${CMAKE_CURRENT_SOURCE_DIR}/ecmascript/v8/V8DOM.cpp.inc)
-		set_target_properties(lua-bindings PROPERTIES FOLDER "Bindings")		
+		set_target_properties(lua-bindings-noxercesc PROPERTIES FOLDER "Bindings")
+		set_target_properties(lua-bindings PROPERTIES FOLDER "Bindings")
 	endif()
 endif()
 

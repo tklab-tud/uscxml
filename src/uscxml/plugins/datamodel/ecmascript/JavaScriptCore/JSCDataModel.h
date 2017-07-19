@@ -64,6 +64,7 @@ public:
 		return names;
 	}
 
+	virtual bool isLegalDataValue(const std::string& expr);
 	virtual bool isValidSyntax(const std::string& expr);
 
 	virtual void setEvent(const Event& event);

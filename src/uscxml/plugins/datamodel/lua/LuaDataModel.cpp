@@ -36,16 +36,32 @@
 #endif
 
 #include "uscxml/messages/Event.h"
+
 #ifndef NO_XERCESC
 #include "uscxml/util/DOM.h"
 #endif
+
 #include "uscxml/interpreter/Logging.h"
 #include <boost/algorithm/string.hpp>
 
-//#include "LuaDOM.cpp.inc"
+//#include "LuaDOM.cpp.inc" // TODO: activate XercesC bindings for test 530
 
 #ifdef BUILD_AS_PLUGINS
 #include <Pluma/Connector.hpp>
+#endif
+
+//static int luaInspect(lua_State * l) {
+//	return 0;
+//}
+
+//bool _luaHasXMLParser = false;
+
+using namespace XERCESC_NS;
+
+#ifndef NO_XERCESC
+#include "LuaDOM.cpp.inc"
+#else
+#include "LuaEvent.cpp.inc"
 #endif
 
 namespace uscxml {
@@ -57,12 +73,6 @@ bool pluginConnect(pluma::Host& host) {
 	return true;
 }
 #endif
-
-//static int luaInspect(lua_State * l) {
-//	return 0;
-//}
-
-bool _luaHasXMLParser = false;
 
 static int luaEval(lua_State* luaState, const std::string& expr) {
 	int preStack = lua_gettop(luaState);
@@ -86,7 +96,12 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		data.atom = "__tmpFunc";
 		data.type = Data::INTERPRETED;
 	} else if(lua.isLightUserdata() || lua.isUserdata()) {
-		// not sure what to do
+#ifndef NO_XERCESC
+		int err = SWIG_Lua_ConvertPtr(_luaState, 0, (void**)&(data.node), SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		if (err == SWIG_ERROR)
+			data.node = NULL;
+#endif
+
 	} else if(lua.isThread()) {
 		// not sure what to do
 	} else if(lua.type() == LUA_TBOOLEAN) {
@@ -145,19 +160,13 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 	luabridge::LuaRef luaData (_luaState);
 
 	if (data.node) {
-		if (_luaHasXMLParser) {
-			const luabridge::LuaRef& luaLom = luabridge::getGlobal(_luaState, "lxp.lom");
-			const luabridge::LuaRef& luaLomParse = luaLom["parse"];
-			assert(luaLomParse.isFunction());
-			std::stringstream luaXMLSS;
-			luaXMLSS << data.node;
-			try {
-				luaData = luaLomParse(luaXMLSS.str());
-			} catch (luabridge::LuaException e) {
-				ERROR_EXECUTION_THROW(e.what());
-			}
-			return luaData;
-		}
+#ifndef NO_XERCESC
+		SWIG_Lua_NewPointerObj(_luaState, data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		luaData = luabridge::LuaRef::fromStack(_luaState, 1);
+		return luaData;
+#else
+		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+#endif
 	}
 	if (data.compound.size() > 0) {
 		luaData = luabridge::newTable(_luaState);
@@ -248,6 +257,9 @@ void LuaDataModel::setup() {
 	_luaState = luaL_newstate();
 	luaL_openlibs(_luaState);
 
+	SWIG_init(_luaState);
+
+#if 0
 	try {
 		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(_luaState, "require");
 		if (requireFunc.isFunction()) {
@@ -264,6 +276,7 @@ void LuaDataModel::setup() {
 	} catch (luabridge::LuaException e) {
 		LOG(_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
 	}
+#endif
 
 	luabridge::getGlobalNamespace(_luaState).beginClass<LuaDataModel>("DataModel").endClass();
 	luabridge::setGlobal(_luaState, this, "__datamodel");
@@ -308,7 +321,6 @@ void LuaDataModel::setEvent(const Event& event) {
 	luabridge::LuaRef luaEvent(_luaState);
 	luaEvent = luabridge::newTable(_luaState);
 
-
 	luaEvent["name"] = event.name;
 	if (event.raw.size() > 0)
 		luaEvent["raw"] = event.raw;
@@ -338,20 +350,12 @@ void LuaDataModel::setEvent(const Event& event) {
 	}
 
 	if (event.data.node) {
-		if (_luaHasXMLParser) {
-			const luabridge::LuaRef& luaLom = luabridge::getGlobal(_luaState, "lxp.lom");
-			const luabridge::LuaRef& luaLomParse = luaLom["parse"];
-			assert(luaLomParse.isFunction());
-			std::stringstream luaXMLSS;
-			luaXMLSS << event.data.node;
-			try {
-				luaEvent["data"] = luaLomParse(luaXMLSS.str());
-			} catch (luabridge::LuaException e) {
-				ERROR_EXECUTION_THROW(e.what());
-			}
-		} else {
-			ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
-		}
+#ifndef NO_XERCESC
+		SWIG_Lua_NewPointerObj(_luaState, event.data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		luaEvent["data"] = luabridge::LuaRef::fromStack(_luaState, 1);
+#else
+		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+#endif
 	} else {
 		// _event.data is KVP
 		Data d = event.data;
@@ -380,6 +384,7 @@ void LuaDataModel::setEvent(const Event& event) {
 	}
 
 	luabridge::setGlobal(_luaState, luaEvent, "_event");
+
 }
 
 Data LuaDataModel::evalAsData(const std::string& content) {
@@ -401,6 +406,10 @@ void LuaDataModel::eval(const std::string& content) {
 	int retVals = luaEval(_luaState, trimmedExpr);
 
 	lua_pop(_luaState, retVals);
+}
+
+bool LuaDataModel::isLegalDataValue(const std::string& expr) {
+	return isValidSyntax("local __tmp = " + expr);
 }
 
 bool LuaDataModel::isValidSyntax(const std::string& expr) {
@@ -499,18 +508,14 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 		ERROR_EXECUTION_THROW("Cannot assign to _event");
 
 	if (data.node) {
+#ifndef NO_XERCESC
+
+		SWIG_Lua_NewPointerObj(_luaState, data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		lua_setglobal(_luaState, "__tmpAssign");
+		eval(location + "= __tmpAssign");
+#else
 		ERROR_EXECUTION_THROW("Cannot assign xml nodes in lua datamodel");
-
-		// TODO: DOM is prepared by swig
-
-//        return SWIG_JSC_NewPointerObj(_ctx,
-//                                      (void*)node,
-//                                      SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode,
-//                                                           SWIG_as_voidptrptr(&node)),
-//                                      0);
-
-
-//        JSObjectSetProperty(_ctx, JSContextGetGlobalObject(_ctx), JSStringCreateWithUTF8CString(location.c_str()), getNodeAsValue(data.node), 0, &exception);
+#endif
 	} else {
 
 

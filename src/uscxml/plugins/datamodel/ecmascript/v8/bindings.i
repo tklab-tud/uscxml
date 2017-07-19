@@ -38,6 +38,7 @@ gcc -I/Users/sradomski/Documents/TK/Code/uscxml2/build/cli/deps/xerces-c/include
 
 %include "../../common/bindings/dom/dom.i"
 #endif
+
 // Operators we do want
 // %rename(operator_assignment) operator=;
 %rename(operator_equal_to) operator==;

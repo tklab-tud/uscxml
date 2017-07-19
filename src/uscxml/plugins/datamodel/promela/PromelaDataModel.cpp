@@ -413,10 +413,10 @@ void PromelaDataModel::setEvent(const Event& event) {
 				if (isNumeric(d.atom.c_str(), 10)) {
 					return Data(d.atom, Data::VERBATIM);
 				}
-			return Data(d.asJSON(), Data::VERBATIM);
-			if (d.type == Data::INTERPRETED && d.atom[0] == '\'' && d.atom[d.atom.size() - 1] == '\'')
-				return Data(d.atom.substr(1, d.atom.size() - 2), Data::VERBATIM);
 			return d;
+//			if (d.type == Data::INTERPRETED && d.atom[0] == '\'' && d.atom[d.atom.size() - 1] == '\'')
+//				return Data(d.atom.substr(1, d.atom.size() - 2), Data::VERBATIM);
+//			return d;
 		}
 		case PML_VAR_ARRAY:
 		case PML_CMPND:
@@ -707,6 +707,7 @@ void PromelaDataModel::setEvent(const Event& event) {
 	void PromelaDataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 		PromelaParser parser(location);
 		if (data.atom.size() > 0 && data.type == Data::INTERPRETED) {
+			// e.g. Var1 = Var1 + 1
 			setVariable(parser.ast, evalAsData(data.atom));
 		} else {
 			setVariable(parser.ast, data);

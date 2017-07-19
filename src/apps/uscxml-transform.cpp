@@ -40,8 +40,8 @@ void printUsageAndExit(const char* progName) {
 	printf("Options\n");
 	printf("\t-t c           : convert to C program\n");
 	printf("\t-t pml         : convert to spin/promela program\n");
-    printf("\t-t vhdl        : convert to VHDL hardware description\n");
-    printf("\t-t java        : convert to Java classes\n");
+	printf("\t-t vhdl        : convert to VHDL hardware description\n");
+	printf("\t-t java        : convert to Java classes\n");
 	printf("\t-t flat        : flatten to SCXML state-machine\n");
 	printf("\t-a FILE        : write annotated SCXML document for transformation\n");
 	printf("\t-X {PARAMETER} : pass additional parameters to the transformation\n");
@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
 	bool verbose = false;
 	std::string outType;
 	std::string pluginPath;
-    std::string inputFile;
-    std::string annotatedFile;
+	std::string inputFile;
+	std::string annotatedFile;
 	std::string outputFile;
 	std::list<std::string> options;
 	std::multimap<std::string, std::string> extensions;
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 			inputFile = optarg;
 			break;
 		case 'a':
-            annotatedFile = optarg;
+			annotatedFile = optarg;
 			break;
 		case 'X': {
 			std::list<std::string> extension = tokenize(optarg, '=');
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 		break;
 		case 'o':
 			outputFile = optarg;
-            extensions.insert(std::pair<std::string, std::string>("outputFile", outputFile));
+			extensions.insert(std::pair<std::string, std::string>("outputFile", outputFile));
 			break;
 		case 'l':
 			break;
@@ -190,8 +190,8 @@ int main(int argc, char** argv) {
 	        outType != "scxml" &&
 	        outType != "pml" &&
 	        outType != "c" &&
-            outType != "vhdl" &&
-            outType != "java" &&
+	        outType != "vhdl" &&
+	        outType != "java" &&
 	        outType != "min" &&
 	        std::find(options.begin(), options.end(), "priority") == options.end() &&
 	        std::find(options.begin(), options.end(), "domain") == options.end() &&
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 				ss << line;
 			}
 			URL tmp("anonymous.scxml");
-            tmp = URL::resolveWithCWD(tmp);
+			tmp = URL::resolveWithCWD(tmp);
 			interpreter = Interpreter::fromXML(ss.str(), tmp);
 		} else {
 			interpreter = Interpreter::fromURL(inputFile);
@@ -231,8 +231,8 @@ int main(int argc, char** argv) {
 
 	if (!interpreter) {
 		URL tmp(inputFile);
-        tmp = URL::resolveWithCWD(tmp);
-        std::string content = tmp.getInContent();
+		tmp = URL::resolveWithCWD(tmp);
+		std::string content = tmp.getInContent();
 
 		std::string inlineBeginMarker = "INLINE SCXML BEGIN\n";
 		std::string inlineEndMarker = "\nINLINE SCXML END";
@@ -267,12 +267,12 @@ int main(int argc, char** argv) {
 			}
 		}
 
-        Transformer transformer;
+		Transformer transformer;
 		if (outType == "c") {
 			transformer = ChartToC::transform(interpreter);
 			transformer.setExtensions(extensions);
 			transformer.setOptions(options);
-            
+
 			if (outputFile.size() == 0 || outputFile == "-") {
 				transformer.writeTo(std::cout);
 			} else {
@@ -283,25 +283,25 @@ int main(int argc, char** argv) {
 			}
 		}
 
-        if (outType == "java") {
-            transformer = ChartToJava::transform(interpreter);
-            transformer.setExtensions(extensions);
-            transformer.setOptions(options);
-            
-            if (outputFile.size() == 0 || outputFile == "-") {
-                transformer.writeTo(std::cout);
-            } else {
-                std::ofstream outStream;
-                outStream.open(outputFile.c_str());
-                transformer.writeTo(outStream);
-                outStream.close();
-            }
-        }
+		if (outType == "java") {
+			transformer = ChartToJava::transform(interpreter);
+			transformer.setExtensions(extensions);
+			transformer.setOptions(options);
+
+			if (outputFile.size() == 0 || outputFile == "-") {
+				transformer.writeTo(std::cout);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				transformer.writeTo(outStream);
+				outStream.close();
+			}
+		}
 
 		if (outType == "vhdl") {
-            transformer = ChartToVHDL::transform(interpreter);
-            transformer.setExtensions(extensions);
-            transformer.setOptions(options);
+			transformer = ChartToVHDL::transform(interpreter);
+			transformer.setExtensions(extensions);
+			transformer.setOptions(options);
 
 			if (outputFile.size() == 0 || outputFile == "-") {
 				transformer.writeTo(std::cout);
@@ -314,18 +314,18 @@ int main(int argc, char** argv) {
 		}
 
 		if (outType == "pml") {
-            transformer = ChartToPromela::transform(interpreter);
-            transformer.setExtensions(extensions);
-            transformer.setOptions(options);
-            
-            if (outputFile.size() == 0 || outputFile == "-") {
-                transformer.writeTo(std::cout);
-            } else {
-                std::ofstream outStream;
-                outStream.open(outputFile.c_str());
-                transformer.writeTo(outStream);
-                outStream.close();
-            }
+			transformer = ChartToPromela::transform(interpreter);
+			transformer.setExtensions(extensions);
+			transformer.setOptions(options);
+
+			if (outputFile.size() == 0 || outputFile == "-") {
+				transformer.writeTo(std::cout);
+			} else {
+				std::ofstream outStream;
+				outStream.open(outputFile.c_str());
+				transformer.writeTo(outStream);
+				outStream.close();
+			}
 		}
 
 //		if (outType == "tex") {
@@ -364,22 +364,22 @@ int main(int argc, char** argv) {
 //			exit(EXIT_SUCCESS);
 //		}
 
-        if (annotatedFile.size() > 0) {
-            std::ofstream outStream;
-            outStream.open(annotatedFile.c_str());
-            outStream << (*transformer.getImpl()->getDocument());
-            outStream.close();
+		if (annotatedFile.size() > 0) {
+			std::ofstream outStream;
+			outStream.open(annotatedFile.c_str());
+			outStream << (*transformer.getImpl()->getDocument());
+			outStream.close();
 
-        }
+		}
 
 
 	} catch (Event e) {
 		std::cout << e << std::endl;
-        return EXIT_FAILURE;
+		return EXIT_FAILURE;
 	} catch (const std::exception &e) {
 		std::cout << e.what() << std::endl;
-        return EXIT_FAILURE;
+		return EXIT_FAILURE;
 	}
 
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }

@@ -62,6 +62,7 @@ public:
 	virtual Data evalAsData(const std::string& expr) = 0;
 	virtual void eval(const std::string& expr) = 0;
 	virtual Data getAsData(const std::string& expr) = 0;
+	virtual bool isLegalDataValue(const std::string& expr) = 0;
 	virtual void assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attrs) = 0;
 
 

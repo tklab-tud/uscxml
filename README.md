@@ -5,7 +5,6 @@
 #### Quick Links
 
 - [Building from source](http://tklab-tud.github.io/uscxml/building.html)
-- [Changes](docs/CHANGES.md)
 - [Tests passed](test/w3c/TESTS.md)
 - [Publications](docs/PUBLICATIONS.md)
 - [Benchmarks](docs/BENCHMARKS.md)
@@ -50,6 +49,12 @@ For more detailled information, refer to the [documentation](http://tklab-tud.gi
 
 ### Embedded as a Library
     uscxml::Interpreter scxml = uscxml::Interpreter::fromURL("...");
+    scxml.on().enterState([](const std::string& sessionId,
+                             const std::string& stateName,
+                             const xercesc_3_1::DOMElement* state) {
+        std::cout << "Entered " << stateName << std::endl;
+    });
+
     while(scxml.step() != uscxml::USCXML_FINISHED) {
       ...
     }
@@ -74,10 +79,14 @@ For more detailled information, refer to the [documentation](http://tklab-tud.gi
 **Examples:**
 
 * [test-gen-c.cpp](https://github.com/tklab-tud/uscxml/blob/master/test/src/test-gen-c.cpp) (**C++**)
-* [WaterPump.cxx](https://github.com/tklab-tud/uscxml/blob/master/src/apps/arduino/WaterPump.cxx) (**C++ on Arduino**)
+* [WaterPump.cxx](https://github.com/tklab-tud/uscxml/blob/master/examples/cpp/transpiled/arduino/WaterPump.cxx) (**C++ on Arduino**)
 
 
 ## Changes
+
+ * **[9db80409b3ca048c4b404a43d2c224f374c0090a](https://github.com/tklab-tud/uscxml/pull/163/commits/9db80409b3ca048c4b404a43d2c224f374c0090a):**
+
+    We **dropped support for Google's V8 ECMAScript engine**. The API is changing too fast and there is no reliable way to get / build / identify older versions. The latest branch will not work with the wrappers generated from even SWIG 4.0 and I have no time to keep up with them. Use JavaScriptCore, its API is unchanged since we started to support it in 2012. If you feel capable to maintain the [](V8DataModel.cpp) send a push request. Everything will be left in place but we will ignore `libv8` at configure time. I may have another look when a number of Linux distribution settled on a more recent version, most are still shipping v8 in version 3.14.
 
  * **[bfefa5fd44b9ed1491612f26b099db8ad624247b](https://github.com/tklab-tud/uscxml/pull/155/commits/bfefa5fd44b9ed1491612f26b099db8ad624247b):**
 
