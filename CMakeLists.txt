@@ -416,6 +416,7 @@ if (WITH_DM_ECMA_V8)
 
 		message(WARNING "We no longer support the V8 ECMAScript engine - contributions are welcome")
 		set(V8_FOUND OFF)
+		set(WITH_DM_ECMA_V8 OFF)
 	else()
 		set(WITH_DM_ECMA_V8 OFF)
 	endif()
