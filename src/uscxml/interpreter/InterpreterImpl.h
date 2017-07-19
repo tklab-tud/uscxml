@@ -196,6 +196,10 @@ public:
 		return _dataModel.getAsData(expr);
 	}
 
+    virtual bool isLegalDataValue(const std::string& expr) {
+        return _dataModel.isLegalDataValue(expr);
+    }
+
 	virtual void assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attrs);
 
 	virtual std::string getInvokeId() {

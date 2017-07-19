@@ -2,6 +2,13 @@
 
 %include <std_string.i>
 
+/*
+
+swig -I/Users/sradomski/Documents/TK/Code/uscxml2/build/cli/deps/xerces-c/include/ -lua -c++ uscxml.i
+gcc -I/Users/sradomski/Documents/TK/Code/uscxml2/build/cli/deps/xerces-c/include/ ./uscxml_wrap.cxx
+
+*/
+
 %module LuaDOM
 
 %import "uscxml/config.h"
@@ -15,6 +22,8 @@
 %include "../common/bindings/dom/defines.i"
 %include "../common/bindings/dom/typemaps-general.i"
 
+// todo: read about string encoding in lua
+#if 0
 // in typemap
 %typemap(in) XMLCh * %{
   $1 = Lua2XMLString($input);
@@ -28,6 +37,7 @@
 %typemap(out) XMLCh * %{
   $result = XMLString2Lua($1);
 %}
+#endif
 
 %include "../common/bindings/dom/dom.i"
 #endif
