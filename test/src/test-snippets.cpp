@@ -34,29 +34,29 @@ void microstep_snippet() {
 }
 
 void lambda_snippet() {
-    InterpreterState state = uscxml::USCXML_UNDEF;
-    Interpreter scxml = Interpreter::fromURL("https://raw.githubusercontent.com/tklab-tud/uscxml/master/test/w3c/null/test436.scxml");
+	InterpreterState state = uscxml::USCXML_UNDEF;
+	Interpreter scxml = Interpreter::fromURL("https://raw.githubusercontent.com/tklab-tud/uscxml/master/test/w3c/null/test436.scxml");
 
-    scxml.on().enterState([](const std::string& sessionId,
-                             const std::string& stateName,
-                             const xercesc_3_1::DOMElement* state) {
-        std::cout << "Entered " << stateName << std::endl;
-    });
+	scxml.on().enterState([](const std::string& sessionId,
+	                         const std::string& stateName,
+	const xercesc_3_1::DOMElement* state) {
+		std::cout << "Entered " << stateName << std::endl;
+	});
 
-    scxml.on().exitState([](const std::string& sessionId,
-                            const std::string& stateName,
-                            const xercesc_3_1::DOMElement* state) {
-        std::cout << "Exited " << stateName << std::endl;
-    });
+	scxml.on().exitState([](const std::string& sessionId,
+	                        const std::string& stateName,
+	const xercesc_3_1::DOMElement* state) {
+		std::cout << "Exited " << stateName << std::endl;
+	});
 
 
-    while((state = scxml.step()) != uscxml::USCXML_FINISHED) {}
+	while((state = scxml.step()) != uscxml::USCXML_FINISHED) {}
 
 }
 
 int main(int argc, char** argv) {
 	try {
-        lambda_snippet();
+		lambda_snippet();
 		microstep_snippet();
 	} catch (...) {
 		exit(EXIT_FAILURE);

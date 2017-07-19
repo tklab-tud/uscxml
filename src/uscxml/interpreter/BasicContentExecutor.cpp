@@ -593,89 +593,89 @@ void BasicContentExecutor::processParams(std::multimap<std::string, Data>& param
 		paramMap.insert(make_pair(name, d));
 	}
 }
-    
+
 Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool asExpression) {
-    // element with expr
-    if (HAS_ATTR(element, kXMLCharExpr)) {
-        std::string expr = ATTR(element, kXMLCharExpr);
-        if (_callbacks->isLegalDataValue(expr)) {
-            return Data(expr, Data::INTERPRETED);
-        } else {
-            ERROR_EXECUTION_THROW2("Expression '" + expr + "' is not a legal data value", element);
-        }
-    }
-    
-    // element with external src - this ought to behave just as with child nodes below
-    if (HAS_ATTR(element, kXMLCharSource)) {
+	// element with expr
+	if (HAS_ATTR(element, kXMLCharExpr)) {
+		std::string expr = ATTR(element, kXMLCharExpr);
+		if (_callbacks->isLegalDataValue(expr)) {
+			return Data(expr, Data::INTERPRETED);
+		} else {
+			ERROR_EXECUTION_THROW2("Expression '" + expr + "' is not a legal data value", element);
+		}
+	}
 
-        // remove any old child elements
-        while(element->getFirstElementChild() != NULL) {
-            element->removeChild(element->getFirstElementChild());
-        }
+	// element with external src - this ought to behave just as with child nodes below
+	if (HAS_ATTR(element, kXMLCharSource)) {
 
-        std::string src = ATTR(element, kXMLCharSource);
-        URL url(ATTR(element, kXMLCharSource));
-        if (!url.isAbsolute()) {
-            url = URL::resolve(url, _callbacks->getBaseURL());
-        }
-        std::string content = url.getInContent();
+		// remove any old child elements
+		while(element->getFirstElementChild() != NULL) {
+			element->removeChild(element->getFirstElementChild());
+		}
 
-        // append as XML?
-        try {
-            std::unique_ptr<XERCESC_NS::XercesDOMParser> parser(new XERCESC_NS::XercesDOMParser());
-            parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
-            parser->setDoNamespaces(true);
-            parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
-            
-            std::unique_ptr<XERCESC_NS::ErrorHandler> errHandler(new XERCESC_NS::HandlerBase());
-            parser->setErrorHandler(errHandler.get());
+		std::string src = ATTR(element, kXMLCharSource);
+		URL url(ATTR(element, kXMLCharSource));
+		if (!url.isAbsolute()) {
+			url = URL::resolve(url, _callbacks->getBaseURL());
+		}
+		std::string content = url.getInContent();
 
-            XERCESC_NS::MemBufInputSource is((XMLByte*)content.c_str(), content.size(), X("fake"));
-            is.setPublicId(X(url));
-            
-            parser->parse(is);
-            XERCESC_NS::DOMNode* newNode = element->getOwnerDocument()->importNode(parser->getDocument()->getDocumentElement(), true);
-            
-            // we need to save the DOM somewhere .. Data::adoptedDoc was not good enough
-            element->appendChild(newNode);
-            goto SOURCE_APPEND_DONE;
-        } catch (...) {
-        }
+		// append as XML?
+		try {
+			std::unique_ptr<XERCESC_NS::XercesDOMParser> parser(new XERCESC_NS::XercesDOMParser());
+			parser->setValidationScheme(XERCESC_NS::XercesDOMParser::Val_Always);
+			parser->setDoNamespaces(true);
+			parser->useScanner(XERCESC_NS::XMLUni::fgWFXMLScanner);
 
-        // append as text (are we leaking?)
-        XERCESC_NS::DOMText* textNode = element->getOwnerDocument()->createTextNode(X(content));
-        element->appendChild(textNode);
-    }
+			std::unique_ptr<XERCESC_NS::ErrorHandler> errHandler(new XERCESC_NS::HandlerBase());
+			parser->setErrorHandler(errHandler.get());
+
+			XERCESC_NS::MemBufInputSource is((XMLByte*)content.c_str(), content.size(), X("fake"));
+			is.setPublicId(X(url));
+
+			parser->parse(is);
+			XERCESC_NS::DOMNode* newNode = element->getOwnerDocument()->importNode(parser->getDocument()->getDocumentElement(), true);
+
+			// we need to save the DOM somewhere .. Data::adoptedDoc was not good enough
+			element->appendChild(newNode);
+			goto SOURCE_APPEND_DONE;
+		} catch (...) {
+		}
+
+		// append as text (are we leaking?)
+		XERCESC_NS::DOMText* textNode = element->getOwnerDocument()->createTextNode(X(content));
+		element->appendChild(textNode);
+	}
 SOURCE_APPEND_DONE:
 
-    if (element->hasChildNodes()) {
-        // XML elements e.g. for content with invoke
-        std::list<DOMNode*> elementChildren = DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, element);
-        if (elementChildren.size() > 0) {
-            // always return parent element, even with a single child node
-            return Data(static_cast<DOMNode*>(element));
-        }
+	if (element->hasChildNodes()) {
+		// XML elements e.g. for content with invoke
+		std::list<DOMNode*> elementChildren = DOMUtils::filterChildType(DOMNode::ELEMENT_NODE, element);
+		if (elementChildren.size() > 0) {
+			// always return parent element, even with a single child node
+			return Data(static_cast<DOMNode*>(element));
+		}
 
-        // expression in text element
-        std::list<DOMNode*> textChildren = DOMUtils::filterChildType(DOMNode::TEXT_NODE, element);
-        if (textChildren.size() > 0) {
-            std::stringstream contentSS;
-            for (auto textIter = textChildren.begin(); textIter != textChildren.end(); textIter++) {
-                contentSS << X((*textIter)->getNodeValue());
-            }
+		// expression in text element
+		std::list<DOMNode*> textChildren = DOMUtils::filterChildType(DOMNode::TEXT_NODE, element);
+		if (textChildren.size() > 0) {
+			std::stringstream contentSS;
+			for (auto textIter = textChildren.begin(); textIter != textChildren.end(); textIter++) {
+				contentSS << X((*textIter)->getNodeValue());
+			}
 
-            try {
-                Data d = _callbacks->getAsData(contentSS.str());
-                if (!d.empty())
-                    return d;
-            } catch(...) {}
+			try {
+				Data d = _callbacks->getAsData(contentSS.str());
+				if (!d.empty())
+					return d;
+			} catch(...) {}
 
-            // anything else is considered verbatim - space normalize?
-            return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
-        }
-    }
-    
-    return Data();
+			// anything else is considered verbatim - space normalize?
+			return Data(spaceNormalize(contentSS.str()), Data::VERBATIM);
+		}
+	}
+
+	return Data();
 }
 
 }

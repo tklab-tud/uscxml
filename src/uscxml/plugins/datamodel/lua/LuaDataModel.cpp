@@ -63,17 +63,17 @@ using namespace XERCESC_NS;
 #else
 #include "LuaEvent.cpp.inc"
 #endif
-    
+
 namespace uscxml {
-    
+
 #ifdef BUILD_AS_PLUGINS
-    PLUMA_CONNECTOR
-    bool pluginConnect(pluma::Host& host) {
-        host.add( new LuaDataModelProvider() );
-        return true;
-    }
+PLUMA_CONNECTOR
+bool pluginConnect(pluma::Host& host) {
+	host.add( new LuaDataModelProvider() );
+	return true;
+}
 #endif
-  
+
 static int luaEval(lua_State* luaState, const std::string& expr) {
 	int preStack = lua_gettop(luaState);
 	int error = luaL_loadstring(luaState, expr.c_str()) || lua_pcall(luaState, 0, LUA_MULTRET, 0);
@@ -97,12 +97,12 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 		data.type = Data::INTERPRETED;
 	} else if(lua.isLightUserdata() || lua.isUserdata()) {
 #ifndef NO_XERCESC
-        int err = SWIG_Lua_ConvertPtr(_luaState, 0, (void**)&(data.node), SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
-        if (err == SWIG_ERROR)
-            data.node = NULL;
+		int err = SWIG_Lua_ConvertPtr(_luaState, 0, (void**)&(data.node), SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		if (err == SWIG_ERROR)
+			data.node = NULL;
 #endif
-        
-    } else if(lua.isThread()) {
+
+	} else if(lua.isThread()) {
 		// not sure what to do
 	} else if(lua.type() == LUA_TBOOLEAN) {
 		// why is there no isBoolean in luabridge?
@@ -121,7 +121,7 @@ static Data getLuaAsData(lua_State* _luaState, const luabridge::LuaRef& lua) {
 	} else if(lua.isString()) {
 		data.atom = lua.cast<std::string>();
 		data.type = Data::VERBATIM;
-    } else if(lua.isTable()) {
+	} else if(lua.isTable()) {
 		// check whether it is to be interpreted as a map or an array
 		bool isArray = true;
 		std::map<std::string, luabridge::LuaRef> luaItems;
@@ -161,13 +161,13 @@ static luabridge::LuaRef getDataAsLua(lua_State* _luaState, const Data& data) {
 
 	if (data.node) {
 #ifndef NO_XERCESC
-        SWIG_Lua_NewPointerObj(_luaState, data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
-        luaData = luabridge::LuaRef::fromStack(_luaState, 1);
-        return luaData;
+		SWIG_Lua_NewPointerObj(_luaState, data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		luaData = luabridge::LuaRef::fromStack(_luaState, 1);
+		return luaData;
 #else
-        ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
 #endif
-    }
+	}
 	if (data.compound.size() > 0) {
 		luaData = luabridge::newTable(_luaState);
 		std::map<std::string, Data>::const_iterator compoundIter = data.compound.begin();
@@ -257,8 +257,8 @@ void LuaDataModel::setup() {
 	_luaState = luaL_newstate();
 	luaL_openlibs(_luaState);
 
-    SWIG_init(_luaState);
-    
+	SWIG_init(_luaState);
+
 #if 0
 	try {
 		const luabridge::LuaRef& requireFunc = luabridge::getGlobal(_luaState, "require");
@@ -277,7 +277,7 @@ void LuaDataModel::setup() {
 		LOG(_callbacks->getLogger(), USCXML_INFO) << e.what() << std::endl;
 	}
 #endif
-    
+
 	luabridge::getGlobalNamespace(_luaState).beginClass<LuaDataModel>("DataModel").endClass();
 	luabridge::setGlobal(_luaState, this, "__datamodel");
 
@@ -351,10 +351,10 @@ void LuaDataModel::setEvent(const Event& event) {
 
 	if (event.data.node) {
 #ifndef NO_XERCESC
-        SWIG_Lua_NewPointerObj(_luaState, event.data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
-        luaEvent["data"] = luabridge::LuaRef::fromStack(_luaState, 1);
+		SWIG_Lua_NewPointerObj(_luaState, event.data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		luaEvent["data"] = luabridge::LuaRef::fromStack(_luaState, 1);
 #else
-        ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
+		ERROR_EXECUTION_THROW("No DOM support in Lua datamodel");
 #endif
 	} else {
 		// _event.data is KVP
@@ -409,7 +409,7 @@ void LuaDataModel::eval(const std::string& content) {
 }
 
 bool LuaDataModel::isLegalDataValue(const std::string& expr) {
-    return isValidSyntax("local __tmp = " + expr);
+	return isValidSyntax("local __tmp = " + expr);
 }
 
 bool LuaDataModel::isValidSyntax(const std::string& expr) {
@@ -510,9 +510,9 @@ void LuaDataModel::assign(const std::string& location, const Data& data, const s
 	if (data.node) {
 #ifndef NO_XERCESC
 
-        SWIG_Lua_NewPointerObj(_luaState, data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
-        lua_setglobal(_luaState, "__tmpAssign");
-        eval(location + "= __tmpAssign");
+		SWIG_Lua_NewPointerObj(_luaState, data.node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_POINTER_DISOWN);
+		lua_setglobal(_luaState, "__tmpAssign");
+		eval(location + "= __tmpAssign");
 #else
 		ERROR_EXECUTION_THROW("Cannot assign xml nodes in lua datamodel");
 #endif

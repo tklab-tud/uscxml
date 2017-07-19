@@ -46,8 +46,8 @@ public:
 	virtual std::list<std::string> getNames();
 	/// @copydoc DataModelImpl::isValidSyntax()
 	virtual bool isValidSyntax(const std::string& expr);
-    /// @copydoc DataModelImpl::isLegalDataValue()
-    virtual bool isLegalDataValue(const std::string& expr);
+	/// @copydoc DataModelImpl::isLegalDataValue()
+	virtual bool isLegalDataValue(const std::string& expr);
 
 	/// @copydoc DataModelImpl::setEvent()
 	virtual void setEvent(const Event& event);

@@ -31,7 +31,7 @@ bool DataModel::isValidSyntax(const std::string& expr) {
 }
 
 bool DataModel::isLegalDataValue(const std::string& expr) {
-    return _impl->isLegalDataValue(expr);
+	return _impl->isLegalDataValue(expr);
 }
 
 void DataModel::setEvent(const Event& event) {

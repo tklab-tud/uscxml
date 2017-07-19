@@ -236,9 +236,9 @@ public:
 	std::shared_ptr<InterpreterImpl> getImpl() const {
 		return _impl;
 	}
-    
-    LambdaMonitor& on();
-    
+
+	LambdaMonitor& on();
+
 #if 0
 	// "Ambiguous user-defined-conversion" with operator bool() on MSVC from Visual Studio 12
 	explicit operator MicroStepCallbacks*() {

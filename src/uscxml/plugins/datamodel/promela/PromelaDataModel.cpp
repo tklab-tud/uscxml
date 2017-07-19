@@ -707,8 +707,8 @@ void PromelaDataModel::setEvent(const Event& event) {
 	void PromelaDataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 		PromelaParser parser(location);
 		if (data.atom.size() > 0 && data.type == Data::INTERPRETED) {
-            // e.g. Var1 = Var1 + 1
-            setVariable(parser.ast, evalAsData(data.atom));
+			// e.g. Var1 = Var1 + 1
+			setVariable(parser.ast, evalAsData(data.atom));
 		} else {
 			setVariable(parser.ast, data);
 		}

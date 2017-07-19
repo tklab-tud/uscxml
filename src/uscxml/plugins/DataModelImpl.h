@@ -117,7 +117,7 @@ public:
 	/**
 	 * Determine whether a given string constitutes valid syntax in the
 	 * data-model's language. This is only used to identify InterpreterIssues
-     * but may be useful to implement isLegalDataValue() as well.
+	 * but may be useful to implement isLegalDataValue() as well.
 	 * @param expr A string, supposedly containing an expression of the data-model.
 	 * @return Whether expr is in L(DM).
 	 */
@@ -125,16 +125,16 @@ public:
 		return true; // overwrite when datamodel supports it
 	}
 
-    /**
-     * Determine whether a given string constitutes a legal data value that can appear
-     * at the right-hand side of an assignment.
-     *
-     * @param expr A string, supposedly containing a legal data value.
-     * @return Whether expr is a legal data value.
-     */
-    virtual bool isLegalDataValue(const std::string& expr) {
-        return true; // overwrite when datamodel supports it
-    }
+	/**
+	 * Determine whether a given string constitutes a legal data value that can appear
+	 * at the right-hand side of an assignment.
+	 *
+	 * @param expr A string, supposedly containing a legal data value.
+	 * @return Whether expr is a legal data value.
+	 */
+	virtual bool isLegalDataValue(const std::string& expr) {
+		return true; // overwrite when datamodel supports it
+	}
 
 	/**
 	 * Set the given event as `_event` in the data-model's global scope.

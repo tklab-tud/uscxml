@@ -103,8 +103,8 @@ InterpreterImpl::~InterpreterImpl() {
 	if (_document)
 		delete _document;
 
-    if (_lambdaMonitor)
-        delete _lambdaMonitor;
+	if (_lambdaMonitor)
+		delete _lambdaMonitor;
 
 	{
 		std::lock_guard<std::recursive_mutex> lock(_instanceMutex);
@@ -626,11 +626,11 @@ void InterpreterImpl::enqueueAtParent(const Event& event) {
 }
 
 LambdaMonitor& InterpreterImpl::on() {
-    if (_lambdaMonitor == NULL) {
-        _lambdaMonitor = new LambdaMonitor();
-        addMonitor(_lambdaMonitor);
-    }
-    return *_lambdaMonitor;
+	if (_lambdaMonitor == NULL) {
+		_lambdaMonitor = new LambdaMonitor();
+		addMonitor(_lambdaMonitor);
+	}
+	return *_lambdaMonitor;
 }
 
 }

@@ -511,7 +511,7 @@ COMPLETION_STABLISHED:
 
 //    std::list<Transition*> transSpontaneous;
 //    std::list<Transition*> transEventful;
-    
+
 	for (i = 0; i < _transitions.size(); i++) {
 		_transitions[i] = new Transition(i);
 		_transitions[i]->element = tmp.front();
@@ -583,9 +583,9 @@ TARGET_SET_ESTABLISHED:
 		if (!HAS_ATTR(_transitions[i]->element, kXMLCharEvent)) {
 			_transitions[i]->type |= USCXML_TRANS_SPONTANEOUS;
 //            transSpontaneous.push_back(_transitions[i]);
-        } else {
+		} else {
 //            transEventful.push_back(_transitions[i]);
-        }
+		}
 
 		if (iequals(TAGNAME_CAST(_transitions[i]->element->getParentNode()), _xmlPrefix.str() + "history")) {
 			_transitions[i]->type |= USCXML_TRANS_HISTORY;
@@ -618,81 +618,81 @@ TARGET_SET_ESTABLISHED:
 	 * This bound by cache locality!
 	 * Before you change anything, do benchmark!
 	 */
-    
+
 #if 0
 #define exit1 _exitSets[t1->postFixOrder]
 #define exit2 _exitSets[t2->postFixOrder]
 
-    for (size_t set = 0; set < 2; set++) {
-        std::list<Transition*>::const_iterator transBegin;
-        std::list<Transition*>::const_iterator transEnd;
-        if (set == 0) {
-            transBegin = transEventful.begin();
-            transEnd = transEventful.end();
-        } else {
-            transBegin = transSpontaneous.begin();
-            transEnd = transSpontaneous.end();
-        }
+	for (size_t set = 0; set < 2; set++) {
+		std::list<Transition*>::const_iterator transBegin;
+		std::list<Transition*>::const_iterator transEnd;
+		if (set == 0) {
+			transBegin = transEventful.begin();
+			transEnd = transEventful.end();
+		} else {
+			transBegin = transSpontaneous.begin();
+			transEnd = transSpontaneous.end();
+		}
 
-        for (auto t1Iter = transBegin; t1Iter != transEnd; t1Iter++) {
-            Transition* t1 = *t1Iter;
-            auto anc1 = _states[t1->source]->ancestors;
-            const uint32_t source1 = t1->source;
+		for (auto t1Iter = transBegin; t1Iter != transEnd; t1Iter++) {
+			Transition* t1 = *t1Iter;
+			auto anc1 = _states[t1->source]->ancestors;
+			const uint32_t source1 = t1->source;
 
-            for (auto t2Iter = t1Iter; t2Iter != transEnd; t2Iter++) {
-                Transition* t2 = *t2Iter;
-                
-                if (exit1.first == 0 && exit2.first == 0) {
-                    goto COMPATIBLE_TRANS;
-                }
-                
-                if (exit1.first <= exit2.first && exit1.second >= exit2.first) {
-                    goto CONFLICTING_TRANS;
-                }
-                
-                if (exit2.first <= exit1.first && exit2.second >= exit1.first) {
-                    goto CONFLICTING_TRANS;
-                }
-                
-            COMPATIBLE_TRANS:
-                if (t2->source == source1) {
-                    goto CONFLICTING_TRANS;
-                }
-                
-                if (anc1[t2->source]) {
-                    goto CONFLICTING_TRANS;
-                }
-                
-                if (_states[t2->source]->ancestors[source1]) {
-                    goto CONFLICTING_TRANS;
-                }
-                
-                t1->conflicts[t2->postFixOrder] = false;
-                //            _transitions[j]->conflicts[i] = false;
-                continue;
-                
-            CONFLICTING_TRANS:
-                t1->conflicts[t2->postFixOrder] = true;
-                //            _transitions[j]->conflicts[i] = true;
-                
-                continue;
+			for (auto t2Iter = t1Iter; t2Iter != transEnd; t2Iter++) {
+				Transition* t2 = *t2Iter;
 
-            }
-        }
-        
-        for (auto t1Iter = transBegin; t1Iter != transEnd; t1Iter++) {
-            Transition* t1 = *t1Iter;
-            // conflicts matrix is symmetric
-            for (auto t2Iter = transBegin; t2Iter != t1Iter; t2Iter++) {
-                Transition* t2 = *t2Iter;
+				if (exit1.first == 0 && exit2.first == 0) {
+					goto COMPATIBLE_TRANS;
+				}
 
-                t1->conflicts[t2->postFixOrder] = t2->conflicts[t1->postFixOrder];
-            }
-        }
+				if (exit1.first <= exit2.first && exit1.second >= exit2.first) {
+					goto CONFLICTING_TRANS;
+				}
 
-    }
-    
-    
+				if (exit2.first <= exit1.first && exit2.second >= exit1.first) {
+					goto CONFLICTING_TRANS;
+				}
+
+COMPATIBLE_TRANS:
+				if (t2->source == source1) {
+					goto CONFLICTING_TRANS;
+				}
+
+				if (anc1[t2->source]) {
+					goto CONFLICTING_TRANS;
+				}
+
+				if (_states[t2->source]->ancestors[source1]) {
+					goto CONFLICTING_TRANS;
+				}
+
+				t1->conflicts[t2->postFixOrder] = false;
+				//            _transitions[j]->conflicts[i] = false;
+				continue;
+
+CONFLICTING_TRANS:
+				t1->conflicts[t2->postFixOrder] = true;
+				//            _transitions[j]->conflicts[i] = true;
+
+				continue;
+
+			}
+		}
+
+		for (auto t1Iter = transBegin; t1Iter != transEnd; t1Iter++) {
+			Transition* t1 = *t1Iter;
+			// conflicts matrix is symmetric
+			for (auto t2Iter = transBegin; t2Iter != t1Iter; t2Iter++) {
+				Transition* t2 = *t2Iter;
+
+				t1->conflicts[t2->postFixOrder] = t2->conflicts[t1->postFixOrder];
+			}
+		}
+
+	}
+
+
 #else
 #define anc1 _states[_transitions[i]->source]->ancestors
 #define exit1 _exitSets[i]
@@ -748,7 +748,7 @@ CONFLICTING_TRANS:
 		}
 	}
 #endif
-    
+
 	// initialize bitarrays for step()
 	_exitSet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);
 	_entrySet = boost::dynamic_bitset<BITSET_BLOCKTYPE>(_states.size(), false);

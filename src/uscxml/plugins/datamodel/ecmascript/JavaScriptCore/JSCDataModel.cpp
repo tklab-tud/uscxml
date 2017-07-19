@@ -669,9 +669,9 @@ bool JSCDataModel::isValidSyntax(const std::string& expr) {
 }
 
 bool JSCDataModel::isLegalDataValue(const std::string& expr) {
-    return isValidSyntax("var __tmp = " + expr);
+	return isValidSyntax("var __tmp = " + expr);
 }
-    
+
 bool JSCDataModel::isDeclared(const std::string& expr) {
 	JSStringRef scriptJS = JSStringCreateWithUTF8CString(expr.c_str());
 	JSValueRef exception = NULL;
