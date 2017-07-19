@@ -79,7 +79,7 @@ For more detailled information, refer to the [documentation](http://tklab-tud.gi
 **Examples:**
 
 * [test-gen-c.cpp](https://github.com/tklab-tud/uscxml/blob/master/test/src/test-gen-c.cpp) (**C++**)
-* [WaterPump.cxx](https://github.com/tklab-tud/uscxml/blob/master/src/apps/arduino/WaterPump.cxx) (**C++ on Arduino**)
+* [WaterPump.cxx](https://github.com/tklab-tud/uscxml/blob/master/examples/cpp/transpiled/arduino/WaterPump.cxx) (**C++ on Arduino**)
 
 
 ## Changes
