@@ -341,6 +341,7 @@ int main(int argc, char** argv) {
 			assert(interpreter.getState() == USCXML_INSTANTIATED);
 			assert(interpreter.step() == USCXML_INITIALIZED);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);
+			assert(interpreter.step() == USCXML_MICROSTEPPED);
 			assert(interpreter.step() == USCXML_MACROSTEPPED);
 			assert(interpreter.step(0) == USCXML_IDLE);
 			assert(interpreter.step() == USCXML_MICROSTEPPED);

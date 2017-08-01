@@ -42,7 +42,7 @@
 
 using namespace XERCESC_NS;
 
-#define SWIG_V8_VERSION 0x032317
+#define SWIG_V8_VERSION 0x031400
 
 #ifndef NO_XERCESC
 static v8::Local<v8::Value> XMLString2JS(const XMLCh* input) {
@@ -59,9 +59,9 @@ static XMLCh* JS2XMLString(const v8::Local<v8::Value>& value) {
 
 // this is the version we support here
 
-#include "V8DOM.cpp.inc"
+#include "../V8DOM.cpp.inc"
 #else
-#include "V8Event.cpp.inc"
+#include "../V8Event.cpp.inc"
 #endif
 
 namespace uscxml {
@@ -125,7 +125,7 @@ void V8DataModel::addExtension(DataModelExtension* ext) {
 #endif
 }
 
-void V8DataModel::jsExtension(const v8::FunctionCallbackInfo<v8::Value>& info) {
+v8::Handle<v8::Value> V8DataModel::jsExtension(const v8::Arguments& args) {
 #if 0
 	DataModelExtension* extension = static_cast<DataModelExtension*>(v8::External::Unwrap(args.Data()));
 
@@ -148,27 +148,26 @@ void V8DataModel::jsExtension(const v8::FunctionCallbackInfo<v8::Value>& info) {
 		// getter
 		return ((V8DataModel*)(extension->dm))->getDataAsValue(extension->getValueOf(memberName));
 	}
-	return v8::Undefined();
 #endif
+	return v8::Undefined();
 }
 
 std::mutex V8DataModel::_initMutex;
 
-v8::Isolate* V8DataModel::_isolate = NULL;
+//v8::Isolate* V8DataModel::_isolate = NULL;
 
 #ifndef NO_XERCESC
-void V8NodeListIndexedPropertyHandler(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-	XERCESC_NS::DOMNodeList* list;
+v8::Handle<v8::Value> V8NodeListIndexedPropertyHandler(uint32_t index, const v8::AccessorInfo &info) {
+	XERCESC_NS::DOMNodeList* list = NULL;
 	SWIG_V8_GetInstancePtr(info.Holder(), (void**)&list);
 
-	if (list->getLength() >= index) {
+	if (list != NULL && list->getLength() >= index) {
 		XERCESC_NS::DOMNode* node = list->item(index);
 
 		v8::Handle<v8::Value> val = SWIG_NewPointerObj(SWIG_as_voidptr(node), SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, SWIG_as_voidptrptr(&node)), 0 |  0 );
-		info.GetReturnValue().Set(val);
-		return;
+		return val;
 	}
-	info.GetReturnValue().Set(v8::Undefined());
+	return v8::Undefined();
 
 }
 #endif
@@ -183,39 +182,28 @@ std::shared_ptr<DataModelImpl> V8DataModel::create(DataModelCallbacks* callbacks
 void V8DataModel::setup() {
 	// TODO: we cannot use one isolate per thread as swig's type will be unknown :(
 	// We could register them by hand and avoid the _export_ globals in swig?
-	if (_isolate == NULL) {
-		_isolate = v8::Isolate::New();
-	}
 
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-
-	// Create a handle scope to hold the temporary references.
-	v8::HandleScope scope(_isolate);
+	v8::Locker locker;
+	v8::HandleScope scope;
 
 	// Create a template for the global object where we set the built-in global functions.
 	v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
 
 	// some free functions
-	global->Set(v8::String::NewSymbol("print"),
-	            v8::FunctionTemplate::New(_isolate, jsPrint,v8::External::New(reinterpret_cast<void*>(this))));
-	global->Set(v8::String::NewSymbol("In"),
-	            v8::FunctionTemplate::New(_isolate, jsIn, v8::External::New(reinterpret_cast<void*>(this))));
+	global->Set(v8::String::New("In"),
+	            v8::FunctionTemplate::New(jsIn, v8::External::New(reinterpret_cast<void*>(this))), v8::ReadOnly);
+	global->Set(v8::String::New("print"),
+	            v8::FunctionTemplate::New(jsPrint, v8::External::New(reinterpret_cast<void*>(this))), v8::ReadOnly);
 
-	v8::Local<v8::Context> context = v8::Context::New(_isolate, NULL, global);
-
-	_context.Reset(_isolate, context);
-
-	// Enter the new context so all the following operations take place within it.
-	v8::Context::Scope contextScope(context);
-	assert(_isolate->GetCurrentContext() == context);
+	_context = v8::Context::New(0, global);
+	v8::Context::Scope contextScope(_context);
 
 #ifndef NO_XERCESC
 
 	// not thread safe!
 	{
 		std::lock_guard<std::mutex> lock(_initMutex);
-		SWIGV8_INIT(context->Global());
+		SWIGV8_INIT(_context->Global());
 
 		// register subscript operator with nodelist
 		v8::Handle<v8::FunctionTemplate> _exports_DOMNodeList_class = SWIGV8_CreateClassTemplate("_exports_DOMNodeList");
@@ -229,22 +217,22 @@ void V8DataModel::setup() {
 	}
 #endif
 
-	context->Global()->SetAccessor(v8::String::NewSymbol("_sessionid"),
-	                               V8DataModel::getAttribute,
-	                               V8DataModel::setWithException,
-	                               v8::String::New(callbacks->getSessionId().c_str()));
-	context->Global()->SetAccessor(v8::String::NewSymbol("_name"),
-	                               V8DataModel::getAttribute,
-	                               V8DataModel::setWithException,
-	                               v8::String::New(callbacks->getName().c_str()));
-	context->Global()->SetAccessor(v8::String::NewSymbol("_ioprocessors"),
-	                               V8DataModel::getIOProcessors,
-	                               V8DataModel::setWithException,
-	                               v8::External::New(reinterpret_cast<void*>(this)));
-	context->Global()->SetAccessor(v8::String::NewSymbol("_invokers"),
-	                               V8DataModel::getInvokers,
-	                               V8DataModel::setWithException,
-	                               v8::External::New(reinterpret_cast<void*>(this)));
+	_context->Global()->SetAccessor(v8::String::NewSymbol("_sessionid"),
+	                                V8DataModel::getAttribute,
+	                                V8DataModel::setWithException,
+	                                v8::String::New(_callbacks->getSessionId().c_str()));
+	_context->Global()->SetAccessor(v8::String::NewSymbol("_name"),
+	                                V8DataModel::getAttribute,
+	                                V8DataModel::setWithException,
+	                                v8::String::New(_callbacks->getName().c_str()));
+	_context->Global()->SetAccessor(v8::String::NewSymbol("_ioprocessors"),
+	                                V8DataModel::getIOProcessors,
+	                                V8DataModel::setWithException,
+	                                v8::External::New(reinterpret_cast<void*>(this)));
+	_context->Global()->SetAccessor(v8::String::NewSymbol("_invokers"),
+	                                V8DataModel::getInvokers,
+	                                V8DataModel::setWithException,
+	                                v8::External::New(reinterpret_cast<void*>(this)));
 
 //    v8::Persistent<v8::Value, v8::CopyablePersistentTraits<v8::Value> > persistent(_isolate, context);
 
@@ -282,72 +270,62 @@ void V8DataModel::setup() {
 
 }
 
-void V8DataModel::getAttribute(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-	info.GetReturnValue().Set(info.Data());
+v8::Handle<v8::Value> V8DataModel::getAttribute(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+	return info.Data();
 }
 
-void V8DataModel::setWithException(v8::Local<v8::String> property,
-                                   v8::Local<v8::Value> value,
-                                   const v8::PropertyCallbackInfo<void>& info) {
+void V8DataModel::setWithException(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info) {
 	v8::String::AsciiValue data(property);
 	std::string msg = "Cannot set " + std::string(*data);
 	v8::ThrowException(v8::Exception::ReferenceError(v8::String::New(msg.c_str())));
 }
 
-void V8DataModel::getIOProcessors(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+v8::Handle<v8::Value> V8DataModel::getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
 	V8DataModel* dataModel = (V8DataModel*)field->Value();
 
 	if (dataModel->_ioProcessors.IsEmpty()) {
 
-		v8::Local<v8::Object> ioProcs = v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), v8::Object::New());
-		//v8::Local<v8::Object> ioProcessorObj = v8::Object::New();
+		dataModel->_ioProcessors = v8::Persistent<v8::Object>::New(v8::Object::New());
+		//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
 		std::map<std::string, IOProcessor> ioProcessors = dataModel->_callbacks->getIOProcessors();
 		std::map<std::string, IOProcessor>::const_iterator ioProcIter = ioProcessors.begin();
 		while(ioProcIter != ioProcessors.end()) {
 			//			std::cout << ioProcIter->first << std::endl;
-			ioProcs->Set(v8::String::New(ioProcIter->first.c_str()),
-			             dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
+			dataModel->_ioProcessors->Set(v8::String::New(ioProcIter->first.c_str()),
+			                              dataModel->getDataAsValue(ioProcIter->second.getDataModelVariables()));
 			ioProcIter++;
 		}
-		dataModel->_ioProcessors.Reset(v8::Isolate::GetCurrent(), ioProcs);
 	}
-	info.GetReturnValue().Set(dataModel->_ioProcessors);
+	return dataModel->_ioProcessors;
 }
 
-void V8DataModel::getInvokers(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+v8::Handle<v8::Value> V8DataModel::getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info) {
 	v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
 	V8DataModel* dataModel = (V8DataModel*)field->Value();
 
 	if (dataModel->_invokers.IsEmpty()) {
-		v8::Local<v8::Object> invoks = v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), v8::Object::New());
-		//v8::Local<v8::Object> ioProcessorObj = v8::Object::New();
+		dataModel->_invokers = v8::Persistent<v8::Object>::New(v8::Object::New());
+		//v8::Handle<v8::Object> ioProcessorObj = v8::Object::New();
 		std::map<std::string, Invoker> invokers = dataModel->_callbacks->getInvokers();
 		std::map<std::string, Invoker>::const_iterator invokerIter = invokers.begin();
 		while(invokerIter != invokers.end()) {
 			//			std::cout << ioProcIter->first << std::endl;
-			invoks->Set(v8::String::New(invokerIter->first.c_str()),
-			            dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
+			dataModel->_invokers->Set(v8::String::New(invokerIter->first.c_str()),
+			                          dataModel->getDataAsValue(invokerIter->second.getDataModelVariables()));
 			invokerIter++;
 		}
-		dataModel->_invokers.Reset(v8::Isolate::GetCurrent(), invoks);
 
 	}
-	info.GetReturnValue().Set(dataModel->_invokers);
+	return dataModel->_invokers;
 }
 
 void V8DataModel::setEvent(const Event& event) {
 
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-
-	v8::HandleScope scope(_isolate);
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-
-	v8::Local<v8::Object> global = ctx->Global();
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
-	assert(_isolate->GetCurrentContext() == ctx); // only valid in context::scope
-
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
+	v8::Handle<v8::Object> global = _context->Global();
 
 #if 0
 	// this would work as swig_exports_ will get redefined per isolate
@@ -364,8 +342,8 @@ void V8DataModel::setEvent(const Event& event) {
 //    eventObj->SetAlignedPointerInInternalField(0, (void*)evPtr);
 //    assert(eventObj->GetAlignedPointerFromInternalField(0) == evPtr);
 
-	v8::Local<v8::Value> eventVal = SWIG_V8_NewPointerObj(evPtr, SWIGTYPE_p_uscxml__Event, SWIG_POINTER_OWN);
-	v8::Local<v8::Object> eventObj = v8::Local<v8::Object>::Cast(eventVal);
+	v8::Handle<v8::Value> eventVal = SWIG_V8_NewPointerObj(evPtr, SWIGTYPE_p_uscxml__Event, SWIG_POINTER_OWN);
+	v8::Handle<v8::Object> eventObj = v8::Handle<v8::Object>::Cast(eventVal);
 
 	/*
 	    v8::Local<v8::Array> properties = eventObj->GetPropertyNames();
@@ -378,39 +356,39 @@ void V8DataModel::setEvent(const Event& event) {
 
 	// test333
 	if (event.origintype.size() > 0) {
-		eventObj->Set(v8::String::NewSymbol("origintype"),v8::String::NewFromUtf8(_isolate, event.origintype.c_str()));
+		eventObj->Set(v8::String::NewSymbol("origintype"),v8::String::New(event.origintype.c_str()));
 	} else {
-		eventObj->Set(v8::String::NewSymbol("origintype"),v8::Undefined(_isolate));
+		eventObj->Set(v8::String::NewSymbol("origintype"),v8::Undefined());
 	}
 	// test335
 	if (event.origin.size() > 0) {
-		eventObj->Set(v8::String::NewSymbol("origin"),v8::String::NewFromUtf8(_isolate, event.origin.c_str()));
+		eventObj->Set(v8::String::NewSymbol("origin"),v8::String::New(event.origin.c_str()));
 	} else {
-		eventObj->Set(v8::String::NewSymbol("origin"),v8::Undefined(_isolate));
+		eventObj->Set(v8::String::NewSymbol("origin"),v8::Undefined());
 	}
 	// test337
 	if (!event.hideSendId) {
-		eventObj->Set(v8::String::NewSymbol("sendid"),v8::String::NewFromUtf8(_isolate, event.sendid.c_str()));
+		eventObj->Set(v8::String::NewSymbol("sendid"),v8::String::New(event.sendid.c_str()));
 	} else {
-		eventObj->Set(v8::String::NewSymbol("sendid"),v8::Undefined(_isolate));
+		eventObj->Set(v8::String::NewSymbol("sendid"),v8::Undefined());
 	}
 	// test339
 	if (event.invokeid.size() > 0) {
-		eventObj->Set(v8::String::NewSymbol("invokeid"),v8::String::NewFromUtf8(_isolate, event.invokeid.c_str()));
+		eventObj->Set(v8::String::NewSymbol("invokeid"),v8::String::New(event.invokeid.c_str()));
 	} else {
-		eventObj->Set(v8::String::NewSymbol("invokeid"),v8::Undefined(_isolate));
+		eventObj->Set(v8::String::NewSymbol("invokeid"),v8::Undefined());
 	}
 
 	// test 331
 	switch (event.eventType) {
 	case Event::EXTERNAL:
-		eventObj->Set(v8::String::NewSymbol("type"), v8::String::NewFromUtf8(_isolate, "external"));
+		eventObj->Set(v8::String::NewSymbol("type"), v8::String::New("external"));
 		break;
 	case Event::INTERNAL:
-		eventObj->Set(v8::String::NewSymbol("type"), v8::String::NewFromUtf8(_isolate, "internal"));
+		eventObj->Set(v8::String::NewSymbol("type"), v8::String::New("internal"));
 		break;
 	case Event::PLATFORM:
-		eventObj->Set(v8::String::NewSymbol("type"), v8::String::NewFromUtf8(_isolate, "platform"));
+		eventObj->Set(v8::String::NewSymbol("type"), v8::String::New("platform"));
 		break;
 	}
 
@@ -476,31 +454,27 @@ Data V8DataModel::getAsData(const std::string& content) {
 }
 
 Data V8DataModel::evalAsData(const std::string& content) {
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
 
-	v8::HandleScope scope(_isolate);
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
-
-	v8::Local<v8::Value> result = evalAsValue(content);
+	v8::Handle<v8::Value> result = evalAsValue(content);
 	Data data = getValueAsData(result);
 	return data;
 }
 
-Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value) {
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-	v8::HandleScope scope(_isolate);
+Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value) {
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
 
 	std::set<v8::Value*> foo = std::set<v8::Value*>();
 	return getValueAsData(value, foo);
 }
 
-Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8::Value*>& alreadySeen) {
+Data V8DataModel::getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8::Value*>& alreadySeen) {
 
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
+	v8::Context::Scope contextScope(_context);
 
 	Data data;
 
@@ -511,8 +485,8 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 
 	if (false) {
 	} else if (value->IsArray()) {
-		v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
-		for (int i = 0; i < array->Length(); i++) {
+		v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
+		for (unsigned int i = 0; i < array->Length(); i++) {
 			data.array.push_back(getValueAsData(array->Get(i), alreadySeen));
 		}
 	} else if (value->IsBoolean()) {
@@ -535,7 +509,7 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 	} else if (value->IsNull()) {
 		LOG(_callbacks->getLogger(), USCXML_ERROR) << "IsNull is unimplemented" << std::endl;
 	} else if (value->IsNumber()) {
-		v8::String::AsciiValue prop(v8::Local<v8::String>::Cast(v8::Local<v8::Number>::Cast(value)));
+		v8::String::AsciiValue prop(v8::Handle<v8::String>::Cast(v8::Handle<v8::Number>::Cast(value)));
 		data.atom = *prop;
 	} else if (value->IsNumberObject()) {
 		LOG(_callbacks->getLogger(), USCXML_ERROR) << "IsNumberObject is unimplemented" << std::endl;
@@ -548,15 +522,15 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 //		}
 #ifndef NO_XERCESC
 
-		v8::Local<v8::FunctionTemplate> tmpl = v8::Local<v8::FunctionTemplate>::New(_isolate, _exports_DOMNode_clientData.class_templ);
+		v8::Local<v8::FunctionTemplate> tmpl = v8::Local<v8::FunctionTemplate>::New(_exports_DOMNode_clientData.class_templ);
 		if (tmpl->HasInstance(value)) {
 			SWIG_V8_GetInstancePtr(value, (void**)&(data.node));
 			return data;
 		}
 #endif
-		v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+		v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
 		v8::Local<v8::Array> properties = object->GetPropertyNames();
-		for (int i = 0; i < properties->Length(); i++) {
+		for (unsigned int i = 0; i < properties->Length(); i++) {
 			assert(properties->Get(i)->IsString());
 			v8::String::AsciiValue key(v8::Local<v8::String>::Cast(properties->Get(i)));
 			v8::Local<v8::Value> property = object->Get(properties->Get(i));
@@ -565,7 +539,7 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 	} else if (value->IsRegExp()) {
 		LOG(_callbacks->getLogger(), USCXML_ERROR) << "IsRegExp is unimplemented" << std::endl;
 	} else if(value->IsString()) {
-		v8::String::AsciiValue property(v8::Local<v8::String>::Cast(value));
+		v8::String::AsciiValue property(v8::Handle<v8::String>::Cast(value));
 		data.atom = *property;
 		data.type = Data::VERBATIM;
 	} else if(value->IsStringObject()) {
@@ -583,7 +557,7 @@ Data V8DataModel::getValueAsData(const v8::Local<v8::Value>& value, std::set<v8:
 }
 
 #ifndef NO_XERCESC
-v8::Local<v8::Value> V8DataModel::getNodeAsValue(const XERCESC_NS::DOMNode* node) {
+v8::Handle<v8::Value> V8DataModel::getNodeAsValue(const XERCESC_NS::DOMNode* node) {
 	return SWIG_NewPointerObj(SWIG_as_voidptr(node),
 	                          SWIG_TypeDynamicCast(SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode,
 	                                  SWIG_as_voidptrptr(&node)),
@@ -591,7 +565,7 @@ v8::Local<v8::Value> V8DataModel::getNodeAsValue(const XERCESC_NS::DOMNode* node
 }
 #endif
 
-v8::Local<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
+v8::Handle<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 
 	if (data.compound.size() > 0) {
 		v8::Local<v8::Object> value = v8::Object::New();
@@ -603,7 +577,7 @@ v8::Local<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 		return value;
 	}
 	if (data.array.size() > 0) {
-		v8::Local<v8::Object> value = v8::Array::New(_isolate, data.array.size());
+		v8::Local<v8::Object> value = v8::Array::New(data.array.size());
 		std::list<Data>::const_iterator arrayIter = data.array.begin();
 		uint32_t index = 0;
 		while(arrayIter != data.array.end()) {
@@ -646,49 +620,43 @@ v8::Local<v8::Value> V8DataModel::getDataAsValue(const Data& data) {
 	return v8::Undefined();
 }
 
-void V8DataModel::jsPrint(const v8::FunctionCallbackInfo<v8::Value>& info) {
-	if (info.Length() > 0) {
-		v8::String::AsciiValue printMsg(info[0]->ToString());
-		v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
-		V8DataModel* dataModel = (V8DataModel*)field->Value();
+v8::Handle<v8::Value> V8DataModel::jsPrint(const v8::Arguments& args) {
+	if (args.Length() > 0) {
+		v8::String::AsciiValue printMsg(args[0]->ToString());
+		V8DataModel* dataModel = static_cast<V8DataModel*>(v8::External::Unwrap(args.Data()));
 		dataModel->_callbacks->getLogger().log(USCXML_LOG) << *printMsg;
 	}
+	return v8::Undefined();
 }
 
-void V8DataModel::jsIn(const v8::FunctionCallbackInfo<v8::Value>& info) {
-	v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
-	V8DataModel* dataModel = (V8DataModel*)field->Value();
-
-	for (unsigned int i = 0; i < info.Length(); i++) {
-		if (info[i]->IsString()) {
-			std::string stateName(*v8::String::AsciiValue(info[i]->ToString()));
-			if (dataModel->_callbacks->isInState(stateName)) {
+v8::Handle<v8::Value> V8DataModel::jsIn(const v8::Arguments& args) {
+	V8DataModel* INSTANCE = static_cast<V8DataModel*>(v8::External::Unwrap(args.Data()));
+	for (auto i = 0; i < args.Length(); i++) {
+		if (args[i]->IsString()) {
+			std::string stateName(*v8::String::AsciiValue(args[i]->ToString()));
+			if (INSTANCE->_callbacks->isInState(stateName)) {
 				continue;
 			}
 		}
-		info.GetReturnValue().Set(false);
-		return;
+		return v8::Boolean::New(false);
 	}
-	info.GetReturnValue().Set(true);
+	return v8::Boolean::New(true);
+}
+
+bool V8DataModel::isLegalDataValue(const std::string& expr) {
+	return isValidSyntax("var __tmp = " + expr);
 }
 
 bool V8DataModel::isValidSyntax(const std::string& expr) {
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-	v8::HandleScope scope(_isolate);
-
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
-
+	v8::Locker locker;
+	v8::HandleScope handleScope;
 	v8::TryCatch tryCatch;
+	v8::Context::Scope contextScope(_context);
 
-	v8::Local<v8::String> source = v8::String::New(expr.c_str());
-	if (tryCatch.HasCaught() || source.IsEmpty()) {
-		return false;
-	}
+	v8::Handle<v8::String> source = v8::String::New(expr.c_str());
+	v8::Handle<v8::Script> script = v8::Script::Compile(source);
 
-	v8::Local<v8::Script> script = v8::Script::Compile(source);
-	if (tryCatch.HasCaught() || script.IsEmpty()) {
+	if (script.IsEmpty() || tryCatch.HasCaught()) {
 		return false;
 	}
 
@@ -696,14 +664,13 @@ bool V8DataModel::isValidSyntax(const std::string& expr) {
 }
 
 uint32_t V8DataModel::getLength(const std::string& expr) {
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-	v8::HandleScope scope(_isolate);
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::TryCatch tryCatch;
+	v8::Context::Scope contextScope(_context);
 
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
+	v8::Handle<v8::Value> result = evalAsValue(expr);
 
-	v8::Local<v8::Value> result = evalAsValue(expr);
 	if (!result.IsEmpty() && result->IsArray())
 		return result.As<v8::Array>()->Length();
 
@@ -714,16 +681,17 @@ void V8DataModel::setForeach(const std::string& item,
                              const std::string& array,
                              const std::string& index,
                              uint32_t iteration) {
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
+
 	if (!isDeclared(item)) {
 		assign(item, Data());
 	}
 
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-	v8::HandleScope scope(_isolate);
 
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
+//	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
+//	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
 
 	// assign array element to item
 	std::stringstream ss;
@@ -745,12 +713,9 @@ bool V8DataModel::isDeclared(const std::string& expr) {
 	 * a reference error.
 	 */
 
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-
-	v8::HandleScope scope(_isolate);
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
+	v8::Locker locker();
+	v8::HandleScope scope();
+	v8::Context::Scope contextScope(_context); // segfaults at newinstance without!
 
 	v8::Local<v8::String> source = v8::String::New(expr.c_str());
 	v8::Local<v8::Script> script = v8::Script::Compile(source);
@@ -766,29 +731,24 @@ bool V8DataModel::isDeclared(const std::string& expr) {
 }
 
 bool V8DataModel::evalAsBool(const std::string& expr) {
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
 
-	v8::HandleScope scope(_isolate);
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
-
-	v8::Local<v8::Value> result = evalAsValue(expr);
+	v8::Handle<v8::Value> result = evalAsValue(expr);
 	return(result->ToBoolean()->BooleanValue());
 }
 
 
 void V8DataModel::assign(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
 
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-	v8::HandleScope scope(_isolate);
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
 
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
 #ifndef NO_XERCESC
-	v8::Local<v8::Object> global = ctx->Global();
+	v8::Local<v8::Object> global = _context->Global();
 #endif
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
 
 	if (location.compare("_sessionid") == 0) // test 322
 		ERROR_EXECUTION_THROW("Cannot assign to _sessionId");
@@ -813,12 +773,9 @@ void V8DataModel::assign(const std::string& location, const Data& data, const st
 }
 
 void V8DataModel::init(const std::string& location, const Data& data, const std::map<std::string, std::string>& attr) {
-	v8::Locker locker(_isolate);
-	v8::Isolate::Scope isoScope(_isolate);
-	v8::HandleScope scope(_isolate);
-
-	v8::Local<v8::Context> ctx = v8::Local<v8::Context>::New(_isolate, _context);
-	v8::Context::Scope contextScope(ctx); // segfaults at newinstance without!
+	v8::Locker locker;
+	v8::HandleScope handleScope;
+	v8::Context::Scope contextScope(_context);
 
 	try {
 		assign(location, data);
@@ -831,7 +788,7 @@ void V8DataModel::init(const std::string& location, const Data& data, const std:
 	}
 }
 
-v8::Local<v8::Value> V8DataModel::evalAsValue(const std::string& expr, bool dontThrow) {
+v8::Handle<v8::Value> V8DataModel::evalAsValue(const std::string& expr, bool dontThrow) {
 
 //    v8::Locker locker(_isolate);
 //    v8::Isolate::Scope isoScope(_isolate);

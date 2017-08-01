@@ -26,7 +26,9 @@
 #define ELPP_STACKTRACE_ON_CRASH 1
 #endif
 
-#if __cplusplus >= 201402L
+#if defined(SWIGIMPORTED) || defined(SWIG)
+#define DEPRECATED
+#elif __cplusplus >= 201402L
 #define DEPRECATED [[deprecated]]
 #elif defined(__GNUC__)
 #define DEPRECATED __attribute__((deprecated))
@@ -36,6 +38,7 @@
 #pragma message("WARNING: You need to implement DEPRECATED for this compiler")
 #define DEPRECATED(alternative)
 #endif
+
 
 #if defined(_WIN32) && !defined(USCXML_STATIC)
 #	ifdef USCXML_EXPORT

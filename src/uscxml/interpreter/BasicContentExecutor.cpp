@@ -251,7 +251,7 @@ void BasicContentExecutor::processAssign(XERCESC_NS::DOMElement* content) {
 		additionalAttr[X(attr->getNodeName()).str()] = X(attr->getNodeValue()).str();
 	}
 
-	_callbacks->assign(location, elementAsData(content, true), additionalAttr);
+	_callbacks->assign(location, elementAsData(content), additionalAttr);
 }
 
 void BasicContentExecutor::processForeach(XERCESC_NS::DOMElement* content) {
@@ -545,7 +545,12 @@ void BasicContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC
 				// content
 				std::list<DOMElement*> contents = DOMUtils::filterChildElements(XML_PREFIX(doneData).str() + "content", doneData);
 				if (contents.size() > 0) {
-					doneEvent.data = elementAsData(contents.front());
+					if (HAS_ATTR(contents.front(), kXMLCharExpr) &&
+					        !_callbacks->isLegalDataValue(ATTR(contents.front(), kXMLCharExpr))) {
+						ERROR_EXECUTION_THROW2("Expression '" + ATTR(contents.front(), kXMLCharExpr) + "' is not a legal data value", contents.front());
+					} else {
+						doneEvent.data = elementAsData(contents.front());
+					}
 				}
 			} catch (ErrorEvent e) {
 				ERROR_EXECUTION_RETHROW(e, "Syntax error in donedata element content", doneData);
@@ -594,15 +599,14 @@ void BasicContentExecutor::processParams(std::multimap<std::string, Data>& param
 	}
 }
 
-Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool asExpression) {
+Data BasicContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
 	// element with expr
 	if (HAS_ATTR(element, kXMLCharExpr)) {
-		std::string expr = ATTR(element, kXMLCharExpr);
-		if (_callbacks->isLegalDataValue(expr)) {
-			return Data(expr, Data::INTERPRETED);
-		} else {
-			ERROR_EXECUTION_THROW2("Expression '" + expr + "' is not a legal data value", element);
-		}
+		// we cannot throw here:
+		// - with init, we need to check in the datamodel
+		// - with content, we need to invoke isLegalDataValue later
+		// test 277, 528
+		return Data(ATTR(element, kXMLCharExpr), Data::INTERPRETED);
 	}
 
 	// element with external src - this ought to behave just as with child nodes below

@@ -35,8 +35,8 @@ void ContentExecutor::uninvoke(XERCESC_NS::DOMElement* invoke) {
 	_impl->uninvoke(invoke);
 }
 
-Data ContentExecutor::elementAsData(XERCESC_NS::DOMElement* element, bool asExpression) {
-	return _impl->elementAsData(element, asExpression);
+Data ContentExecutor::elementAsData(XERCESC_NS::DOMElement* element) {
+	return _impl->elementAsData(element);
 }
 
 void ContentExecutor::raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) {

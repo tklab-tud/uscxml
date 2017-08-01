@@ -175,6 +175,13 @@ void PromelaDataModel::setEvent(const Event& event) {
 			return;
 		}
 
+		if (data.atom.length() > 0 && data.type == Data::INTERPRETED) {
+			// test 577 -> interpreted:'foo'
+			data.atom = evaluateExpr(data.atom);
+			data.type = Data::VERBATIM;
+			return;
+		}
+
 		if (data.array.size() > 0) {
 			for (std::list<Data>::iterator iter = data.array.begin(); iter != data.array.end(); iter++) {
 				adaptType(*iter);
@@ -188,7 +195,10 @@ void PromelaDataModel::setEvent(const Event& event) {
 			}
 			return;
 		}
+	}
 
+	bool PromelaDataModel::isLegalDataValue(const std::string& expr) {
+		return isValidSyntax("__tmp = " + expr);
 	}
 
 	bool PromelaDataModel::isValidSyntax(const std::string& expr) {
@@ -269,7 +279,8 @@ void PromelaDataModel::setEvent(const Event& event) {
 
 	Data PromelaDataModel::getAsData(const std::string& content) {
 		try {
-			return evalAsData(content);
+			evaluateExpr("__tmp = " + content);
+			return evalAsData("__tmp");
 		} catch (ErrorEvent e) {
 			return Data::fromJSON(content);
 		}
@@ -408,11 +419,13 @@ void PromelaDataModel::setEvent(const Event& event) {
 			return Data(strTo<int>(node->value));
 		case PML_NAME: {
 			Data d = getVariable(node);
+#if 0
 			if (d.atom.size() != 0)
-				// fixes issue 127
+				// fixes issue 127, breaks test277
 				if (isNumeric(d.atom.c_str(), 10)) {
 					return Data(d.atom, Data::VERBATIM);
 				}
+#endif
 			return d;
 //			if (d.type == Data::INTERPRETED && d.atom[0] == '\'' && d.atom[d.atom.size() - 1] == '\'')
 //				return Data(d.atom.substr(1, d.atom.size() - 2), Data::VERBATIM);
@@ -628,7 +641,9 @@ void PromelaDataModel::setEvent(const Event& event) {
 		switch(node->type) {
 		case PML_NAME:
 			if (_variables.compound.find(node->value) == _variables.compound.end()) {
-				ERROR_EXECUTION_THROW("No variable " + node->value + " was declared");
+				// test 277
+				return Data("false", Data::INTERPRETED);
+//				ERROR_EXECUTION_THROW("No variable " + node->value + " was declared");
 			}
 //		if (_variables[node->value].compound.find("size") != _variables[node->value].compound.end()) {
 //			ERROR_EXECUTION_THROW("Type error: Variable " + node->value + " is an array");
@@ -637,6 +652,11 @@ void PromelaDataModel::setEvent(const Event& event) {
 		case PML_VAR_ARRAY: {
 			PromelaParserNode* name = *opIter++;
 			PromelaParserNode* expr = *opIter++;
+			// the in predicate is called config with promela dm
+			if (name->value == "config") {
+				return Data(_callbacks->isInState(expr->value) ? "true" : "false", Data::INTERPRETED);
+			}
+
 			int index = dataToInt(evaluateExpr(expr));
 
 			if (_variables.compound.find(name->value) == _variables.compound.end()) {
@@ -735,7 +755,8 @@ void PromelaDataModel::setEvent(const Event& event) {
 			Data d = Data::fromJSON(data);
 			if (!d.empty())
 				setVariable(parser.ast, Data::fromJSON(data));
-			setVariable(parser.ast, data);
+			// var1 = _sessionid
+			setVariable(parser.ast, evalAsData(data.atom));
 		} else {
 			setVariable(parser.ast, data);
 		}

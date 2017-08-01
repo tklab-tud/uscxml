@@ -44,6 +44,7 @@ public:
 
 	virtual void addExtension(DataModelExtension* ext);
 
+	virtual bool isLegalDataValue(const std::string& expr);
 	virtual bool isValidSyntax(const std::string& expr);
 
 	virtual void setEvent(const Event& event);

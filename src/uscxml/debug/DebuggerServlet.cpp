@@ -106,8 +106,8 @@ bool DebuggerServlet::requestFromHTTP(const HTTPServer::Request& request) {
 	} else if (boost::istarts_with(request.data.at("path").atom, "/debug/connect")) {
 		processConnect(request);
 		return true;
-	} else if (boost::starts_with(request.data.at("path").atom, "/debug/sessions")) {
-		processListSessions(request);
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/instances")) {
+		processListInstances(request);
 		return true;
 	}
 
@@ -168,6 +168,8 @@ bool DebuggerServlet::requestFromHTTP(const HTTPServer::Request& request) {
 		replyData = session->debugResume(request.data["content"]);
 	} else if (boost::starts_with(request.data.at("path").atom, "/debug/eval")) {
 		replyData = session->debugEval(request.data["content"]);
+	} else if (boost::starts_with(request.data.at("path").atom, "/debug/event")) {
+		replyData = session->debugEvent(request.data["content"]);
 	}
 
 	if (!replyData.empty()) {
@@ -220,7 +222,7 @@ void DebuggerServlet::processDisconnect(const HTTPServer::Request& request) {
 	returnData(request, replyData);
 }
 
-void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
+void DebuggerServlet::processListInstances(const HTTPServer::Request& request) {
 	Data replyData;
 
 	std::map<std::string, std::weak_ptr<InterpreterImpl> > instances = InterpreterImpl::getInstances();
@@ -234,7 +236,7 @@ void DebuggerServlet::processListSessions(const HTTPServer::Request& request) {
 			sessionData.compound["source"] = Data(instance->getBaseURL(), Data::VERBATIM);
 			sessionData.compound["xml"].node = instance->getDocument();
 
-			replyData.compound["sessions"].array.push_back(sessionData);
+			replyData.compound["instances"].array.push_back(sessionData);
 		}
 	}
 

@@ -16,7 +16,7 @@ timeout also indicates failure  -->
     <transition event="event2" target="pass"/>
     <state id="s01">
       <onentry>
-        <if cond="config[S01]">
+        <if cond="config[s01]">
           <raise event="event2"/>
         </if>
       </onentry>

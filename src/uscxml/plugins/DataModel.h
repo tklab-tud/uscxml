@@ -79,13 +79,13 @@ public:
 	                  const std::map<std::string, std::string>& attr = std::map<std::string, std::string>());
 
 	/// @copydoc DataModelImpl::isDeclared()
-	virtual bool isDeclared(const std::string& expr);
+	DEPRECATED virtual bool isDeclared(const std::string& expr);
 
 	/// @copydoc DataModelImpl::replaceExpressions()
-	size_t replaceExpressions(std::string& content);
+	DEPRECATED size_t replaceExpressions(std::string& content);
 
 	/// @copydoc DataModelImpl::addExtension()
-	virtual void addExtension(DataModelExtension* ext);
+	DEPRECATED virtual void addExtension(DataModelExtension* ext);
 
 protected:
 	std::shared_ptr<DataModelImpl> _impl;

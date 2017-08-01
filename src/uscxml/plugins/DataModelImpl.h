@@ -149,7 +149,7 @@ public:
 	 * @param content The string with tokens to replace.
 	 * @return How many occurences where replaced.
 	 */
-	size_t replaceExpressions(std::string& content);
+	DEPRECATED size_t replaceExpressions(std::string& content);
 
 	/**
 	 * Evaluate the given expression as something iterable and return its length.
@@ -206,7 +206,7 @@ public:
 	 * @param expr The variable / location to check.
 	 * @todo Is this still used?
 	 */
-	virtual bool isDeclared(const std::string& expr) = 0;
+	DEPRECATED virtual bool isDeclared(const std::string& expr) = 0;
 
 	/**
 	 * Assign a data object to a location in the data-model.
@@ -248,7 +248,7 @@ public:
 	 * Register an extension to get data into and out of the data-model.
 	 * @todo This is currently unsupported
 	 */
-	virtual void addExtension(DataModelExtension* ext);
+	DEPRECATED virtual void addExtension(DataModelExtension* ext);
 
 protected:
 	DataModelCallbacks* _callbacks;

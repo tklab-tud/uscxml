@@ -84,11 +84,15 @@ For more detailled information, refer to the [documentation](http://tklab-tud.gi
 
 ## Changes
 
- * **[9db80409b3ca048c4b404a43d2c224f374c0090a](https://github.com/tklab-tud/uscxml/pull/163/commits/9db80409b3ca048c4b404a43d2c224f374c0090a):**
+ * **08/01/2017:**
+
+    We selectively re-enabled support for Google's V8 ECMAScript engine, but only in version 3.23.17 and 3.14.05 and API compatible versions. These two versions are noteworthy as the first one used to be distributed via MacPorts and the second one is still found in many Linux distributions (e.g. Debian and Ubuntu). It is bordering on impossible to build them from source today as they are rather old. If you need an ECMAScript datamodel and do not have binary images of these, just go for `libjavascriptcoregtk-4.0-dev`. Make sure it's version **4.0** as the previous version had a bug with `JSCheckScriptSyntax`.
+
+ * **07/19/2017:**
 
     We **dropped support for Google's V8 ECMAScript engine**. The API is changing too fast and there is no reliable way to get / build / identify older versions. The latest branch will not work with the wrappers generated from even SWIG 4.0 and I have no time to keep up with them. Use JavaScriptCore, its API is unchanged since we started to support it in 2012. If you feel capable to maintain the [](V8DataModel.cpp) send a push request. Everything will be left in place but we will ignore `libv8` at configure time. I may have another look when a number of Linux distribution settled on a more recent version, most are still shipping v8 in version 3.14.
 
- * **[bfefa5fd44b9ed1491612f26b099db8ad624247b](https://github.com/tklab-tud/uscxml/pull/155/commits/bfefa5fd44b9ed1491612f26b099db8ad624247b):**
+ * **07/05/2017:**
 
     We **broke the InterpreterMonitor** API by substituting the Interpreter instance in the first formal parameter by its sessionId throughout all callbacks. Retrieving the actual Interpreter involved locking a weak_ptr into a shared_ptr which proved to be a performance bottleneck. You can retrieve the Interpreter from its sessionId via the new static method `Interpreter::fromSessionId` if you actually need.
 

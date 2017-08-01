@@ -9,10 +9,11 @@ use JSON qw(from_json to_json);
 use LWP;
 use HTTP::Request::Common qw(POST GET);
 use Data::Dumper;
+use Term::ANSIColor 4.00 qw(RESET :constants);
 
-my $scxmlBin = abs_path(shift);
+my $scxmlBin = shift;
 die ("First argument needs to be path to uscxml-browser binary") if (!$scxmlBin);
-die("'" . $scxmlBin . "' is not an executable file") if (! -x $scxmlBin);
+die("'" . $scxmlBin . "' is not an executable file") if (! -x $scxmlBin || ! -f $scxmlBin);
 
 my $baseDir = File::Spec->canonpath(dirname($0));
 chdir $baseDir;
@@ -25,44 +26,103 @@ my @breakpointSeq;
 
 my $pid = fork;
 
+# child process to run the interpreter
 if (!$pid) {
-	exec("$scxmlBin -t4088 -d");
+	open STDOUT, ">",  "/dev/null" or die "$0: open: $!";
+	open STDERR, ">&", \*STDOUT    or exit 1;
+	exec("$scxmlBin -t4088 -d test-http-debugger.scxml");
 	exit;
 }
 
 my $baseURL = 'http://localhost:4088/debug';
 # my $baseURL = 'http://localhost:5080/debug';
+sleep(1);
+
+sub dumpRequest {
+	# http://search.cpan.org/~oalders/HTTP-Message-6.13/lib/HTTP/Request.pm
+	my $request = shift;
+	return 
+		"\tURI:     " . $request->uri() . "\n" .
+		"\tCONTENT: " . $request->content() . "\n";
+}
+
+sub dumpResponse {
+	# http://search.cpan.org/~oalders/HTTP-Message-6.13/lib/HTTP/Response.pm
+	my $response = shift;
+	return
+		"\tCONTENT: " . $response->content() . "\n";
+}
 
 sub assertSuccess {
 	my $response = shift;
 	my $message = shift;
-	print "-----\n";
-	print $response->content();
-	print "-----\n";
 	from_json($response->content())->{'status'} eq "success" or die($message);
 }
 
-sub prepareSession {
-	my $xml = shift;
+sub attachSession {
+	my $docName = shift;
+
+	$request = POST $baseURL.'/instances';
+	print FAINT RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print FAINT CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not get running sessions");
+
+	my $attach = "";
+	my $sessions = from_json($response->content())->{'instances'};
+	foreach my $instance (@{$sessions}) {
+		if ($instance->{'name'} eq $docName) {
+			$attach = $instance->{'id'};
+			last;
+		}
+	}
+	$attach or die("Could not attach to instance named $docName\n");
 
 	### Get a session
 	my $request = GET $baseURL.'/connect';
+	print FAINT RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print FAINT CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not connect");
 
 	my $session = from_json($response->content())->{'session'};
 	die("Cannot acquire session from server") if (!$session);
 
-	### Prepare an SCXML interpreter
-	$request = POST $baseURL.'/prepare', 
+	$request = POST $baseURL.'/attach', 
 		[
+			'attach' => $attach,
 			'session' => $session,
-			'url' => 'http://localhost/anonymous.scxml',
-			'xml' => $xml
 		];
+	print FAINT RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print FAINT CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not get attach to session");
+	print BOLD BLACK . "Session attached!" . RESET . "\n\n";
+	return $session;
+}
+
+sub prepareSession {
+	my $source = shift;
+
+	### Get a session
+	my $request = GET $baseURL.'/connect';
+	print FAINT RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print FAINT CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not connect");
+
+	my $session = from_json($response->content())->{'session'};
+	die("Cannot acquire session from server") if (!$session);
+
+	$source->{'session'} = $session;
+
+	### Prepare an SCXML interpreter
+	$request = POST $baseURL.'/prepare', $source;
+	print FAINT RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print FAINT CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not prepare SCXML");
-	
+	print BOLD BLACK . "Session prepared!" . RESET . "\n\n";
 	return $session;
 }
 
@@ -74,8 +134,11 @@ sub finishSession {
 		[
 			'session' => $session,
 		];
+	print FAINT RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print FAINT CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not disconnect session");
+	print BOLD BLACK . "Session terminated!" . RESET . "\n\n";
 }
 
 sub popAndCompare {
@@ -88,10 +151,14 @@ sub popAndCompare {
 			die("Expected different breakpoint");
 		}
 	}
-	print "SUCCESS\n";
+	print BOLD BLACK . "OK!" . RESET . "\n\n";
 }
 
 sub testSimpleStepping {
+
+	print BOLD WHITE ON_RED . "                      " . RESET ."\n";
+	print BOLD WHITE ON_RED . "  testSimpleStepping  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "                      " . RESET ."\n\n";
 
 	my $xml = << 'END_SCXML';
 	<scxml>
@@ -111,10 +178,10 @@ END_SCXML
 	@breakpointSeq = (
 		{ subject => "microstep",  when => "before" },
 		{ subject => "state",      when => "before", action => "enter" },
-		{ subject => "state",      when => "after",  action => "enter"  },
+		{ subject => "state",      when => "after",  action => "enter" },
 		{ subject => "state",      when => "before", action => "enter", stateId => "s1" },
 		{ subject => "executable", when => "before", execName => "log" },
-		{ subject => "executable", when => "after", execName => "log" },
+		{ subject => "executable", when => "after",  execName => "log" },
 		{ subject => "state",      when => "after",  action => "enter", stateId => "s1" },
 		{ subject => "microstep",  when => "after"  },
 		{ subject => "microstep",  when => "before" },
@@ -136,18 +203,24 @@ END_SCXML
 		
 	);
 
-	my $session = &prepareSession($xml);
+	my $session = &prepareSession({'xml' => $xml});
 	
+	print BOLD . "Testing sequence of breakpoints being raised via step". RESET . "\n";
+
 	while(@breakpointSeq > 0) {
 		### Take a step
 		$request = POST $baseURL.'/step', ['session' => $session];
+		print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 		$response = $ua->request($request);
+		print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 		assertSuccess($response, "Could not step");
 		# this will cause the interpreter to pause execution
 
 		### Get the pending messages
 		$request = POST $baseURL.'/poll', ['session' => $session];
+		print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 		$response = $ua->request($request);
+		print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 		assertSuccess($response, "Could not get breakpoint after step");
 
 		# compare to what we expect
@@ -157,12 +230,16 @@ END_SCXML
 	
 	### last step will finalize the interpreter
 	$request = POST $baseURL.'/step', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not get breakpoint after step");
 
 	### get the pending server push reply
 	$request = POST $baseURL.'/poll', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not get breakpoint after step");
 
 	$data = from_json($response->content());
@@ -172,6 +249,11 @@ END_SCXML
 }
 
 sub testBreakpoint {
+
+	print BOLD WHITE ON_RED . "                  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "  testBreakpoint  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "                  " . RESET ."\n\n";
+
 	my $xml = << 'END_SCXML';
 	<scxml>
 		<state id='s1'>
@@ -187,10 +269,11 @@ sub testBreakpoint {
 	</scxml>
 END_SCXML
 	
-	my $session = prepareSession($xml);
+	my $session = &prepareSession({'xml' => $xml});
 	
-	### Skip to breakpoint
-	$request = POST $baseURL.'/breakpoint/skipto', 
+	print BOLD . "Adding a dedicated breakpoint". RESET . "\n";
+
+	$request = POST $baseURL.'/breakpoint/add', 
 		[
 			'session' => $session,
 			'when' => 'after',
@@ -198,12 +281,46 @@ END_SCXML
 			'subject' => 'state',
 			'stateId' => 's1'
 		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not add breakpoint");
-	
-	### get the pending server push reply
-	$request = POST $baseURL.'/poll', ['session' => $session];
+
+	print BOLD . "Starting interpretation (will run into breakpoint)". RESET . "\n";
+
+	$request = POST $baseURL.'/start', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not add breakpoint");
+
+	print BOLD . "Polling asynchronously for breakpoint hit by interpreter". RESET . "\n";
+
+	$request = POST $baseURL.'/poll', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not poll for breakpoint");
+
+	print BOLD . "Skipping to implicit breakpoint". RESET . "\n";
+	$request = POST $baseURL.'/breakpoint/skipto', 
+		[
+			'session' => $session,
+			'when' => 'before',
+			'action' => 'enter',
+			'subject' => 'state',
+			'stateId' => 's2'
+		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not add breakpoint");
+
+	print BOLD . "Polling asynchronously for breakpoint hit by interpreter". RESET . "\n";
+	$request = POST $baseURL.'/poll', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not get breakpoint after step");
 	
 	$data = from_json($response->content());
@@ -213,6 +330,11 @@ END_SCXML
 }
 
 sub testIssueReporting {
+
+	print BOLD WHITE ON_RED . "                      " . RESET ."\n";
+	print BOLD WHITE ON_RED . "  testIssueReporting  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "                      " . RESET ."\n\n";
+
 	my $xml = << 'END_SCXML';
 	<scxml>
 		<state id='s1'>
@@ -233,14 +355,18 @@ sub testIssueReporting {
 	</scxml>
 END_SCXML
 
-	my $session = prepareSession($xml);
+	my $session = prepareSession({'xml' => $xml});
 	
+	print BOLD . "Getting a list of issues with the document". RESET . "\n";
+
 	### Get a list of issues
 	$request = POST $baseURL.'/issues', 
 		[
 			'session' => $session
 		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
 	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
 	assertSuccess($response, "Could not get issues for prepared SCXML document");
 	
 	$data = from_json($response->content());
@@ -250,8 +376,135 @@ END_SCXML
 	
 }
 
+sub testDataModelInspection {
+
+	print BOLD WHITE ON_RED . "                           " . RESET ."\n";
+	print BOLD WHITE ON_RED . "  testDataModelInspection  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "                           " . RESET ."\n\n";
+
+	my $session = prepareSession({'url' => 'https://raw.githubusercontent.com/tklab-tud/uscxml/master/test/w3c/ecma/test144.scxml'});
+
+	print BOLD . "Skipping to first transition". RESET . "\n";
+	$request = POST $baseURL.'/breakpoint/skipto', 
+		[
+			'session' => $session,
+			'when' => 'before',
+			'subject' => 'transition',
+			'target' => 's1'
+		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not add breakpoint");
+
+	print BOLD . "Polling asynchronously for breakpoint hit by interpreter". RESET . "\n";
+	$request = POST $baseURL.'/poll', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not get breakpoint after step");
+
+
+	print BOLD . "Evaluating expression '_event' on the datamodel". RESET . "\n";
+	$request = POST $baseURL.'/eval', 
+		[
+			'session' => $session,
+			'expression' => '_event',
+		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not evaluate expression");
+
+	print BOLD . "Evaluating expression '_ioprocessors' on the datamodel". RESET . "\n";
+	$request = POST $baseURL.'/eval', 
+		[
+			'session' => $session,
+			'expression' => '_ioprocessors',
+		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not evaluate expression");
+
+
+	&finishSession($session);
+
+}
+
+sub testSessionAttaching {
+
+	print BOLD WHITE ON_RED . "                        " . RESET ."\n";
+	print BOLD WHITE ON_RED . "  testSessionAttaching  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "                        " . RESET ."\n\n";
+
+	my $session = attachSession("test-http-debugger.scxml");
+
+	print BOLD . "Skipping to first transition". RESET . "\n";
+	$request = POST $baseURL.'/breakpoint/skipto', 
+		[
+			'session' => $session,
+			'when' => 'before',
+			'subject' => 'transition',
+			'target' => 's1'
+		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not add breakpoint");
+
+	print BOLD . "Polling asynchronously for breakpoint hit by interpreter". RESET . "\n";
+	$request = POST $baseURL.'/poll', ['session' => $session];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not get breakpoint after step");
+
+	&finishSession($session);
+
+}
+
+sub testEventInsertion {
+
+	print BOLD WHITE ON_RED . "                      " . RESET ."\n";
+	print BOLD WHITE ON_RED . "  testEventInsertion  " . RESET ."\n";
+	print BOLD WHITE ON_RED . "                      " . RESET ."\n\n";
+
+	my $xml = << 'END_SCXML';
+	<scxml>
+		<state id='s1'>
+			<onentry>
+				<log label="'foo'" />
+			</onentry>
+			<transition target='pass' event='bar' />
+		</state>
+		<final id='pass' />
+	</scxml>
+END_SCXML
+
+	my $session = prepareSession({'xml' => $xml});
+
+	print BOLD . "Sending event" . RESET . "\n";
+	$request = POST $baseURL.'/event', 
+		[
+			'session' => $session,
+			'name' => 'foo',
+		];
+	print RED . "-> SEND === line:" . __LINE__ . "\n" . dumpRequest($request) . RESET . "\n";
+	$response = $ua->request($request);
+	print CYAN . "<- RCVD === line:" . __LINE__ . "\n" . dumpResponse($response) . RESET . "\n";
+	assertSuccess($response, "Could not send event");
+
+	&finishSession($session);
+
+}
+
 &testSimpleStepping();
 &testBreakpoint();
 &testIssueReporting();
+&testDataModelInspection();
+&testSessionAttaching();
+&testEventInsertion();
+
 
 kill('TERM', $pid);

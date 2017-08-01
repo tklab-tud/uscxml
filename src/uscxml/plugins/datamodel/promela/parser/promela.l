@@ -53,6 +53,7 @@ false|skip|true            { yylval->value = strdup(yytext); return PML_CONST; }
 printf                     { return PML_PRINT; }
 typedef                    { return PML_TYPEDEF; }
 assert                     { return PML_ASSERT; }
+return                     { return PML_RETURN; }
 
 "!"                        { return PML_NEG; }
 "~"                        { return PML_COMPL; }
@@ -103,7 +104,7 @@ assert                     { return PML_ASSERT; }
 L?\"(\\.|[^\\"])*\"        { yylval->value = strdup(yytext); return(PML_STRING); }
 
 
-L?'(\\.|[^\'])*\'          { 
+L?\'(\\.|[^\'])*\'          { 
   /* Non PROMELA extension for single quoted string literals */
   yylval->value = strdup(yytext); return(PML_STRING); 
 } 
@@ -114,4 +115,4 @@ L?'(\\.|[^\'])*\'          {
 [ \t\n]+                   /* eat up whitespace */
 
 
-.                          { /*printf( "Unrecognized character: %s\n", yytext ); */ }
+.                          { return PML_UNREC; }

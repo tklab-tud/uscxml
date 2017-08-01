@@ -48,7 +48,7 @@ public:
 
 	void processDisconnect(const HTTPServer::Request& request);
 	void processConnect(const HTTPServer::Request& request);
-	void processListSessions(const HTTPServer::Request& request);
+	void processListInstances(const HTTPServer::Request& request);
 
 	void processIssues(const HTTPServer::Request& request);
 

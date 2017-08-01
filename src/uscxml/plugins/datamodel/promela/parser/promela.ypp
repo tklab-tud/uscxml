@@ -61,7 +61,7 @@ using namespace uscxml;
 %token  <value> PML_CONST PML_TYPE PML_XU			/* val */
 %token  <value> PML_NAME PML_UNAME PML_PNAME PML_INAME		/* sym */
 %token  PML_CLAIM PML_TRACE PML_INIT	PML_LTL	/* sym */
-%token  PML_COMMA
+%token  PML_COMMA PML_UNREC
 
 %right	PML_ASGN
 %left PML_OR PML_AND
@@ -86,13 +86,13 @@ program	:
     ctx->ast = $1; 
     ctx->type = PromelaParser::PROMELA_DECL; 
   }
-  | expr { 
-    ctx->ast = $1; 
-    ctx->type = PromelaParser::PROMELA_EXPR;
-  }
   | stmnt_lst { 
     ctx->ast = $1; 
     ctx->type = PromelaParser::PROMELA_STMNT;
+  }
+  | expr { 
+    ctx->ast = $1; 
+    ctx->type = PromelaParser::PROMELA_EXPR;
   }
   ;
 

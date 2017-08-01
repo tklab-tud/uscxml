@@ -80,7 +80,8 @@ int main(int argc, char** argv) {
 		lastTransitionAt = time(NULL);
 
 		Interpreter interpreter = Interpreter::fromURL(std::string(argv[optind]) + PATH_SEPERATOR + entryIter->first);
-//        Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test422.scxml");
+//        Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/w3c/ecma/test159.scxml");
+
 		LOGD(USCXML_INFO) << "Processing " << interpreter.getImpl()->getBaseURL() << std::endl;
 		if (interpreter) {
 
@@ -100,9 +101,9 @@ int main(int argc, char** argv) {
 		entryIter++;
 
 		// forever
-//        if (entryIter == entries.end()) {
-//            entryIter = entries.begin();
-//        }
+		if (entryIter == entries.end()) {
+			entryIter = entries.begin();
+		}
 	}
 
 	delete watcher;

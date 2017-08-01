@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
 		start = now;
 		report = start + seconds(1);
 		endTime = start + seconds(10);
+		std::cout << "\"Init (ms)\", \"Steps/s\"" << std::endl;
 
 		while(true) {
 			sc.step();

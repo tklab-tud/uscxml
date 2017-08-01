@@ -57,13 +57,30 @@ if (V8_LIBRARY AND V8_INCLUDE_DIR)
 	set(CMAKE_REQUIRED_LIBRARIES ${V8_LIBRARY})
 	check_cxx_source_compiles("
 		#include <v8.h>
-		int main(){ v8::Local<v8::Value> foo = v8::Array::New(v8::Isolate::GetCurrent()); }
-	" V8_VER_GREATER_032317)
+		int main(){ 
+			v8::Locker locker;
+			v8::HandleScope scope;
+			v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
+			v8::Persistent<v8::Context> context = v8::Context::New(0, global);
+			v8::Context::Scope contextScope(context);
+		}" V8_VER_COMPILES_AS_031405)
 
-	if (NOT V8_VER_GREATER_032317)
-		message(STATUS "Your V8 installation is too old - we need >= 3.23.17")
-		unset(V8_LIBRARY)
-		unset(V8_INCLUDE_DIR)
+	if (NOT V8_VER_COMPILES_AS_031405)
+		check_cxx_source_compiles("
+			#include <v8.h>
+			int main(){ 
+				v8::Local<v8::Value> foo = v8::Array::New(v8::Isolate::GetCurrent()); 
+			}" V8_VER_COMPILES_AS_032317)
+
+		if (NOT V8_VER_COMPILES_AS_032317)
+			message(STATUS "Your V8 installation is unsupported - we support 3.14.5 and 3.23.17")
+			unset(V8_LIBRARY)
+			unset(V8_INCLUDE_DIR)
+		else()
+			set(V8_VERSION "032317")
+		endif()
+	else()
+		set(V8_VERSION "031405")
 	endif()
 endif()
 

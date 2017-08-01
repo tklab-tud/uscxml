@@ -72,6 +72,7 @@ endif()
 
 if (NOT BUILD_AS_PLUGINS)
 	USCXML_TEST_COMPILE(
+		BUILD_ONLY
 		NAME test-serialization 
 		LABEL general/test-serialization 
 		FILES src/test-serialization.cpp ../contrib/src/uscxml/PausableDelayedEventQueue.cpp
@@ -171,7 +172,7 @@ else()
 	
 	if (${WITH_DM_ECMA_V8})
 		list (APPEND TEST_GEN_C_DEFINITIONS "WITH_DM_ECMA_V8")
-		list (APPEND TEST_GEN_C_FILES ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.cpp)
+		list (APPEND TEST_GEN_C_FILES ${PROJECT_SOURCE_DIR}/src/uscxml/plugins/datamodel/ecmascript/v8/${V8_VERSION}/V8DataModel.cpp)
 		list (APPEND TEST_GEN_C_LIBRARIES ${V8_LIBRARY})
 	endif()
 	if (${WITH_DM_ECMA_JSC})

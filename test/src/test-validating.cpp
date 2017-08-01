@@ -356,13 +356,16 @@ bool attributeConstraints() {
 			    "<scxml>"
 			    "  <state id=\"start\">"
 			    "    <onentry>"
-			    "      <script src=\"test-validating\"/>"
+			    "      <script src=\"https://raw.githubusercontent.com/tklab-tud/uscxml/master/test/w3c/null/test436.scxml\">"
+			    "         foo"
+			    "      </script>"
 			    "    </onentry>"
 			    "  </state>"
 			    "</scxml>";
 
 			std::set<std::string> issueLocations = issueLocationsForXML(xml);
-			assert(issueLocations.size() == 0);
+			assert(issueLocations.find("//state[@id=\"start\"]/onentry[1]/script[1]") != issueLocations.end());
+			assert(issueLocations.size() == 1);
 		}
 
 
