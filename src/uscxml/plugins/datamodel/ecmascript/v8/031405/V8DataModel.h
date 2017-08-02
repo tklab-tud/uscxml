@@ -26,6 +26,7 @@
 #include <list>
 #include <set>
 #include <v8.h>
+#include <mutex>
 
 #ifdef BUILD_AS_PLUGINS
 #include "uscxml/plugins/Plugins.h"
@@ -58,6 +59,7 @@ public:
 	}
 
 	virtual bool isValidSyntax(const std::string& expr);
+	virtual bool isLegalDataValue(const std::string& expr);
 
 	virtual void setEvent(const Event& event);
 
@@ -84,34 +86,32 @@ public:
 protected:
 	virtual void setup();
 
-	static void jsExtension(const v8::FunctionCallbackInfo<v8::Value>& info);
-	static void jsIn(const v8::FunctionCallbackInfo<v8::Value>& info);
-	static void jsPrint(const v8::FunctionCallbackInfo<v8::Value>& info);
+	static v8::Handle<v8::Value> jsExtension(const v8::Arguments& args);
+	static v8::Handle<v8::Value> jsIn(const v8::Arguments& args);
+	static v8::Handle<v8::Value> jsPrint(const v8::Arguments& args);
 
 	//v8::Local<v8::Object> _event; // Persistent events leak ..
 	v8::Persistent<v8::Context> _context;
-	static v8::Isolate* _isolate;
+	//static v8::Isolate* _isolate;
 
 	v8::Persistent<v8::Object> _ioProcessors;
 	v8::Persistent<v8::Object> _invokers;
 
-	static void getIOProcessors(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
-	static void getInvokers(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
-	static void getAttribute(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
-	static void setWithException(v8::Local<v8::String> property,
-	                             v8::Local<v8::Value> value,
-	                             const v8::PropertyCallbackInfo<void>& info);
+	static v8::Handle<v8::Value> getIOProcessors(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> getInvokers(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static v8::Handle<v8::Value> getAttribute(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+	static void setWithException(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 
-	v8::Local<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
-	v8::Local<v8::Value> getDataAsValue(const Data& data);
-	Data getValueAsData(const v8::Local<v8::Value>& value);
-	v8::Local<v8::Value> getNodeAsValue(const XERCESC_NS::DOMNode* node);
+	v8::Handle<v8::Value> evalAsValue(const std::string& expr, bool dontThrow = false);
+	v8::Handle<v8::Value> getDataAsValue(const Data& data);
+	Data getValueAsData(const v8::Handle<v8::Value>& value);
+	v8::Handle<v8::Value> getNodeAsValue(const XERCESC_NS::DOMNode* node);
 	void throwExceptionEvent(const v8::TryCatch& tryCatch);
 
 	std::set<DataModelExtension*> _extensions;
 
 private:
-	Data getValueAsData(const v8::Local<v8::Value>& value, std::set<v8::Value*>& alreadySeen);
+	Data getValueAsData(const v8::Handle<v8::Value>& value, std::set<v8::Value*>& alreadySeen);
 
 	static std::mutex _initMutex;
 

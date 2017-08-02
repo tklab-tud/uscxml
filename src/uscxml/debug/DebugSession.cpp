@@ -20,6 +20,7 @@
 #include "uscxml/debug/DebugSession.h"
 #include "uscxml/debug/Debugger.h"
 #include "uscxml/util/Predicates.h"
+#include "uscxml/util/DOM.h"
 
 #include "uscxml/interpreter/Logging.h"
 
@@ -440,13 +441,44 @@ Data DebugSession::debugEval(const Data& data) {
 		replyData.compound["reason"] = Data("No datamodel available", Data::VERBATIM);
 	} else {
 		try {
-			replyData.compound["eval"] = _interpreter.getImpl()->getAsData(expr);
+			replyData.compound["eval"] = _interpreter.getImpl()->evalAsData(expr);
 		} catch (Event e) {
 			replyData.compound["eval"] = e.data;
 			replyData.compound["eval"].compound["error"] = Data(e.name, Data::VERBATIM);
 		}
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	}
+	return replyData;
+}
+
+Data DebugSession::debugEvent(const Data& data) {
+	Data replyData;
+
+	if (!_interpreter) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("No interpreter running", Data::VERBATIM);
+	} else if (!data.hasKey("name")) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("No event name given", Data::VERBATIM);
+		return replyData;
+	}
+	try {
+		Event event(data.at("name").atom);
+		if (data.hasKey("data")) {
+			event.data = data.at("data");
+		}
+		// TODO: this should not be necessary - initialize lazily
+		if (_interpreter.getState() == USCXML_INSTANTIATED) {
+			_interpreter.step();
+		}
+		_interpreter.receive(event);
+
+	} catch (Event e) {
+		replyData.compound["eval"] = e.data;
+		replyData.compound["eval"].compound["error"] = Data(e.name, Data::VERBATIM);
+	}
+	replyData.compound["status"] = Data("success", Data::VERBATIM);
+
 	return replyData;
 }
 

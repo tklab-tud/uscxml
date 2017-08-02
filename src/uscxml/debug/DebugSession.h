@@ -68,6 +68,7 @@ public:
 	Data disableAllBreakPoints();
 	Data getIssues();
 	Data debugEval(const Data& data);
+	Data debugEvent(const Data& data);
 
 	void setDebugger(Debugger* debugger) {
 		_debugger = debugger;

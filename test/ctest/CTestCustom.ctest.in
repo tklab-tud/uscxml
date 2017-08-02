@@ -34,7 +34,11 @@ set(CTEST_CUSTOM_TESTS_IGNORE
 	"w3c/ecma/test301.scxml" # Invalid script URL - PASSED
 	"w3c/ecma/test436.scxml" # Tests NULL datamodel - PASSED
 
+  "w3c/namespace/test178.scxml" # Manual - PASSED
+  "w3c/namespace/test230.scxml" # Manual - PASSED
+  "w3c/namespace/test250.scxml" # Manual - PASSED
   "w3c/namespace/test301.scxml" # Invalid script URL - PASSED
+  "w3c/namespace/test415.scxml" # Manual - PASSED
 
 
   ### Just ignore the XPath datamodel tests that hang, most of the rest fails as well
@@ -81,17 +85,21 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   "w3c/promela/test178.scxml" # two identical params in _event.raw - FAILED
   "w3c/promela/test230.scxml" # autoforwarded events are identical - PASSED
   "w3c/promela/test250.scxml" # no onexit in cancelled invoker - PASSED
+  "w3c/promela/test302.scxml" # variable definition / declaration in script - NOT SUPPORTED 
+  "w3c/promela/test304.scxml" # variable definition / declaration in script - NOT SUPPORTED 
   "w3c/promela/test307.scxml" # late data-binding - PASSED
 	"w3c/promela/test313.scxml" # Manual - PASSED
-	"w3c/promela/test314.scxml" # Manual - PASSED
+  "w3c/promela/test314.scxml" # Manual - PASSED
+  "w3c/promela/test350.scxml" # String concatenation - NOT SUPPORTED 
   "w3c/promela/test415.scxml" # terminate on toplevel final - PASSED
+  "w3c/promela/test525.scxml" # shallow copy in foreach, test not expressible as such
   # "w3c/promela/test513.txt" # manual test - PASSED
 
   "w3c/promela/test301.scxml" # reject invalid script - PASSED
 	"w3c/promela/test436.scxml" # Tests NULL datamodel - PASSED
   
   
-  # "w3c/promela/test190.scxml" # string concatenation
+  "w3c/promela/test190.scxml" # string concatenation
   "w3c/promela/test224.scxml" # string operation startWith
   # "w3c/promela/test280.scxml" # no runtime checks for undeclared variables
   # "w3c/promela/test350.scxml" # string concatenation

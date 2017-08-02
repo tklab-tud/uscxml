@@ -49,8 +49,8 @@ if (V8_FOUND)
 	set(USCXML_DATAMODELS "ecmascript(V8) ${USCXML_DATAMODELS}")
 	# JavaScriptCore ecmascript datamodel
 	file(GLOB V8_DATAMODEL
-		ecmascript/v8/*.cpp
-		ecmascript/v8/*.h
+		ecmascript/v8/${V8_VERSION}/*.cpp
+		ecmascript/v8/${V8_VERSION}/*.h
 		ecmascript/*.cpp
 		ecmascript/*.h
 	)
@@ -132,9 +132,6 @@ if (WITH_DM_PROMELA)
 			uscxml
 		)
 		# SET_SOURCE_FILES_PROPERTIES is directory scope
-		if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
-			SET_SOURCE_FILES_PROPERTIES(promela/parser/promela.lex.yy.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated-register )
-		endif()
 		set_target_properties(datamodel_promela PROPERTIES FOLDER "Plugins//DataModel")
 		set_target_properties(datamodel_promela PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
 		set_target_properties(datamodel_promela PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins")

@@ -709,20 +709,6 @@ JSValueRef JSCDataModel::getNodeAsValue(const DOMNode* node) {
 	                                      SWIG_as_voidptrptr(&node)),
 	                              0);
 
-//    switch (node->getNodeType()) {
-//    case DOMNode::ELEMENT_NODE:
-//        return SWIG_JSC_NewPointerObj(_ctx, (void*)node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMElement, 0);
-//        break;
-//
-//    case DOMNode::COMMENT_NODE:
-//        return SWIG_JSC_NewPointerObj(_ctx, (void*)node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMComment, 0);
-//        break;
-//
-//    // TODO: We need to dispatch more types here!
-//    default:
-//        return SWIG_JSC_NewPointerObj(_ctx, (void*)node, SWIGTYPE_p_XERCES_CPP_NAMESPACE__DOMNode, 0);
-//        break;
-//    }
 }
 #endif
 

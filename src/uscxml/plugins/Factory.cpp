@@ -38,6 +38,8 @@
 #include "uscxml/interpreter/FastMicroStep.h"
 #endif
 
+#undef WITH_DM_ECMA_V8
+
 #if 0
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -72,10 +74,14 @@
 #include "uscxml/plugins/datamodel/null/NullDataModel.h"
 
 #if defined WITH_DM_ECMA_V8
-#   include "uscxml/plugins/datamodel/ecmascript/v8/V8DataModel.h"
-#endif
+#   if (V8_VERSION == 032317)
+#       include "uscxml/plugins/datamodel/ecmascript/v8/032317/V8DataModel.h"
+#   endif
+#   if (V8_VERSION == 031405)
+#       include "uscxml/plugins/datamodel/ecmascript/v8/031405/V8DataModel.h"
+#   endif
 
-#ifdef WITH_DM_ECMA_JSC
+#elif defined(WITH_DM_ECMA_JSC)
 #   include "uscxml/plugins/datamodel/ecmascript/JavaScriptCore/JSCDataModel.h"
 #endif
 
@@ -219,14 +225,14 @@ void Factory::registerPlugins() {
 		V8DataModel* dataModel = new V8DataModel();
 		registerDataModel(dataModel);
 	}
-#endif
 
-#ifdef WITH_DM_ECMA_JSC
+#elif defined(WITH_DM_ECMA_JSC)
 	{
 		JSCDataModel* dataModel = new JSCDataModel();
 		registerDataModel(dataModel);
 	}
 #endif
+
 
 #ifdef WITH_DM_LUA
 	{

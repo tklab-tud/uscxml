@@ -63,6 +63,7 @@ void testInlinePromela() {
 
 	}
 
+#if 0
 	{
 		Interpreter interpreter = Interpreter::fromURL("/Users/sradomski/Documents/TK/Code/uscxml/test/uscxml/promela/test-event-source-auto.scxml");
 		assert(interpreter);
@@ -71,7 +72,7 @@ void testInlinePromela() {
 		assert(inls.getAllOfType(PromelaInline::PROMELA_EVENT_ONLY).size() == 2);
 		assert(inls.getAllOfType(PromelaInline::PROMELA_EVENT_ALL_BUT).size() == 1);
 	}
-
+#endif
 #if 0
 	{
 		std::string test = "\
@@ -309,6 +310,13 @@ void testPromelaParser() {
 	}
 #endif
 
+	{
+		try {
+			PromelaParser ast("\"foo");
+			assert(false);
+		} catch(...) {
+		}
+	}
 }
 
 int main(int argc, char** argv) {

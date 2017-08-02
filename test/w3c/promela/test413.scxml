@@ -16,7 +16,7 @@ states we should not enter all have immediate transitions to failure in them -->
           <transition target="fail"/>
         </state>
         <state id="s2p112">
-          <transition cond="config[S2P122]" target="pass"/>
+          <transition cond="config[s2p122]" target="pass"/>
         </state>
       </state>
       <!-- end s2p11 -->
@@ -25,7 +25,7 @@ states we should not enter all have immediate transitions to failure in them -->
           <transition target="fail"/>
         </state>
         <state id="s2p122">
-          <transition cond="config[S2P112]" target="pass"/>
+          <transition cond="config[s2p112]" target="pass"/>
         </state>
       </state>
     </parallel>

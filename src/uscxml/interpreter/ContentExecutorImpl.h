@@ -100,7 +100,7 @@ public:
 	virtual void uninvoke(XERCESC_NS::DOMElement* invoke) = 0;
 
 	virtual void raiseDoneEvent(XERCESC_NS::DOMElement* state, XERCESC_NS::DOMElement* doneData) = 0;
-	virtual Data elementAsData(XERCESC_NS::DOMElement* element, bool asExpression = false) = 0;
+	virtual Data elementAsData(XERCESC_NS::DOMElement* element) = 0;
 
 protected:
 	ContentExecutorCallbacks* _callbacks;

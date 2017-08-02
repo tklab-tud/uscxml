@@ -3,7 +3,7 @@
 <scxml xmlns="http://www.w3.org/2005/07/scxml" xmlns:conf="http://www.w3.org/2005/scxml-conformance" version="1.0" datamodel="promela" initial="p">
   <parallel id="p">
     <state id="s0">
-      <transition cond="config[S1]" target="pass"/>
+      <transition cond="config[s1]" target="pass"/>
       <transition target="fail"/>
     </state>
     <state id="s1"/>

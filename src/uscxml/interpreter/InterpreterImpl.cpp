@@ -142,7 +142,7 @@ void InterpreterImpl::reset() {
 	if (_microStepper)
 		_microStepper.reset();
 
-//	_isInitialized = false;
+	_isInitialized = false;
 	_state = USCXML_INSTANTIATED;
 	//        _dataModel.reset();
 	if (_delayQueue)
@@ -320,7 +320,12 @@ SCXML_STOP_SEARCH:
 				XERCESC_NS::DOMText* scriptText = _document->createTextNode(X(contents));
 				XERCESC_NS::DOMNode* newNode = _document->importNode(scriptText, true);
 				script->appendChild(newNode);
-				script->removeAttribute(kXMLCharSource); // remove attribute for validation: see issue 141
+				/**
+				 * We nees to download all scripts (issue134) but also fail validation when there
+				 * are child nodes with the src attribute present (issue141). Make a note that we
+				 * already downloaded the content.
+				 */
+				script->setUserData(X("downloaded"), newNode, NULL);
 			}
 		}
 
@@ -378,7 +383,6 @@ void InterpreterImpl::init() {
 
 		// do not override if already set
 		if (_ioProcs.find(ioProcIter->first) != _ioProcs.end()) {
-			ioProcIter++;
 			continue;
 		}
 
@@ -438,15 +442,12 @@ void InterpreterImpl::initData(XERCESC_NS::DOMElement* root) {
 		} else if (_invokeReq.namelist.find(id) != _invokeReq.namelist.end()) {
 			_dataModel.init(id, _invokeReq.namelist[id], additionalAttr);
 		} else {
-			try {
-				_dataModel.init(id, _execContent.elementAsData(root), additionalAttr);
-			} catch (ErrorEvent e) {
-				// test 453
-				_dataModel.init(id, _execContent.elementAsData(root, true), additionalAttr);
-			}
+			_dataModel.init(id, _execContent.elementAsData(root), additionalAttr);
 		}
 	} catch(ErrorEvent e) {
 		// test 277
+		e.data.compound["xpath"] = uscxml::Data(DOMUtils::xPathForNode(root), uscxml::Data::VERBATIM);
+		\
 		enqueueInternal(e);
 	}
 }

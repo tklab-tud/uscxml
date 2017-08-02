@@ -767,7 +767,9 @@ NEXT_SET:
 
 		for (auto iter = scripts.begin(); iter != scripts.end(); iter++) {
 			DOMElement* script = *iter;
-			if (HAS_ATTR(script, kXMLCharSource) && script->getChildNodes()->getLength() > 0) {
+			if (HAS_ATTR(script, kXMLCharSource) &&
+			        script->getChildNodes()->getLength() > 0 &&
+			        script->getUserData(X("downladed")) == NULL) {
 				issues.push_back(InterpreterIssue("Script element cannot have src attribute and children", script, InterpreterIssue::USCXML_ISSUE_WARNING));
 			}
 		}
