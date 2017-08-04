@@ -120,6 +120,9 @@ Data DebugSession::debugPrepare(const Data& data) {
 	if (_interpreter) {
 		// register ourself as a monitor
 		_interpreter.addMonitor(_debugger);
+		ActionLanguage al;
+		al.logger = Logger(shared_from_this());
+		_interpreter.setActionLanguage(al);
 		_debugger->attachSession(_interpreter.getImpl()->getSessionId(), shared_from_this());
 
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
@@ -169,6 +172,12 @@ Data DebugSession::debugAttach(const Data& data) {
 
 Data DebugSession::debugDetach(const Data& data) {
 	Data replyData;
+	if (!_isAttached) {
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		replyData.compound["reason"] = Data("Not attached to an interpreter", Data::VERBATIM);
+		return replyData;
+	}
+
 	_isAttached = false;
 
 	_debugger->detachSession(_interpreter.getImpl()->getSessionId());
@@ -180,7 +189,7 @@ Data DebugSession::debugStart(const Data& data) {
 	Data replyData;
 
 	if (_isAttached) {
-		replyData.compound["reason"] = Data("Already started when attached", Data::VERBATIM);
+		replyData.compound["reason"] = Data("Interpreter always started when attached", Data::VERBATIM);
 		replyData.compound["status"] = Data("failure", Data::VERBATIM);
 	} else if (!_interpreter) {
 		replyData.compound["reason"] = Data("No interpreter attached or loaded", Data::VERBATIM);
@@ -190,6 +199,39 @@ Data DebugSession::debugStart(const Data& data) {
 		_interpreterThread = new std::thread(DebugSession::run, this);
 		replyData.compound["status"] = Data("success", Data::VERBATIM);
 	}
+
+	return replyData;
+}
+
+Data DebugSession::debugStop(const Data& data) {
+	Data replyData;
+
+	if (_isAttached) {
+		replyData.compound["reason"] = Data("Cannot stop an attached interpreter", Data::VERBATIM);
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		return replyData;
+	}
+
+	if (_interpreter) {
+		// detach from old intepreter
+		_debugger->detachSession(_interpreter.getImpl()->getSessionId());
+	}
+
+	if (_isRunning && _interpreterThread != NULL) {
+		_isRunning = false;
+
+		// unblock
+		_resumeCond.notify_all();
+
+		_interpreterThread->join();
+		delete(_interpreterThread);
+	}
+
+	_skipTo = Breakpoint();
+	replyData.compound["status"] = Data("success", Data::VERBATIM);
+
+	// calls destructor
+	_interpreter = Interpreter();
 
 	return replyData;
 }
@@ -219,33 +261,6 @@ void DebugSession::run(void* instance) {
 	LOG(INSTANCE->_interpreter.getLogger(), USCXML_DEBUG) << "done" << std::endl;
 }
 
-Data DebugSession::debugStop(const Data& data) {
-	Data replyData;
-
-	if (_interpreter) {
-		// detach from old intepreter
-		_debugger->detachSession(_interpreter.getImpl()->getSessionId());
-	}
-
-	if (_isRunning && _interpreterThread != NULL) {
-		_isRunning = false;
-
-		// unblock
-		_resumeCond.notify_all();
-
-		_interpreterThread->join();
-		delete(_interpreterThread);
-	}
-
-	_skipTo = Breakpoint();
-	replyData.compound["status"] = Data("success", Data::VERBATIM);
-
-	// calls destructor
-	_interpreter = Interpreter();
-
-	return replyData;
-}
-
 Data DebugSession::debugStep(const Data& data) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 
@@ -270,10 +285,16 @@ Data DebugSession::debugStep(const Data& data) {
 
 Data DebugSession::debugResume(const Data& data) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	Data replyData;
+
+	if (!_isStepping) {
+		replyData.compound["reason"] = Data("Interpreter not paused / stepping", Data::VERBATIM);
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		return replyData;
+	}
 
 	stepping(false);
 
-	Data replyData;
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
 
 	_resumeCond.notify_one();
@@ -283,11 +304,17 @@ Data DebugSession::debugResume(const Data& data) {
 
 Data DebugSession::debugPause(const Data& data) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
+	Data replyData;
 
-	_skipTo = Breakpoint();
+	if (_isStepping) {
+		replyData.compound["reason"] = Data("Interpreter already paused / stepping", Data::VERBATIM);
+		replyData.compound["status"] = Data("failure", Data::VERBATIM);
+		return replyData;
+	}
+
+	_skipTo = Breakpoint(); // a generic breakpoint that always matches
 	stepping(true);
 
-	Data replyData;
 	replyData.compound["status"] = Data("success", Data::VERBATIM);
 
 	return replyData;
@@ -537,15 +564,24 @@ void DebugSession::log(LogSeverity severity, const Event& event) {
 		namelist.compound[name.first] = name.second;
 	}
 
-	_debugger->pushData(shared_from_this(), d);
+	Data toPush;
+	toPush["log"] = d;
+	toPush["severity"] = Data(Logger::severityToString(severity));
+	_debugger->pushData(shared_from_this(), toPush);
 }
 
 void DebugSession::log(LogSeverity severity, const Data& data) {
-	_debugger->pushData(shared_from_this(), data);
+	Data toPush;
+	toPush["log"] = data;
+	toPush["severity"] = Data(Logger::severityToString(severity));
+	_debugger->pushData(shared_from_this(), toPush);
 }
 
 void DebugSession::log(LogSeverity severity, const std::string& message) {
-	_debugger->pushData(shared_from_this(), Data(message));
+	Data toPush;
+	toPush["log"] = Data(message);
+	toPush["severity"] = Data(Logger::severityToString(severity));
+	_debugger->pushData(shared_from_this(), toPush);
 }
 
 }

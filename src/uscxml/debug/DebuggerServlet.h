@@ -52,21 +52,6 @@ public:
 
 	void processIssues(const HTTPServer::Request& request);
 
-//	void processDebugPrepare(const HTTPServer::Request& request);
-//	void processDebugAttach(const HTTPServer::Request& request);
-//	void processDebugStart(const HTTPServer::Request& request);
-//	void processDebugStop(const HTTPServer::Request& request);
-
-//	void processDebugEval(const HTTPServer::Request& request);
-//	void processDebugStart(const HTTPServer::Request& request);
-//	void processDebugStop(const HTTPServer::Request& request);
-//	void processDebugStep(const HTTPServer::Request& request);
-//	void processDebugResume(const HTTPServer::Request& request);
-//	void processDebugPause(const HTTPServer::Request& request);
-//	void processAddBreakPoint(const HTTPServer::Request& request);
-//	void processRemoveBreakPoint(const HTTPServer::Request& request);
-//	void processPoll(const HTTPServer::Request& request);
-
 
 protected:
 	void serverPushData(std::shared_ptr<DebugSession>);
