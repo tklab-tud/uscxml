@@ -34,7 +34,7 @@ namespace uscxml {
 
 class Debugger;
 
-class USCXML_API DebugSession : public LoggerImpl ,public std::enable_shared_from_this<DebugSession> {
+class USCXML_API DebugSession : public LoggerImpl, public std::enable_shared_from_this<DebugSession> {
 public:
 	DebugSession() {
 		_isRunning = false;

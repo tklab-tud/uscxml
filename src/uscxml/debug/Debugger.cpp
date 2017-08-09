@@ -145,7 +145,7 @@ void Debugger::handleExecutable(const std::string& sessionId,
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	std::list<Breakpoint> breakpoints;
@@ -165,7 +165,7 @@ void Debugger::handleEvent(const std::string& sessionId, const Event& event, Bre
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	std::list<Breakpoint> breakpoints;
@@ -184,7 +184,7 @@ void Debugger::handleStable(const std::string& sessionId, Breakpoint::When when)
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	std::list<Breakpoint> breakpoints;
@@ -201,7 +201,7 @@ void Debugger::handleMicrostep(const std::string& sessionId, Breakpoint::When wh
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	std::list<Breakpoint> breakpoints;
@@ -218,7 +218,7 @@ void Debugger::handleTransition(const std::string& sessionId, const XERCESC_NS::
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	Breakpoint breakpointTemplate;
@@ -231,7 +231,7 @@ void Debugger::handleState(const std::string& sessionId, const XERCESC_NS::DOMEl
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	Breakpoint breakpointTemplate;
@@ -246,7 +246,7 @@ void Debugger::handleInvoke(const std::string& sessionId, const XERCESC_NS::DOME
 	std::shared_ptr<DebugSession> session = getSession(sessionId);
 	if (!session)
 		return;
-	if (!session->_isRunning)
+	if (!session->_isRunning && !session->_isAttached)
 		return;
 
 	Breakpoint breakpointTemplate;

@@ -134,6 +134,7 @@ bool DebuggerServlet::requestFromHTTP(const HTTPServer::Request& request) {
 		serverPushData(session);
 
 	} else if (boost::starts_with(request.data.at("path").atom, "/debug/disconnect")) {
+		session->debugDetach(request.data["content"]);
 		processDisconnect(request);
 
 	} else if (boost::starts_with(request.data.at("path").atom, "/debug/issues")) {
@@ -196,7 +197,6 @@ void DebuggerServlet::processConnect(const HTTPServer::Request& request) {
 
 void DebuggerServlet::processDisconnect(const HTTPServer::Request& request) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
-
 	Data replyData;
 
 	if (!request.data.at("content").hasKey("session")) {
