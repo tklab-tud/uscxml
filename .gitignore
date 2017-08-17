@@ -23,3 +23,6 @@ package/windows*
 /.idea/*
 
 /test/bindings/java/logs/
+apps/contiki_new/
+test/src/input/
+apps/
