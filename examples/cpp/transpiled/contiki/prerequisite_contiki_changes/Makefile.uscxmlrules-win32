@@ -1,0 +1,44 @@
+ifdef VCINSTALLDIR
+LINKFLAGS += /SUBSYSTEM:CONSOLE
+
+#$(BUILD_TYPE) is set in project makefile depending on Release(/MD) or Debug(/MDd)
+VCFLAGS +=  /EHsc $(BUILD_TYPE_FLAG) -Od -Zi $(filter-out -Wall -g -O,$(CFLAGS))
+
+CUSTOM_RULE_C_TO_OBJECTDIR_O = 1
+$(OBJECTDIR)/%.o: %.c | $(OBJECTDIR)
+	$(TRACE_CC)
+	$(Q)cl -nologo $(VCFLAGS) -c $< -Fo$@
+	$(Q)makedepend $(CFLAGS) -o.o -f- $< 2> nul: | sed -e s!$(<:.c=.o)!$@! -e s!\\!/!g > $(@:.o=.d)
+
+CUSTOM_RULE_C_TO_CO = 1
+%.co: %.c
+	$(TRACE_CC)
+	$(Q)cl -nologo $(VCFLAGS) -DAUTOSTART_ENABLE -c $< -Fo$@
+
+CUSTOM_RULE_ALLOBJS_TO_TARGETLIB = 1
+contiki-$(TARGET).a: $(CONTIKI_OBJECTFILES)
+	$(TRACE_AR)
+	$(Q)lib -nologo $^ -out:$@
+
+CUSTOM_RULE_LINK = 1
+%.$(TARGET): %.co $(PROJECT_OBJECTFILES) $(PROJECT_LIBRARIES) contiki-$(TARGET).a
+	$(TRACE_LD)
+	$(Q)link -nologo $(LINKFLAGS) -debug -map:contiki-$(TARGET).map $^ user32.lib ws2_32.lib iphlpapi.lib  $(Additional_SYSTEM_LIB) $(Additional_PROJECT_LIB) -out:$@
+
+CUSTOM_RULE_CPP_TO_OBJECTDIR_O = 1
+$(OBJECTDIR)/%.o: %.cpp | $(OBJECTDIR)
+	$(TRACE_CC)
+	$(Q)cl -nologo $(VCFLAGS) -c $< -Fo$@
+	$(Q)makedepend $(CFLAGS) -o.o -f- $< 2> nul: | sed -e s!$(<:.cpp=.o)!$@! -e s!\\!/!g > $(@:.o=.d)
+	
+CUSTOM_RULE_CPP_TO_O = 1
+%.o: %.cpp
+	$(TRACE_CXX)
+	$(Q)cl -nologo $(VCFLAGS) -c $< -Fo$@
+#endif
+
+CUSTOM_RULE_CPP_TO_CO = 1
+%.co: %.cpp
+	$(TRACE_CC)
+	$(Q)cl -nologo $(VCFLAGS) -DAUTOSTART_ENABLE -c $< -Fo$@	
+endif # VCINSTALLDIR

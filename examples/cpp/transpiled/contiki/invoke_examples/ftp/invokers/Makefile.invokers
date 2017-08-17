@@ -1,0 +1,5 @@
+APPS = ftp
+
+PROJECT_SOURCEFILES += contiki_ftp_Invoker.cpp
+
+DEFINES = WITH_GUI

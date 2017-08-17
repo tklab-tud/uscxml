@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="s0" version="1.0" datamodel="promela">
+	<datamodel>
+		<data id="forks" type="int[5]">
+		[0,0,0,0,0]
+		</data>
+		<data id="NUM_OF_PHIL" type="int" expr="5"/>
+		<data id="current_phil" type="int" expr="0"/>
+		<data id="delay" type="int" expr="0"/>
+		<data id="left_fork" type="int" expr="0"/>
+		<data id="right_fork" type="int" expr="0"/>	
+		<data id="seed" type="int" expr="123456789"/>		
+	</datamodel>
+	<state id="s0" initial="s01">
+			<invoke src="philosopher_s.scxml" type="http://www.w3.org/TR/scxml/"  id="philosopher1">	
+				<param name="p_id" type="int" expr="0" />
+				<param name="delay" type="int" expr="3000 * NUM_OF_PHIL" />
+				<assign location="seed" expr="(1103515245*seed+12345)%2147483647"/>
+				<assign location="seed" expr="(1103515245*seed+12345)%2147483647"/>
+				<param name="random_delay" type="int" expr="seed" />
+			</invoke>
+			<invoke src="philosopher_s.scxml" type="http://www.w3.org/TR/scxml/"  id="philosopher2">	
+				<param name="p_id" type="int" expr="1" />
+				<param name="delay" type="int" expr="3000 * NUM_OF_PHIL" />
+				<assign location="seed" expr="(1103515245*seed+12345)%2147483647"/>
+				<param name="random_delay" type="int" expr="seed" />
+			</invoke>
+			<invoke src="philosopher_s.scxml" type="http://www.w3.org/TR/scxml/"  id="philosopher3">	
+				<param name="p_id" type="int" expr="2" />
+				<param name="delay" type="int" expr="3000 * NUM_OF_PHIL" />
+				<assign location="seed" expr="(1103515245*seed+12345)%2147483647"/>
+				<param name="random_delay" type="int" expr="seed" />
+			</invoke>
+			<invoke src="philosopher_s.scxml" type="http://www.w3.org/TR/scxml/"  id="philosopher4">	
+				<param name="p_id" type="int" expr="3" />
+				<param name="delay" type="int" expr="3000 * NUM_OF_PHIL" />
+				<assign location="seed" expr="(1103515245*seed+12345)%2147483647"/>
+				<param name="random_delay" type="int" expr="seed" />
+			</invoke>
+			<invoke src="philosopher_s.scxml" type="http://www.w3.org/TR/scxml/"  id="philosopher5">	
+				<param name="p_id" type="int" expr="4" />
+				<param name="delay" type="int" expr="3000 * NUM_OF_PHIL" />
+				<assign location="seed" expr="(1103515245*seed+12345)%2147483647"/>
+				<param name="random_delay" type="int" expr="seed" />
+			</invoke>
+		<state id="s01">
+			<transition event="need_forks"  target="s01">
+				<assign location="current_phil" expr="_event.data.p_id"/>
+				<assign location="left_fork" expr="current_phil"/>
+				<assign location="right_fork" expr="(current_phil+1) % NUM_OF_PHIL"/>
+				
+				<if cond="forks[left_fork]==0 &amp;&amp; forks[right_fork]==0">
+					<assign location="forks[left_fork]" expr="1"/>
+					<assign location="forks[right_fork]" expr="1"/>
+					<send type="contiki" targetexpr="_event.origin" event="take_forks"/>
+				<elseif cond="forks[left_fork]==1 || forks[right_fork]==1"/>
+					<send type="contiki" targetexpr="_event.origin" event="resource_denied"/>
+				</if>
+			</transition>
+			<transition event="return_forks" target="s01">
+				<assign location="current_phil" expr="_event.data.p_id"/>
+				<assign location="left_fork" expr="current_phil"/>	
+				<assign location="right_fork" expr="(current_phil+1) % NUM_OF_PHIL"/>	
+				<assign location="forks[left_fork]" expr="0"/>
+				<assign location="forks[right_fork]" expr="0"/>
+			</transition>
+			<transition event="done.invoke" target="fail"/>
+		</state>
+	</state>
+	<final xmlns:scxml="http://www.w3.org/2005/07/scxml" id="fail">
+		<onentry>
+			<log label="Outcome" expr="'fail'"/>
+		</onentry>
+  </final>
+</scxml>
+	

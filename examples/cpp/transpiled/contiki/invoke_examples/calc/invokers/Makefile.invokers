@@ -1,0 +1,2 @@
+PROJECT_SOURCEFILES += calc.c calc-dsc.c contiki_calc_Invoker.cpp
+DEFINES = WITH_GUI

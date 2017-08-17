@@ -1,0 +1,90 @@
+### Compiler definitions
+CC       ?= gcc
+CXX		  = g++
+ifdef LD_OVERRIDE
+  LD     = $(LD_OVERRIDE)
+else
+  LD     = gcc
+endif
+AS       ?= as
+NM       ?= nm
+OBJCOPY  ?= objcopy
+STRIP    ?= strip
+
+CFLAGS += -std=c++11
+
+#To convert application into a stand-alone executable that can be loaded into a running Contiki System
+CUSTOM_RULE_C_TO_CE = 1
+%.ce: %.c
+	$(TRACE_CC)
+	$(Q)$(CC) $(CFLAGS) -DAUTOSTART_ENABLE -c $< -o $@
+	$(STRIP) --strip-unneeded -g -x $@
+
+
+CUSTOM_RULE_CPP_TO_CE = 1
+%.ce: %.cpp
+	$(TRACE_CC)
+	$(Q)$(CXX) $(CFLAGS) -DAUTOSTART_ENABLE -c $< -o $@
+	$(STRIP) --strip-unneeded -g -x $@
+
+CUSTOM_RULE_C_TO_OBJECTDIR_O = 1
+$(OBJECTDIR)/%.o: %.c | $(OBJECTDIR)
+	$(TRACE_CC)
+	${info here I am in Make 8}
+	$(Q)$(CC) $(CFLAGS) -MMD -c $< -o $@
+	@$(FINALIZE_DEPENDENCY)
+
+
+CUSTOM_RULE_CPP_TO_OBJECTDIR_O = 1
+$(OBJECTDIR)/%.o: %.cpp | $(OBJECTDIR)
+	$(TRACE_CXX)
+	$(Q)$(CXX) $(CFLAGS) -MMD -c $< -o $@
+	@$(FINALIZE_DEPENDENCY)
+
+CUSTOM_RULE_S_TO_OBJECTDIR_O = 1
+$(OBJECTDIR)/%.o: %.S | $(OBJECTDIR)
+	${info here I am in Make 10}
+	$(TRACE_AS)
+	$(Q)$(AS) $(ASFLAGS) -o $@ $<
+
+CUSTOM_RULE_C_TO_O = 1
+%.o: %.c
+	$(TRACE_CC)
+	${info here I am in Make 11}
+	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+
+CUSTOM_RULE_CPP_TO_O = 1
+%.o: %.cpp
+	$(TRACE_CXX)
+	$(Q)$(CXX) $(CFLAGS) -c $< -o $@
+
+CUSTOM_RULE_C_TO_CO = 1
+%.co: %.c
+	${info here I am in Make 13}
+	$(TRACE_CC)
+	$(Q)$(CC) $(CFLAGS) -DAUTOSTART_ENABLE -c $< -o $@
+
+CUSTOM_RULE_C_TO_CO = 1
+%.co: %.cpp
+	$(TRACE_CC)
+	$(Q)$(CXX) $(CFLAGS) -DAUTOSTART_ENABLE -c $< -o $@
+
+ifndef AROPTS
+  AROPTS = rcf
+endif
+
+CUSTOM_RULE_ALLOBJS_TO_TARGETLIB = 1
+contiki-$(TARGET).a: $(CONTIKI_OBJECTFILES)
+	$(TRACE_AR)
+	${info here I am in Make 14}
+	$(Q)$(AR) $(AROPTS) $@ $^
+
+ifndef LD
+  LD = $(CC)
+endif
+
+CUSTOM_RULE_LINK = 1
+%.$(TARGET): %.co $(PROJECT_OBJECTFILES) $(PROJECT_LIBRARIES) contiki-$(TARGET).a
+	$(TRACE_LD)
+	$(Q)$(LD) $(LDFLAGS) $(TARGET_STARTFILES) ${filter-out %.a,$^} \
+	    ${filter %.a,$^} $(TARGET_LIBFILES) -lstdc++ -o $@

@@ -1,0 +1,34 @@
+Command used to get this output:
+$spin -a master_s.pml
+$gcc -DMEMLIM=1024 -O2 -DVECTORSZ=8192 -DXUSAFE -DNP -w -o pan pan.c
+$pan.exe -l
+
+pan:1: block in d_step seq (at depth 3328)
+pan: wrote master.pml.trail
+
+(Spin Version 6.4.6 -- 2 December 2016)
+Warning: Search not completed
+
+Full statespace search for:
+	never claim         	+ (:np_:)
+	assertion violations	+ (if within scope of claim)
+	non-progress cycles 	+ (fairness disabled)
+	invalid end states	- (disabled by never claim)
+
+State-vector 2300 byte, depth reached 3328, errors: 1
+     1348 states, stored
+        0 states, matched
+     1348 transitions (= stored+matched)
+      638 atomic steps
+hash conflicts:         0 (resolved)
+
+Stats on memory usage (in Megabytes):
+    2.977	equivalent memory usage for states (stored*(State-vector + overhead))
+    4.136	actual memory usage for states
+   64.000	memory used for hash table (-w24)
+    0.382	memory used for DFS stack (-m10000)
+   68.688	total actual memory usage
+
+
+pan: elapsed time 0.04 seconds
+pan: rate     33700 states/second
