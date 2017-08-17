@@ -1,14 +1,14 @@
 #----IMPORTANT CONFIGURATIONS-----------------------------------------------------------------------------------
-#--PLEASE SET DIRCTORY PATHS RELATIVE TO THIS FILE LOCATION--/
+#--PLEASE SET DIRCTORY PATHS RELATIVE TO THIS FILE LOCATION (remove spaces at the end of each path.)--/
 
 #--This is uSCXML's top directory--/
-USCXML_DIR = ../../../..    
+USCXML_DIR = ../../../../../..
 
 #--This is uSCXML's build directory--/
-USCXML_BUILD_DIR = ../../../../../build
+USCXML_BUILD_DIR = ../../../../../../../build
 
 #--This is Contiki's root directory--/
-CONTIKI = ../../../../../contiki-3.0
+CONTIKI = ../../../../../../../contiki-3.0
 
 #--This is absolute / relative directory where libevent libraries (event, event_pthreads) resides--/
 LIBEVENT_LIB_DIR = $(USCXML_BUILD_DIR)/deps/libevent/lib -levent -levent_pthreads 
