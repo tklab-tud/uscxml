@@ -18,7 +18,6 @@
 #include "uscxml/plugins/Factory.h"
 #include "uscxml/plugins/IOProcessorImpl.h"
 #include "uscxml/plugins/InvokerImpl.h"
-//#include "uscxml/Interpreter.h"
 #include "uscxml/util/UUID.h"
 #include "uscxml/plugins/datamodel/promela/PromelaDataModel.h"
 #include "uscxml/interpreter/InterpreterImpl.h"
@@ -38,14 +37,14 @@ EXTERNC{
 }
 
 #include "input/test_invoke_calc.c"
-
 #include "invokers/contiki_calc_Invoker.h"
+
 //#define USCXML_VERBOSE 
 #define USER_DATA(ctx) ((StateMachine*)(((uscxml_ctx*)ctx)->user_data))
 
 /*---------------------------------------------------------------------------*/
-PROCESS(master_process, "master process");
-AUTOSTART_PROCESSES(&master_process);
+PROCESS(scxml_calc_process, "scxml calc process");
+AUTOSTART_PROCESSES(&scxml_calc_process);
 /*---------------------------------------------------------------------------*/
 using namespace uscxml;
 
@@ -56,11 +55,10 @@ class DOMNode;
 
 class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, public DelayedEventQueueCallbacks, public InvokerCallbacks {
 	public:
-	//StateMachine() {}
+	
 	StateMachine(const uscxml_machine* machine) : machine(machine), parentMachine(NULL), topMostMachine(NULL), invocation(NULL) {
 		allMachines[sessionId] = this;
 		topMostMachine = this;
-		//currentMachine = allMachines.begin();
 		currentMachine = this;
 		allocate_contiki_event();
 		try {
@@ -145,7 +143,7 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 		sessionId = uscxml::UUID::getUUID();
 		isFinalized = false;
 
-		// clear and initialize machine context
+		// initialize machine context
 		memset(&ctx, 0, sizeof(uscxml_ctx));
 		ctx.machine = machine;
 		ctx.user_data = (void*)this;
@@ -163,13 +161,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 		ctx.raise_done_event = &raiseDoneEvent;
 		ctx.exec_content_raise = &execContentRaise;
 		ctx.exec_content_init = &execContentInit;
-		
-		
-		//ctx.exec_content_foreach_init = &execContentForeachInit;
-		//ctx.exec_content_foreach_next = &execContentForeachNext;
-		//ctx.exec_content_foreach_done = &execContentForeachDone;
-		
-		//ctx.exec_content_script = &execContentScript;
 
 		name = machine->name;
 		
@@ -177,7 +168,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 		dataModel = Factory::getInstance()->createDataModel(machine->datamodel, this);
 		
 		if (invocation != NULL) {
-			/// test 226/240 - initialize from invoke request
 			if (invocation->params != NULL) {
 				const uscxml_elem_param* param = invocation->params;
 				while(USCXML_ELEM_PARAM_IS_SET(param)) {
@@ -188,7 +178,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 						identifier = param->location;
 					}
 					invokeData[identifier] = parentMachine->dataModel.evalAsData(param->expr);
-					//printf("init invocationid: %s with param id %s = %s\n", invocation->id, identifier.c_str(), invokeData[identifier].atom.c_str());
 					param++;
 				}
 			}
@@ -217,7 +206,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 		if (parentMachine != NULL) {
 			topMostMachine->allMachines.erase(topMostMachine->invocationIds[invocation]);
 		}
-//        finalize();
 
 		delayQueue.cancelAllDelayed();
 
@@ -260,27 +248,16 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 			shared_events[done.getUUID()] = done;
 			printf("in finalize.\n");
 			process_post(all_processes[target_process], ce_scxml, &StateMachine::shared_events[done.getUUID()]);
-			//parentMachine->eq.push_back(done);
 		}
 		isFinalized = true;
 	}
 	
 	int step() {
-		// advance current machine if there are multiple
-		//currentMachine++;
-		//if (currentMachine == allMachines.end())
-		//	currentMachine = allMachines.begin();
 
 		StateMachine* toRun = currentMachine;
 		if (!toRun->hasPendingWork()) {
 			return USCXML_ERR_IDLE;
 		}
-
-		// test 187
-		//if (toRun->isDone()) {
-		//	toRun->finalize();
-		//	return USCXML_ERR_IDLE;
-		//}
 
 		state = uscxml_step(&toRun->ctx);
 		return state;
@@ -288,8 +265,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 	
 	void eventReady(Event& e, const std::string& eventUUID) {
 		std::lock_guard<std::mutex> lock(mutex);
-			
-		//std::make_tuple(e.sendid, target, type);
 
 		std::string sendid = std::get<0>(sendUUIDs[e.getUUID()]);
 		std::string target = std::get<1>(sendUUIDs[e.getUUID()]);
@@ -320,7 +295,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 					parentMachine->eq.push_back(e);
 				}
 			}
-			// TODO: handle invalid parent
 		} else if (target.substr(0,8) == "#_scxml_") {
 			std::string sessionId = target.substr(8);
 			bool sessionFound = false;
@@ -390,7 +364,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 		if(eventDescs.length() == 0 || eventName.length() == 0)
 			return false;
 
-		// naive case of single descriptor and exact match
 		if (iequals(eventDescs, eventName))
 			return true;
 
@@ -408,21 +381,17 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 			}
 
 			if (eventDesc.size() > 0) {
-				// remove optional trailing .* for CCXML compatibility
 				if (eventDesc.find("*", eventDesc.size() - 1) != std::string::npos)
 					eventDesc = eventDesc.substr(0, eventDesc.size() - 1);
 				if (eventDesc.find(".", eventDesc.size() - 1) != std::string::npos)
 					eventDesc = eventDesc.substr(0, eventDesc.size() - 1);
 
-				// was eventDesc the * wildcard
 				if (eventDesc.size() == 0)
 					return true;
 
-				// eventDesc has to be a real prefix of event now and therefore shorter
 				if (eventDesc.size() > eventName.size())
 					goto NEXT_DESC;
 
-				// are they already equal?
 				if (iequals(eventDesc, eventName))
 					return true;
 
@@ -491,9 +460,6 @@ NEXT_DESC:
 				                                     &e);
 		}
 
-		
-		
-		
 		// auto forward event
 		for (std::map<std::string, StateMachine*>::iterator machIter = allMachines.begin(); machIter != allMachines.end(); machIter++) {
 			if (machIter->second->parentMachine != NULL &&
@@ -513,8 +479,7 @@ NEXT_DESC:
 	}
 	
 	static int invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
-		//printf("in invoke for invocation id: %s with ctx->machine.name : %s\n",invocation->id, ctx->machine->name);
-		printf("invoke called with type: %s.\n",invocation->type);
+
 		std::string invoke_name ="contiki_calc";
 		std::map<std::string, StateMachine*> &allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
 		StateMachine* topMachine = USER_DATA(ctx)->topMostMachine;
@@ -535,8 +500,6 @@ NEXT_DESC:
 					}
 				}
 			} else {
-				// TODO: Uninvoke other types of invokers
-
 				return USCXML_ERR_UNSUPPORTED;
 			}
 		} else{
@@ -565,21 +528,18 @@ NEXT_DESC:
 				printf("found contiki_calc invoke in factory.\n");
 			} else if (Factory::getInstance()->hasInvoker(invocation->type)) {
 				printf("found contiki_calc invoke in factory\n");
-				Event invokeEvent; // see BasicContentExecutor::384ff
-				 //TODO: Establish the invokeEvent
+				Event invokeEvent; 
 				if (invocation->params != NULL) {
 				}
 				Invoker inv = Factory::getInstance()->createInvoker(invocation->type, USER_DATA(ctx));
-				//process_poll(&calc_process);
-				//process_start(&calc_process, NULL);
+				
 				inv.invoke("", invokeEvent);
 				USER_DATA(ctx)->_invocations[invocation] = inv;
 			} 
 			else {
 				return USCXML_ERR_UNSUPPORTED;
 			}
-		}
-		
+		}	
 		return USCXML_ERR_OK;
 	}
 	
@@ -691,7 +651,6 @@ NEXT_DESC:
 
 		if (send->content != NULL) {
 			try {
-				// will it parse as json?
 				Data d = USER_DATA(ctx)->dataModel.getAsData(send->content);
 				if (!d.empty()) {
 					e.data = d;
@@ -734,7 +693,7 @@ NEXT_DESC:
 				int delayS = delayMs/1000;
 				struct timer_event_contiki t_e ;
 				struct ctimer ct;
-				//t_e.timer_id = e.internal_event_id;
+
 				t_e.associated_timer = ct;
 				t_e.associated_ctx_event.context = ctx;
 				t_e.associated_ctx_event.event = e;
@@ -742,8 +701,7 @@ NEXT_DESC:
 				USER_DATA(ctx)->all_timers[e.getUUID()] = t_e;
 	
 				ctimer_set(&(USER_DATA(ctx)->all_timers[e.getUUID()].associated_timer), CLOCK_SECOND*delayS, &ctimer_callback, &(USER_DATA(ctx)->all_timers[e.getUUID()].associated_ctx_event));
-				//process_post(&master_process, ce_timer, NULL);
-				//ctimer_set(&StateMachine::ct, CLOCK_SECOND*2, &StateMachine::contiki_timer_callback, &contiki_timer_event_global);
+				
 			} else{
 			USER_DATA(ctx)->delayQueue.enqueueDelayed(e, delayMs, e.getUUID());
 			}
@@ -762,8 +720,7 @@ NEXT_DESC:
 		USER_DATA(ctx)->all_timers.erase(event_enqueue.event.getUUID());
 		USER_DATA(ctx)->eventReady(event_enqueue.event, event_enqueue.event.getUUID());
 		process_poll(USER_DATA(ctx)->contiki_process);
-		//enqueue_contiki_external(event_enqueue);
-		//process_post_synch(PROCESS_CURRENT(), PROCESS_EVENT_CONTINUE, NULL);
+		
 	}
 	
 	static int raiseDoneEvent(const uscxml_ctx* ctx, const uscxml_state* state, const uscxml_elem_donedata* donedata) {
@@ -802,8 +759,7 @@ NEXT_DESC:
 		}
 
 		if (eventId.length() > 0) {
-			// find all events with given id
-						
+			
 			for (auto evIter = sendUUIDs.begin(); evIter != sendUUIDs.end(); evIter++) {
 				std::string sendid = std::get<0>(evIter->second);
 				if (eventId == sendid) {
@@ -851,10 +807,8 @@ NEXT_DESC:
 		}
 
 		try {
-//			Data d = USER_DATA(ctx)->dataModel.getStringAsData(expr);
 			if (assign->expr != NULL) {
-//				USER_DATA(ctx)->dataModel.assign(key,
-//				                                 USER_DATA(ctx)->dataModel.evalAsData(assign->expr));
+
 				USER_DATA(ctx)->dataModel.assign(key, Data(assign->expr, Data::INTERPRETED));
 			} else if (assign->content != NULL) {
 				Data d = Data(assign->content, Data::INTERPRETED);
@@ -892,15 +846,13 @@ NEXT_DESC:
 	
 	static void register_invokers(){
 		std::string parent = "parent";
-		all_processes[parent] = &master_process;
+		all_processes[parent] = &scxml_calc_process;
 		std::string invoke_id = "calc1";
 		all_processes[invoke_id] = &calc_process;
 	}
 	
-	
 	Event currEvent;
 	
-
 	std::map<const uscxml_elem_invoke*, std::string> invocationIds;
 	std::map<std::string, StateMachine*> allMachines;
 
@@ -911,7 +863,6 @@ NEXT_DESC:
 
 	StateMachine* parentMachine;
 	StateMachine* topMostMachine;
-	//std::map<std::string, StateMachine* >::iterator currentMachine; // next machine to advance
 	StateMachine* currentMachine;
 
 	std::string baseURL;
@@ -954,9 +905,6 @@ NEXT_DESC:
 
 protected:
 
-//	X xmlPrefix;
-//	XERCESC_NS::DOMDocument* document;
-
 	DelayedEventQueue delayQueue;
 	static std::map<std::string, std::tuple<std::string, std::string, std::string> > sendUUIDs;
 
@@ -972,7 +920,7 @@ process_event_t StateMachine::ce_scxml;
 process_event_t StateMachine::ce_timer;
 
 	
-PROCESS_THREAD(master_process, ev, data)
+PROCESS_THREAD(scxml_calc_process, ev, data)
 {  
 	static int process_called_before =0;
 	
@@ -986,7 +934,7 @@ PROCESS_THREAD(master_process, ev, data)
 	if(!process_called_before){
 		ctimer_init();
 		StateMachine::register_invokers();
-		rootMachine.contiki_process = &master_process;				
+		rootMachine.contiki_process = &scxml_calc_process;				
 		process_called_before++;
 	}
 
@@ -995,21 +943,14 @@ PROCESS_THREAD(master_process, ev, data)
 		
 		while ( err != USCXML_ERR_IDLE && err != USCXML_ERR_DONE) { 
 			err = rootMachine.step();
-			//printf("stuck in master 3... err = %i\n",err);
 		}
 			
 		if(err == USCXML_ERR_DONE){
 			rootMachine.finalize();
-			//printf("stuck in master 2\n");
 			break;
 		} else if(err == USCXML_ERR_IDLE){
-			
-			//printf("stuck in master 1 rootMachine.eq.size() = %i \n", rootMachine.eq.size());
-//			process_poll(&calc_process);
-			//PROCESS_YIELD();
+		
 			PROCESS_YIELD_UNTIL(rootMachine.hasPendingWork() || StateMachine::ce_scxml || !process_is_running(&calc_process) );
-			//PROCESS_WAIT_UNTIL(rootMachine.hasPendingWork() || StateMachine::ce_scxml );
-			//printf("moved ahead of wait.\n");
 			
 				if(ev == StateMachine::ce_scxml){
 					
@@ -1017,8 +958,7 @@ PROCESS_THREAD(master_process, ev, data)
 					rootMachine.event_to_enque = *rcvd_event;
 					
 					StateMachine::shared_events.erase(rootMachine.event_to_enque.getUUID());
-					printf("Master :  event received: %s \n", rootMachine.event_to_enque.name.c_str());
-				
+					printf("Master :  event received: %s \n", rootMachine.event_to_enque.name.c_str());				
 					rootMachine.eq.push_back(rootMachine.event_to_enque);				
 				} else if(ev == StateMachine::ce_timer){
 					printf("event received ce_timer.\n");
