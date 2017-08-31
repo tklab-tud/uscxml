@@ -268,7 +268,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 			shared_events[done.getUUID()] = done;
 			process_post(all_processes[target_process], ce_scxml, &StateMachine::shared_events[done.getUUID()]);
 			process_poll(all_processes[target_process]);
-			//parentMachine->eq.push_back(done);
 		} else {
 			shared_events.clear();
 			all_processes.clear();
@@ -409,7 +408,6 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 			}
 
 			if (eventDesc.size() > 0) {
-				// remove optional trailing .* for CCXML compatibility
 				if (eventDesc.find("*", eventDesc.size() - 1) != std::string::npos)
 					eventDesc = eventDesc.substr(0, eventDesc.size() - 1);
 				if (eventDesc.find(".", eventDesc.size() - 1) != std::string::npos)
@@ -419,11 +417,9 @@ class StateMachine : public DataModelCallbacks, public IOProcessorCallbacks, pub
 				if (eventDesc.size() == 0)
 					return true;
 
-				// eventDesc has to be a real prefix of event now and therefore shorter
 				if (eventDesc.size() > eventName.size())
 					goto NEXT_DESC;
 
-				// are they already equal?
 				if (iequals(eventDesc, eventName))
 					return true;
 
@@ -452,7 +448,6 @@ NEXT_DESC:
 	static int execContentInit(const uscxml_ctx* ctx, const uscxml_elem_data* data) {
 		while(USCXML_ELEM_DATA_IS_SET(data)) {
 			if (USER_DATA(ctx)->invokeData.find(data->id) != USER_DATA(ctx)->invokeData.end()) {
-				// passed via param or namelist: test245
 				try {
 					USER_DATA(ctx)->dataModel.init(data->id, USER_DATA(ctx)->invokeData[data->id]);
 				} catch (Event e) {
@@ -465,22 +460,11 @@ NEXT_DESC:
 				try {
 					if (data->expr != NULL) {
 						d = Data(data->expr, Data::INTERPRETED);
-//						d = USER_DATA(ctx)->dataModel.evalAsData(data->expr);
 
 					} else if (data->content != NULL || data->src != NULL) {
 						if (data->content) {
 							content << data->content;
 						} else {
-// avoid dependency on URL.cpp -> urlparser -> curl
-#if 0
-							URL sourceURL(data->src);
-							if (USER_DATA(ctx)->baseURL.size() > 0) {
-								sourceURL = URL::resolve(sourceURL, USER_DATA(ctx)->baseURL);
-							} else {
-								sourceURL = URL::resolveWithCWD(sourceURL);
-							}
-							content << sourceURL.getInContent();
-#endif
 						}
 						/**
 						 * first attempt to parse as structured data, we will try
@@ -502,7 +486,7 @@ NEXT_DESC:
 						content <<  "int["<< d.array.size()<<"]";
 						attr["type"] = content.str();
 					}
-					// this might fail with an unquoted string literal in content
+					
 					USER_DATA(ctx)->dataModel.init(data->id, d, attr);
 
 				} catch (Event e) {
@@ -580,7 +564,7 @@ NEXT_DESC:
 	}
 	
 	static int invoke(const uscxml_ctx* ctx, const uscxml_state* s, const uscxml_elem_invoke* invocation, unsigned char uninvoke) {
-		//printf("in invoke for invocation id: %s with ctx->machine.name : %s\n",invocation->id, ctx->machine->name);
+		
 		std::map<std::string, StateMachine*> &allMachines = USER_DATA(ctx)->topMostMachine->allMachines;
 		StateMachine* topMachine = USER_DATA(ctx)->topMostMachine;
 		

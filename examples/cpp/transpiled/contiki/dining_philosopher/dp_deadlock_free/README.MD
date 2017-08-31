@@ -1,24 +1,24 @@
 ========================================================================
    
-                    Dining philosopher Solution Contiki Project Overview
+                    Dining philosopher deadlock free version Contiki Project Overview
     
 ========================================================================
 
-(PS: If you already know about the problem, you can skip overview and jump directly to pre-requisite for building this Contiki application for dining philosopher solution)
+(PS: If you already know about the problem, you can skip overview and jump directly to pre-requisite for building this Contiki application for dining philosopher deadlock free version)
 
-Dining philosopher problem is discussed in \apps\contiki\dining_philosopher\dp\README.MD, here in this Contiki application we implemented one of the possible solution to dining philosopher problem. In that problem we identified a deadlock in our earlier design of dining philosopher problem. however in application we modified the resource request and allocation pattern that leads to avoidance of following necessary condition for deadlock as mentioned by Coffman( google coffman necessary condition for deadlock). 
+Dining philosopher problem is discussed in \apps\contiki\dining_philosopher\dp\README.MD, here in this Contiki application we implemented one of the possible deadlock free version to dining philosopher problem. In that problem we identified a deadlock in our earlier design of dining philosopher problem. however in application we modified the resource request and allocation pattern that leads to avoidance of following necessary condition for deadlock as mentioned by Coffman ( google coffman necessary condition for deadlock). 
 
 •Hold and Wait Condition:
 Requesting process hold already, resources while waiting for requested resources. That is, There must exist a process that is holding a resource already allocated to it while waiting for additional resource that are currently being held by other processes.
 
 •How we avoid it:
-In our solution, philosophers never hold up a fork and then wait for other resource. They ask for all
+In our version, philosophers never hold up a fork and then wait for other resource. They ask for all
 required resource at once and it is master who in an atomic step checks if all resources required by
 the philosopher are available or not. If they are available it delivers them all to asking philosopher
 and denies request of any other philosopher asking for the same resource until it is returned by the
 philosopher.
 
-Above behaviour was modelled in SCXML (\apps\contiki\dining_philosopher\dp_solution\scxml) then transpiled to ANSI C (\apps\contiki\dining_philosopher\dp_solution\input) using uscxml transpilation.
+Above behaviour was modelled in SCXML (\apps\contiki\dining_philosopher\deadlock_free\scxml) then transpiled to ANSI C (\apps\contiki\dining_philosopher\dp_deadlock_free\input) using uscxml transpilation.
 
 
 ------------------------------Pre-requisite-----------------------------
