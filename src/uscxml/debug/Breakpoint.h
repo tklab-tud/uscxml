@@ -23,12 +23,11 @@
 #include <string>                       // for string
 #include "uscxml/Common.h"              // for USCXML_API
 #include "uscxml/Interpreter.h"
-//#include "DOM/Element.hpp"              // for Element
 #include "uscxml/messages/Data.h"       // for Data
 
 // forward declare
 namespace XERCESC_NS {
-class DOMElement;
+class DOMNode;
 }
 
 namespace uscxml {
@@ -77,7 +76,7 @@ public:
 	Subject subject;
 	Action action;
 
-	const XERCESC_NS::DOMElement* element = NULL;
+	const XERCESC_NS::DOMNode* element = NULL;
 
 	std::string invokeId;
 	std::string invokeType;

@@ -1178,7 +1178,10 @@ ESTABLISH_ENTRYSET:
 	i = _transSet.find_first();
 	while(i != boost::dynamic_bitset<BITSET_BLOCKTYPE>::npos) {
 		if ((USCXML_GET_TRANS(i).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) == 0) {
-			USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, USCXML_GET_TRANS(i).element);
+			USCXML_MONITOR_CALLBACK2(monitors,
+                                     beforeTakingTransition,
+                                     (HAS_ATTR(USCXML_GET_TRANS(i).element, kXMLCharTarget) ? ATTR(USCXML_GET_TRANS(i).element, kXMLCharTarget) : ""),
+                                     USCXML_GET_TRANS(i).element);
 
 			if (USCXML_GET_TRANS(i).onTrans != NULL) {
 
@@ -1190,7 +1193,11 @@ ESTABLISH_ENTRYSET:
 				}
 			}
 
-			USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, USCXML_GET_TRANS(i).element);
+            USCXML_MONITOR_CALLBACK2(monitors,
+                                     afterTakingTransition,
+                                     (HAS_ATTR(USCXML_GET_TRANS(i).element, kXMLCharTarget) ? ATTR(USCXML_GET_TRANS(i).element, kXMLCharTarget) : ""),
+                                     USCXML_GET_TRANS(i).element);
+
 
 		}
 		i = _transSet.find_next(i);
@@ -1249,7 +1256,10 @@ ESTABLISH_ENTRYSET:
 			if unlikely((USCXML_GET_TRANS(j).type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) &&
 			            USCXML_GET_STATE(USCXML_GET_TRANS(j).source).parent == i) {
 
-				USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, USCXML_GET_TRANS(j).element);
+				USCXML_MONITOR_CALLBACK2(monitors,
+                                         beforeTakingTransition,
+                                         (HAS_ATTR(USCXML_GET_TRANS(j).element, kXMLCharTarget) ? ATTR(USCXML_GET_TRANS(j).element, kXMLCharTarget) : ""),
+                                         USCXML_GET_TRANS(j).element);
 
 				/* call executable content in transition */
 				if (USCXML_GET_TRANS(j).onTrans != NULL) {
@@ -1260,7 +1270,10 @@ ESTABLISH_ENTRYSET:
 					}
 				}
 
-				USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, USCXML_GET_TRANS(j).element);
+				USCXML_MONITOR_CALLBACK2(monitors,
+                                         afterTakingTransition,
+                                         (HAS_ATTR(USCXML_GET_TRANS(j).element, kXMLCharTarget) ? ATTR(USCXML_GET_TRANS(j).element, kXMLCharTarget) : ""),
+                                         USCXML_GET_TRANS(j).element);
 			}
 
 			j = _transSet.find_next(j);

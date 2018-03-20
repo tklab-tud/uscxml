@@ -89,8 +89,10 @@ public:
 	                             const std::string& invokeid) {}
 
 	virtual void beforeTakingTransition(const std::string& sessionId,
+                                        const std::string& targetList,
 	                                    const XERCESC_NS::DOMElement* transition) {}
 	virtual void afterTakingTransition(const std::string& sessionId,
+                                       const std::string& targetList,
 	                                   const XERCESC_NS::DOMElement* transition) {}
 
 	virtual void beforeEnteringState(const std::string& sessionId,
@@ -134,7 +136,7 @@ public:
 	StateTransitionMonitor(std::string prefix = "") : _logPrefix(prefix) {}
 	virtual ~StateTransitionMonitor() {}
 
-	virtual void beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition);
+	virtual void beforeTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition);
 	virtual void beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* element);
 	virtual void onStableConfiguration(const std::string& sessionId);
 	virtual void beforeProcessingEvent(const std::string& sessionId, const uscxml::Event& event);
@@ -198,6 +200,7 @@ public:
 	}
 
 	void transition(std::function<void (const std::string& sessionId,
+                                        const std::string& targetList,
 	                                    const XERCESC_NS::DOMElement* transition)> callback,
 	                bool after = false) {
 		if (after) {
@@ -278,8 +281,10 @@ protected:
 	                    const std::string& invokeid)> _afterUninvoking;
 
 	std::function<void (const std::string& sessionId,
+                        const std::string& targetList,
 	                    const XERCESC_NS::DOMElement* transition)> _beforeTakingTransition;
 	std::function<void (const std::string& sessionId,
+                        const std::string& targetList,
 	                    const XERCESC_NS::DOMElement* transition)> _afterTakingTransition;
 
 	std::function<void (const std::string& sessionId,
@@ -357,14 +362,16 @@ protected:
 	}
 
 	void beforeTakingTransition(const std::string& sessionId,
-	                            const XERCESC_NS::DOMElement* transition) {
+                                const std::string& targetList,
+                                const XERCESC_NS::DOMElement* transition) {
 		if (_beforeTakingTransition)
-			_beforeTakingTransition(sessionId, transition);
+			_beforeTakingTransition(sessionId, targetList, transition);
 	}
 	void afterTakingTransition(const std::string& sessionId,
+                               const std::string& targetList,
 	                           const XERCESC_NS::DOMElement* transition) {
 		if (_afterTakingTransition)
-			_afterTakingTransition(sessionId, transition);
+			_afterTakingTransition(sessionId, targetList, transition);
 	}
 
 	void beforeEnteringState(const std::string& sessionId,

@@ -63,8 +63,8 @@ public:
 	virtual void afterExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* execContent);
 	virtual void beforeUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
 	virtual void afterUninvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);
-	virtual void beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition);
-	virtual void afterTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition);
+	virtual void beforeTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition);
+	virtual void afterTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition);
 	virtual void beforeEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state);
 	virtual void afterEnteringState(const std::string& sessionId, const std::string& stateName, const XERCESC_NS::DOMElement* state);
 	virtual void beforeInvoking(const std::string& sessionId, const XERCESC_NS::DOMElement* invokeElem, const std::string& invokeid);

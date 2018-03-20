@@ -25,6 +25,8 @@
 #include <limits>
 #include <sstream>
 
+/* this is where node2xpath ought to go as it is most convenient when we forward declare */
+
 namespace uscxml {
 inline bool isnan(double x);
 
