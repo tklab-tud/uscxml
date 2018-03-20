@@ -287,7 +287,9 @@ static void printNodeSet(Logger& logger, const std::list<XERCESC_NS::DOMElement*
 
 std::recursive_mutex StateTransitionMonitor::_mutex;
 
-void StateTransitionMonitor::beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
+void StateTransitionMonitor::beforeTakingTransition(const std::string& sessionId,
+                                                    const std::string& targetList,
+                                                    const XERCESC_NS::DOMElement* transition) {
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	LOG(_logger, USCXML_VERBATIM) << "Transition: " << uscxml::DOMUtils::xPathForNode(transition) << std::endl;
 }

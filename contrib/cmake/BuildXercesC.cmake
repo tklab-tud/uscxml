@@ -38,8 +38,8 @@ if(MSVC)
 	endif()
 	
 	externalproject_add(xerces-c
-		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.4.tar.gz
-		URL_MD5 21bb097b711a513275379b59757cba4c
+		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.2.1.tar.gz
+		URL_MD5 fe951ca5d93713db31b026fab2d042d7
 		BUILD_IN_SOURCE 1
 		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 		CONFIGURE_COMMAND ""
@@ -51,15 +51,15 @@ if(MSVC)
 			${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release &&
 			${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug &&
 			${CMAKE_COMMAND} -E copy_directory Build/${XERCESC_BUILD_PATH_SUFFIX}/${VC_VERSION}/Release/ ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/ && 
-			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/ && 
-			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/ && 
-			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_1.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ && 
+			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_2.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/ && 
+			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_2.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/ && 
+			${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/deps/xerces-c/lib/xerces-c_3_2.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ && 
 			${CMAKE_COMMAND} -E copy_directory src/ ${CMAKE_BINARY_DIR}/deps/xerces-c/include/
 		)
 else()
 	externalproject_add(xerces-c
-		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.4.tar.gz
-		URL_MD5 21bb097b711a513275379b59757cba4c
+		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.2.1.tar.gz
+		URL_MD5 fe951ca5d93713db31b026fab2d042d7
 		BUILD_IN_SOURCE 0
 		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
 		CONFIGURE_COMMAND 

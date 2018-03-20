@@ -51,7 +51,7 @@ else()
 		ENV USCXML_LIB_DIR
 	)
 	if (USCXML_LIBRARY_RELEASE)
-		list(APPEND USCXML_LIBRARIES optimized USCXML_LIBRARY_RELEASE)
+		list(APPEND USCXML_LIBRARIES optimized ${USCXML_LIBRARY_RELEASE})
 	endif()
 endif()
 
@@ -73,7 +73,13 @@ else()
 		ENV USCXML_LIB_DIR
 	)
 	if ("${USCXML_LIBRARY_DEBUG}")
-		list(APPEND USCXML_LIBRARIES debug USCXML_LIBRARY_DEBUG)
+		list(APPEND USCXML_LIBRARIES debug ${USCXML_LIBRARY_DEBUG})
+	else()
+		# on unices, we can add release as debug
+		if (USCXML_LIBRARY_RELEASE)
+			list(APPEND USCXML_LIBRARIES debug ${USCXML_LIBRARY_RELEASE})
+		endif()
+
 	endif()
 endif()
 

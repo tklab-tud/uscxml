@@ -18,8 +18,8 @@
 */
 
 #include "uscxml/debug/Debugger.h"
-#include "uscxml/util/DOM.h"
 #include "uscxml/util/Predicates.h"
+#include "uscxml/util/DOM.h"
 #include "uscxml/debug/DebugSession.h"
 
 namespace uscxml {
@@ -90,10 +90,10 @@ std::list<Breakpoint> Debugger::getQualifiedTransBreakpoints(const std::string& 
 	return breakpoints;
 }
 
-void Debugger::beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
+void Debugger::beforeTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition) {
 	handleTransition(sessionId, transition, Breakpoint::BEFORE);
 }
-void Debugger::afterTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
+void Debugger::afterTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition) {
 	handleTransition(sessionId, transition, Breakpoint::AFTER);
 }
 void Debugger::beforeExecutingContent(const std::string& sessionId, const XERCESC_NS::DOMElement* execContent) {

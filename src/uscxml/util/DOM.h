@@ -25,6 +25,7 @@
 #include <string>
 
 #include "uscxml/Common.h"
+
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOM.hpp>
 
@@ -36,6 +37,7 @@
 #define TAGNAME_CAST(elem) TAGNAME(static_cast<const DOMElement*>(elem))
 #define LOCALNAME(elem) std::string(X((elem)->getLocalName()))
 #define LOCALNAME_CAST(elem) LOCALNAME(static_cast<const DOMElement*>(elem))
+
 
 namespace uscxml {
 
@@ -76,7 +78,7 @@ public:
 	        const std::list<XERCESC_NS::DOMElement*>& nodeSet,
 	        bool recurse = false);
 
-	static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
+    static std::list<XERCESC_NS::DOMNode*> filterChildType(const XERCESC_NS::DOMNode::NodeType type,
 	        const XERCESC_NS::DOMNode* node,
 	        bool recurse = false) {
 		return filterTypeGeneric({ type }, node, (recurse ? DOCUMENT : NO_RECURSE), true, false);
@@ -124,7 +126,6 @@ public:
 // create a prefix from a given element - useful for copying namespace information
 #define XML_PREFIX(element) X(element->getPrefix() ? X(element->getPrefix()).str() + ":" : "")
 
-#if 1
 /**
  * @todo: More performant XercesStrings
  * https://alfps.wordpress.com/2010/05/27/cppx-xerces-strings-simplified-by-ownership-part-i/
@@ -133,92 +134,32 @@ public:
 class USCXML_API X {
 public :
 
-	X(X const &other) {
-
-		_localForm = other._localForm;
-		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
-		_deallocOther = true;
-	}
-
-	X(const XMLCh* const toTranscode) {
-
-		if (toTranscode != NULL) {
-			// Call the private transcoding method
-			char* tmp = XERCESC_NS::XMLString::transcode(toTranscode);
-			_localForm = std::string(tmp);
-			XERCESC_NS::XMLString::release(&tmp);
-		}
-		_unicodeForm = NULL;
-		_deallocOther = false;
-	}
-
-	X(const std::string& fromTranscode) {
-
-		// Call the private transcoding method
-		_localForm = fromTranscode;
-		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode.c_str());
-		_deallocOther = true;
-	}
-
-	X(const char* const fromTranscode) {
-		// this is most unfortunate but needed with static XMLChars :(
-		if (!_xercesIsInit) {
-			try {
-				::xercesc_3_1::XMLPlatformUtils::Initialize();
-				_xercesIsInit = true;
-			} catch (const XERCESC_NS::XMLException& toCatch) {
-				throw ("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
-			}
-		}
-
-		// Call the private transcoding method
-		_localForm = fromTranscode;
-		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
-		_deallocOther = true;
-	}
-
-	X(char* fromTranscode) {
-
-		// Call the private transcoding method
-		_localForm = fromTranscode;
-		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
-		_deallocOther = true;
-	}
+    X(X const &other);
+    X(const XMLCh* const toTranscode);
+    X(const std::string& fromTranscode);
+    X(const char* const fromTranscode);
+    X(char* fromTranscode);
 
 	X() {
-
 		_unicodeForm = NULL;
 		_deallocOther = false;
 	}
 
-	~X() {
-
-		if (_deallocOther)
-			XERCESC_NS::XMLString::release(&_unicodeForm);
-	}
+    ~X();
 
 	const std::string& str() const {
 		return _localForm;
 	}
 
-	int iequals(const XMLCh* const other) const {
-		return XERCESC_NS::XMLString::compareIString(_unicodeForm, other);
-	}
-
+    int iequals(const XMLCh* const other) const;
+    
 	operator XMLCh* () const {
 		assert(_unicodeForm != NULL); // constructor with XMLCh
 		return _unicodeForm;
 	}
 
-	void operator=(X const &other) {
-		_localForm = other._localForm;
-		_unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
-		_deallocOther = true;
-	}
-
-	bool operator==(const XMLCh* other) const {
-		return XERCESC_NS::XMLString::compareString(other, _unicodeForm) == 0;
-	}
+    void operator=(X const &other);
+    bool operator==(const XMLCh* other) const;
 
 	bool operator==(const X& other) const {
 		return (_localForm == other._localForm) != 0;
@@ -228,9 +169,7 @@ public :
 		return !(_unicodeForm == other._unicodeForm);
 	}
 
-	bool operator<(const X& other) const {
-		return XERCESC_NS::XMLString::compareString(_unicodeForm, other._unicodeForm) < 0;
-	}
+    bool operator<(const X& other) const;
 
 	operator bool () {
 		return _localForm.size() > 0;
@@ -249,79 +188,6 @@ private:
 	XMLCh* _unicodeForm;
 	bool _xercesIsInit = false;
 };
-
-#else
-
-class USCXML_API X {
-public :
-	X() {
-	}
-
-	void operator=(X const &other) {
-		localForm = other.localForm;
-		if (unicodeForm != NULL) {
-			XERCESC_NS::XMLString::release(&unicodeForm);
-		}
-		unicodeForm = XERCESC_NS::XMLString::replicate(other.unicodeForm);
-	}
-
-	X(X const &other) {
-		localForm = other.localForm;
-		unicodeForm = XERCESC_NS::XMLString::replicate(other.unicodeForm);
-	}
-
-	X(const char* const toTranscode) {
-		if (toTranscode != NULL) {
-			localForm = toTranscode;
-			unicodeForm = XERCESC_NS::XMLString::transcode(toTranscode);
-		}
-	}
-
-	X(const XMLCh* toTranscode) {
-		if (toTranscode != NULL) {
-			unicodeForm = XERCESC_NS::XMLString::replicate(toTranscode);
-			localForm = XERCESC_NS::XMLString::transcode(toTranscode);
-		}
-	}
-
-	X(const std::string& toTranscode) {
-		localForm = toTranscode;
-		unicodeForm = XERCESC_NS::XMLString::transcode(toTranscode.c_str());
-	}
-
-	~X() {
-		if (unicodeForm != NULL) {
-			XERCESC_NS::XMLString::release(&unicodeForm);
-		}
-	}
-
-	operator XMLCh* () const {
-		return unicodeForm;
-	}
-
-	operator const std::string& () {
-		return localForm;
-	}
-
-	const std::string& str() const {
-		return localForm;
-	}
-
-	const XMLCh* unicode() const {
-		return unicodeForm;
-	}
-
-
-protected:
-	friend USCXML_API std::ostream& operator<< (std::ostream& os, const X& data);
-
-private:
-	XMLCh* unicodeForm = NULL;
-	std::string localForm;
-
-};
-
-#endif
 
 static const X kXMLCharScxml = X("scxml");
 static const X kXMLCharState = X("state");

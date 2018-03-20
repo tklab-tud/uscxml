@@ -390,4 +390,80 @@ std::list<DOMNode*> DOMUtils::filterChildType(const DOMNode::NodeType type,
 	return filteredChildType;
 }
 
+    
+X::X(X const &other) {
+    
+    _localForm = other._localForm;
+    _unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
+    _deallocOther = true;
+}
+
+X::X(const XMLCh* const toTranscode) {
+    
+    if (toTranscode != NULL) {
+        // Call the private transcoding method
+        char* tmp = XERCESC_NS::XMLString::transcode(toTranscode);
+        _localForm = std::string(tmp);
+        XERCESC_NS::XMLString::release(&tmp);
+    }
+    _unicodeForm = NULL;
+    _deallocOther = false;
+}
+
+X::X(const std::string& fromTranscode) {
+    
+    // Call the private transcoding method
+    _localForm = fromTranscode;
+    _unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode.c_str());
+    _deallocOther = true;
+}
+
+X::X(const char* const fromTranscode) {
+    // this is most unfortunate but needed with static XMLChars :(
+    if (!_xercesIsInit) {
+        try {
+            ::xercesc_3_1::XMLPlatformUtils::Initialize();
+            _xercesIsInit = true;
+        } catch (const XERCESC_NS::XMLException& toCatch) {
+            throw ("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
+        }
+    }
+    
+    // Call the private transcoding method
+    _localForm = fromTranscode;
+    _unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
+    _deallocOther = true;
+}
+
+X::X(char* fromTranscode) {
+    
+    // Call the private transcoding method
+    _localForm = fromTranscode;
+    _unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode);
+    _deallocOther = true;
+}
+
+X::~X() {    
+    if (_deallocOther)
+        XERCESC_NS::XMLString::release(&_unicodeForm);
+}
+
+int X::iequals(const XMLCh* const other) const {
+    return XERCESC_NS::XMLString::compareIString(_unicodeForm, other);
+}
+
+void X::operator=(X const &other) {
+    _localForm = other._localForm;
+    _unicodeForm = XERCESC_NS::XMLString::replicate(other._unicodeForm);
+    _deallocOther = true;
+}
+
+bool X::operator==(const XMLCh* other) const {
+    return XERCESC_NS::XMLString::compareString(other, _unicodeForm) == 0;
+}
+
+bool X::operator<(const X& other) const {
+    return XERCESC_NS::XMLString::compareString(_unicodeForm, other._unicodeForm) < 0;
+}
+
 }
