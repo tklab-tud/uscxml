@@ -92,6 +92,7 @@ public:
 
 
 	void beforeTakingTransition(const std::string& sessionId,
+                                const std::string& targetList,
 	                            const XERCESC_NS::DOMElement* transition);
 	virtual void beforeTakingTransition(const std::string& xpath,
 	                                    const std::string& source,
@@ -99,6 +100,7 @@ public:
 	                                    const std::string& transitionXML) {}
 
 	void afterTakingTransition(const std::string& sessionId,
+                               const std::string& targetList,
 	                           const XERCESC_NS::DOMElement* transition);
 	virtual void afterTakingTransition(const std::string& xpath,
 	                                   const std::string& source,

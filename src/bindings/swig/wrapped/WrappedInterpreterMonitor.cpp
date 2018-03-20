@@ -76,7 +76,7 @@ void WrappedInterpreterMonitor::afterUninvoking(const std::string& sessionId, co
 	afterUninvoking(DOMUtils::xPathForNode(invoker), invokeId, ss.str());
 }
 
-void WrappedInterpreterMonitor::beforeTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
+void WrappedInterpreterMonitor::beforeTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition) {
 	XERCESC_NS::DOMElement* sourceState = getSourceState(transition);
 	const XERCESC_NS::DOMElement* root = DOMUtils::getNearestAncestor(transition, "scxml");
 
@@ -93,7 +93,7 @@ void WrappedInterpreterMonitor::beforeTakingTransition(const std::string& sessio
 	beforeTakingTransition(DOMUtils::xPathForNode(transition), ATTR_CAST(sourceState, kXMLCharId), targets, ss.str());
 }
 
-void WrappedInterpreterMonitor::afterTakingTransition(const std::string& sessionId, const XERCESC_NS::DOMElement* transition) {
+void WrappedInterpreterMonitor::afterTakingTransition(const std::string& sessionId, const std::string& targetList, const XERCESC_NS::DOMElement* transition) {
 	XERCESC_NS::DOMElement* sourceState = getSourceState(transition);
 	const XERCESC_NS::DOMElement* root = DOMUtils::getNearestAncestor(transition, "scxml");
 

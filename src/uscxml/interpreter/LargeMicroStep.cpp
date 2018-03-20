@@ -1061,7 +1061,10 @@ NEXT_DESCENDANT:
 		BENCHMARK("take transitions");
 		for (auto transition : _transSet) {
 			if ((transition->type & (USCXML_TRANS_HISTORY | USCXML_TRANS_INITIAL)) == 0) {
-				USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, transition->element);
+                USCXML_MONITOR_CALLBACK2(monitors,
+                                         beforeTakingTransition,
+                                         (HAS_ATTR(transition->element, kXMLCharTarget) ? ATTR(transition->element, kXMLCharTarget) : ""),
+                                         transition->element);
 
 				if (transition->onTrans != NULL) {
 
@@ -1072,8 +1075,10 @@ NEXT_DESCENDANT:
 						// do nothing and continue with next block
 					}
 				}
-
-				USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, transition->element);
+                USCXML_MONITOR_CALLBACK2(monitors,
+                                         afterTakingTransition,
+                                         (HAS_ATTR(transition->element, kXMLCharTarget) ? ATTR(transition->element, kXMLCharTarget) : ""),
+                                         transition->element);
 			}
 		}
 	}
@@ -1134,7 +1139,10 @@ NEXT_DESCENDANT:
 					        _transSet.find(transition) == _transSet.end())
 						continue;
 
-					USCXML_MONITOR_CALLBACK1(monitors, beforeTakingTransition, transition->element);
+                    USCXML_MONITOR_CALLBACK2(monitors,
+                                             beforeTakingTransition,
+                                             (HAS_ATTR(transition->element, kXMLCharTarget) ? ATTR(transition->element, kXMLCharTarget) : ""),
+                                             transition->element);
 
 					/* call executable content in transition */
 					if (transition->onTrans != NULL) {
@@ -1144,8 +1152,11 @@ NEXT_DESCENDANT:
 							// do nothing and continue with next block
 						}
 					}
+                    USCXML_MONITOR_CALLBACK2(monitors,
+                                             afterTakingTransition,
+                                             (HAS_ATTR(transition->element, kXMLCharTarget) ? ATTR(transition->element, kXMLCharTarget) : ""),
+                                             transition->element);
 
-					USCXML_MONITOR_CALLBACK1(monitors, afterTakingTransition, transition->element);
 				}
 
 			}
