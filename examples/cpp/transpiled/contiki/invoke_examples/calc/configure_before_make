@@ -1,0 +1,25 @@
+#----IMPORTANT CONFIGURATIONS-----------------------------------------------------------------------------------
+#--PLEASE SET DIRCTORY PATHS RELATIVE TO THIS FILE LOCATION--/
+
+#--This is uSCXML's top directory--/
+USCXML_DIR = ../../../../../..
+
+#--This is uSCXML's build directory--/
+USCXML_BUILD_DIR = ../../../../../../../build
+
+#--This is Contiki's root directory--/
+CONTIKI = ../../../../../../../contiki-3.0
+
+#--This is absolute / relative directory where libevent libraries (event, event_pthreads) resides--/
+LIBEVENT_LIB_DIR = $(USCXML_BUILD_DIR)/deps/libevent/lib -levent -levent_pthreads
+
+#--This is absolute / relative directory where libcurl library (curl) resides--/
+LIBCURL_LIB_DIR = $(USCXML_BUILD_DIR)/deps/libcurl/lib
+
+#--Please set following parameter BUILD_TYPE = release if uSCXML build type was release, otherwise set it to 'debug'. This is important only in case this Contiki application is built for TARGET=win32 as MSVC links with different libraries depending on the build type.--/
+BUILD_TYPE = debug
+
+#--Please uncomment below parameter if you want to build with invoker.--/
+WITH_INVOKERS = 1
+
+#----IMPORTANT CONFIGURATIONS END-----------------------------------------------------------------------------------

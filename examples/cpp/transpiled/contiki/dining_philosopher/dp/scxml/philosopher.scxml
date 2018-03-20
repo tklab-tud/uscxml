@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" name="philosopher" version="1.0" datamodel="promela">
+	<datamodel>
+		<data id="p_id" type="int" />
+		<data id="delay" type="int" />
+		<data id="random_delay" type="int"/>
+		<data id="timeout_flag" type="int" expr="0"/>
+	</datamodel>
+	<state id="philosopher_routine" initial="thinking">
+		<onentry>
+			<log label="Hello, I am philospher number: " expr="p_id" />
+			<assign location="random_delay" expr="(random_delay + 941)%1331"/>
+		</onentry>
+		<state id="thinking">
+			<onentry>
+				<log label="Thinking philosopher: " expr="p_id"/>
+				<assign location="random_delay" expr="(random_delay + 941)%1331"/>
+				<send type="contiki"  event="thinking_over" delayexpr="random_delay*(p_id+1)"/> 
+			</onentry>
+			<transition type="internal" event="thinking_over" target="hungry"/>
+		</state>
+		<state id="hungry"><!-- philospher eats if resource available or waits (resource_denied state).-->
+			<onentry>
+				<log label="Hungry philosopher: " expr="p_id"/>
+				<if cond="timeout_flag == 0">
+				<send type="contiki"  id="starvation_timer" event="timeout" delayexpr="delay"/>
+				<assign location="timeout_flag" expr="1"/>
+				</if>
+				<send type="contiki"  event="need_left_fork" target="#_parent" namelist="p_id"/>
+				<send type="contiki"  event="need_right_fork" target="#_parent" namelist="p_id"/>
+			</onentry>
+			<transition type="internal" event="take_left_fork" target="has_left_fork"/>	  
+			<transition type="internal" event="take_right_fork" target="has_right_fork"/>
+			<transition type="internal" event="timeout" target="fail">
+			<log label="philospher: " expr="p_id"/>
+			<log label="starved in state hungry for Time(in ms) : " expr="delay"/>
+			</transition>
+			<onexit>
+				<if cond="_event.name == 'take_left_fork' || _event.name == 'take_right_fork'">
+				<cancel sendid="starvation_timer"/>
+				<assign location="timeout_flag" expr="0"/>
+				</if>
+			</onexit>
+		</state>
+		<state id="has_left_fork" >
+			<onentry>
+				<log label="in state has_left_fork for philosopher: " expr="p_id"/>
+				<if cond="timeout_flag == 0">
+					<send type="contiki"  id="starvation_timer" event="timeout" delayexpr="delay"/>
+					<assign location="timeout_flag" expr="1"/>
+				</if>			
+				<send type="contiki"  event="resend_need_right_fork" delayexpr="500" />	<!-- philospher sends Need_Forks event continuously after every .3sec -->
+			</onentry>
+			<transition type="internal" event="take_right_fork" target="eating"/>
+			<transition type="internal" event="resend_need_right_fork" target="has_left_fork">
+				<send type="contiki"  event="need_right_fork" target="#_parent" namelist="p_id"/>
+			</transition>
+			<transition type="internal" event="timeout" target="fail">
+			<log label="philospher: " expr="p_id"/>
+			<log label="starved in state has_right_fork for Time(in ms) :" expr="delay"/>
+			</transition>
+			<onexit>
+				<if cond="_event.name == 'take_right_fork'">
+					<log label="hungry starvation_timer cancelled for philosopher: " expr="p_id"/>
+					<cancel sendid="starvation_timer"/>
+					<assign location="timeout_flag" expr="0"/>
+				</if>
+			</onexit>
+		</state>
+		<state id="has_right_fork" >
+			<onentry>
+				<log label="in state has_right_fork for philosopher: " expr="p_id"/>
+				<if cond="timeout_flag == 0">
+					<send type="contiki"  id="starvation_timer" event="timeout" delayexpr="delay"/>
+					<assign location="timeout_flag" expr="1"/>
+				</if>				
+				<send type="contiki"  event="resend_need_left_fork" delayexpr="500" />	<!-- philospher sends Need_Forks event continuously after every .3sec -->
+			</onentry>
+			<transition type="internal" event="take_left_fork" target="eating"/>
+			<transition type="internal" event="resend_need_left_fork" target="has_right_fork">
+				<send type="contiki"  event="need_left_fork" target="#_parent" namelist="p_id"/>
+			</transition>
+			<transition type="internal" event="timeout" target="fail">
+			<log label="philospher: " expr="p_id"/>
+			<log label="starved in state has_right_fork for Time(in ms) : " expr="delay"/>
+			</transition>
+			<onexit>
+				<if cond="_event.name == 'take_left_fork'">
+					<cancel sendid="starvation_timer"/>
+					<assign location="timeout_flag" expr="0"/>
+				</if>
+			</onexit>
+		</state>		
+		<state id="eating">
+			<onentry>
+				<!-- promela-progress -->
+				<log label="Eating philosopher: " expr="p_id"/>
+				<send type="contiki"  event="eating_over" delayexpr="random_delay"/>
+			</onentry>		
+			<transition type="internal" event="eating_over" target="thinking">
+				<send type="contiki"  target="#_parent" event="return_forks" namelist="p_id"/>
+			</transition>		
+		</state>
+	</state> 
+	<final id="fail"/>
+</scxml>

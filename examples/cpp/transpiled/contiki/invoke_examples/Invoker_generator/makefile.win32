@@ -1,0 +1,16 @@
+CC    = cl
+CXX   = cl
+LD    = link
+
+CFLAGS += /EHsc
+
+CUSTOM_RULE_CPP_TO_OBJECTDIR_O = 1
+$(ODIR)/%.o: %.cpp $(DEPS)| $(ODIR)
+	$(TRACE_CC)
+	$(Q) $(CXX) -nologo $(CFLAGS) -c $< -Fo$@
+
+
+CUSTOM_RULE_LINK = 1
+inv-generator$(TARGET): $(OBJ)
+	$(TRACE_LD)
+	$(Q) $(LD) -nologo -SUBSYSTEM:CONSOLE -out:$@ $^

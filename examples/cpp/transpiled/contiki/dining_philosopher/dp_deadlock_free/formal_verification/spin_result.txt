@@ -1,0 +1,31 @@
+commands used to get this output: 
+>spin -a master_s.pml
+>gcc -DMEMLIM=1024 -O2 -DVECTORSZ=8192 -DXUSAFE -DNP -w -o pan pan.c
+>pan.exe -a -m10000 -n -N w3c
+
+(Spin Version 6.4.6 -- 2 December 2016)
+
+Full statespace search for:
+	never claim         	+ (:np_:)
+	assertion violations	+ (if within scope of claim)
+	non-progress cycles 	- (not selected)
+	invalid end states	- (disabled by never claim)
+
+State-vector 2336 byte, depth reached 2444, errors: 0
+     1502 states, stored
+      875 states, matched
+     2377 transitions (= stored+matched)
+     9995 atomic steps
+hash conflicts:         0 (resolved)
+
+Stats on memory usage (in Megabytes):
+    3.369	equivalent memory usage for states (stored*(State-vector + overhead))
+    4.072	actual memory usage for states
+   64.000	memory used for hash table (-w24)
+    0.382	memory used for DFS stack (-m10000)
+   68.688	total actual memory usage
+
+
+
+pan: elapsed time 0.012 seconds
+pan: rate 125166.67 states/second

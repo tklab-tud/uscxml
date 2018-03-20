@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scxml xmlns="http://www.w3.org/2005/07/scxml" name="philosopher" version="1.0" datamodel="promela">
+	<datamodel>
+		<data id="p_id" type="int" />
+		<data id="delay" type="int" />
+		<data id="random_delay" type="int"/>
+	</datamodel>
+	<state id="Philosopher_routine" initial="thinking">
+		<onentry>
+			<log label="Hello, I am philospher number: " expr="p_id" />
+		</onentry>
+		<state id="thinking">
+			<onentry>
+				<log label="Thinking professor: " expr="p_id"/>
+				<assign location="random_delay" expr="((1103515245*random_delay+12345)%2147483647)%2000"/>
+				<send type="contiki"  event="thinking_over" delayexpr="random_delay*(p_id+1)"/> 
+			</onentry>
+			<transition event="thinking_over" target="hungry"/>
+		</state>
+		<state id="hungry"><!-- philospher eats if resource available or waits (resource_denied state).-->
+			<onentry>
+				<log label="Hungry professor: " expr="p_id"/>
+				<send type="contiki" event="need_forks" delayexpr="300" target="#_parent" namelist="p_id"/> <!-- philospher stays in hungry mode for .3 seconds then sends event 'need_forks'-->
+			</onentry>
+			<transition event="take_forks" target="eating"/>	  
+			<transition event="resource_denied" target="resource_denied"/>
+		</state>
+		<state id="eating">
+			<onentry>
+				<log label="Eating professor: " expr="p_id"/>
+				<send type="contiki" event="eating_over" delayexpr="500"/>
+			</onentry>		
+			<transition event="eating_over" target="thinking">
+				<send type="contiki" target="#_parent" event="return_forks" namelist="p_id"/>
+			</transition>		
+		</state>
+		<state id="resource_denied" >
+			<onentry>
+				<log label="Resource Denied professor: " expr="p_id"/>
+				<send type="contiki" id="resource_denied_timer" event="timeout" delayexpr="delay"/>				
+				<send type="contiki" event="resend_need_forks" delayexpr="300" />	<!-- philospher sends need_forks event continuously after every .3sec -->
+			</onentry>
+			<transition event="take_forks" target="eating"/>
+			<transition event="resend_need_forks" target="resource_denied">
+				<send type="contiki" event="need_forks" target="#_parent" namelist="p_id"/>
+			</transition>
+			<transition event="timeout" target="fail">
+			<log label="philospher: " expr="p_id"/>
+			<log label="Time(in ms) since resource denied: " expr="delay"/>
+			</transition>
+			<onexit>
+				<if cond="_event.name == 'take_forks'">
+				<cancel sendid="resource_denied_timer"/>
+				</if>
+			</onexit>
+		</state>
+	</state> 
+	<final id="fail"/>
+</scxml>
