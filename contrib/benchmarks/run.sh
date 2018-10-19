@@ -205,8 +205,8 @@ function run-scxmlcc {
 
 	cd scxmlcc
 	rm test
-	timeout ${TIMEOUT} ./scxmlcc/src/scxmlcc -i ${BENCHMARK} -o ./test.h
-	timeout ${TIMEOUT} g++ -DMACHINE_NAME=sc_benchmark ./statesPerSecond.cpp -o test
+	./scxmlcc/src/scxmlcc -i ${BENCHMARK} -o ./test.h
+	g++ -O2 -DMACHINE_NAME=sc_benchmark ./statesPerSecond.cpp -o test
 	timeout ${TIMEOUT} ./test |tee ../logs/${SC_NAME}-scxmlcc.log
 
 	cd ..
