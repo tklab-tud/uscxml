@@ -4,7 +4,7 @@ DIR="$( cd "$( dirname "$0" )" && pwd )"
 CWD=`pwd`
 cd ${DIR}
 
-TIMEOUT=25s
+TIMEOUT=120s
 
 RUN_QT=false
 RUN_APACHE=false
@@ -205,8 +205,8 @@ function run-scxmlcc {
 
 	cd scxmlcc
 	rm test
-	./scxmlcc/src/scxmlcc -i ${BENCHMARK} -o ./test.h
-	g++ -O2 -DMACHINE_NAME=sc_benchmark ./statesPerSecond.cpp -o test
+	timeout ${TIMEOUT} ./scxmlcc/src/scxmlcc -i ${BENCHMARK} -o ./test.h
+	timeout ${TIMEOUT} g++ -O2 -DMACHINE_NAME=sc_benchmark ./statesPerSecond.cpp -o test
 	timeout ${TIMEOUT} ./test |tee ../logs/${SC_NAME}-scxmlcc.log
 
 	cd ..
