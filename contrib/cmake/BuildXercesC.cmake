@@ -38,7 +38,7 @@ if(MSVC)
 	endif()
 	
 	externalproject_add(xerces-c
-		URL http://www.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.4.tar.gz
+		URL http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.4.tar.gz
 		URL_MD5 21bb097b711a513275379b59757cba4c
 		BUILD_IN_SOURCE 1
 		PREFIX ${CMAKE_BINARY_DIR}/deps/xerces-c
