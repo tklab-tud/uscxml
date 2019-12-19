@@ -1,4 +1,4 @@
-
+cmake-build-debug/
 *.DS_Store
 build/*
 build/
@@ -23,3 +23,7 @@ package/windows*
 /.idea/*
 
 /test/bindings/java/logs/
+
+
+build-docker-*/
+cmake-build-*/
