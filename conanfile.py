@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake
 
-class Bluetooth(ConanFile):
+class Uscxml(ConanFile):
     name = "uscxml"
     version = "1.0"
     url = "uscxml Library"
