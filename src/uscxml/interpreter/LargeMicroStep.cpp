@@ -1319,21 +1319,27 @@ std::pair<uint32_t, uint32_t> LargeMicroStep::getExitSet(const Transition* trans
 		statesToExit.first = domainState->documentOrder + 1; // do not include domain itself
 
 		// end of exit set
-		XERCESC_NS::DOMElement* sibling = domainState->element->getNextElementSibling();
-		while(sibling && !isState(sibling))
-			sibling = sibling->getNextElementSibling();
-		if (sibling) {
-			State* siblingState = (State*)sibling->getUserData(X("uscxmlState"));
-			statesToExit.second = siblingState->documentOrder - 1;
-		} else {
-			statesToExit.second = _states.size() - 1;
+		statesToExit.second = statesToExit.first;
+
+		uint32_t second = statesToExit.first + 1;
+
+		while (second < _states.size()) {
+			State *childState = _states[second];
+
+			if (childState->ancestors.find(domainState) != childState->ancestors.end()) {
+				statesToExit.second = second;
+			} else {
+				break;
+			}
+
+			second++;
 		}
+
 		_exitSetCache[transition->postFixOrder] = statesToExit;
-		return statesToExit;
 	}
+
 	return _exitSetCache[transition->postFixOrder];
 }
-
 uint32_t LargeMicroStep::getTransitionDomain(const Transition* transition) {
 	if (transition->target.size() == 0)
 		return std::numeric_limits<uint32_t>::max();
