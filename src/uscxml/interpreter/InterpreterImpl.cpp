@@ -75,7 +75,7 @@ void InterpreterImpl::addInstance(std::shared_ptr<InterpreterImpl> interpreterIm
 
 InterpreterImpl::InterpreterImpl() : _isInitialized(false), _document(NULL), _scxml(NULL), _state(USCXML_INSTANTIATED) {
 	try {
-		::xercesc_3_1::XMLPlatformUtils::Initialize();
+		::XERCESC_NS::XMLPlatformUtils::Initialize();
 	} catch (const XERCESC_NS::XMLException& toCatch) {
 		ERROR_PLATFORM_THROW("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
 	}
@@ -112,7 +112,7 @@ InterpreterImpl::~InterpreterImpl() {
 	}
 
 //    assert(_invokers.size() == 0);
-//    ::xercesc_3_1::XMLPlatformUtils::Terminate();
+//    ::XERCESC_NS::XMLPlatformUtils::Terminate();
 
 #ifdef WITH_CACHE_FILES
 	if (!envVarIsTrue("USCXML_NOCACHE_FILES") && _document != NULL) {

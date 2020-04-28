@@ -164,7 +164,7 @@ public :
 		// this is most unfortunate but needed with static XMLChars :(
 		if (!_xercesIsInit) {
 			try {
-				::xercesc_3_1::XMLPlatformUtils::Initialize();
+				::XERCESC_NS::XMLPlatformUtils::Initialize();
 				_xercesIsInit = true;
 			} catch (const XERCESC_NS::XMLException& toCatch) {
 				throw ("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());

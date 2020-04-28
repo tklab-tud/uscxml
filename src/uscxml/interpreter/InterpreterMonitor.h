@@ -26,6 +26,7 @@
 #include "uscxml/debug/InterpreterIssue.h"
 
 #include <mutex>
+#include <functional>
 
 #define USCXML_MONITOR_CATCH(callback) \
 catch (Event e) { LOG(USCXML_ERROR) << "Syntax error when calling " #callback " on monitors: " << std::endl << e << std::endl; } \

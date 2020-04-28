@@ -73,14 +73,14 @@ if (APPLE)
 	set(LIBCPP_NAME "libstdc++") # before mavericks
 	# get MacOSX version
 	execute_process(
-		COMMAND /usr/bin/sw_vers -productVersion 
+		COMMAND /usr/bin/sw_vers -productVersion
 		OUTPUT_VARIABLE MACOSX_VERSION
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 	if (MACOSX_VERSION)
 		THREE_PART_VERSION_TO_VARS(
 			${MACOSX_VERSION}
-			MACOSX_VERSION_MAJOR 
-			MACOSX_VERSION_MINOR 
+			MACOSX_VERSION_MAJOR
+			MACOSX_VERSION_MINOR
 			MACOSX_VERSION_PATCH)
 	endif()
 	if (MACOSX_VERSION VERSION_GREATER "10.8.99")
@@ -112,11 +112,11 @@ include_directories(${PROJECT_SOURCE_DIR}/contrib/src/jsmn)
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/evws)
 include_directories(${PROJECT_SOURCE_DIR}/contrib/src/uriparser/include)
 
-set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/uscxml/InterpreterOptions.cpp)	
+set(GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/uscxml/InterpreterOptions.cpp)
 if (WIN32)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/getopt)
 	include_directories(${PROJECT_SOURCE_DIR}/contrib/src/inttypes)
-	list(APPEND GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)	
+	list(APPEND GETOPT_FILES ${PROJECT_SOURCE_DIR}/contrib/src/getopt/getopt.c)
 endif()
 
 ################################
@@ -143,7 +143,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall")
-	
+
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
@@ -289,9 +289,17 @@ else()
 endif()
 
 if (XercesC_FOUND)
+    if(${XercesC_VERSION} VERSION_LESS "3.2")
+	    set(XERCESC_NS "xercesc_3_1")
+        add_definitions(-DXERCESC_NS=xercesc_3_1)
+    elseif(${XercesC_VERSION} VERSION_LESS "3.3")
+	    set(XERCESC_NS "xercesc_3_2")
+        add_definitions(-DXERCESC_NS=xercesc_3_2)
+    else()
+        message(FATAL_ERROR "Incompatible version of XercesC; uSCXML supports 3.1 and 3.2")
+    endif()
 	include_directories(${XercesC_INCLUDE_DIRS})
 	list (APPEND USCXML_CORE_LIBS ${XercesC_LIBRARIES})
-	set(XERCESC_NS "xercesc_3_1")
 else()
 	message(STATUS "--> will download and compile")
 	include("${CMAKE_BUILD_SCRIPTS}/BuildXercesC.cmake")
@@ -300,6 +308,7 @@ else()
 		list (APPEND USCXML_CORE_LIBS ${XercesC_LIBRARIES})
 		list (APPEND USCXML_PREREQS xerces-c)
 		set(XERCESC_NS "xercesc_3_1")
+        add_definitions(-DXERCESC_NS=xercesc_3_1)
 	else()
 		message(FATAL_ERROR "Could neither find nor build XercesC")
 	endif()
@@ -383,7 +392,7 @@ if (WIN32)
 	file(GLOB POTENTIAL_SWIG "C:/Program Files/swig*" "C:/Program Files (x86)/swig*")
 	LIST(APPEND CMAKE_PROGRAM_PATH ${POTENTIAL_SWIG}) # swig.exe
 	# message(FATAL_ERROR "POTENTIAL_SWIG: ${POTENTIAL_SWIG}")
-	
+
 endif()
 LIST(APPEND CMAKE_PROGRAM_PATH $ENV{SWIG_DIR})
 find_package(SWIG)
@@ -430,7 +439,7 @@ if (WITH_DM_LUA)
 		# https://code.google.com/archive/p/luaforwindows/downloads
 		# https://github.com/rjpcomputing/luaforwindows/releases
 		set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.1/")
-		
+
 		# http://luabinaries.sourceforge.net/download.html
 		# set(ENV{LUA_DIR} "C:/Program Files (x86)/Lua/5.3/")
 	endif()
@@ -499,13 +508,13 @@ if (BUILD_AS_PLUGINS)
 	include_directories(${CMAKE_SOURCE_DIR}/contrib/src)
 	source_group("Plugins" FILES ${USCXML_PLUGINS})
 	list (APPEND USCXML_FILES ${USCXML_PLUGINS})
-	
+
 	add_library(uscxml ${USCXML_FILES})
 	target_link_libraries(uscxml ${USCXML_CORE_LIBS})
 	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DUSCXML_EXPORT")
 #	set_target_properties(uscxml PROPERTIES COMPILE_FLAGS "-DPLUMA_EXPORTS")
 	add_definitions(-DPLUMA_EXPORTS)
-else()	
+else()
 	add_library(uscxml ${USCXML_FILES})
 	target_link_libraries(uscxml ${USCXML_OPT_LIBS} ${USCXML_CORE_LIBS})
 endif()
@@ -585,10 +594,10 @@ foreach( FILE ${ALL_SOURCE_FILES} )
 	file(RELATIVE_PATH REL_PATH ${PROJECT_SOURCE_DIR} "${PATH}")
 	string(REGEX REPLACE "src/uscxml" "" REL_PATH "${REL_PATH}")
 	string(REGEX REPLACE "contrib/src" "contrib" REL_PATH "${REL_PATH}")
-	
+
 	string(REGEX REPLACE "^/" "" REL_PATH "${REL_PATH}") # leading slash
 	string(REGEX REPLACE "/" "\\\\" SRC_GROUP "${REL_PATH}") # escape /
-	
+
 	source_group("${SRC_GROUP}" FILES ${FILE})
 
 endforeach()
