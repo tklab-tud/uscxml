@@ -25,6 +25,7 @@
 #include "uscxml/interpreter/Logging.h"
 #include "uscxml/debug/InterpreterIssue.h"
 
+#include <functional>
 #include <mutex>
 
 #define USCXML_MONITOR_CATCH(callback) \
