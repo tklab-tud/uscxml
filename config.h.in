@@ -46,7 +46,7 @@
 
 #cmakedefine V8_VERSION @V8_VERSION@
 
-// #cmakedefine XERCESC_NS @XERCESC_NS@
+#cmakedefine XERCESC_NS @XERCESC_NS@
 
 /** build type */
 #cmakedefine CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"

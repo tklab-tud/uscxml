@@ -612,7 +612,7 @@ Factory* Factory::getInstance() {
 #if 0
 	// this needs to be here as some plugins use xercesc, now in X::X in DOM.h
 	try {
-		::xercesc_3_1::XMLPlatformUtils::Initialize();
+		::XERCESC_NS::XMLPlatformUtils::Initialize();
 	} catch (const XERCESC_NS::XMLException& toCatch) {
 		ERROR_PLATFORM_THROW("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
 	}

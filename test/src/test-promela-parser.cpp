@@ -321,7 +321,7 @@ void testPromelaParser() {
 
 int main(int argc, char** argv) {
 	try {
-		::xercesc_3_1::XMLPlatformUtils::Initialize();
+		::XERCESC_NS::XMLPlatformUtils::Initialize();
 	} catch (const XERCESC_NS::XMLException& toCatch) {
 		ERROR_PLATFORM_THROW("Cannot initialize XercesC: " + X(toCatch.getMessage()).str());
 	}

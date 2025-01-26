@@ -39,13 +39,13 @@ void lambda_snippet() {
 
 	scxml.on().enterState([](const std::string& sessionId,
 	                         const std::string& stateName,
-	const xercesc_3_1::DOMElement* state) {
+	const XERCESC_NS::DOMElement* state) {
 		std::cout << "Entered " << stateName << std::endl;
 	});
 
 	scxml.on().exitState([](const std::string& sessionId,
 	                        const std::string& stateName,
-	const xercesc_3_1::DOMElement* state) {
+	const XERCESC_NS::DOMElement* state) {
 		std::cout << "Exited " << stateName << std::endl;
 	});
 
