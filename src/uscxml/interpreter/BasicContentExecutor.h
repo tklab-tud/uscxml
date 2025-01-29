@@ -20,6 +20,7 @@
 #ifndef BASICCONTENTEXECUTOR_H_B873199D
 #define BASICCONTENTEXECUTOR_H_B873199D
 
+#include "uscxml/config.h"
 #include "ContentExecutorImpl.h"
 #include "uscxml/plugins/ExecutableContent.h"
 

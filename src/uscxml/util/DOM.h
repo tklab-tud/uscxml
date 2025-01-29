@@ -24,6 +24,7 @@
 #include <list>
 #include <string>
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOM.hpp>

@@ -30,6 +30,7 @@
 #include <xercesc/framework/MemBufInputSource.hpp>
 
 #include "uscxml/interpreter/Logging.h"
+#include "uscxml/config.h"
 
 namespace uscxml {
 
