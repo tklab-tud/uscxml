@@ -25,6 +25,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 #include "uscxml/util/Convenience.h"
 #include "uscxml/messages/Blob.h"

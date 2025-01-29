@@ -288,6 +288,9 @@ else()
 	endif()
 endif()
 
+# Set option to let manuallu define XERCESC_NS
+set(XERCESC_NS "xercesc_3_1" CACHE STRING "Namespace for XercesC library")
+
 if (XercesC_FOUND)
     if(${XercesC_VERSION} VERSION_LESS "3.2")
 	    set(XERCESC_NS "xercesc_3_1")

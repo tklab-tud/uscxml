@@ -20,6 +20,7 @@
 #ifndef EXECUTABLECONTENT_H_1E028A2D
 #define EXECUTABLECONTENT_H_1E028A2D
 
+#include "uscxml/config.h"
 #include "uscxml/Common.h"
 
 #include <string>

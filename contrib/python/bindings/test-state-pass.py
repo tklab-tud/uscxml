@@ -14,7 +14,7 @@ def main(argv):
     
     import uscxmlNativePython as uscxml
     
-    print "Processing" + argv[1]
+    print("Processing" + argv[1])
 
     interpreter = uscxml.Interpreter.fromURL(argv[1]);
     state = interpreter.step()
