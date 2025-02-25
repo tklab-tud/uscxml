@@ -25,6 +25,7 @@
 #include "uscxml/interpreter/Logging.h"
 #include "uscxml/debug/InterpreterIssue.h"
 
+#include <functional>
 #include <mutex>
 #include <functional>
 
@@ -212,7 +213,6 @@ public:
 	                                    const std::string& stateName,
 	                                    const XERCESC_NS::DOMElement* state)> callback,
 	                bool after = false) {
-		_beforeEnteringState = callback;
 		if (after) {
 			_afterEnteringState = callback;
 		} else {
